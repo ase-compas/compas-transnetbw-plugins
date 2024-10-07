@@ -13,16 +13,20 @@ cache: &bun_cache
       - bun.lockb
   paths:
     - node_modules/
+    - .bun/    # Add .bun cache directory if Bun uses it for caching
   policy: pull-push
 
-# Install Bun and dependencies using Bun
+# Install Bun globally in every job
+before_script:
+  - npm install -g bun
+
+# Install dependencies using Bun
 install_dependencies:
   stage: install_dependencies
   interruptible: false
   cache:
     <<: *bun_cache
   script:
-    - npm install -g bun
     - node -v
     - bun install --frozen-lockfile --no-progress --non-interactive
 
