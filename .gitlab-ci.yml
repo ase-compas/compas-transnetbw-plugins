@@ -6,26 +6,34 @@ stages:
   - pages
   - cleanup
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
+cache: &bun_cache
+  key:
+    files:
+      - bun.lockb
+  policy: pull
   paths:
-    - .bun
-    - node_modules/
-    - bun.lockb
+    - 'node_modules/'
+
+install_bun:
+  stage: install
+  script:
+    - npm install -g bun
+
+# Install dependencies
+install dependencies:
+  stage: install
+  interruptible: false
+  cache:
+    <<: *bun_cache
+    policy: pull-push
+  script:
+    - node -v
+    - bun install --frozen-lockfile --no-progress --non-interactive
+
 
 build_project:
   stage: build
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - .bun
-      - node_modules/
-      - bun.lockb
-
   script:
-    - echo "Installing dependencies for build..."
-    - npm install -g bun
-    - bun install --frozen-lockfile
     - echo "Building project..."
     - bun run build:version-editor
   artifacts:
