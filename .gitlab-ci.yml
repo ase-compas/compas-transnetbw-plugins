@@ -6,8 +6,22 @@ stages:
   - pages
   - cleanup
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .bun
+    - node_modules/
+    - bun.lockb
+
 build_project:
   stage: build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .bun
+      - node_modules/
+      - bun.lockb
+
   script:
     - echo "Installing dependencies for build..."
     - npm install -g bun
@@ -17,6 +31,5 @@ build_project:
   artifacts:
     name: "build-${CI_COMMIT_REF_SLUG}"
     paths:
-      - packages/distribution/build/
+      - dist/apps/version-editor
     expire_in: 1 week
-
