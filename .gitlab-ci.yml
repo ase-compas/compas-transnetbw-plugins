@@ -6,12 +6,6 @@ stages:
   - pages
   - cleanup
 
-install_dependencies:
-  stage: install
-  script:
-    - echo "Installing dependencies..."
-    - npm ci
-
 build_project:
   stage: build
   script:
