@@ -13,7 +13,6 @@ cache: &bun_cache
       - bun.lockb
   paths:
     - node_modules/
-    - .bun/    # Add .bun cache directory if Bun uses it for caching
   policy: pull-push
 
 # Install Bun globally in every job
