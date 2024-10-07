@@ -18,7 +18,7 @@ cache: &bun_cache
 
 # Install Bun globally in every job
 before_script:
-  - npm install -g bun
+  - npm install -g bun nx
 
 # Install dependencies using Bun
 install_dependencies:
