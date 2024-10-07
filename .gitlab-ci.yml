@@ -1,36 +1,39 @@
 image: node:20
 
 stages:
-  - install
+  - install_bun
+  - install_dependencies
   - build
   - pages
   - cleanup
 
+# Cache configuration for Bun dependencies
 cache: &bun_cache
   key:
     files:
       - bun.lockb
-  policy: pull
   paths:
-    - 'node_modules/'
+    - node_modules/
+    - .bun/    # Add .bun cache directory if Bun uses it for caching
+  policy: pull-push
 
+# Install Bun globally
 install_bun:
-  stage: install
+  stage: install_bun
   script:
     - npm install -g bun
 
-# Install dependencies
-install dependencies:
-  stage: install
+# Install dependencies using Bun
+install_dependencies:
+  stage: install_dependencies
   interruptible: false
   cache:
     <<: *bun_cache
-    policy: pull-push
   script:
     - node -v
     - bun install --frozen-lockfile --no-progress --non-interactive
 
-
+# Build project using Bun
 build_project:
   stage: build
   script:
