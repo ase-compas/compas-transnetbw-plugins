@@ -17,21 +17,21 @@ export default defineConfig({
 
   preview: {
     port: 4300,
-    host: 'localhost',
+    host: 'localhost'
   },
 
   plugins: [svelte(), nxViteTsPaths()],
-
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
 
   build: {
     outDir: '../../dist/apps/version-editor',
     reportCompressedSize: true,
     commonjsOptions: {
-      transformMixedEsModules: true,
+      transformMixedEsModules: true
+    },
+    rollupOptions: {
+      output: {
+        entryFileNames: 'index.js'
+      }
     },
     lib: {
       entry: 'src/plugin.ts',
@@ -42,7 +42,7 @@ export default defineConfig({
   test: {
     globals: true,
     cache: {
-      dir: '../../node_modules/.vitest',
+      dir: '../../node_modules/.vitest'
     },
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
@@ -50,7 +50,7 @@ export default defineConfig({
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../coverage/apps/version-editor',
-      provider: 'v8',
-    },
-  },
+      provider: 'v8'
+    }
+  }
 });

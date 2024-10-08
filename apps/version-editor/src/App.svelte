@@ -1,27 +1,36 @@
 <script lang="ts">
-
+  import { SvelteUIProvider } from '@svelteuidev/core';
+  import SearchFilter from './features/search-filter/SearchFilter.svelte';
 </script>
 
-<main>
-  <h2>Version Editor Framework</h2>
-</main>
+<SvelteUIProvider themeObserver="light">
+  <div class="version-editor-container">
+    <div class="search-filter">
+      <SearchFilter />
+    </div>
+    <div class="table-container">
+      <h1>Table</h1>
+    </div>
+  </div>
+</SvelteUIProvider>
 
 <style lang="css">
-  * {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-  }
-
-  body {
-    font-family: Arial, sans-serif;
-    height: 100vh;
-    width: 100vw;
-  }
-
-  main {
+  .version-editor-container {
     height: 100%;
     width: 100%;
-    background-color: #f9f7f1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
+
+  .search-filter {
+    width: 100%;
+    height: 100%;
+  }
+
+  .table-container {
+
+  }
+
+
 </style>
