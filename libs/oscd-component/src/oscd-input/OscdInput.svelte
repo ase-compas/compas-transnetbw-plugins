@@ -1,14 +1,18 @@
 <script>
-  import { TextInput } from '@svelteuidev/core';
+  import Textfield from '@smui/textfield';
+  import Icon from '@smui/textfield/icon';
 
   export let placeholder = '';
   export let label = '';
-  export let icon = null;
+  export let icon = '';
   export let value = '';
+  export let variant = 'standard';
 </script>
 
-<TextInput icon={icon}
-           bind:value
-           label={label}
-           placeholder={placeholder}
-></TextInput>
+{#if icon}
+  <Textfield bind:value={value} label={label} placeholder={placeholder} style="width: 100%" variant="{variant}">
+    <Icon class="material-icons" slot="leadingIcon">{icon}</Icon>
+  </Textfield>
+{:else}
+  <Textfield bind:value={value} label={label} placeholder={placeholder} style="width: 100%" variant="{variant}"></Textfield>
+{/if}

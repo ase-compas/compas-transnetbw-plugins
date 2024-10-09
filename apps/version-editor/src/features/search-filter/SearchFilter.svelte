@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Avatar, Code, MagnifyingGlass } from 'radix-icons-svelte';
   import { OscdButton, OscdInput, OscdSelect } from '@oscd-transnet-plugins/oscd-component';
-  import { Card } from '@svelteuidev/core';
+  import Card, { Actions, Content } from '@smui/card';
+  import { Icon, Label } from '@smui/button';
 
   let data = [
     { value: 'scl', label: 'SCL' }
@@ -17,25 +17,40 @@
     console.log('UUID: ', uuid);
     console.log('Version: ', selectedValue);
   }
+
+  function clearInputs() {
+    console.log('Clearing inputs');
+    author = '';
+    uuid = '';
+    selectedValue = 'scl'
+  }
 </script>
 
 <div class="search-filter-container">
-  <Card shadow='sm' padding='lg' style="width: 500px;">
+  <Card style="padding: 1rem; width: 500px;">
+    <h3>Search parameter</h3>
+    <Content>
     <OscdSelect placeholder="Select a version" label="Version" data={data} value={selectedValue} required={true} />
     <OscdInput
       placeholder="Author Name"
       bind:value={author}
       label="Author"
-      icon={Avatar} />
+      icon="person" />
     <OscdInput
       placeholder="UUID"
       bind:value={uuid}
       label="UUID"
-      icon={Code} />
-
-    <div class="btn-container">
-      <OscdButton name="Search" callback="{callback}" icon="{MagnifyingGlass}" />
-    </div>
+      icon="fingerprint" />
+    </Content>
+    <Actions>
+      <OscdButton callback={callback} variant="raised">
+        <Icon class="material-icons">search</Icon>
+        <Label>Search</Label>
+      </OscdButton>
+      <OscdButton callback={clearInputs}>
+        <Label>Clear</Label>
+      </OscdButton>
+    </Actions>
   </Card>
 </div>
 
@@ -46,12 +61,6 @@
     display: flex;
     flex-direction: column;
     padding: 1rem;
-  }
-
-  .input-container {
-    width: 600px;
-    border: 1px solid #000;
-    padding: 0.5rem;
   }
 
   .btn-container {

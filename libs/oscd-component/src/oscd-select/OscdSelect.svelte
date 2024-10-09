@@ -1,6 +1,5 @@
 <script>
-  import { NativeSelect } from '@svelteuidev/core';
-  import { ChevronDown } from 'radix-icons-svelte';
+  import Select, { Option } from '@smui/select';
 
   export let data = [];
   export let placeholder = '';
@@ -11,13 +10,8 @@
   export let size = 'sm';
 </script>
 
-<NativeSelect data={data}
-              bind:value
-              size={size}
-              placeholder={placeholder}
-              label={label}
-              required={required}
-              description={description}
->
-  <svelte:component slot="rightSection" this={ChevronDown} />
-</NativeSelect>
+<Select bind:value label={label} style="width: 100%;" required={required}>
+  {#each data as d}
+    <Option value={d.value}>{d.label}</Option>
+  {/each}
+</Select>

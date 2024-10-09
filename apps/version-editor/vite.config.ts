@@ -39,6 +39,9 @@ export default defineConfig({
       fileName: 'index'
     }
   },
+  optimizeDeps: {
+    exclude: ["@smui/select"],
+  },
   test: {
     globals: true,
     cache: {
