@@ -1,0 +1,35 @@
+{
+  "resources": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "filename": "Datei1.scl",
+      "author": "Martin Kurz",
+      "type": "SCL",
+      "changedAt": "2023-10-01T12:00:00Z",
+      "version": "v4.1.0"
+    }
+  ],
+  "resourceHistory": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "versions": [
+        {
+          "id": "123e4567-e89b-12d3-a456-426614174000",
+          "filename": "Datei1.scl",
+          "author": "Martin Kurz",
+          "type": "SCL",
+          "changedAt": "2023-10-01T12:00:00Z",
+          "version": "v3.1.0",
+          "comment": "Initial upload",
+          "archived": false,
+          "available": true
+        }
+      ]
+    }
+  ],
+  "errorResponse": {
+    "timestamp": "2023-10-01T12:00:00Z",
+    "code": "TASK_NOT_FOUND",
+    "message": "Es wurde kein Task mit der id 'IdontExist' gefunden."
+  }
+}

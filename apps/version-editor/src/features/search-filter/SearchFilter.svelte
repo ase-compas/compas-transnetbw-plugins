@@ -2,9 +2,19 @@
   import { OscdButton, OscdInput, OscdSelect } from '@oscd-transnet-plugins/oscd-component';
   import Card, { Actions, Content } from '@smui/card';
   import { Icon, Label } from '@smui/button';
+  import { SearchParams } from '@oscd-transnet-plugins/oscd-version-editor';
+
+  export let searchParamsCallback: (searchParams: SearchParams) => void;
 
   let data = [
-    { value: 'scl', label: 'SCL' }
+    { value: 'scl', label: 'SCL' },
+    { value: 'iid', label: 'IID' },
+    { value: 'icd', label: 'ICD' },
+    { value: 'scd', label: 'SCD' },
+    { value: 'cid', label: 'CID' },
+    { value: 'sed', label: 'SED' },
+    { value: 'isd', label: 'ISD' },
+    { value: 'std', label: 'STD' },
   ];
 
   let selectedValue = 'scl';
@@ -12,10 +22,13 @@
   let uuid = '';
 
   function callback() {
-    console.log('Button clicked');
-    console.log('Author: ', author);
-    console.log('UUID: ', uuid);
-    console.log('Version: ', selectedValue);
+    const searchParams = {
+      uuid: uuid,
+      author: author,
+      type: selectedValue
+    }
+
+    searchParamsCallback(searchParams);
   }
 
   function clearInputs() {
@@ -30,7 +43,7 @@
   <Card style="padding: 1rem; width: 500px;">
     <h3>Search parameter</h3>
     <Content>
-    <OscdSelect placeholder="Select a version" label="Version" data={data} value={selectedValue} required={true} />
+    <OscdSelect placeholder="Select a version" label="Version" data={data} bind:value={selectedValue} required={true} />
     <OscdInput
       placeholder="Author Name"
       bind:value={author}
@@ -43,6 +56,7 @@
       icon="fingerprint" />
     </Content>
     <Actions>
+      <div class="btn-container">
       <OscdButton callback={callback} variant="raised">
         <Icon class="material-icons">search</Icon>
         <Label>Search</Label>
@@ -50,6 +64,7 @@
       <OscdButton callback={clearInputs}>
         <Label>Clear</Label>
       </OscdButton>
+      </div>
     </Actions>
   </Card>
 </div>

@@ -1,0 +1,20 @@
+{
+  "name": "oscd-version-editor",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-version-editor/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-version-editor",
+        "tsConfig": "libs/oscd-version-editor/tsconfig.lib.json",
+        "packageJson": "libs/oscd-version-editor/package.json",
+        "main": "libs/oscd-version-editor/src/index.ts",
+        "assets": ["libs/oscd-version-editor/*.md"]
+      }
+    }
+  }
+}

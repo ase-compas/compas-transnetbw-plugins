@@ -19,7 +19,9 @@
       "@oscd-transnet-plugins/oscd-component": [
         "libs/oscd-component/src/index.ts"
       ],
-      "@oscd-transnet-plugins/oscd-service": ["libs/oscd-service/src/index.ts"]
+      "@oscd-transnet-plugins/oscd-version-editor": [
+        "libs/oscd-version-editor/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

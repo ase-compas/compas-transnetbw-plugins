@@ -3,60 +3,74 @@
     <Row>
       {#each columnDefs as col}
         <Cell>
-          <div class="custom-cell-container">
-          <span>{col.headerName}</span>
-          {#if col.filter}
-            {#if col.filterType === 'text'}
-              <input
-                type="text"
-                placeholder={`Search ${col.headerName}`}
-                bind:value={filters[col.field]}
-                on:input={() => filterTable()}
-              />
+          <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
+            <span>{col.headerName}</span>
+            {#if col.filter}
+              {#if col.filterType === 'text'}
+                <input
+                  type="text"
+                  placeholder={`Search ${col.headerName}`}
+                  bind:value={filters[col.field]}
+                  on:input={() => filterTable()}
+                />
+              {/if}
+              {#if col.filterType === 'number'}
+                <input
+                  type="number"
+                  placeholder={`Search ${col.headerName}`}
+                  bind:value={filters[col.field]}
+                  on:input={() => filterTable()}
+                />
+              {/if}
             {/if}
-            {#if col.filterType === 'number'}
-              <input
-                type="number"
-                placeholder={`Search ${col.headerName}`}
-                bind:value={filters[col.field]}
-                on:input={() => filterTable()}
-              />
-            {/if}
-          {/if}
           </div>
         </Cell>
       {/each}
     </Row>
   </Head>
   <Body>
-  {#each $filteredData as row}
+  {#each $filteredData as row (row.uuid)}
     <Row>
-      {#each columnDefs as col}
-        <Cell numeric={col.numeric}>
-          {row[col.field]}
-        </Cell>
+      {#each columnDefs as col (col.field)}
+        {#if col.field === 'actions'}
+          <Cell>
+            <div class="cell-actions">
+              <OscdIconButton icon="find_in_page" callback={() => console.log("hi")} />
+              <OscdIconButton icon="download" />
+            </div>
+          </Cell>
+        {:else}
+          <Cell numeric={col.numeric}>
+            {row[col.field] ?? ''}
+          </Cell>
+        {/if}
       {/each}
     </Row>
   {/each}
   </Body>
+
+  <LinearProgress
+    indeterminate
+    bind:closed={loadingDone}
+    aria-label="Data is being loaded..."
+    slot="progress"
+  />
 </DataTable>
 
 <script lang="ts">
   import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
+  import LinearProgress from '@smui/linear-progress';
+  import OscdIconButton from '../oscd-icon-button/OscdIconButton.svelte';
+  import { VersionEditorStore } from '@oscd-transnet-plugins/oscd-version-editor';
   import { writable } from 'svelte/store';
 
-  const columnDefs = [
-    { headerName: 'Name', field: 'name', numeric: false, filter: false, filterType: 'text' },
-    { headerName: 'Favorite Color', field: 'color', numeric: false, filter: true, filterType: 'text' },
-    { headerName: 'Favorite Number', field: 'number', numeric: true, filter: true, filterType: 'number' }
-  ];
+  // TODO: Use this for blocking table while loading data
+  export let loadingDone = true;
 
-  const rowData = [
-    { name: 'Steve', color: 'Red', number: 45 },
-    { name: 'Sharon', color: 'Purple', number: 5 },
-    { name: 'Rodney', color: 'Orange', number: 32 },
-    { name: 'Mack', color: 'Blue', number: 12 },
-  ];
+  export let columnDefs = [];
+
+  export let rowData = [];
+  export let store: VersionEditorStore;
 
   let filters = {
     name: '',
@@ -64,9 +78,12 @@
     number: ''
   };
 
-  let filteredData = writable(rowData);
+  let filteredData = writable<any[]>([]);
 
-  let filterEnabled = false;
+  store.store.subscribe(data => {
+    rowData = [...data]
+    filteredData.set(rowData);
+  });
 
   function filterTable() {
     const filtered = rowData.filter(row => {
@@ -93,6 +110,7 @@
 </script>
 
 <style lang="css">
+
   .custom-cell-container {
     display: flex;
     align-items: flex-start;
@@ -166,11 +184,18 @@
     font-size: 0.9rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 20px;
   }
 
   button:hover {
     background-color: #0056b3;
+  }
+
+  .cell-actions {
+    display: flex;
+    height: 100%;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    align-items: center;
   }
 
   /* Responsive Design */
