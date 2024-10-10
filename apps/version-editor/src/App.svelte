@@ -52,6 +52,10 @@
 </div>
 
 <style lang="css">
+  @import "/global.css";
+  @import '/material-icon.css';
+  @import '/smui.css';
+
   .version-editor-container {
     height: 100vh;
     width: 100%;
@@ -68,6 +72,4 @@
     height: 100%;
     padding: 1rem;
   }
-
-
 </style>
