@@ -40,3 +40,18 @@ build_project:
     paths:
       - dist/apps/version-editor
     expire_in: 1 week
+
+
+pages:
+  stage: deploy
+  script:
+    - echo "Deploying to GitLab Pages..."
+    - mkdir public
+    - cp -r dist/apps/version-editor/* public/
+  dependencies:
+    - build_project
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

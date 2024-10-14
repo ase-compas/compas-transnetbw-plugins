@@ -2,9 +2,8 @@
   import SearchFilter from './features/search-filter/SearchFilter.svelte';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
-  import { tap, take } from 'rxjs/operators';
+  import { tap, take, finalize } from 'rxjs/operators';
   import {
-    FileSearchResult,
     SearchParams,
     VersionEditorFileService,
     VersionEditorStore
@@ -15,6 +14,7 @@
   let rowData = [];
 
   export let dataStore = new VersionEditorStore();
+  let loadingDone = true;
 
   const columnDefs = [
     { headerName: 'Filename', field: 'filename', numeric: false, filter: true, filterType: 'text' },
@@ -26,12 +26,17 @@
   ];
 
   function search(searchParams: SearchParams) {
+    loadingDone = false;
+
     versionEditorDataService.searchFiles(searchParams)
       .pipe(
         take(1),
         tap((data: any) => {
           rowData = [...data]
           dataStore.updateData(data);
+        }),
+        finalize(() => {
+          loadingDone = true;
         })
       )
       .subscribe();
