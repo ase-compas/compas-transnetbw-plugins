@@ -12,10 +12,10 @@ cache: &bun_cache
   key:
     files:
       - bun.lockb
+  prefix: "$CI_COMMIT_REF_SLUG"
   paths:
     - node_modules/
   policy: pull-push
-
 
 # Install dependencies using Bun
 install_dependencies:
@@ -35,9 +35,13 @@ build_project:
   before_script:
     - npm install -g bun nx
   stage: build
+  cache:
+    <<: *bun_cache
   script:
     - echo "Building project..."
     - bun run build:version-editor
+  dependencies:
+    - install_dependencies
   artifacts:
     name: "build-${CI_COMMIT_REF_SLUG}"
     paths:
