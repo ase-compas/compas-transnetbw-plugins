@@ -27,8 +27,6 @@ build_project:
     - echo "Building project..."
     - bun install --frozen-lockfile --no-progress --non-interactive
     - bun run build:version-editor
-  dependencies:
-    - install_dependencies
   artifacts:
     name: "build-${CI_COMMIT_REF_SLUG}"
     paths:
