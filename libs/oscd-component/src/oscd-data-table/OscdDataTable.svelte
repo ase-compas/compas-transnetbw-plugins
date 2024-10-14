@@ -41,7 +41,11 @@
           </Cell>
         {:else}
           <Cell numeric={col.numeric}>
+            {#if col.valueFormatter}
+              {col.valueFormatter(row[col.field])}
+            {:else}
             {row[col.field] ?? ''}
+            {/if}
           </Cell>
         {/if}
       {/each}

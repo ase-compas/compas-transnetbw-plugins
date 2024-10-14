@@ -6,6 +6,6 @@
   export let variant = 'default'
 </script>
 
-<Button on:click={callback()} variant={variant}>
+<Button on:click={callback()} {variant} disabled="{disabled}">
   <slot></slot>
 </Button>

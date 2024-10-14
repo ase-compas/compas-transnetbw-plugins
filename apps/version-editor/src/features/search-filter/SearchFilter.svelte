@@ -37,6 +37,10 @@
     uuid = '';
     selectedValue = 'scl'
   }
+
+  $: buttonDisabled = () => {
+    return author === '' && uuid === '';
+  }
 </script>
 
 <div class="search-filter-container">
@@ -57,7 +61,7 @@
     </Content>
     <Actions>
       <div class="btn-container">
-      <OscdButton callback={callback} variant="raised">
+      <OscdButton callback={callback} variant="raised" disabled={buttonDisabled()}>
         <Icon class="material-icons">search</Icon>
         <Label>Search</Label>
       </OscdButton>
