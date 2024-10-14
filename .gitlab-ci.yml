@@ -2,7 +2,6 @@ image: node:20
 
 stages:
   - build
-  - deploy
   - pages
   - cleanup
 
@@ -33,7 +32,7 @@ build_project:
     expire_in: 1 week
 
 pages:
-  stage: deploy
+  stage: pages
   script:
     - echo "Pages accessible through ${CI_PAGES_URL}/${PAGES_PREFIX}"
     - echo "Deploying to GitLab Pages..."
