@@ -1,4 +1,4 @@
-<DataTable table$aria-label="People list" style="max-width: 100%; width: 100%;">
+<DataTable table$aria-label={label} style="max-width: 100%; width: 100%;">
   <Head>
     <Row>
       {#each columnDefs as col}
@@ -71,8 +71,8 @@
   // TODO: Use this for blocking table while loading data
   export let loadingDone = true;
 
+  export let label = crypto.randomUUID();
   export let columnDefs = [];
-
   export let rowData = [];
   export let store: VersionEditorStore;
 

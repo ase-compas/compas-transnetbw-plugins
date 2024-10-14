@@ -35,6 +35,7 @@ build_project:
 pages:
   stage: deploy
   script:
+    - echo "Pages accessible through ${CI_PAGES_URL}/${PAGES_PREFIX}"
     - echo "Deploying to GitLab Pages..."
     - mkdir public
     - cp -r dist/apps/version-editor/* public/
