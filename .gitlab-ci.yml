@@ -16,12 +16,12 @@ cache: &bun_cache
     - node_modules/
   policy: pull-push
 
-# Install Bun globally in every job
-before_script:
-  - npm install -g bun nx
 
 # Install dependencies using Bun
 install_dependencies:
+  before_script:
+    - npm install -g bun
+
   stage: install_dependencies
   interruptible: false
   cache:
@@ -32,6 +32,8 @@ install_dependencies:
 
 # Build project using Bun
 build_project:
+  before_script:
+    - npm install -g bun nx
   stage: build
   script:
     - echo "Building project..."
@@ -41,7 +43,6 @@ build_project:
     paths:
       - dist/apps/version-editor
     expire_in: 1 week
-
 
 pages:
   stage: deploy
