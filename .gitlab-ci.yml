@@ -1,7 +1,6 @@
 image: node:20
 
 stages:
-  - install_dependencies
   - build
   - deploy
   - pages

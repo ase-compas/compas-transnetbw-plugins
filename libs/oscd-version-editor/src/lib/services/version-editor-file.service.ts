@@ -27,12 +27,10 @@ export class VersionEditorFileService {
         if (!response.ok) {
           throw new Error('HTTP error ' + response.status);
         }
-        console.log(response);
         return from(response.json());
       }),
       filter((response: any) => response && response.results),
       map((response: any) => response.results),
-      tap(data => console.log("DATA", data)),
       map((data: any[]) => data.map((item: any) => this.mapToFileSearchResult(item))),
     );
   }

@@ -16,33 +16,52 @@ app.use(cors(corsOptions));
 const mockDataResources = [
   {
     uuid: 'a1b2c3d4-e5f6-7890-1234-56789abcdef0',
-    name: 'Sample Resource',
+    name: 'Datei1.scl',
     author: 'John Doe',
-    type: 'SSD',
+    type: 'SCL',
     changedAt: '2024-09-30T12:34:56Z',
-    version: '1.0'
+    version: 'v4.1.0'
+  },
+  {
+    uuid: 'a1b2c3d4-e5f6-7890-1234-56789abcdef1',
+    name: 'Datei2.scl',
+    author: 'Martin Kurz',
+    type: 'SCL',
+    changedAt: '2024-09-28T12:34:56Z',
+    version: 'v4.0.0'
   }
 ];
 
 const mockResourceHistory = [
   {
     uuid: 'a1b2c3d4-e5f6-7890-1234-56789abcdef0',
-    name: 'Sample Resource',
+    name: 'Datei1.scl',
     author: 'John Doe',
-    type: 'SSD',
+    type: 'SCL',
     changedAt: '2024-09-30T12:34:56Z',
-    version: '1.0',
+    version: 'v4.0.0',
     comment: 'Initial upload',
     archived: false,
     available: true
   },
   {
-    uuid: 'a1b2c3d4-e5f6-7890-1234-56789abcdef0',
-    name: 'Sample Resource',
+    uuid: 'a1b2c3d4-e5f6-7890-1234-56789abcdef1',
+    name: 'Datei1.scl',
     author: 'John Doe',
-    type: 'SSD',
+    type: 'SCL',
     changedAt: '2024-10-01T08:00:00Z',
-    version: '1.1',
+    version: 'v3.9.0',
+    comment: 'Minor update',
+    archived: false,
+    available: true
+  },
+  {
+    uuid: 'a1b2c3d4-e5f6-7890-1234-56789abcdef1',
+    name: 'Datei1.scl',
+    author: 'Martin Kurz',
+    type: 'SCL',
+    changedAt: '2024-10-01T08:00:00Z',
+    version: 'v3.4.0',
     comment: 'Minor update',
     archived: false,
     available: true
@@ -70,7 +89,8 @@ app.post('/api/scl/search', (req, res) => {
   // Filtering logic for the search (optional)
   if (uuid) {
     console.log('Filtering by UUID:', uuid);
-    results = results.filter(resource => resource.uuid === uuid);
+    results = results.filter(resource => resource.uuid.toLowerCase() === uuid.toLowerCase()
+      && resource.type.toLowerCase() === type.toLowerCase());
   }
   // if (type) {
   //   console.log('Filtering by type:', type);
@@ -78,11 +98,13 @@ app.post('/api/scl/search', (req, res) => {
   // }
   if (name) {
     console.log('Filtering by name:', name);
-    results = results.filter(resource => resource.name.includes(name));
+    results = results.filter(resource => resource.name.toLowerCase() === name.toLowerCase()
+      && resource.type.toLowerCase() === type.toLowerCase());
   }
   if (author) {
     console.log('Filtering by author:', author);
-    results = results.filter(resource => resource.author === author);
+    results = results.filter(resource => resource.author.toLowerCase() === author.toLowerCase()
+      && resource.type.toLowerCase() === type.toLowerCase());
   }
 
   console.log('Search results:', results);

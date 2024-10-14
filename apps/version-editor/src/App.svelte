@@ -47,8 +47,6 @@
         )
         .subscribe();
     }, 2000);
-
-
   }
 </script>
 
@@ -57,10 +55,10 @@
     <SearchFilter searchParamsCallback={search} />
   </div>
   <div class="table-container">
-    <OscdLoadingSpinner {loadingDone} />
+<!--    <OscdLoadingSpinner {loadingDone} />-->
     <Card style="padding: 1rem; width: 100%; height: 100%;">
       <h3 style="margin-bottom: 1rem;">Version Table</h3>
-      <OscdDataTable {columnDefs} store={dataStore} />
+      <OscdDataTable {columnDefs} store={dataStore} {loadingDone}/>
     </Card>
   </div>
 </div>

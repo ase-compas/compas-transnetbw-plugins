@@ -1,5 +1,5 @@
-import Plugin from './plugin.svelte'
-import * as pkg from "../package.json";
+import Plugin from './plugin.svelte';
+import * as pkg from '../package.json';
 
 
 export default class NewOSCDPlugin extends HTMLElement {
@@ -36,7 +36,6 @@ export default class NewOSCDPlugin extends HTMLElement {
     }
     this.plugin.$set({ editCount: newCount })
   }
-
 }
 
 function createStyleLinkElement(): HTMLElement{
@@ -56,7 +55,5 @@ function generateStylePath(): string {
   const srcUrl = new URL(import.meta.url)
   const origin = srcUrl.origin
   const path = srcUrl.pathname.split("/").slice(0,-1).filter(Boolean).join("/")
-  const stylePath = [origin, path, "style.css"].filter(Boolean).join("/")
-
-  return stylePath
+  return [origin, path, "style.css"].filter(Boolean).join("/")
 }
