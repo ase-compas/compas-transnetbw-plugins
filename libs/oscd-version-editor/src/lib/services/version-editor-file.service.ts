@@ -1,12 +1,13 @@
 
 import { Observable, map, switchMap, from, tap, filter } from 'rxjs';
-import { fromFetch } from 'rxjs/fetch';
 import { FileSearchResult, SearchParams } from '../domain';
+import { Configuration, DataResourceSearch, SclApi, ServerConfiguration } from '@oscd-transnet-plugins/oscd-api-client';
 
 export class VersionEditorFileService {
   private static instance: VersionEditorFileService;
 
-  private constructor() {}
+  private constructor() {
+  }
 
   public static getInstance(): VersionEditorFileService {
     if (!VersionEditorFileService.instance) {
@@ -16,20 +17,11 @@ export class VersionEditorFileService {
   }
 
   searchFiles(params: SearchParams): Observable<FileSearchResult[]> {
-    return fromFetch('http://localhost:3000/api/scl/search', {
-      method: 'POST',
-      body: JSON.stringify(params),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const sclApiClient = this.generateApiClient('http://localhost:9090/compas-scl-data-service');
+    return sclApiClient.searchForResources({
+      dataResourceSearch: this.mapToDataResourceSearch(params),
     }).pipe(
-      switchMap(response => {
-        if (!response.ok) {
-          throw new Error('HTTP error ' + response.status);
-        }
-        return from(response.json());
-      }),
-      filter((response: any) => response && response.results),
+      filter((response: any) => !!response || !!response.results),
       map((response: any) => response.results),
       map((data: any[]) => data.map((item: any) => this.mapToFileSearchResult(item))),
     );
@@ -45,5 +37,23 @@ export class VersionEditorFileService {
       new Date(data.changedAt),
       data.version,
     );
+  }
+
+  private mapToDataResourceSearch(params: SearchParams): DataResourceSearch {
+    return {
+      uuid: params.uuid || '',
+      type: params.type || '',
+      name: params.name || '',
+      author: params.author || ''
+    };
+  }
+
+  private generateApiClient(url: string) {
+    const config = new Configuration({
+      basePath: url,
+      // accessToken: authInfo.token,
+    })
+
+    return new SclApi(config);
   }
 }

@@ -7,7 +7,8 @@
     "clean:version-editor": "rm -rf dist/apps/version-editor",
     "run:version-editor": "nx run version-editor:serve",
     "build:version-editor": "nx run --prod version-editor:build --no-outputhashing --emptyOutDir --verbose",
-    "http-server:version-editor": "http-server dist/apps/version-editor -p 4202 --cors"
+    "http-server:version-editor": "http-server dist/apps/version-editor -p 4202 --cors",
+    "build:history-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/history-api.yml --package-name history-api-client --enable-post-process-file  --additional-properties \"artifactId=history-api,npmName=history-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-api-client/src/generated/history-api"
   },
   "private": true,
   "dependencies": {
@@ -30,11 +31,13 @@
     "@nx/eslint": "18.3.5",
     "@nx/eslint-plugin": "18.3.5",
     "@nx/jest": "18.3.5",
+    "@nx/js": "18.3.5",
     "@nx/node": "^18.3.5",
     "@nx/vite": "18.3.5",
     "@nx/web": "18.3.5",
     "@nx/workspace": "19.6.5",
     "@nxext/svelte": "^18.0.0",
+    "@openapitools/openapi-generator-cli": "^2.14.0",
     "@smui-extra/accordion": "^7.0.0",
     "@smui/button": "^7.0.0",
     "@smui/card": "^7.0.0",
