@@ -1,7 +1,13 @@
 
 import { Observable, map, switchMap, from, tap, filter } from 'rxjs';
-import { FileSearchResult, SearchParams } from '../domain';
-import { Configuration, DataResourceSearch, SclApi, ServerConfiguration } from '@oscd-transnet-plugins/oscd-api-client';
+import { DataResourceHistory, FileSearchResult, SearchParams } from '../domain';
+import {
+  Configuration,
+  DataResourceHistory as DataResourceHistoryOutput,
+  DataResourceSearch,
+  SclApi,
+  ServerConfiguration
+} from '@oscd-transnet-plugins/oscd-api-client';
 
 export class VersionEditorFileService {
   private static instance: VersionEditorFileService;
@@ -17,7 +23,7 @@ export class VersionEditorFileService {
   }
 
   searchFiles(params: SearchParams): Observable<FileSearchResult[]> {
-    const sclApiClient = this.generateApiClient('http://localhost:9090/compas-scl-data-service');
+    const sclApiClient = this.generateApiClient('http://localhost:8081/compas-scl-data-service');
     return sclApiClient.searchForResources({
       dataResourceSearch: this.mapToDataResourceSearch(params),
     }).pipe(
@@ -27,8 +33,18 @@ export class VersionEditorFileService {
     );
   }
 
+  getHistoryFiles(uuid: string): Observable<any[]> {
+    const sclApiClient = this.generateApiClient('http://localhost:8081/compas-scl-data-service');
+    return sclApiClient.retrieveDataResourceHistory({
+      id: uuid,
+    }).pipe(
+      filter((response: any) => !!response || !!response.versions),
+      map((response: any) => response.versions),
+      map((data: any[]) => data.map((item: any) => this.mapToFileSearchResult(item))),
+    );
+  }
+
   private mapToFileSearchResult(data: any): FileSearchResult {
-    console.log(data);
     return new FileSearchResult(
       data.uuid,
       data.name,
@@ -53,7 +69,6 @@ export class VersionEditorFileService {
       basePath: url,
       // accessToken: authInfo.token,
     })
-
     return new SclApi(config);
   }
 }

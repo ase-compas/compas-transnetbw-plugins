@@ -1,6 +1,6 @@
 <script lang="ts">
   import SearchFilter from './features/search-filter/SearchFilter.svelte';
-  import { OscdDataTable, OscdLoadingSpinner } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
   import { tap, take, finalize } from 'rxjs/operators';
   import {
@@ -25,29 +25,42 @@
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px' }
   ];
 
+  const rowActions = [
+    { icon: 'find_in_page', callback: (row) => getHistoryByUuid(row.uuid) },
+    { icon: 'download', callback: (row) => console.log(row) }
+  ];
+
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
   }
 
   function search(searchParams: SearchParams) {
     loadingDone = false;
-
-    // TODO: Remove timeout
-    setTimeout(() => {
-      versionEditorDataService.searchFiles(searchParams)
-        .pipe(
-          take(1),
-          tap((data: any) => {
-            rowData = [...data];
-            dataStore.updateData(data);
-          }),
-          finalize(() => {
-            loadingDone = true;
-          })
-        )
-        .subscribe();
-    }, 2000);
+    versionEditorDataService.searchFiles(searchParams)
+      .pipe(
+        take(1),
+        tap((data: any) => {
+          rowData = [...data];
+          dataStore.updateData(data);
+        }),
+        finalize(() => {
+          loadingDone = true;
+        })
+      )
+      .subscribe();
   }
+
+  function getHistoryByUuid(uuid: string) {
+    versionEditorDataService.getHistoryFiles(uuid)
+      .pipe(
+        take(1),
+        tap((data: any) => {
+          console.log(data);
+        })
+      )
+      .subscribe();
+  }
+
 </script>
 
 <div class="version-editor-container">
@@ -55,10 +68,9 @@
     <SearchFilter searchParamsCallback={search} />
   </div>
   <div class="table-container">
-<!--    <OscdLoadingSpinner {loadingDone} />-->
     <Card style="padding: 1rem; width: 100%; height: 100%;">
       <h3 style="margin-bottom: 1rem;">Version Table</h3>
-      <OscdDataTable {columnDefs} store={dataStore} {loadingDone}/>
+      <OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions}/>
     </Card>
   </div>
 </div>

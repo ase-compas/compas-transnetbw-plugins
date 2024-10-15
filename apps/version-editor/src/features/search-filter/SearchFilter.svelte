@@ -7,6 +7,7 @@
   export let searchParamsCallback: (searchParams: SearchParams) => void;
 
   let data = [
+    { value: '', label: ''},
     { value: 'scl', label: 'SCL' },
     { value: 'iid', label: 'IID' },
     { value: 'icd', label: 'ICD' },
@@ -17,7 +18,7 @@
     { value: 'std', label: 'STD' },
   ];
 
-  let selectedValue = 'scl';
+  let selectedValue = '';
   let author = '';
   let uuid = '';
 
@@ -32,14 +33,14 @@
   }
 
   function clearInputs() {
-    console.log('Clearing inputs');
     author = '';
     uuid = '';
-    selectedValue = 'scl'
+    selectedValue = ''
   }
 
   $: buttonDisabled = () => {
-    return author === '' && uuid === '';
+    return false;
+    // return author === '' && uuid === '';
   }
 </script>
 

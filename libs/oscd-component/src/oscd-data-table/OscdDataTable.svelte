@@ -35,8 +35,9 @@
         {#if col.field === 'actions'}
           <Cell>
             <div class="cell-actions">
-              <OscdIconButton icon="find_in_page" callback={() => console.log("hi")} />
-              <OscdIconButton icon="download" />
+              {#each rowActions as action}
+                <OscdIconButton icon={action.icon} callback={() => action.callback(row)} />
+              {/each}
             </div>
           </Cell>
         {:else}
@@ -67,14 +68,14 @@
   import OscdIconButton from '../oscd-icon-button/OscdIconButton.svelte';
   import { VersionEditorStore } from '@oscd-transnet-plugins/oscd-version-editor';
   import { writable } from 'svelte/store';
+  import type { RowAction } from './row-action.interface';
 
-  // TODO: Use this for blocking table while loading data
   export let loadingDone = true;
-
   export let label = crypto.randomUUID();
   export let columnDefs = [];
   export let rowData = [];
   export let store: VersionEditorStore;
+  export let rowActions: RowAction[] = [];
 
   let filters = {
     name: '',
@@ -114,7 +115,6 @@
 </script>
 
 <style lang="css">
-
   .custom-cell-container {
     display: flex;
     align-items: flex-start;
