@@ -1,17 +1,39 @@
-<DataTable table$aria-label={label} style="max-width: 100%; width: 100%;">
+<DataTable
+  table$aria-label={label}
+  style="max-width: 100%; width: 100%;"
+>
   <Head>
-    <Row>
+    <Row class="header-row">
       {#each columnDefs as col}
-        <Cell>
+        <Cell on:click={() => col.sortable && sortColumnBy(col.field)}>
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
-            <span>{col.headerName}</span>
+            <div class="cell-header">
+              <span class="header-title">{col.headerName}</span>
+
+              {#if col.sortable}
+                {#if $sortColumn === col.field && $sortDirection !== null}
+                  {#if $sortDirection === 'asc'}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+                         fill="currentColor">
+                      <path d="M12 4l-8 8h16l-8-8z"></path>
+                    </svg>
+                  {:else if $sortDirection === 'desc'}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+                         fill="currentColor">
+                      <path d="M12 20l8-8H4l8 8z"></path>
+                    </svg>
+                  {/if}
+                {/if}
+              {/if}
+            </div>
+
             {#if col.filter}
               {#if col.filterType === 'text'}
                 <input
                   type="text"
                   placeholder={`Search ${col.headerName}`}
                   bind:value={filters[col.field]}
-                  on:input={() => filterTable()}
+                  on:input={() => filterAndSortTable()}
                 />
               {/if}
               {#if col.filterType === 'number'}
@@ -19,7 +41,7 @@
                   type="number"
                   placeholder={`Search ${col.headerName}`}
                   bind:value={filters[col.field]}
-                  on:input={() => filterTable()}
+                  on:input={() => filterAndSortTable()}
                 />
               {/if}
             {/if}
@@ -28,8 +50,9 @@
       {/each}
     </Row>
   </Head>
+
   <Body>
-  {#each $filteredData as row (row.uuid)}
+  {#each $filteredData as row, index (index)}
     <Row>
       {#each columnDefs as col (col.field)}
         {#if col.field === 'actions'}
@@ -45,12 +68,13 @@
             {#if col.valueFormatter}
               {col.valueFormatter(row[col.field])}
             {:else}
-            {row[col.field] ?? ''}
+              {row[col.field] ?? ''}
             {/if}
           </Cell>
         {/if}
       {/each}
     </Row>
+
   {/each}
   </Body>
 
@@ -63,18 +87,17 @@
 </DataTable>
 
 <script lang="ts">
+  import { writable } from 'svelte/store';
   import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import OscdIconButton from '../oscd-icon-button/OscdIconButton.svelte';
-  import { VersionEditorStore } from '@oscd-transnet-plugins/oscd-version-editor';
-  import { writable } from 'svelte/store';
   import type { RowAction } from './row-action.interface';
 
   export let loadingDone = true;
   export let label = crypto.randomUUID();
   export let columnDefs = [];
   export let rowData = [];
-  export let store: VersionEditorStore;
+  export let store;
   export let rowActions: RowAction[] = [];
 
   let filters = {
@@ -84,33 +107,80 @@
   };
 
   let filteredData = writable<any[]>([]);
+  let sortColumn = writable<string | null>(null);
+  let sortDirection = writable<string | null>(null);  // Null bedeutet keine Sortierung
 
   store.store.subscribe(data => {
-    rowData = [...data]
-    filteredData.set(rowData);
+    rowData = [...data];
+    filterAndSortTable();
   });
 
-  function filterTable() {
-    const filtered = rowData.filter(row => {
+  function filterAndSortTable() {
+    let filtered = rowData.filter(row => {
       return columnDefs.every(col => {
         const filterValue = filters[col.field];
         const fieldValue = row[col.field];
-
         if (!filterValue) {
           return true;
         }
-
         if (col.filterType === 'number') {
           return fieldValue == filterValue;
         }
-
         return fieldValue.toString().toLowerCase().includes(filterValue.toLowerCase());
       });
     });
 
+    filtered = sortTable(filtered);
     filteredData.set(filtered);
   }
 
+  function sortTable(data) {
+    let columnToSort;
+    let direction;
+
+    sortColumn.subscribe(col => columnToSort = col);
+    sortDirection.subscribe(dir => direction = dir);
+
+    if (!columnToSort || !direction) {
+      return data; // Keine Sortierung
+    }
+
+    return data.sort((a, b) => {
+      let aValue = a[columnToSort];
+      let bValue = b[columnToSort];
+
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      if (direction === 'asc') {
+        return aValue.toString().localeCompare(bValue.toString());
+      } else {
+        return bValue.toString().localeCompare(aValue.toString());
+      }
+    });
+  }
+
+  function sortColumnBy(colField) {
+    sortColumn.update(currentCol => {
+      if (currentCol === colField) {
+        // Toggle through 'asc', 'desc', and null (no sort)
+        sortDirection.update(currentDir => {
+          if (currentDir === 'asc') return 'desc';
+          if (currentDir === 'desc') return null;  // Third click, reset sort
+          return 'asc'; // First click, set to ascending
+        });
+      } else {
+        // New column, reset direction to ascending
+        sortDirection.set('asc');
+        return colField;
+      }
+      return colField;
+    });
+
+    filterAndSortTable();
+  }
+
+  // Initial data set
   filteredData.set(rowData);
 </script>
 
@@ -217,5 +287,25 @@
     }
   }
 
+  svg {
+    margin-left: 5px;
+    width: 12px;
+    height: 12px;
+    fill: #333;
+  }
 
+  .header-title {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .header-title svg {
+    margin-left: 4px;
+  }
+
+  .cell-header {
+    display: flex;
+    align-items: center;
+  }
 </style>

@@ -3,10 +3,10 @@
 
   export let callback = () => {};
   export let icon = '';
-
+  export let disabled = false;
 </script>
 
-<IconButton class="material-icons" on:click={callback}>{icon}</IconButton>
+<IconButton class="material-icons" on:click={callback} {disabled}>{icon}</IconButton>
 
 <style lang="css">
 </style>

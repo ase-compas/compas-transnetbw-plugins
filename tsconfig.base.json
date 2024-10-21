@@ -22,8 +22,8 @@
       "@oscd-transnet-plugins/oscd-component": [
         "libs/oscd-component/src/index.ts"
       ],
-      "@oscd-transnet-plugins/oscd-version-editor": [
-        "libs/oscd-version-editor/src/index.ts"
+      "@oscd-transnet-plugins/oscd-history-viewer": [
+        "libs/oscd-history-viewer/src/index.ts"
       ]
     }
   },

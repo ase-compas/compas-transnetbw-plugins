@@ -1,0 +1,141 @@
+<script lang="ts">
+  import type { ActiveFilter, FilterType } from './interfaces';
+  import { OscdButton, OscdInput, OscdSelect } from '../index';
+  import Paper from '@smui/paper';
+  import OscdChip from '../oscd-chip/OscdChip.svelte';
+  import { Set } from '@smui/chips';
+
+  export let filterTypes: FilterType[] = [];
+  export let activeFilters: ActiveFilter[] = [];
+
+  let inputValue = '';
+  let selectedFilterType = '';
+
+  $: convertTypeToSelection = filterTypes.map((type) => {
+    return {
+      value: type.label,
+      label: type.label
+    };
+  });
+
+  $: addFilterDisabled = !selectedFilterType || !inputValue;
+  $: getSelectedFilterType = filterTypes.find((type) => type.label === selectedFilterType);
+
+  function addFilter() {
+    if (!selectedFilterType || !inputValue) {
+      console.warn('Filter type or input value is empty');
+      return;
+    }
+
+    if (!getSelectedFilterType) {
+      console.warn('Filter type not found');
+      return;
+    }
+
+    activeFilters = [
+      ...activeFilters,
+      {
+        id: crypto.randomUUID(),
+        key: getSelectedFilterType.label.toLowerCase(),
+        value: inputValue,
+        operation: '=',
+        text: `${selectedFilterType}: ${inputValue}`,
+        disabled: false
+      }
+    ];
+
+    clearInputs();
+  }
+
+  function onFilterChipClose(id: string) {
+    // WORKAROUND: Dirty workaround to wait for DOM to remove object before removing it from the array
+    setTimeout(() => {
+      activeFilters = activeFilters.filter((filter) => filter.id !== id);
+    }, 0);
+  }
+
+  function clearInputs() {
+    inputValue = '';
+    selectedFilterType = undefined;
+  }
+
+</script>
+
+<Paper>
+  <div class="filter-box-container">
+    <div class="input-section">
+      <div class="filter-input-controls">
+        <OscdSelect label="Filter types" data={convertTypeToSelection} bind:value={selectedFilterType} />
+
+        {#if getSelectedFilterType?.inputType?.type === 'string'}
+          <OscdInput label="Input" bind:value={inputValue}></OscdInput>
+        {/if}
+
+        {#if getSelectedFilterType?.inputType?.type === 'select'}
+          <OscdSelect label="Input" data={getSelectedFilterType.inputType?.options} bind:value={inputValue}></OscdSelect>
+        {/if}
+
+      </div>
+      <div class="filter-button-controls">
+        <OscdButton callback={addFilter} disabled={addFilterDisabled}>Add Filter</OscdButton>
+        <slot name="filter-controls"></slot>
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="chip-section">
+      <Set chips={activeFilters} let:chip>
+        <OscdChip title={chip.text} callback={() => onFilterChipClose(chip.id)}></OscdChip>
+      </Set>
+    </div>
+  </div>
+</Paper>
+
+<style lang="css">
+  .filter-box-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100px;
+  }
+
+  .input-section {
+    display: flex;
+    flex-direction: column;
+    width: 600px;
+  }
+
+  .filter-input-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 1rem;
+    gap: 1rem;
+  }
+
+  .filter-button-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    gap: 1rem;
+  }
+
+  .separator {
+    width: 1px;
+    height: 100%;
+    margin: 0 1rem;
+    background-color: #e0e0e0;
+  }
+
+  .chip-section {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0 0.5rem;
+    gap: 0.5rem;
+  }
+
+</style>

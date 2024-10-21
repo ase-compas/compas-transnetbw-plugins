@@ -4,11 +4,12 @@
   "license": "MIT",
   "scripts": {
     "mock-server": "node mocks/server.js",
-    "clean:version-editor": "rm -rf dist/apps/version-editor",
-    "run:version-editor": "nx run version-editor:serve",
-    "build:version-editor": "nx run --prod version-editor:build --no-outputhashing --emptyOutDir --verbose",
-    "http-server:version-editor": "http-server dist/apps/version-editor -p 4202 --cors",
-    "build:history-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/history-api.yml --package-name history-api-client --enable-post-process-file  --additional-properties \"artifactId=history-api,npmName=history-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-api-client/src/generated/history-api"
+    "clean:history-viewer": "rm -rf dist/apps/history-viewer",
+    "run:history-viewer": "nx run history-viewer:serve",
+    "build:history-viewer": "nx run --prod history-viewer:build --no-outputhashing --emptyOutDir --verbose",
+    "http-server:history-viewer": "http-server dist/apps/history-viewer -p 4202 --cors",
+    "build:history-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/history-api.yml --package-name history-api-client --enable-post-process-file  --additional-properties \"artifactId=history-api,npmName=history-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-api-client/src/generated/history-api",
+    "build:archiving-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/archiving-api.yml --package-name archiving-api-client --enable-post-process-file  --additional-properties \"artifactId=archiving-api,npmName=archiving-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-api-client/src/generated/archiving-api"
   },
   "private": true,
   "dependencies": {
@@ -42,8 +43,10 @@
     "@smui/button": "^7.0.0",
     "@smui/card": "^7.0.0",
     "@smui/data-table": "^7.0.0",
+    "@smui/dialog": "^7.0.0",
     "@smui/icon-button": "^7.0.0",
     "@smui/linear-progress": "^7.0.0",
+    "@smui/paper": "^7.0.0",
     "@smui/select": "^7.0.0",
     "@smui/textfield": "^7.0.0",
     "@sveltejs/vite-plugin-svelte": "^1.0.1",

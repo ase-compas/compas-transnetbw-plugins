@@ -10,7 +10,12 @@
   export let size = 'sm';
 </script>
 
-<Select bind:value label={label} style="width: 100%;" required={required}>
+<Select
+  key={(value) => `${value == null ? '' : value}`}
+  bind:value
+  {label}
+  style="width: 100%;"
+  required={required}>
   {#each data as d}
     <Option value={d.value}>{d.label}</Option>
   {/each}

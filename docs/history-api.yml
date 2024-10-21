@@ -8,7 +8,7 @@ servers:
     description: DSOM Versatel Production URL
 
 tags:
-  - name: scl
+  - name: history
     description: Endpoints managing history of scl files
 
 security:
@@ -19,7 +19,7 @@ paths:
   /api/scl/search:
     post:
       tags:
-        - scl
+        - history
       description: Trigger search enabled by the search filter
       summary: Trigger search enabled by the search filter
       operationId: searchForResources
@@ -58,7 +58,7 @@ paths:
   /api/scl/{id}/versions:
     get:
       tags:
-        - scl
+        - history
       description: Trigger search enabled by the search filter
       summary: Trigger search enabled by the search filter
       operationId: retrieveDataResourceHistory
@@ -104,7 +104,7 @@ paths:
   /api/scl/{id}/version/{version}:
     get:
       tags:
-        - scl
+        - history
       description: Retrieve data resource for a specific version
       summary: Retrieve data resource for a specific version
       operationId: retrieveDataResourceByVersion

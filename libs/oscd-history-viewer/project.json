@@ -1,0 +1,20 @@
+{
+  "name": "oscd-history-viewer",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-history-viewer/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-history-viewer",
+        "tsConfig": "libs/oscd-history-viewer/tsconfig.lib.json",
+        "packageJson": "libs/oscd-history-viewer/package.json",
+        "main": "libs/oscd-history-viewer/src/index.ts",
+        "assets": ["libs/oscd-history-viewer/*.md"]
+      }
+    }
+  }
+}
