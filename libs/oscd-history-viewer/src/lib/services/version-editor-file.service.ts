@@ -63,6 +63,7 @@ export class VersionEditorFileService {
   }
 
   private mapToFileSearchResult(data: any): FileSearchResult {
+    console.log("data", data);
     return new FileSearchResult(
       data.uuid,
       data.name,
@@ -80,7 +81,7 @@ export class VersionEditorFileService {
     return {
       uuid: params.uuid || null,
       type: params.type || null,
-      name: params.name || null,
+      name: params.filename || null,
       author: params.author || null,
     };
   }

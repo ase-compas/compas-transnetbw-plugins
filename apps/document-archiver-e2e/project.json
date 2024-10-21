@@ -1,0 +1,23 @@
+{
+  "name": "document-archiver-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/document-archiver-e2e/src",
+  "projectType": "application",
+  "tags": [],
+  "implicitDependencies": ["document-archiver"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/document-archiver-e2e/cypress.config.ts",
+        "devServerTarget": "document-archiver:serve:development",
+        "testingType": "e2e"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "document-archiver:serve:production"
+        }
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@
     "mock-server": "node mocks/server.js",
     "clean:history-viewer": "rm -rf dist/apps/history-viewer",
     "run:history-viewer": "nx run history-viewer:serve",
+    "run:document-archiver": "nx run document-archiver:serve",
     "build:history-viewer": "nx run --prod history-viewer:build --no-outputhashing --emptyOutDir --verbose",
     "http-server:history-viewer": "http-server dist/apps/history-viewer -p 4202 --cors",
     "build:history-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/history-api.yml --package-name history-api-client --enable-post-process-file  --additional-properties \"artifactId=history-api,npmName=history-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-api-client/src/generated/history-api",

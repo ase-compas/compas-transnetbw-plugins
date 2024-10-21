@@ -59,7 +59,7 @@
           <Cell>
             <div class="cell-actions">
               {#each rowActions as action}
-                <OscdIconButton icon={action.icon} callback={() => action.callback(row)} />
+                <OscdIconButton icon={action.icon} callback={() => action.callback(row)} disabled={action.disabled(row)} />
               {/each}
             </div>
           </Cell>

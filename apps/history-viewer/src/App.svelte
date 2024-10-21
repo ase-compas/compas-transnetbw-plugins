@@ -1,8 +1,7 @@
 <script lang="ts">
-  import SearchFilter from './features/search-filter/SearchFilter.svelte';
   import { OscdButton, OscdDataTable, OscdDialog, OscdFilterBox } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
-  import { tap, take, finalize } from 'rxjs/operators';
+  import { finalize, take, tap } from 'rxjs/operators';
   import {
     FileSearchResult,
     SearchParams,
@@ -52,7 +51,7 @@
 
   const rowActions = [
     { icon: 'find_in_page', callback: (row) => getHistoryByUuid(row), disabled: () => false },
-    { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
+    // { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
   ];
 
   const historyRowActions = [
@@ -162,7 +161,6 @@
       .pipe(
         take(1),
         tap((data: FileSearchResult[]) => {
-          console.log('Fetched history data: ', data);
           dialogOpen = true;
           historyData = [...data];
           historyStore.updateData(data);
