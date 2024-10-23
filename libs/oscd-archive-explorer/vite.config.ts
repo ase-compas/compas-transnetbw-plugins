@@ -4,7 +4,7 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/libs/oscd-api-client',
+  cacheDir: '../../node_modules/.vite/libs/oscd-archive-explorer',
 
   server: {
     port: 4200,
@@ -24,7 +24,7 @@ export default defineConfig({
   // },
 
   build: {
-    outDir: '../../dist/libs/oscd-api-client',
+    outDir: '../../dist/libs/oscd-archive-explorer',
     reportCompressedSize: true,
     commonjsOptions: {
       transformMixedEsModules: true,
@@ -38,7 +38,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {
-      reportsDirectory: '../../coverage/libs/oscd-api-client',
+      reportsDirectory: '../../coverage/libs/oscd-archive-explorer',
       provider: 'v8',
     },
   },

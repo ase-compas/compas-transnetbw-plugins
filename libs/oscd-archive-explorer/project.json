@@ -1,25 +1,25 @@
 {
-  "name": "oscd-api-client",
+  "name": "oscd-archive-explorer",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/oscd-api-client/src",
+  "sourceRoot": "libs/oscd-archive-explorer/src",
   "projectType": "library",
   "tags": [],
   "targets": {
     "lint": {
-      "command": "eslint libs/oscd-api-client/**/*.{ts,svelte,spec.ts}"
+      "command": "eslint libs/oscd-archive-explorer/**/*.{ts,svelte,spec.ts}"
     },
     "check": {
       "executor": "nx:run-commands",
       "options": {
         "command": "svelte-check",
-        "cwd": "libs/oscd-api-client"
+        "cwd": "libs/oscd-archive-explorer"
       }
     },
     "test": {
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/oscd-api-client"
+        "reportsDirectory": "../../coverage/libs/oscd-archive-explorer"
       }
     }
   }

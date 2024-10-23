@@ -45,3 +45,4 @@ Thumbs.db
 
 **/generated/*
 
+/libs/oscd-history-api-client/src/lib/*

@@ -10,3 +10,12 @@ body {
   width: 100vw;
   background-color: #eee8d5 !important;
 }
+
+
+.search-icon {
+  width: 24px;
+  height: 24px;
+  background-image: url('icons/search-icon.svg');
+  background-size: contain;
+  display: inline-block;
+}

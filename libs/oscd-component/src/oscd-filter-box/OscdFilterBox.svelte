@@ -4,6 +4,7 @@
   import Paper from '@smui/paper';
   import OscdChip from '../oscd-chip/OscdChip.svelte';
   import { Set } from '@smui/chips';
+  import OscdDatePicker from '../oscd-datepicker/OscdDatePicker.svelte';
 
   export let filterTypes: FilterType[] = [];
   export let activeFilters: ActiveFilter[] = [];
@@ -75,6 +76,10 @@
           <OscdSelect label="Input" data={getSelectedFilterType.inputType?.options} bind:value={inputValue}></OscdSelect>
         {/if}
 
+        {#if getSelectedFilterType?.inputType?.type === 'timepicker'}
+          <OscdDatePicker bind:value={inputValue}></OscdDatePicker>
+        {/if}
+
       </div>
       <div class="filter-button-controls">
         <OscdButton callback={addFilter} disabled={addFilterDisabled}>Add Filter</OscdButton>
@@ -97,7 +102,8 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    height: 100px;
+    height: 150px;
+    align-items: center;
   }
 
   .input-section {
@@ -119,7 +125,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    margin-top: 1rem;
+    margin-top: 2rem;
+    margin-right: 1rem;
     gap: 1rem;
   }
 
@@ -132,6 +139,7 @@
 
   .chip-section {
     display: flex;
+    height: 100%;
     flex-direction: row;
     align-items: flex-start;
     padding: 0 0.5rem;

@@ -1,10 +1,6 @@
 import { filter, map, Observable } from 'rxjs';
 import { FileSearchResult, SearchParams } from '../domain';
-import {
-  Configuration,
-  DataResourceSearch,
-  HistoryApi,
-} from '@oscd-transnet-plugins/oscd-api-client';
+import { Configuration, DataResourceSearch, HistoryApi } from '@oscd-transnet-plugins/oscd-history-api-client';
 
 export class VersionEditorFileService {
   private static instance: VersionEditorFileService;
@@ -58,7 +54,6 @@ export class VersionEditorFileService {
     return sclApiClient.retrieveDataResourceByVersion({
       id: uuid,
       version: version,
-      type: type,
     });
   }
 
@@ -83,6 +78,8 @@ export class VersionEditorFileService {
       type: params.type || null,
       name: params.filename || null,
       author: params.author || null,
+      from: params.from || null,
+      to: params.to || null,
     };
   }
 

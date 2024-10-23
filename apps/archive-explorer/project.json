@@ -1,18 +1,18 @@
 {
-  "name": "document-archiver",
+  "name": "archive-explorer",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/document-archiver/src",
+  "sourceRoot": "apps/archive-explorer/src",
   "projectType": "application",
   "tags": [],
   "targets": {
     "lint": {
-      "command": "eslint apps/document-archiver/**/*.{ts,svelte,spec.ts}"
+      "command": "eslint apps/archive-explorer/**/*.{ts,svelte,spec.ts}"
     },
     "check": {
       "executor": "nx:run-commands",
       "options": {
         "command": "svelte-check",
-        "cwd": "apps/document-archiver"
+        "cwd": "apps/archive-explorer"
       }
     },
     "build": {
@@ -20,7 +20,7 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/document-archiver"
+        "outputPath": "dist/apps/archive-explorer"
       },
       "configurations": {
         "development": {
@@ -35,15 +35,15 @@
       "executor": "@nx/vite:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "document-archiver:build"
+        "buildTarget": "archive-explorer:build"
       },
       "configurations": {
         "development": {
-          "buildTarget": "document-archiver:build:development",
+          "buildTarget": "archive-explorer:build:development",
           "hmr": true
         },
         "production": {
-          "buildTarget": "document-archiver:build:production",
+          "buildTarget": "archive-explorer:build:production",
           "hmr": false
         }
       }
@@ -52,14 +52,14 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "document-archiver:build"
+        "buildTarget": "archive-explorer:build"
       },
       "configurations": {
         "development": {
-          "buildTarget": "document-archiver:build:development"
+          "buildTarget": "archive-explorer:build:development"
         },
         "production": {
-          "buildTarget": "document-archiver:build:production"
+          "buildTarget": "archive-explorer:build:production"
         }
       }
     },
@@ -67,7 +67,7 @@
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "reportsDirectory": "../../coverage/apps/document-archiver"
+        "reportsDirectory": "../../coverage/apps/archive-explorer"
       }
     }
   }

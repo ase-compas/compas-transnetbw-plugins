@@ -5,7 +5,7 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/apps/document-archiver',
+  cacheDir: '../../node_modules/.vite/apps/archive-explorer',
 
   server: {
     port: 4201,
@@ -23,7 +23,7 @@ export default defineConfig({
   plugins: [svelte(), nxViteTsPaths()],
 
   build: {
-    outDir: '../../dist/apps/document-archiver',
+    outDir: '../../dist/apps/archive-explorer',
     reportCompressedSize: true,
     commonjsOptions: {
       transformMixedEsModules: true,

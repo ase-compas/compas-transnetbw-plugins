@@ -23,6 +23,10 @@
   let loadingDone = true;
   let dialogOpen = false;
 
+  function formatDate(date: string) {
+    return new Date(date).toLocaleDateString();
+  }
+
   const columnDefs = [
     { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: 'Filename', field: 'filename', numeric: false, filter: true, filterType: 'text', sortable: true },
@@ -51,7 +55,7 @@
 
   const rowActions = [
     { icon: 'find_in_page', callback: (row) => getHistoryByUuid(row), disabled: () => false },
-    // { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
+    { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
   ];
 
   const historyRowActions = [
@@ -93,14 +97,22 @@
       label: 'Author',
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
+    },
+    {
+      id: 5,
+      label: 'From',
+      inputType: { id: 3, type: 'timepicker', validatorFn: () => true, options: [] },
+      allowedOperations: ['=']
+    },
+    {
+      id: 5,
+      label: 'To',
+      inputType: { id: 3, type: 'timepicker', validatorFn: () => true, options: [] },
+      allowedOperations: ['=']
     }
   ];
 
   let filtersToSearch: ActiveFilter[] = [];
-
-  function formatDate(date: string) {
-    return new Date(date).toLocaleDateString();
-  }
 
   function downloadBlob(row: FileSearchResult) {
     console.log('Download file: ', row);
@@ -108,7 +120,7 @@
       .pipe(
         take(1),
         tap((data: Blob) => {
-          const url = window.URL.createObjectURL(data);
+          const url = window['URL'].createObjectURL(data);
           const a = document.createElement('a');
           a.href = url;
           a.download = row.filename;
@@ -116,7 +128,7 @@
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+          window['URL'].revokeObjectURL(url);
         })
       )
       .subscribe();
@@ -146,11 +158,19 @@
       filename: null,
       author: null,
       type: null,
-      name: null
+      name: null,
+      from: null,
+      to: null
     };
     console.log('Convert filter to search params: ', filters);
     filters.forEach((filter) => {
-      searchParams[filter.key] = filter.value;
+      console.log("KEY:", filter.key);
+      if (filter.key === 'from' ||
+        filter.key === 'to') {
+        searchParams[filter.key]  = new Date(filter.value).toISOString();
+      } else {
+        searchParams[filter.key] = filter.value;
+      }
     });
     return searchParams;
   }
@@ -189,7 +209,6 @@
     </div>
   </OscdDialog>
   <div class="search-filter">
-    <!--    <SearchFilter searchParamsCallback={search} />-->
     <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
       <OscdButton slot="filter-controls" variant="raised" callback={search}>
         <Icon class="material-icons">search</Icon>
@@ -205,10 +224,11 @@
   </div>
 </div>
 
-<style lang="css">
+<style lang="css" global>
   @import "/global.css";
-  @import '/material-icon.css';
+  @import "/material-icon.css";
   @import '/smui.css';
+
 
   .version-editor-container {
     height: 100vh;

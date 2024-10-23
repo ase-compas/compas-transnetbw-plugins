@@ -122,12 +122,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: type
-          in: query
-          description: Type of the SCL document (e.g., SSD, IID, SCD, etc.)
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Succefully retrieved data resource
@@ -157,7 +151,7 @@ paths:
 
 components:
   securitySchemes:
-    open-id-connect:   # <--- Arbitrary name for the security scheme. Used to refer to it from elsewhere.
+    open-id-connect: # <--- Arbitrary name for the security scheme. Used to refer to it from elsewhere.
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
 
@@ -177,6 +171,14 @@ components:
         author:
           type: string
           description: "Fulltext match which can be retrieved via extra endpoint"
+        from:
+          type: string
+          format: date-time
+          description: "Starting date and time for filtering results. Use ISO 8601 format (e.g., 2024-10-22T14:48:00Z)."
+        to:
+          type: string
+          format: date-time
+          description: "Ending date and time for filtering results. Use ISO 8601 format (e.g., 2024-10-22T14:48:00Z)."
     DataResourcesResult:
       type: object
       required:
@@ -195,6 +197,7 @@ components:
         - type
         - changedAt
         - version
+        - available
       properties:
         uuid:
           type: string
@@ -216,6 +219,10 @@ components:
         version:
           type: string
           description: "Generated version by the scl-data-service"
+        available:
+          type: boolean
+          description: "Defines if a resource is available as download or version was created while uploading a file"
+          default: true
     DataResourceHistory:
       type: object
       required:
@@ -239,10 +246,6 @@ components:
               type: boolean
               description: "Defines if given data resource is archived"
               default: false
-            available:
-              type: boolean
-              description: "Defines if a resource is available as download or version was created while uploading a file"
-              default: true
     ErrorResponseDto:
       required:
         - timestamp

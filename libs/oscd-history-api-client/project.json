@@ -1,0 +1,20 @@
+{
+  "name": "oscd-history-api-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-history-api-client/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-history-api-client",
+        "tsConfig": "libs/oscd-history-api-client/tsconfig.lib.json",
+        "packageJson": "libs/oscd-history-api-client/package.json",
+        "main": "libs/oscd-history-api-client/src/index.ts",
+        "assets": ["libs/oscd-history-api-client/*.md"]
+      }
+    }
+  }
+}

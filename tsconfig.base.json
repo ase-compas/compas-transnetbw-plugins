@@ -16,11 +16,14 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@oscd-transnet-plugins/oscd-api-client": [
-        "libs/oscd-api-client/src/index.ts"
-      ],
       "@oscd-transnet-plugins/oscd-component": [
         "libs/oscd-component/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/oscd-archive-explorer": [
+        "libs/oscd-archive-explorer/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/oscd-history-api-client": [
+        "libs/oscd-history-api-client/src/index.ts"
       ],
       "@oscd-transnet-plugins/oscd-history-viewer": [
         "libs/oscd-history-viewer/src/index.ts"

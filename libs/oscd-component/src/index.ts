@@ -5,5 +5,6 @@ export { default as OscdSelect } from './oscd-select/OscdSelect.svelte';
 export { default as OscdDialog } from './oscd-dialog/OscdDialog.svelte';
 export { default as OscdFilterBox } from './oscd-filter-box/OscdFilterBox.svelte';
 export { default as OscdLoadingSpinner } from './oscd-loading-spinner/OscdLoadingSpinner.svelte';
+export { default as OscdDatePicker } from './oscd-datepicker/OscdDatePicker.svelte';
 
 export * from './oscd-data-table';

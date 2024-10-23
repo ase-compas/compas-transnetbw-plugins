@@ -4,4 +4,6 @@ export interface SearchParams {
   name?: string;
   author?: string;
   filename?: string;
+  from?: string;
+  to?: string;
 }
