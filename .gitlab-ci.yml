@@ -1,0 +1,47 @@
+image: node:20
+
+stages:
+  - build
+  - pages
+  - cleanup
+
+# Cache configuration for Bun dependencies
+cache: &bun_cache
+  key:
+    files:
+      - bun.lockb
+  paths:
+    - node_modules/
+  policy: pull-push
+
+# Build project using Bun
+build_project:
+  before_script:
+    - npm install -g bun nx
+  stage: build
+  cache:
+    <<: *bun_cache
+  script:
+    - echo "Building project..."
+    - bun install --frozen-lockfile --no-progress --non-interactive
+    - bun run build:version-editor
+  artifacts:
+    name: "build-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - dist/apps/version-editor
+    expire_in: 1 week
+
+pages:
+  stage: pages
+  script:
+    - echo "Pages accessible through ${CI_PAGES_URL}/${PAGES_PREFIX}"
+    - echo "Deploying to GitLab Pages..."
+    - mkdir public
+    - cp -r dist/apps/version-editor/* public/
+  dependencies:
+    - build_project
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

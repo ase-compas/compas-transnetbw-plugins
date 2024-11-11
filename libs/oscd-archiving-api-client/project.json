@@ -1,0 +1,20 @@
+{
+  "name": "oscd-archiving-api-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-archiving-api-client/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-archiving-api-client",
+        "tsConfig": "libs/oscd-archiving-api-client/tsconfig.lib.json",
+        "packageJson": "libs/oscd-archiving-api-client/package.json",
+        "main": "libs/oscd-archiving-api-client/src/index.ts",
+        "assets": ["libs/oscd-archiving-api-client/*.md"]
+      }
+    }
+  }
+}

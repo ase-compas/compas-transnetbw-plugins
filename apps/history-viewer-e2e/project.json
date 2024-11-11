@@ -1,0 +1,23 @@
+{
+  "name": "history-viewer-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/history-viewer-e2e/src",
+  "projectType": "application",
+  "tags": [],
+  "implicitDependencies": ["history-viewer"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/history-viewer-e2e/cypress.config.ts",
+        "devServerTarget": "history-viewer:serve:development",
+        "testingType": "e2e"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "history-viewer:serve:production"
+        }
+      }
+    }
+  }
+}

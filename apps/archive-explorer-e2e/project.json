@@ -1,0 +1,23 @@
+{
+  "name": "archive-explorer-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/archive-explorer-e2e/src",
+  "projectType": "application",
+  "tags": [],
+  "implicitDependencies": ["archive-explorer"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/archive-explorer-e2e/cypress.config.ts",
+        "devServerTarget": "archive-explorer:serve:development",
+        "testingType": "e2e"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "archive-explorer:serve:production"
+        }
+      }
+    }
+  }
+}
