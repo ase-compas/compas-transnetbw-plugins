@@ -1,0 +1,10 @@
+.oscd-icon svg {
+  width: 18px;
+  fill: white;
+  margin-left: -4px;
+  margin-right: 8px;
+}
+
+button[disabled] .oscd-icon svg {
+  fill: rgba(0, 0, 0, 0.38);
+}

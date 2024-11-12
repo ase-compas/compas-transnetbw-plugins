@@ -11,7 +11,10 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
@@ -30,8 +33,14 @@
       ],
       "@oscd-transnet-plugins/oscd-history-viewer": [
         "libs/oscd-history-viewer/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/oscd-icons": [
+        "libs/oscd-icons/src/index.ts"
       ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }
