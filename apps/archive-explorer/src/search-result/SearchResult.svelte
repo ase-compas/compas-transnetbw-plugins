@@ -63,7 +63,7 @@
       iconComponent: OscdInventory2Icon,
       iconStyles: 'fill: unset; margin: unset;',
       callback: (row) => console.log(row),
-      disabled: (row) => false
+      disabled: () => false
     }
   ];
 </script>

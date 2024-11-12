@@ -5,14 +5,13 @@ import type {
 import { lastValueFrom, map, take, tap } from 'rxjs';
 import type { SearchParams } from '../domain/search-params.interface';
 import { LocationService } from './location.service';
-import { ArchiveExplorerLocationStore } from '../store/location-store';
+import { LocationStore } from '../store/location-store';
 
 export class ArchiveFilterService {
   private static instance: ArchiveFilterService;
 
   private readonly locationService = LocationService.getInstance();
-  private readonly archiveExplorerLocationStore =
-    ArchiveExplorerLocationStore.getInstance();
+  private readonly archiveExplorerLocationStore = LocationStore.getInstance();
 
   private constructor() {
     //

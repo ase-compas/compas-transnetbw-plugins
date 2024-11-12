@@ -12,26 +12,31 @@
     ArchiveExplorerService,
     ArchiveExplorerStore,
     ArchiveFilterService,
-    ArchiveSearchResult
+    ArchiveSearchResult,
+    FilterStore,
+    LocationFilterStore,
+    LocationStore
   } from '@oscd-transnet-plugins/oscd-archive-explorer';
   import { onMount } from 'svelte';
   import { combineLatest, finalize, Observable, take, tap } from 'rxjs';
-  import SearchResult from './search-result/SearchResult.svelte';
-  import { ArchiveExplorerLocationStore } from '../../../libs/oscd-archive-explorer/src/lib/store/location-store';
   import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import SearchResult from './search-result/SearchResult.svelte';
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
   const archiveExplorerStore = ArchiveExplorerStore.getInstance();
-  const archiveExplorerLocationStore = ArchiveExplorerLocationStore.getInstance();
+  const filterStore = FilterStore.getInstance();
+  const locationFilterStore = LocationFilterStore.getInstance();
+  const archiveExplorerLocationStore = LocationStore.getInstance();
 
   let filterTypes: FilterType[] = [];
   let locationFilterType: FilterType[] = [];
-  let filtersToSearch: ActiveFilter[] = [];
-  let locationFiltersToSearch: ActiveFilter[] = [];
+  let filtersToSearch: ActiveFilter[] = filterStore.currentData;
+  let locationFiltersToSearch: ActiveFilter[] = locationFilterStore.currentData;
   let searchResults: Map<string, ArchiveSearchResult[]> = new Map();
 
   let loadingDone = false;
+  let initLoadingDone = false;
 
   $: uuidFilterSelected = filtersToSearch.length && !!filtersToSearch?.find(f => f.key === 'uuid');
 
@@ -41,6 +46,7 @@
     locationFilterType = await archiveFilterService.createLocationFilter();
     console.log('loc', locationFilterType);
     loadingDone = true;
+    initLoadingDone = true;
   });
 
   function search() {
@@ -62,6 +68,9 @@
         ));
     });
 
+    filterStore.updateData(filtersToSearch);
+    locationFilterStore.updateData(locationFiltersToSearch);
+
     combineLatest(search$)
       .pipe(
         tap(() => {
@@ -74,7 +83,11 @@
   archiveExplorerStore.store.subscribe(searchResults_ => searchResults = searchResults_);
 </script>
 
-<div class="archive-explorer-container">
+<!--
+  Before all CSS is loaded, the select box expansion icons are briefly displayed extremely large.
+  Setting display: none and overriding it in the CSS after it is loaded prevents this.
+-->
+<div class="archive-explorer-container" style="display: none;">
   <OscdLoadingSpinner {loadingDone} />
   <div class="search-filter">
     <OscdFilterBox filterTypes="{locationFilterType}"
@@ -115,7 +128,7 @@
     min-height: 100%;
     height: fit-content;
     width: 100%;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
   }
 

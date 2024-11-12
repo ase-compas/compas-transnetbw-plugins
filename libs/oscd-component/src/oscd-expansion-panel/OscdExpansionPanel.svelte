@@ -17,11 +17,14 @@
 <style type="text/css">
   details {
     width: 100%;
-    background: white;
+    background: transparent;
+    font-family: var(--mdc-typography-font-family, Roboto, sans-serif), serif;
   }
 
   details summary {
     cursor: pointer;
+    padding: 10px 0;
+    background: transparent;
   }
 
   .expandable-content {

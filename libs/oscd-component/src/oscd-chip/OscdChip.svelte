@@ -12,7 +12,7 @@
   <Text>{title}</Text>
   {#if closeable && !disabled}
     <TrailingAction on:click={callback}>
-      <OscdCancelIcon svgStyles="{'margin-left: 0; margin-top: 3px; fill: unset;'}" />
+      <OscdCancelIcon svgStyles="{'margin-left: 0; fill: unset;'}" />
     </TrailingAction>
   {/if}
 </Chip>

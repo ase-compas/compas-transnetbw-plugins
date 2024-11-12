@@ -3,6 +3,7 @@
   fill: white;
   margin-left: -4px;
   margin-right: 8px;
+  margin-top: 2px;
 }
 
 button[disabled] .oscd-icon svg {

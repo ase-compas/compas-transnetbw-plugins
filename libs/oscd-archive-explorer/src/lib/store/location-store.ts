@@ -1,18 +1,17 @@
 import { get, writable } from 'svelte/store';
 
-export class ArchiveExplorerLocationStore {
-  private static instance: ArchiveExplorerLocationStore;
+export class LocationStore {
+  private static instance: LocationStore;
 
   private constructor() {
     //
   }
 
   public static getInstance() {
-    if (!ArchiveExplorerLocationStore.instance) {
-      ArchiveExplorerLocationStore.instance =
-        new ArchiveExplorerLocationStore();
+    if (!LocationStore.instance) {
+      LocationStore.instance = new LocationStore();
     }
-    return ArchiveExplorerLocationStore.instance;
+    return LocationStore.instance;
   }
 
   #data = writable<Map<string, string>>(new Map());
