@@ -7,6 +7,8 @@
     "clean:history-viewer": "rm -rf dist/apps/history-viewer",
     "run:history-viewer": "nx run history-viewer:serve",
     "run:archive-explorer": "nx run archive-explorer:serve",
+    "run:location-viewer": "nx run location-viewer:serve",
+    "run:location-manager": "nx run location-manager:serve",
     "build:history-viewer": "nx run --prod history-viewer:build --no-outputhashing --emptyOutDir --verbose",
     "build:archive-explorer": "nx run --prod archive-explorer:build --no-outputhashing --emptyOutDir --verbose",
     "http-server:history-viewer": "http-server dist/apps/history-viewer -p 4202 --cors",
