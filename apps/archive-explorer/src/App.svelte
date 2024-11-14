@@ -7,7 +7,7 @@
     OscdFilterBox,
     OscdLoadingSpinner
   } from '@oscd-transnet-plugins/oscd-component';
-  import { Icon, Label } from '@smui/button';
+  import { Label } from '@smui/button';
   import {
     ArchiveExplorerService,
     ArchiveExplorerStore,
@@ -18,6 +18,7 @@
   import { combineLatest, finalize, Observable, take, tap } from 'rxjs';
   import SearchResult from './search-result/SearchResult.svelte';
   import { ArchiveExplorerLocationStore } from '../../../libs/oscd-archive-explorer/src/lib/store/location-store';
+  import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
@@ -84,7 +85,7 @@
                    bind:activeFilters={filtersToSearch}>
       <OscdButton slot="filter-controls" variant="raised" callback={search}
                   disabled="{!locationFiltersToSearch.length}">
-        <Icon class="material-icons">search</Icon>
+        <OscdSearchIcon />
         <Label>Search</Label>
       </OscdButton>
     </OscdFilterBox>
@@ -108,7 +109,6 @@
 
 <style>
   @import "/global.css";
-  @import "/material-icon.css";
   @import '/smui.css';
 
   .archive-explorer-container {

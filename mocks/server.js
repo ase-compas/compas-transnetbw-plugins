@@ -398,7 +398,7 @@ app.use((req, res) => {
 });
 
 // Start the server
-const port = 9090;
+const port = 3000;
 app.listen(port, () => {
   console.log(`Mocking server running on port ${port}`);
 });

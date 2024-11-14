@@ -1,5 +1,6 @@
 <script lang="ts">
   import Chip, { Text, TrailingAction } from '@smui/chips';
+  import { OscdCancelIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   export let title = '';
   export let closeable = true;
@@ -10,7 +11,9 @@
 <Chip chip={title} nonInteractive disabled class="{disabled ? 'disabled' : ''}">
   <Text>{title}</Text>
   {#if closeable && !disabled}
-    <TrailingAction icon$class="material-icons" on:click={callback}>cancel</TrailingAction>
+    <TrailingAction on:click={callback}>
+      <OscdCancelIcon svgStyles="{'margin-left: 0; margin-top: 3px; fill: unset;'}" />
+    </TrailingAction>
   {/if}
 </Chip>
 

@@ -2,12 +2,11 @@
   import { ArchiveSearchResult } from '@oscd-transnet-plugins/oscd-archive-explorer';
   import { writable } from 'svelte/store';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdFindInPageIcon, OscdInventory2Icon } from '@oscd-transnet-plugins/oscd-icons';
 
   export let data = [] as ArchiveSearchResult[];
 
   const dataStore = { store: writable(data) as writable<ArchiveSearchResult[]> };
-
-  console.log('???', dataStore);
 
   const columnDefs = [
     { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
@@ -55,10 +54,16 @@
 
   const rowActions = [
     {
-      icon: 'find_in_page', callback: (row) => console.log(row), disabled: () => false
+      iconComponent: OscdFindInPageIcon,
+      iconStyles: 'fill: unset; margin: unset;',
+      callback: (row) => console.log(row),
+      disabled: () => false
     },
     {
-      icon: 'inventory_2', callback: (row) => console.log(row), disabled: (row) => false
+      iconComponent: OscdInventory2Icon,
+      iconStyles: 'fill: unset; margin: unset;',
+      callback: (row) => console.log(row),
+      disabled: (row) => false
     }
   ];
 </script>
