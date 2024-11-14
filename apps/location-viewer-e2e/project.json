@@ -1,0 +1,23 @@
+{
+  "name": "location-viewer-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/location-viewer-e2e/src",
+  "projectType": "application",
+  "tags": [],
+  "implicitDependencies": ["location-viewer"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/location-viewer-e2e/cypress.config.ts",
+        "devServerTarget": "location-viewer:serve:development",
+        "testingType": "e2e"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "location-viewer:serve:production"
+        }
+      }
+    }
+  }
+}

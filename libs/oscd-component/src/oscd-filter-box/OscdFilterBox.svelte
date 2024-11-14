@@ -8,6 +8,9 @@
 
   export let filterTypes: FilterType[] = [];
   export let activeFilters: ActiveFilter[] = [];
+  export let useOptionLabelInChipText = false;
+  export let selectedOptionIndex = -1;
+  export let disabled = false;
 
   let inputValue = '';
   let selectedFilterType = '';
@@ -33,17 +36,21 @@
       return;
     }
 
-    activeFilters = [
+    let activeFilters_ = [
       ...activeFilters,
       {
         id: crypto.randomUUID(),
         key: getSelectedFilterType.label.toLowerCase(),
         value: inputValue,
         operation: '=',
-        text: `${selectedFilterType}: ${inputValue}`,
+        text: `${selectedFilterType}: ${useOptionLabelInChipText && getSelectedFilterType.inputType.options?.length ? getSelectedFilterType.inputType.options[selectedOptionIndex].label : inputValue}`,
         disabled: false
       }
     ];
+
+    activeFilters = activeFilters_;
+
+    updateActiveFilterDisabledStates();
 
     clearInputs();
   }
@@ -52,6 +59,7 @@
     // WORKAROUND: Dirty workaround to wait for DOM to remove object before removing it from the array
     setTimeout(() => {
       activeFilters = activeFilters.filter((filter) => filter.id !== id);
+      updateActiveFilterDisabledStates();
     }, 0);
   }
 
@@ -60,20 +68,37 @@
     selectedFilterType = undefined;
   }
 
+  function updateActiveFilterDisabledStates() {
+    const activeFilters_ = [...activeFilters];
+    if (activeFilters_.find(f => f.key === 'uuid')) {
+      activeFilters_.filter(f => f.key !== 'uuid').forEach(f => {
+        f.disabled = true;
+      });
+    } else {
+      activeFilters_.forEach(f => {
+        f.disabled = false;
+      });
+    }
+
+    activeFilters = activeFilters_;
+  }
+
 </script>
 
 <Paper>
   <div class="filter-box-container">
     <div class="input-section">
       <div class="filter-input-controls">
-        <OscdSelect label="Filter types" data={convertTypeToSelection} bind:value={selectedFilterType} />
+        <OscdSelect {disabled} label="Filter types" data={convertTypeToSelection} bind:value={selectedFilterType} />
 
         {#if getSelectedFilterType?.inputType?.type === 'string'}
           <OscdInput label="Input" bind:value={inputValue}></OscdInput>
         {/if}
 
         {#if getSelectedFilterType?.inputType?.type === 'select'}
-          <OscdSelect label="Input" data={getSelectedFilterType.inputType?.options} bind:value={inputValue}></OscdSelect>
+          <OscdSelect label="Input" data={getSelectedFilterType.inputType?.options}
+                      bind:value={inputValue} bind:selectedOptionIndex
+                      allowInputWithOptions="{getSelectedFilterType.inputType?.allowInputWithOptions}"></OscdSelect>
         {/if}
 
         {#if getSelectedFilterType?.inputType?.type === 'timepicker'}
@@ -91,7 +116,7 @@
 
     <div class="chip-section">
       <Set chips={activeFilters} let:chip>
-        <OscdChip title={chip.text} callback={() => onFilterChipClose(chip.id)}></OscdChip>
+        <OscdChip title={chip.text} callback={() => onFilterChipClose(chip.id)} disabled="{chip.disabled}"></OscdChip>
       </Set>
     </div>
   </div>

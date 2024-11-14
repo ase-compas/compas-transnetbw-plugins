@@ -163,11 +163,11 @@
       to: null
     };
     console.log('Convert filter to search params: ', filters);
-    filters.forEach((filter) => {
-      console.log("KEY:", filter.key);
+    filters.filter((f) => !f.disabled).forEach((filter) => {
+      console.log('KEY:', filter.key);
       if (filter.key === 'from' ||
         filter.key === 'to') {
-        searchParams[filter.key]  = new Date(filter.value).toISOString();
+        searchParams[filter.key] = new Date(filter.value).toISOString();
       } else {
         searchParams[filter.key] = filter.value;
       }

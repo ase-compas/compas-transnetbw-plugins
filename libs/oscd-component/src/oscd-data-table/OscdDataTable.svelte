@@ -5,7 +5,7 @@
   <Head>
     <Row class="header-row">
       {#each columnDefs as col}
-        <Cell on:click={() => col.sortable && sortColumnBy(col.field)}>
+        <Cell on:click={() => col.sortable && sortColumnBy(col.field)} style="{col.headerStyle}">
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
             <div class="cell-header">
               <span class="header-title">{col.headerName}</span>
@@ -64,7 +64,7 @@
             </div>
           </Cell>
         {:else}
-          <Cell numeric={col.numeric}>
+          <Cell numeric={col.numeric} style="{col.cellStyle}">
             {#if col.valueFormatter}
               {col.valueFormatter(row[col.field])}
             {:else}
