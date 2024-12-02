@@ -20,7 +20,7 @@
   import { onMount } from 'svelte';
   import { combineLatest, finalize, Observable, take, tap } from 'rxjs';
   import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import SearchResult from './search-result/SearchResult.svelte';
+  import ArchivedResources from './search-result/ArchivedResources.svelte';
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
@@ -36,21 +36,16 @@
   let searchResults: Map<string, ArchiveSearchResult[]> = new Map();
 
   let loadingDone = false;
-  let initLoadingDone = false;
 
   $: uuidFilterSelected = filtersToSearch.length && !!filtersToSearch?.find(f => f.key === 'uuid');
 
   onMount(async () => {
     filterTypes = archiveFilterService.createArchiveFilter();
-    console.log('filters', filterTypes);
     locationFilterType = await archiveFilterService.createLocationFilter();
-    console.log('loc', locationFilterType);
     loadingDone = true;
-    initLoadingDone = true;
   });
 
   function search() {
-    console.log('Start archive search...');
     loadingDone = false;
 
     const search$: Observable<ArchiveSearchResult[]>[] = [];
@@ -75,12 +70,11 @@
       .pipe(
         tap(() => {
           archiveExplorerStore.updateData(results);
+          searchResults = results;
         })
       )
       .subscribe();
   }
-
-  archiveExplorerStore.store.subscribe(searchResults_ => searchResults = searchResults_);
 </script>
 
 <!--
@@ -106,12 +100,13 @@
 
   <div class="content-container">
     {#if (searchResults.size)}
-      {#each searchResults as result, index}
+      {#each searchResults as result, index (result[1].map(res => res.uuid).join(""))}
+        <!-- result[0] => UUID of the location -->
+        <!-- result[1] => ArchiveSearchResult[] -->
         <OscdExpansionPanel open="{index === 0}"
                             title="{archiveExplorerLocationStore.getLocationNameByUuid(result[0])}">
-          >
           <span slot="content">
-              <SearchResult data="{result[1]}" />
+              <ArchivedResources searchResults="{result[1]}" />
           </span>
         </OscdExpansionPanel>
         <div class="separator"></div>

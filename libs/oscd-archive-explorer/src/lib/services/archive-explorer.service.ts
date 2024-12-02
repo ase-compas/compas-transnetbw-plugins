@@ -34,7 +34,7 @@ export class ArchiveExplorerService {
         take(1),
         map((result: ArchivedResources) => result.resources),
         map((resources) =>
-          resources.map((resource) => this.mapToFileSearchResult(resource))
+          resources.map((resource) => this.mapToArchiveSearchResult(resource))
         ),
         catchError(() => {
           // Dummy data until the service is implemented
@@ -73,14 +73,61 @@ export class ArchiveExplorerService {
       );
   }
 
-  private mapToFileSearchResult(data: ArchivedResource): ArchiveSearchResult {
-    console.log('data', data);
+  retrieveArchivedResourceHistory(
+    uuid: string
+  ): Observable<ArchiveSearchResult[]> {
+    return this.generateApiClient()
+      .retrieveArchivedResourceHistory({ id: uuid })
+      .pipe(
+        take(1),
+        map((res) => res.versions),
+        map((resources) =>
+          resources.map((resource) => this.mapToArchiveSearchResult(resource))
+        ),
+        catchError(() => {
+          return of([
+            new ArchiveSearchResult(
+              crypto.randomUUID(),
+              'Dummy name',
+              'My Note',
+              'Jane Doe',
+              'John Doe',
+              'Leittechnik',
+              '220',
+              this.formatDate(new Date().toISOString()),
+              this.formatDate(new Date().toISOString()),
+              'SCD',
+              '2.0.0',
+              []
+            ),
+            new ArchiveSearchResult(
+              crypto.randomUUID(),
+              'Dummy name',
+              'My Note 2',
+              'Jane Doe',
+              'John Doe',
+              'Leittechnik',
+              '220',
+              this.formatDate(new Date().toISOString()),
+              this.formatDate(new Date().toISOString()),
+              'PDF',
+              '5.1.0',
+              []
+            ),
+          ]);
+        })
+      );
+  }
+
+  private mapToArchiveSearchResult(
+    data: ArchivedResource
+  ): ArchiveSearchResult {
     return new ArchiveSearchResult(
       data.uuid,
       data.name,
       data.note,
       data.author,
-      data.approver,
+      data.aprover,
       data.type,
       data.voltage,
       this.formatDate(data.modifiedAt),

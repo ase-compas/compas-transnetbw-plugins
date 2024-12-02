@@ -97,8 +97,7 @@
 
         {#if getSelectedFilterType?.inputType?.type === 'select'}
           <OscdSelect label="Input" data={getSelectedFilterType.inputType?.options}
-                      bind:value={inputValue} bind:selectedOptionIndex
-                      allowInputWithOptions="{getSelectedFilterType.inputType?.allowInputWithOptions}"></OscdSelect>
+                      bind:value={inputValue} bind:selectedOptionIndex></OscdSelect>
         {/if}
 
         {#if getSelectedFilterType?.inputType?.type === 'timepicker'}

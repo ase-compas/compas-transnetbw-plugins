@@ -1,15 +1,18 @@
 <script lang="ts">
-  import { ArchiveSearchResult } from '@oscd-transnet-plugins/oscd-archive-explorer';
+  import { ArchiveExplorerService, ArchiveSearchResult } from '@oscd-transnet-plugins/oscd-archive-explorer';
+  import { onMount } from 'svelte';
+  import { take, tap } from 'rxjs';
+  import { OscdFindInPageIcon, OscdInventory2Icon } from '@oscd-transnet-plugins/oscd-icons';
   import { writable } from 'svelte/store';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdFindInPageIcon, OscdInventory2Icon } from '@oscd-transnet-plugins/oscd-icons';
 
-  export let data = [] as ArchiveSearchResult[];
+  export let searchResult: ArchiveSearchResult;
 
-  const dataStore = { store: writable(data) as writable<ArchiveSearchResult[]> };
+  const archiveExplorerService = ArchiveExplorerService.getInstance();
+  const dataStore = { store: writable([]) as writable<ArchiveSearchResult[]> };
+  let loadingDone = false;
 
   const columnDefs = [
-    { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
     {
       headerName: 'Content type',
@@ -51,7 +54,6 @@
       sortable: false
     }
   ];
-
   const rowActions = [
     {
       iconComponent: OscdFindInPageIcon,
@@ -66,24 +68,25 @@
       disabled: () => false
     }
   ];
+
+  onMount(() => {
+    if (!searchResult) {
+      return;
+    }
+
+    archiveExplorerService.retrieveArchivedResourceHistory(searchResult.uuid)
+      .pipe(
+        take(1),
+        tap(result => {
+          dataStore.store.set(result);
+          loadingDone = true;
+        })
+      ).subscribe();
+  });
 </script>
 
-<div class="result-container">
-  <div class="content">
-    <!--    <div class="uuid">-->
-    <!--      <strong>UUID: {searchResult.uuid}</strong>-->
-    <!--    </div>-->
+<OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions}></OscdDataTable>
 
-    <OscdDataTable {columnDefs} store={dataStore} loadingDone="{true}" {rowActions}></OscdDataTable>
-  </div>
-</div>
+<style lang="css">
 
-<style>
-
-  .uuid {
-    margin-bottom: 2rem;
-  }
-
-  .result-container .content {
-  }
 </style>

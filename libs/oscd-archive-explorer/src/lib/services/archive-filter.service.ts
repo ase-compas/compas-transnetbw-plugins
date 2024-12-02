@@ -5,7 +5,7 @@ import type {
 import { lastValueFrom, map, take, tap } from 'rxjs';
 import type { SearchParams } from '../domain/search-params.interface';
 import { LocationService } from './location.service';
-import { LocationStore } from '../store/location-store';
+import { LocationStore } from '../store';
 
 export class ArchiveFilterService {
   private static instance: ArchiveFilterService;
@@ -37,7 +37,6 @@ export class ArchiveFilterService {
       to: null,
     };
 
-    console.log('Convert filter to search params: ', filters);
     filters
       .filter((f) => !f.disabled)
       .forEach((filter) => {

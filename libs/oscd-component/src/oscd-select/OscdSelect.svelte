@@ -11,7 +11,7 @@
   export let selectedOptionIndex = -1;
   export let disabled = false;
 
-  function asd(index) {
+  function setSelectedIndex(index) {
     return () => selectedOptionIndex = index;
   }
 </script>
@@ -24,6 +24,6 @@
   style="width: 100%;"
   required={required}>
   {#each data as d, index}
-    <Option on:click={asd(index)} value={d.value}>{d.label}</Option>
+    <Option on:click={setSelectedIndex(index)} value={d.value}>{d.label}</Option>
   {/each}
 </Select>
