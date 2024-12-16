@@ -53,7 +53,7 @@
 
     locationFiltersToSearch.forEach(locationFilter => {
       const filters = archiveFilterService.convertFilterToSearchParams(filtersToSearch);
-      filters.location = locationFilter.id;
+      filters.location = locationFilter.value;
 
       search$.push(archiveExplorerService.searchArchive(filters)
         .pipe(
@@ -100,7 +100,7 @@
 
   <div class="content-container">
     {#if (searchResults.size)}
-      {#each searchResults as result, index (result[1].map(res => res.uuid).join(""))}
+      {#each searchResults as result, index (result)}
         <!-- result[0] => UUID of the location -->
         <!-- result[1] => ArchiveSearchResult[] -->
         <OscdExpansionPanel open="{index === 0}"

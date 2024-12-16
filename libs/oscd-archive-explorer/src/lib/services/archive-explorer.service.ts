@@ -14,6 +14,37 @@ export class ArchiveExplorerService {
   private static instance: ArchiveExplorerService;
   private baseUrl = 'http://localhost:9090/compas-scl-data-service';
 
+  private dummySearchResults = [
+    new ArchiveSearchResult(
+      crypto.randomUUID(),
+      'Dummy name',
+      'My Note',
+      'Jane Doe',
+      'John Doe',
+      'Leittechnik',
+      '220',
+      this.formatDate(new Date().toISOString()),
+      this.formatDate(new Date().toISOString()),
+      'SCD',
+      '1.0.0',
+      []
+    ),
+    new ArchiveSearchResult(
+      crypto.randomUUID(),
+      'Dummy name 2',
+      'My Note 2',
+      'Jane Doe',
+      'John Doe',
+      'Leittechnik',
+      '220',
+      this.formatDate(new Date().toISOString()),
+      this.formatDate(new Date().toISOString()),
+      'PDF',
+      '4.1.0',
+      []
+    ),
+  ];
+
   private constructor() {
     //
   }
@@ -33,41 +64,18 @@ export class ArchiveExplorerService {
       .pipe(
         take(1),
         map((result: ArchivedResources) => result.resources),
-        map((resources) =>
-          resources.map((resource) => this.mapToArchiveSearchResult(resource))
-        ),
+        map((resources) => {
+          if (resources.length) {
+            return resources.map((resource) =>
+              this.mapToArchiveSearchResult(resource)
+            );
+          }
+
+          return this.dummySearchResults;
+        }),
         catchError(() => {
           // Dummy data until the service is implemented
-          return of([
-            new ArchiveSearchResult(
-              crypto.randomUUID(),
-              'Dummy name',
-              'My Note',
-              'Jane Doe',
-              'John Doe',
-              'Leittechnik',
-              '220',
-              this.formatDate(new Date().toISOString()),
-              this.formatDate(new Date().toISOString()),
-              'SCD',
-              '1.0.0',
-              []
-            ),
-            new ArchiveSearchResult(
-              crypto.randomUUID(),
-              'Dummy name 2',
-              'My Note 2',
-              'Jane Doe',
-              'John Doe',
-              'Leittechnik',
-              '220',
-              this.formatDate(new Date().toISOString()),
-              this.formatDate(new Date().toISOString()),
-              'PDF',
-              '4.1.0',
-              []
-            ),
-          ]);
+          return of(this.dummySearchResults);
         }),
         delay(500)
       );
