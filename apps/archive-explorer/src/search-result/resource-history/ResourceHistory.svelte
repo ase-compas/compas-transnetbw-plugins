@@ -1,8 +1,8 @@
 <script lang="ts">
   import { ArchiveExplorerService, ArchiveSearchResult } from '@oscd-transnet-plugins/oscd-archive-explorer';
   import { onMount } from 'svelte';
-  import { take, tap } from 'rxjs';
-  import { OscdFindInPageIcon, OscdInventory2Icon } from '@oscd-transnet-plugins/oscd-icons';
+  import { catchError, of, take, tap } from 'rxjs';
+  import { OscdDownloadIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { writable } from 'svelte/store';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
 
@@ -56,15 +56,9 @@
   ];
   const rowActions = [
     {
-      iconComponent: OscdFindInPageIcon,
+      iconComponent: OscdDownloadIcon,
       iconStyles: 'fill: unset; margin: unset;',
-      callback: (row) => console.log(row),
-      disabled: () => false
-    },
-    {
-      iconComponent: OscdInventory2Icon,
-      iconStyles: 'fill: unset; margin: unset;',
-      callback: (row) => console.log(row),
+      callback: (row) => downloadByUUIDAndVersion(row),
       disabled: () => false
     }
   ];
@@ -83,6 +77,30 @@
         })
       ).subscribe();
   });
+
+  function downloadByUUIDAndVersion(row: ArchiveSearchResult) {
+    archiveExplorerService.findByUUIDAndVersion(row.uuid, row.contentType, row.version)
+      .pipe(
+        take(1),
+        tap((data: Blob) => {
+          const url = window['URL'].createObjectURL(data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = row.filename;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window['URL'].revokeObjectURL(url);
+        }),
+        catchError(err => {
+          console.error(err);
+          alert(err);
+          return of(undefined);
+        })
+      )
+      .subscribe();
+  }
 </script>
 
 <OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions}></OscdDataTable>

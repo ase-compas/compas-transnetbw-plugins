@@ -1,15 +1,14 @@
 import { map, Observable } from 'rxjs';
 import {
-  Configuration,
-  LocationsApi,
-  ArchivingApi,
-  type Location,
   type ArchivedResourcesSearch,
-  type ArchivedResource
+  ArchivingApi,
+  Configuration,
+  type Location,
+  LocationsApi,
 } from '@oscd-transnet-plugins/oscd-archiving-api-client';
-import {LocationModel} from "../domain";
-import type {SearchParams} from "../domain/search-params.interface";
-import {ArchivedResourceModel} from "../domain/archived-resource.model";
+import { LocationModel } from '../domain';
+import type { SearchParams } from '../domain/search-params.interface';
+import { ArchivedResourceModel } from '../domain/archived-resource.model';
 
 export class LocationViewerService {
   private static instance: LocationViewerService;
@@ -29,33 +28,45 @@ export class LocationViewerService {
     return LocationViewerService.instance;
   }
 
-  public getLocations(params?: { page?: number; pageSize?: number }): Observable<Location[]> {
-    return this.locationsApiClient.getLocations({
-      page: params?.page,
-      pageSize: params?.pageSize
-    }).pipe(
-      map((response) => response || []),
-      map((data) => data.map(item => LocationModel.from(item)))
-    );
+  public getLocations(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Observable<Location[]> {
+    return this.locationsApiClient
+      .getLocations({
+        page: params?.page,
+        pageSize: params?.pageSize,
+      })
+      .pipe(
+        map((response) => response || []),
+        map((data) => data.map((item) => LocationModel.from(item)))
+      );
   }
 
-  public searchArchivedResources(params: SearchParams): Observable<ArchivedResourceModel[]> {
+  public searchArchivedResources(
+    params: SearchParams
+  ): Observable<ArchivedResourceModel[]> {
     console.log(params);
-    return this.archivingApiClient.searchArchivedResources({
-      archivedResourcesSearch: this.mapToArchivedResourcesSearch(params),
-    }).pipe(
-      map((response: any) => response.results),
-      map((data: any[]) => data.map((item: any) => ArchivedResourceModel.from(item))
-      )
-    )
+    return this.archivingApiClient
+      .searchArchivedResources({
+        archivedResourcesSearch: this.mapToArchivedResourcesSearch(params),
+      })
+      .pipe(
+        map((response: any) => response.results),
+        map((data: any[]) =>
+          data.map((item: any) => ArchivedResourceModel.from(item))
+        )
+      );
   }
 
-  private mapToArchivedResourcesSearch(params: SearchParams): ArchivedResourcesSearch {
+  private mapToArchivedResourcesSearch(
+    params: SearchParams
+  ): ArchivedResourcesSearch {
     return {
       uuid: params.uuid || null,
       location: params.location || null,
       name: params.name || null,
-      aprover: params.aprover || null,
+      approver: params.approver || null,
       contentType: params.contentType || null,
       type: params.type || null,
       voltage: params.voltage || null,

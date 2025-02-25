@@ -1,20 +1,27 @@
 <script lang="ts">
 
-  import {LocationViewerService, ArchivedResourceStore, ArchivedResourceModel, SearchParams} from "@oscd-transnet-plugins/oscd-location-viewer";
-  import {onMount} from "svelte";
   import {
-    ActiveFilter, FilterType,
+    ArchivedResourceModel,
+    ArchivedResourceStore,
+    LocationViewerService,
+    SearchParams
+  } from '@oscd-transnet-plugins/oscd-location-viewer';
+  import { onMount } from 'svelte';
+  import {
+    ActiveFilter,
+    FilterType,
     OscdButton,
-    OscdDataTable, OscdExpansionPanel,
+    OscdDataTable,
+    OscdExpansionPanel,
     OscdFilterBox,
     OscdSelect
-  } from "@oscd-transnet-plugins/oscd-component";
-  import Card from "@smui/card";
-  import {Icon, Label} from "@smui/button";
-  import {finalize, take, tap} from "rxjs/operators";
+  } from '@oscd-transnet-plugins/oscd-component';
+  import Card from '@smui/card';
+  import { Icon, Label } from '@smui/button';
+  import { finalize, take, tap } from 'rxjs/operators';
 
   const locationViewerService = LocationViewerService.getInstance();
-  let locations: {label: string, value: string}[] = [];
+  let locations: { label: string, value: string }[] = [];
   let selectedLocation;
   let loadingDone = false;
   let searchOpen = false;
@@ -27,14 +34,45 @@
     { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Note', field: 'note', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Aprover', field: 'aprover', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Approver', field: 'approver', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Content Type', field: 'contentType', numeric: false, filter: true, filterType: 'text', sortable: true },
+    {
+      headerName: 'Content Type',
+      field: 'contentType',
+      numeric: false,
+      filter: true,
+      filterType: 'text',
+      sortable: true
+    },
     { headerName: 'Voltage', field: 'voltage', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Modified At', field: 'modifiedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: 'Archived At', field: 'archivedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
+    {
+      headerName: 'Modified At',
+      field: 'modifiedAt',
+      numeric: false,
+      filter: true,
+      filterType: 'text',
+      sortable: true,
+      valueFormatter: formatDate
+    },
+    {
+      headerName: 'Archived At',
+      field: 'archivedAt',
+      numeric: false,
+      filter: true,
+      filterType: 'text',
+      sortable: true,
+      valueFormatter: formatDate
+    },
+    {
+      headerName: '',
+      field: 'actions',
+      numeric: false,
+      filter: false,
+      filterType: 'text',
+      minWidth: '100px',
+      sortable: false
+    }
   ];
 
   function formatDate(date: string) {
@@ -42,7 +80,7 @@
   }
 
   const searchRowActions = [
-    { icon: 'add', callback: (row) => add(row), disabled: () => false },
+    { icon: 'add', callback: (row) => add(row), disabled: () => false }
   ];
 
   const locationRowActions = [
@@ -64,7 +102,7 @@
     },
     {
       id: 5,
-      label: 'Aprover',
+      label: 'Approver',
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
@@ -146,7 +184,7 @@
       uuid: null,
       location: null,
       name: null,
-      aprover: null,
+      approver: null,
       contentType: null,
       type: null,
       voltage: null,
@@ -173,11 +211,11 @@
   onMount(() => {
     locationViewerService.getLocations().subscribe({
       next: (data) => {
-        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
+        locations = data.map((item) => ({ label: item.name, value: item.uuid }));
         selectedLocation = locations[0].value || undefined;
       }
-    })
-  })
+    });
+  });
 
   $: if (selectedLocation) {
     loadingDone = false; // Optional: Set a loading state
