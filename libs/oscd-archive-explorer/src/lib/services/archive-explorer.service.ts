@@ -7,7 +7,7 @@ import {
   ArchivingApi,
   Configuration,
 } from '@oscd-transnet-plugins/oscd-archiving-api-client';
-import { catchError, delay, map, Observable, of, take } from 'rxjs';
+import { catchError, delay, from, map, Observable, of, take } from 'rxjs';
 import { ArchiveSearchResult } from '../domain';
 
 export class ArchiveExplorerService {
@@ -64,11 +64,9 @@ export class ArchiveExplorerService {
       .pipe(
         take(1),
         map((result: ArchivedResources) => result.resources),
-        map((resources) => {
-            return resources.map((resource) =>
-              this.mapToArchiveSearchResult(resource)
-            );
-        }),
+        map((resources) =>
+          resources.map((resource) => this.mapToArchiveSearchResult(resource))
+        ),
         catchError(() => {
           // Dummy data until the service is implemented
           return of(this.dummySearchResults);
@@ -123,6 +121,24 @@ export class ArchiveExplorerService {
       );
   }
 
+  findByUUIDAndVersion(
+    uuid: string,
+    type: string,
+    version: string
+  ): Observable<Blob> {
+    return from(
+      fetch(`${this.baseUrl}/scl/v1/${type}/${uuid}/${version}`).then((r) => {
+        if (r.status >= 200 && r.status < 300) {
+          return r.blob();
+        }
+
+        throw new Error(
+          'Unable to download resource: ' + r.status + ' ' + r.statusText
+        );
+      })
+    );
+  }
+
   private mapToArchiveSearchResult(
     data: ArchivedResource
   ): ArchiveSearchResult {
@@ -131,7 +147,7 @@ export class ArchiveExplorerService {
       data.name,
       data.note,
       data.author,
-      data.aprover,
+      data.approver,
       data.type,
       data.voltage,
       this.formatDate(data.modifiedAt),

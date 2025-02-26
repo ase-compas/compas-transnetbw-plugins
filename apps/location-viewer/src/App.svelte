@@ -15,7 +15,7 @@
   import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
 
   const locationViewerService = LocationViewerService.getInstance();
-  let locations: {label: string, value: string}[] = [];
+  let locations: { label: string, value: string }[] = [];
   let selectedLocation;
   let loadingDone = false;
   let searchOpen = false;

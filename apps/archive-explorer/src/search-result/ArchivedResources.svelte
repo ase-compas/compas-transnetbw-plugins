@@ -8,14 +8,18 @@
 
 <div class="result-container">
   <div class="content">
-    {#each searchResults as searchResult (searchResult.uuid)}
-      <OscdExpansionPanel title="{searchResult.name}">
-        <span slot="content">
-          <ResourceHistory {searchResult} />
-        </span>
-      </OscdExpansionPanel>
-      <br>
-    {/each}
+    {#if searchResults.length}
+      {#each searchResults as searchResult (searchResult.uuid)}
+        <OscdExpansionPanel title="{searchResult.name}">
+          <span slot="content">
+            <ResourceHistory {searchResult} />
+          </span>
+        </OscdExpansionPanel>
+        <br>
+      {/each}
+    {:else}
+      <i>No resources found.</i>
+    {/if}
   </div>
 </div>
 
