@@ -10,6 +10,7 @@
   } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Icon, Label } from '@smui/button';
   import { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
+  import {OscdCancelIcon, OscdSearchIcon} from "../../../libs/oscd-icons/src";
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -42,19 +43,25 @@
       valueFormatter: formatDate
     },
     { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    {
-      headerName: '',
-      field: 'actions',
-      numeric: false,
-      filter: false,
-      filterType: 'text',
-      minWidth: '100px',
-      sortable: false
-    }
   ];
+  const columnDefsActions = {
+    headerName: '',
+    field: 'actions',
+    numeric: false,
+    filter: false,
+    filterType: 'text',
+    minWidth: '100px',
+    sortable: false
+  };
+  const modalColumnDef = [
+    ...columnDefs,
+    { headerName: 'Comment', field: 'comment', numeric: false, filter: true, filterType: 'text', sortable: true },
+    columnDefsActions,
+  ];
+  columnDefs.push(columnDefsActions);
 
   const rowActions = [
-    { icon: 'find_in_page', callback: (row) => getHistoryByUuid(row), disabled: () => false },
+    { icon: 'find-in-page', callback: (row) => getHistoryByUuid(row), disabled: () => false },
     { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
   ];
 
@@ -199,11 +206,11 @@
   <OscdDialog bind:open="{dialogOpen}">
     <h3 slot="title">Version History of file {currentSelectFile?.filename}</h3>
     <div slot="content">
-      <OscdDataTable {columnDefs} store={historyStore} {loadingDone} rowActions={historyRowActions} />
+      <OscdDataTable columnDefs={modalColumnDef} store={historyStore} {loadingDone} rowActions={historyRowActions} />
     </div>
     <div slot="actions">
-      <OscdButton callback={onDialogClose}>
-        <Icon class="material-icons">done</Icon>
+      <OscdButton callback={onDialogClose} variant="raised" >
+        <OscdCancelIcon />
         <Label>Done</Label>
       </OscdButton>
     </div>
@@ -211,7 +218,7 @@
   <div class="search-filter">
     <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
       <OscdButton slot="filter-controls" variant="raised" callback={search}>
-        <Icon class="material-icons">search</Icon>
+        <OscdSearchIcon />
         <Label>Search</Label>
       </OscdButton>
     </OscdFilterBox>

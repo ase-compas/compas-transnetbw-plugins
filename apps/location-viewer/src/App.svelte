@@ -1,6 +1,6 @@
 <script lang="ts">
 
-  import {LocationViewerService, ArchivedResourceStore, ArchivedResourceModel, SearchParams} from "@oscd-transnet-plugins/oscd-location-viewer";
+  import {LocationViewerService, ResourceStore, SclResourceModel, SearchParams} from "@oscd-transnet-plugins/oscd-location-viewer";
   import {onMount} from "svelte";
   import {
     ActiveFilter, FilterType,
@@ -12,6 +12,7 @@
   import Card from "@smui/card";
   import {Icon, Label} from "@smui/button";
   import {finalize, take, tap} from "rxjs/operators";
+  import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: {label: string, value: string}[] = [];
@@ -19,21 +20,17 @@
   let loadingDone = false;
   let searchOpen = false;
 
-  export let locationArchivedResourceStore = new ArchivedResourceStore();
-  export let searchArchivedResourceStore = new ArchivedResourceStore();
+  export let locationResourceStore = new ResourceStore();
+  export let searchResourceStore = new ResourceStore();
 
   const columnDefs = [
     { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Note', field: 'note', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Aprover', field: 'aprover', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Content Type', field: 'contentType', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Voltage', field: 'voltage', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'location', field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Modified At', field: 'modifiedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: 'Archived At', field: 'archivedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: 'Changed At', field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
 
@@ -41,35 +38,15 @@
     return new Date(date).toLocaleDateString();
   }
 
-  const searchRowActions = [
-    { icon: 'add', callback: (row) => add(row), disabled: () => false },
-  ];
-
-  const locationRowActions = [
-    { icon: 'remove', callback: (row) => remove(row), disabled: () => false }
-  ];
-
   const filterTypes: FilterType[] = [
     {
       id: 1,
       label: 'UUID',
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
+      allowedOperations: ['='],
     },
     {
       id: 2,
-      label: 'Name',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 5,
-      label: 'Aprover',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 6,
       label: 'Type',
       inputType: {
         id: 2, type: 'select', validatorFn: () => true, options: [
@@ -86,54 +63,73 @@
       allowedOperations: ['=']
     },
     {
+      id: 3,
+      label: 'Name',
+      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
+      allowedOperations: ['=']
+    },
+    {
+      id: 4,
+      label: 'Location',
+      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
+      allowedOperations: ['=']
+    },
+    {
+      id: 5,
+      label: 'Author',
+      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
+      allowedOperations: ['=']
+    },
+    {
+      id: 6,
+      label: 'from',
+      inputType: { id: 1, type: 'timepicker', validatorFn: () => true, options: [] },
+      allowedOperations: ['=']
+    },
+    {
       id: 7,
-      label: 'ContentType',
+      label: 'to',
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
-    {
-      id: 8,
-      label: 'Voltage',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 9,
-      label: 'Version',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 10,
-      label: 'ModifiedAt',
-      inputType: { id: 3, type: 'timepicker', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 11,
-      label: 'ArchivedAt',
-      inputType: { id: 3, type: 'timepicker', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    }
+  ];
+
+  const locationRowActions = [
+    { icon: 'remove', callback: (row) => unassign(row), disabled: () => false }
+  ];
+
+  const searchRowActions = [
+    { icon: 'add', callback: (row) => assign(row), disabled: () => false },
   ];
 
   let filtersToSearch: ActiveFilter[] = [];
 
-  function add(row: ArchivedResourceModel) {
-
+  function assign(row: SclResourceModel) {
+    locationViewerService.assignResourceToLocation(selectedLocation, row.uuid).subscribe({
+      next: () => {
+        searchResourceStore.remove(row.uuid);
+        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
+        locationResourceStore.add({...row, location: tempLocation.label});
+      },
+    });
   }
 
-  function remove(row: ArchivedResourceModel) {
-
+  function unassign(row: SclResourceModel) {
+    locationViewerService.unassignResourceFromLocation(selectedLocation, row.uuid).subscribe({
+      next: () => {
+        locationResourceStore.remove(row.uuid);
+      },
+    });
   }
 
   function search() {
     const searchParams = convertFilterToSearchParams(filtersToSearch);
     loadingDone = false;
-    locationViewerService.searchArchivedResources(searchParams).pipe(
+    locationViewerService.searchResources(searchParams).pipe(
       take(1),
-      tap((data: ArchivedResourceModel[]) => {
-        searchArchivedResourceStore.set(data);
+      tap((data: SclResourceModel[]) => {
+        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
+        searchResourceStore.set(data.filter((item) => item.location !== tempLocation.label));
       }),
       finalize(() => {
         loadingDone = true;
@@ -144,20 +140,17 @@
   function convertFilterToSearchParams(filters: ActiveFilter[]): SearchParams {
     const searchParams: SearchParams = {
       uuid: null,
-      location: null,
-      name: null,
-      aprover: null,
-      contentType: null,
       type: null,
-      voltage: null,
-      modifiedAt: null,
-      archivedAt: null
+      name: null,
+      location: null,
+      author: null,
+      from: null,
+      to: null,
     };
     console.log('Convert filter to search params: ', filters);
     filters.forEach((filter) => {
       console.log('KEY:', filter.key);
-      if (filter.key === 'modifiedat' ||
-        filter.key === 'archiveddat') {
+      if (filter.key === 'from' || filter.key === 'to') {
         searchParams[filter.key] = new Date(filter.value).toISOString();
       } else {
         searchParams[filter.key] = filter.value;
@@ -174,16 +167,17 @@
     locationViewerService.getLocations().subscribe({
       next: (data) => {
         locations = data.map((item) => ({ label: item.name, value: item.uuid }))
-        selectedLocation = locations[0].value || undefined;
       }
     })
   })
 
   $: if (selectedLocation) {
     loadingDone = false; // Optional: Set a loading state
-    locationViewerService.searchArchivedResources({ location: selectedLocation }).subscribe({
+    locationViewerService.searchResources({}).subscribe({
       next: (data) => {
-        locationArchivedResourceStore.set(data);
+        console.log({data, selectedLocation});
+        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
+        locationResourceStore.set(data.filter((item) => item.location === tempLocation.label));
       },
       complete: () => {
         loadingDone = true;
@@ -207,7 +201,7 @@
       <div class="search-filter">
         <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
           <OscdButton slot="filter-controls" variant="raised" callback={search}>
-            <Icon class="material-icons">search</Icon>
+            <OscdSearchIcon />
             <Label>Search</Label>
           </OscdButton>
         </OscdFilterBox>
@@ -215,7 +209,7 @@
       <div class="table-container">
         <Card style="padding: 1rem; width: 100%; height: 100%;">
           <h3 style="margin-bottom: 1rem;">Search Result</h3>
-          <OscdDataTable {columnDefs} store={searchArchivedResourceStore} {loadingDone} {searchRowActions} />
+          <OscdDataTable {columnDefs} store={searchResourceStore} {loadingDone} rowActions={searchRowActions} />
         </Card>
       </div>
     </div>
@@ -227,7 +221,7 @@
           ? `Location: ${locations.find((item) => item.value === selectedLocation)?.label}`
           : 'Select Location'}
       </h3>
-      <OscdDataTable {columnDefs} store={locationArchivedResourceStore} {loadingDone} {locationRowActions} />
+      <OscdDataTable {columnDefs} store={locationResourceStore} {loadingDone} rowActions={locationRowActions}  />
     </Card>
   </div>
 </div>
@@ -236,4 +230,9 @@
   @import "/global.css";
   @import "/material-icon.css";
   @import '/smui.css';
+
+  .search-filter {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
 </style>

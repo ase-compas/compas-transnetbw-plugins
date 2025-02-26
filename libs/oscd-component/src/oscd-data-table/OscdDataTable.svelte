@@ -59,7 +59,25 @@
           <Cell>
             <div class="cell-actions">
               {#each rowActions as action}
-                <OscdIconButton icon={action.icon} iconComponent="{action.iconComponent}" iconStyles="{action.iconStyles}" callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                  {#if action.icon === "add"}
+                    <OscdAddIcon />
+                  {:else if action.icon === "cancel"}
+                    <OscdCancelIcon />
+                  {:else if action.icon === "download"}
+                    <OscdDownloadIcon />
+                  {:else if action.icon === "find-in-page"}
+                    <OscdFindInPageIcon />
+                  {:else if action.icon === "remove"}
+                    <OscdRemoveIcon />
+                  {:else if action.icon === "edit"}
+                    <OscdEditIcon />
+                  {:else if action.icon === "delete"}
+                    <OscdDeleteIcon />
+                  {:else}
+                    <OscdRefreshIcon />
+                  {/if}
+                </OscdButton>
               {/each}
             </div>
           </Cell>
@@ -90,8 +108,18 @@
   import { writable } from 'svelte/store';
   import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
-  import OscdIconButton from '../oscd-icon-button/OscdIconButton.svelte';
   import type { RowAction } from './row-action.interface';
+  import {
+    OscdAddIcon,
+    OscdCancelIcon,
+    OscdDownloadIcon,
+    OscdFindInPageIcon,
+    OscdRefreshIcon,
+    OscdRemoveIcon,
+    OscdEditIcon,
+    OscdDeleteIcon,
+  } from "@oscd-transnet-plugins/oscd-icons";
+  import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
 
   export let loadingDone = true;
   export let label = crypto.randomUUID();
@@ -224,6 +252,7 @@
   tbody td {
     padding: 12px 15px;
     text-align: left;
+    font-size: 0.9rem;
     font-size: 0.9rem;
     color: #555;
   }

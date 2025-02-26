@@ -65,13 +65,9 @@ export class ArchiveExplorerService {
         take(1),
         map((result: ArchivedResources) => result.resources),
         map((resources) => {
-          if (resources.length) {
             return resources.map((resource) =>
               this.mapToArchiveSearchResult(resource)
             );
-          }
-
-          return this.dummySearchResults;
         }),
         catchError(() => {
           // Dummy data until the service is implemented

@@ -1,25 +1,27 @@
 import { map, Observable } from 'rxjs';
 import {
-  Configuration,
+  Configuration as ArchivingApiConfiguration,
   LocationsApi,
-  ArchivingApi,
   type Location,
-  type ArchivedResourcesSearch,
-  type ArchivedResource
 } from '@oscd-transnet-plugins/oscd-archiving-api-client';
-import {LocationModel} from "../domain";
-import type {SearchParams} from "../domain/search-params.interface";
-import {ArchivedResourceModel} from "../domain/archived-resource.model";
+import {
+  Configuration as HistoryApiConfiguration,
+  HistoryApi,
+  type DataResourceSearch,
+
+} from '@oscd-transnet-plugins/oscd-history-api-client';
+import { LocationModel, SclResourceModel } from '../domain';
+
 
 export class LocationViewerService {
   private static instance: LocationViewerService;
   private readonly endpoint = 'http://localhost:9090/compas-scl-data-service';
   private readonly locationsApiClient: LocationsApi;
-  private readonly archivingApiClient: ArchivingApi;
+  private readonly historyApiClient: HistoryApi;
 
   private constructor() {
     this.locationsApiClient = this.createLocationsApiClient(this.endpoint);
-    this.archivingApiClient = this.createArchivingApiClient(this.endpoint);
+    this.historyApiClient = this.createHistoryApiClient(this.endpoint);
   }
 
   public static getInstance(): LocationViewerService {
@@ -39,44 +41,50 @@ export class LocationViewerService {
     );
   }
 
-  public searchArchivedResources(params: SearchParams): Observable<ArchivedResourceModel[]> {
+  public assignResourceToLocation(locationId: string, uuid: string): Observable<Location[]> {
+    return this.locationsApiClient.assignResourceToLocation({locationId, uuid}).pipe(map(() => undefined));
+  }
+
+  public unassignResourceFromLocation(locationId: string, uuid: string): Observable<Location[]> {
+    return this.locationsApiClient.unassignResourceFromLocation({locationId, uuid}).pipe(map(() => undefined));
+  }
+
+  public searchResources(params: DataResourceSearch): Observable<SclResourceModel[]> {
     console.log(params);
-    return this.archivingApiClient.searchArchivedResources({
-      archivedResourcesSearch: this.mapToArchivedResourcesSearch(params),
+    return this.historyApiClient.searchForResources({
+      dataResourceSearch: this.mapToDataResourceSearch(params),
     }).pipe(
-      map((response: any) => response.results),
-      map((data: any[]) => data.map((item: any) => ArchivedResourceModel.from(item))
+      map((response: any) => { console.log(response); return response.results}),
+      map((data: any[]) => data.map((item: any) => SclResourceModel.from(item))
       )
     )
   }
 
-  private mapToArchivedResourcesSearch(params: SearchParams): ArchivedResourcesSearch {
+  private mapToDataResourceSearch(params: DataResourceSearch):  DataResourceSearch {
     return {
       uuid: params.uuid || null,
-      location: params.location || null,
-      name: params.name || null,
-      aprover: params.aprover || null,
-      contentType: params.contentType || null,
       type: params.type || null,
-      voltage: params.voltage || null,
+      name: params.name || null,
+      author: params.author || null,
+      location: params.location || null,
       from: params.from || null,
       to: params.to || null,
     };
   }
 
   private createLocationsApiClient(url: string): LocationsApi {
-    const config = new Configuration({
+    const config = new ArchivingApiConfiguration({
       basePath: url,
       // accessToken: authInfo.token,
     });
     return new LocationsApi(config);
   }
 
-  private createArchivingApiClient(url: string): ArchivingApi {
-    const config = new Configuration({
+  private createHistoryApiClient(url: string): HistoryApi {
+    const config = new HistoryApiConfiguration({
       basePath: url,
       // accessToken: authInfo.token,
     });
-    return new ArchivingApi(config);
+    return new HistoryApi(config);
   }
 }

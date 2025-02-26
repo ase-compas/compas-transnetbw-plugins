@@ -285,7 +285,7 @@ paths:
         - open-id-connect: [ write ]
       description: |-
         Removes the assignment of a resource from the assigned location.
-      operationId: unassignResourceToLocation
+      operationId: unassignResourceFromLocation
       parameters:
         - name: locationId
           in: path
@@ -389,6 +389,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponseDto'
   /api/archive/referenced-resource/{id}/versions/{version}:
+    parameters:
+      - name: id
+        in: path
+        description: Unique data resource identifier
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: version
+        in: path
+        description: Data resource version
+        required: true
+        schema:
+          type: string
     post:
       tags:
         - archiving
@@ -397,16 +411,6 @@ paths:
         - open-id-connect: [ write ]
       operationId: archiveResource
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-        - in: path
-          name: version
-          schema:
-            type: string
-          required: true
         - in: header
           name: X-author
           description: Name of the author who created the file and send for approval
@@ -556,7 +560,7 @@ paths:
 
 components:
   securitySchemes:
-    open-id-connect: # <--- Arbitrary name for the security scheme. Used to refer to it from elsewhere.
+    open-id-connect:   # <--- Arbitrary name for the security scheme. Used to refer to it from elsewhere.
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
 
@@ -657,9 +661,9 @@ components:
         author:
           type: string
           description: "Modifying author"
-        aprover:
+        approver:
           type: string
-          description: "Name of the aprover"
+          description: "Name of the approver"
         type:
           type: string
           description: "Content type"
@@ -706,7 +710,7 @@ components:
         name:
           type: string
           description: "Partially match allowed"
-        aprover:
+        approver:
           type: string
           description: "Fulltext match which can be retrieved via extra endpoint"
         contentType:

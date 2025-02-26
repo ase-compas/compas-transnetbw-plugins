@@ -5,15 +5,17 @@ export class LocationModel implements Location{
   readonly key: string;
   readonly name: string;
   readonly description?: string;
+  readonly assignedResources?: number;
 
-  constructor(key: string, name: string, description?: string, uuid?: string) {
+  constructor(key: string, name: string, description?: string, assignedResources?: number, uuid?: string) {
     this.uuid = uuid;
     this.key = key;
     this.name = name;
     this.description = description;
+    this.assignedResources = assignedResources;
   }
 
   public static from (data: Location) {
-    return new LocationModel(data.key, data.name, data.description, data.uuid);
+    return new LocationModel(data.key, data.name, data.description, data.assignedResources, data.uuid);
   }
 }

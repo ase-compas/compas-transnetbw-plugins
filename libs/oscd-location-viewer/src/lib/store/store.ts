@@ -1,24 +1,24 @@
 import { writable, get } from 'svelte/store';
-import {type ArchivedResource} from "@oscd-transnet-plugins/oscd-archiving-api-client";
+import {type DataResource} from "@oscd-transnet-plugins/oscd-history-api-client";
 
-export class ArchivedResourceStore {
-  #data = writable<ArchivedResource[]>([]);
+export class ResourceStore {
+  #data = writable<DataResource[]>([]);
 
   get store() {
     return this.#data;
   }
 
-  public set(archivedResource: ArchivedResource[]) {
-    this.#data.set(archivedResource);
+  public set(dataResources: DataResource[]) {
+    this.#data.set(dataResources);
   }
 
-  public update(archivedResource: ArchivedResource) {
+  public update(dataResource: DataResource) {
     this.#data.update((d) =>
-      d.map((data) => data.uuid === archivedResource.uuid ? archivedResource : data));
+      d.map((data) => data.uuid === dataResource.uuid ? dataResource : data));
   }
 
-  public add(archivedResource: ArchivedResource) {
-    this.#data.update((d) => [...d, archivedResource]);
+  public add(dataResource: DataResource) {
+    this.#data.update((d) => [...d, dataResource]);
   }
 
   public remove(uuid: string) {

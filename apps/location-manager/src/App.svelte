@@ -6,10 +6,12 @@
     OscdDialog, OscdInput, OscdLoadingSpinner,
   } from "@oscd-transnet-plugins/oscd-component";
   import Card from "@smui/card";
+  import {OscdAddIcon, OscdRefreshIcon, OscdSaveIcon, OscdCancelIcon} from '@oscd-transnet-plugins/oscd-icons';
   import {LocationManagerService, type Location, LocationModel, LocationStore} from "@oscd-transnet-plugins/oscd-location-manager";
   import {take} from "rxjs";
   import {finalize, tap} from "rxjs/operators";
   import {onMount} from "svelte";
+
 
   const locationManagerService = LocationManagerService.getInstance();
   export let locationStore = new LocationStore();
@@ -30,12 +32,13 @@
     { headerName: 'Key', field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Description', field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Assigned Resources', field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
 
   const rowActions = [
     { icon: 'edit', callback: (row) => update(row), disabled: () => false },
-    { icon: 'remove', callback: (row) => remove(row), disabled: () => false }
+    { icon: 'delete', callback: (row) => remove(row), disabled: () => false }
   ];
 
   function update(row: Location) {
@@ -112,12 +115,12 @@
   <OscdDialog open="{dialogState === DialogState.Remove}">
     <h3 slot="title">Delete location {currentSelectLocation?.name}?</h3>
     <div slot="actions">
-      <OscdButton callback={onRemoveConfirm}>
-        <Icon class="material-icons">confirm</Icon>
+      <OscdButton callback={onRemoveConfirm} variant="raised">
+        <OscdSaveIcon />
         <Label>Confirm</Label>
       </OscdButton>
-      <OscdButton callback={onCloseDialog}>
-        <Icon class="material-icons">cancel</Icon>
+      <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
+        <OscdCancelIcon />
         <Label>Cancel</Label>
       </OscdButton>
     </div>
@@ -135,24 +138,26 @@
       {/if}
     </div>
     <div slot="actions">
-      <OscdButton callback={onUpdateOrCreateSave}>
-        <Icon class="material-icons">save</Icon>
+      <OscdButton callback={onUpdateOrCreateSave} variant="raised">
+        <OscdSaveIcon />
         <Label>Save</Label>
       </OscdButton>
-      <OscdButton callback={onCloseDialog}>
-        <Icon class="material-icons">cancel</Icon>
+      <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
+        <OscdCancelIcon />
         <Label>Cancel</Label>
       </OscdButton>
     </div>
   </OscdDialog>
-  <OscdButton class="add-button" callback={create}>
-    <Icon class="material-icons">add</Icon>
-    <Label>Add Location</Label>
-  </OscdButton>
-  <OscdButton class="reload-button" callback={load}>
-    <Icon class="material-icons">load</Icon>
-    <Label>Reload</Label>
-  </OscdButton>
+  <div style="margin-top: 10px; margin-bottom: 10px">
+    <OscdButton class="button" callback={create} variant="raised">
+      <OscdAddIcon />
+      <Label>Add Location</Label>
+    </OscdButton>
+    <OscdButton class="button" callback={load} variant="raised">
+      <OscdRefreshIcon />
+      <Label>Refresh</Label>
+    </OscdButton>
+  </div>
   <div class="table-container">
     <Card style="padding: 1rem; width: 100%; height: 100%;">
       <h3 style="margin-bottom: 1rem;">Location Table</h3>
