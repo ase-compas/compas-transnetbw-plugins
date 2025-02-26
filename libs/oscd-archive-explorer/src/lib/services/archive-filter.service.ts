@@ -112,7 +112,7 @@ export class ArchiveFilterService {
       },
       {
         id: 3,
-        label: 'Content Type',
+        label: 'Type',
         inputType: {
           id: 2,
           type: 'select',

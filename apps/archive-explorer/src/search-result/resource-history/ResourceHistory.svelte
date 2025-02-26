@@ -79,7 +79,7 @@
   });
 
   function downloadByUUIDAndVersion(row: ArchiveSearchResult) {
-    archiveExplorerService.findByUUIDAndVersion(row.uuid, row.contentType, row.version)
+    archiveExplorerService.findByUUIDAndVersion(row.uuid, row.type, row.version)
       .pipe(
         take(1),
         tap((data: Blob) => {
