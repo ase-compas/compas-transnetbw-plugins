@@ -2,7 +2,6 @@
   import { ArchiveExplorerService, ArchiveSearchResult } from '@oscd-transnet-plugins/oscd-archive-explorer';
   import { onMount } from 'svelte';
   import { catchError, of, take, tap } from 'rxjs';
-  import { OscdDownloadIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { writable } from 'svelte/store';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
 
@@ -56,8 +55,7 @@
   ];
   const rowActions = [
     {
-      iconComponent: OscdDownloadIcon,
-      iconStyles: 'fill: unset; margin: unset;',
+      icon: 'download',
       callback: (row) => downloadByUUIDAndVersion(row),
       disabled: () => false
     }

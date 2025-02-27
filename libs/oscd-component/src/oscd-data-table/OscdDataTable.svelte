@@ -59,25 +59,29 @@
           <Cell>
             <div class="cell-actions">
               {#each rowActions as action}
-                <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
-                  {#if action.icon === "add"}
-                    <OscdAddIcon />
-                  {:else if action.icon === "cancel"}
-                    <OscdCancelIcon />
-                  {:else if action.icon === "download"}
-                    <OscdDownloadIcon />
-                  {:else if action.icon === "find-in-page"}
-                    <OscdFindInPageIcon />
-                  {:else if action.icon === "remove"}
-                    <OscdRemoveIcon />
-                  {:else if action.icon === "edit"}
-                    <OscdEditIcon />
-                  {:else if action.icon === "delete"}
-                    <OscdDeleteIcon />
-                  {:else}
-                    <OscdRefreshIcon />
-                  {/if}
-                </OscdButton>
+                {#if action.iconComponent}
+                  <OscdIconButton iconComponent="{action.iconComponent}" iconStyles="{action.iconStyles}" callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                {:else}
+                  <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                    {#if action.icon === "add"}
+                      <OscdAddIcon svgStyles="{'margin: unset'}" />
+                    {:else if action.icon === "cancel"}
+                      <OscdCancelIcon svgStyles="{'margin: unset'}" />
+                    {:else if action.icon === "download"}
+                      <OscdDownloadIcon svgStyles="{'margin: unset'}" />
+                    {:else if action.icon === "find-in-page"}
+                      <OscdFindInPageIcon svgStyles="{'margin: unset'}" />
+                    {:else if action.icon === "remove"}
+                      <OscdRemoveIcon svgStyles="{'margin: unset'}" />
+                    {:else if action.icon === "edit"}
+                      <OscdEditIcon svgStyles="{'margin: unset'}" />
+                    {:else if action.icon === "delete"}
+                      <OscdDeleteIcon svgStyles="{'margin: unset'}" />
+                    {:else}
+                      <OscdRefreshIcon svgStyles="{'margin: unset'}" />
+                    {/if}
+                  </OscdButton>
+                {/if}
               {/each}
             </div>
           </Cell>
@@ -119,7 +123,7 @@
     OscdEditIcon,
     OscdDeleteIcon,
   } from "@oscd-transnet-plugins/oscd-icons";
-  import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
 
   export let loadingDone = true;
   export let label = crypto.randomUUID();

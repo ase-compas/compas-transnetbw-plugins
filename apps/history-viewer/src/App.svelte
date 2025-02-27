@@ -1,16 +1,17 @@
 <script lang="ts">
   import { OscdButton, OscdDataTable, OscdDialog, OscdFilterBox } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
-  import { finalize, take, tap } from 'rxjs/operators';
+  import { catchError, finalize, switchMap, take, tap } from 'rxjs/operators';
+  import { from, of } from 'rxjs';
   import {
     FileSearchResult,
     SearchParams,
     VersionEditorFileService,
     VersionEditorStore
   } from '@oscd-transnet-plugins/oscd-history-viewer';
-  import { Icon, Label } from '@smui/button';
+  import { Label } from '@smui/button';
   import { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
-  import {OscdCancelIcon, OscdSearchIcon} from "../../../libs/oscd-icons/src";
+  import { OscdCancelIcon, OscdSearchIcon } from '../../../libs/oscd-icons/src';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -42,7 +43,7 @@
       sortable: true,
       valueFormatter: formatDate
     },
-    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true }
   ];
   const columnDefsActions = {
     headerName: '',
@@ -56,11 +57,16 @@
   const modalColumnDef = [
     ...columnDefs,
     { headerName: 'Comment', field: 'comment', numeric: false, filter: true, filterType: 'text', sortable: true },
-    columnDefsActions,
+    columnDefsActions
   ];
   columnDefs.push(columnDefsActions);
 
   const rowActions = [
+    {
+      icon: 'edit',
+      callback: (row) => openDoc(row),
+      disabled: (row) => !row.available
+    },
     { icon: 'find-in-page', callback: (row) => getHistoryByUuid(row), disabled: () => false },
     { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
   ];
@@ -200,6 +206,51 @@
     console.log('Dialog closed with result: ', result);
     dialogOpen = false;
   }
+
+  function openDoc(row: FileSearchResult) {
+    if (!confirm('Open the selected file?\n\n Please make sure you save all changes on your current project.')) {
+      return;
+    }
+
+    let url = '';
+
+    versionEditorDataService.downloadSclData(row.uuid, row.type, row.version)
+      .pipe(
+        take(1),
+        tap((data: Blob) => {
+          url = window['URL'].createObjectURL(data);
+        }),
+        switchMap(() => from(fetch(url).then(response => {
+            if (response.status === 200) {
+              return response.text();
+            }
+
+            throw new Error(`Failed to load ${row.filename}: ${response.status} ${response.statusText}`);
+          }))
+        ),
+        take(1),
+        catchError(err => {
+          alert(err);
+          console.error(err);
+          return of(undefined);
+        }),
+        tap((text: string | undefined) => {
+          if (!text) {
+            return;
+          }
+
+          const docName = row.filename;
+          const doc = new DOMParser().parseFromString(text, 'application/xml');
+
+          window.document.getElementsByTagName('open-scd')[0]?.dispatchEvent(new CustomEvent('open-doc', {
+            bubbles: true,
+            composed: true,
+            detail: { localFile: false, doc, docName }
+          }));
+        }),
+        finalize(() => url && window['URL'].revokeObjectURL(url))
+      ).subscribe();
+  }
 </script>
 
 <div class="version-editor-container">
@@ -209,7 +260,7 @@
       <OscdDataTable columnDefs={modalColumnDef} store={historyStore} {loadingDone} rowActions={historyRowActions} />
     </div>
     <div slot="actions">
-      <OscdButton callback={onDialogClose} variant="raised" >
+      <OscdButton callback={onDialogClose} variant="raised">
         <OscdCancelIcon />
         <Label>Done</Label>
       </OscdButton>
