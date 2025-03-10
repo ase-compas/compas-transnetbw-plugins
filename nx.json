@@ -78,7 +78,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/io-center-e2e/**/*"]
+      "exclude": ["apps/io-center-e2e/**/*", "apps/tsld-e2e/**/*"]
     }
   ]
 }
