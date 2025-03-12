@@ -23142,7 +23142,7 @@ function Cm(n) {
   };
 }
 function ym(n, e, t) {
-  let i, r, l, { loadingDone: a = !0 } = e, { label: s = crypto.randomUUID() } = e, { columnDefs: o = [] } = e, { rowData: u = [] } = e, { store: c } = e, { rowActions: d = [] } = e, f = { name: "", color: "", number: "" }, h = Tt([]);
+  let i, r, l, { loadingDone: a = !0 } = e, { label: s = "crypto.randomUUID()" } = e, { columnDefs: o = [] } = e, { rowData: u = [] } = e, { store: c } = e, { rowActions: d = [] } = e, f = { name: "", color: "", number: "" }, h = Tt([]);
   rt(n, h, (v) => t(7, l = v));
   let m = Tt(null);
   rt(n, m, (v) => t(5, i = v));
@@ -27149,7 +27149,7 @@ function ap(n, e, t) {
     let A = [
       ...u,
       {
-        id: crypto.randomUUID(),
+        id: "crypto.randomUUID()",
         key: l.label.toLowerCase(),
         value: h,
         operation: "=",

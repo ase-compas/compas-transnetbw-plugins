@@ -21830,7 +21830,7 @@ function wh(n) {
   };
 }
 function Ph(n, e, t) {
-  let i, r, l, { loadingDone: a = !0 } = e, { label: s = crypto.randomUUID() } = e, { columnDefs: o = [] } = e, { rowData: u = [] } = e, { store: c } = e, { rowActions: f = [] } = e, d = { name: "", color: "", number: "" }, h = At([]);
+  let i, r, l, { loadingDone: a = !0 } = e, { label: s = "crypto.randomUUID()" } = e, { columnDefs: o = [] } = e, { rowData: u = [] } = e, { store: c } = e, { rowActions: f = [] } = e, d = { name: "", color: "", number: "" }, h = At([]);
   rt(n, h, (I) => t(7, l = I));
   let m = At(null);
   rt(n, m, (I) => t(5, i = I));
@@ -25837,7 +25837,7 @@ function Cm(n, e, t) {
     let A = [
       ...u,
       {
-        id: crypto.randomUUID(),
+        id: "crypto.randomUUID()",
         key: l.label.toLowerCase(),
         value: h,
         operation: "=",
@@ -27373,7 +27373,7 @@ class Cn {
   constructor() {
     this.baseUrl = "http://localhost:9090/compas-scl-data-service", this.dummySearchResults = [
       new ni(
-        crypto.randomUUID(),
+        "blablablabla",
         "Dummy name",
         "My Note",
         "Jane Doe",
@@ -27387,7 +27387,7 @@ class Cn {
         []
       ),
       new ni(
-        crypto.randomUUID(),
+        "blablablabla-2",
         "Dummy name 2",
         "My Note 2",
         "Jane Doe",
@@ -27425,7 +27425,7 @@ class Cn {
       ),
       oi(() => ai([
         new ni(
-          crypto.randomUUID(),
+          "blablablabla-3",
           "Dummy name",
           "My Note",
           "Jane Doe",
@@ -27439,7 +27439,7 @@ class Cn {
           []
         ),
         new ni(
-          crypto.randomUUID(),
+          "blablablabla-4",
           "Dummy name",
           "My Note 2",
           "Jane Doe",

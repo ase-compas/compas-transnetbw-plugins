@@ -15875,7 +15875,7 @@ function Hf(n) {
   };
 }
 function Mf(n, e, t) {
-  let i, r, l, { loadingDone: o = !0 } = e, { label: a = crypto.randomUUID() } = e, { columnDefs: s = [] } = e, { rowData: u = [] } = e, { store: f } = e, { rowActions: c = [] } = e, d = { name: "", color: "", number: "" }, p = ut([]);
+  let i, r, l, { loadingDone: o = !0 } = e, { label: a = "crypto.randomUUID()" } = e, { columnDefs: s = [] } = e, { rowData: u = [] } = e, { store: f } = e, { rowActions: c = [] } = e, d = { name: "", color: "", number: "" }, p = ut([]);
   xe(n, p, (h) => t(7, l = h));
   let b = ut(null);
   xe(n, b, (h) => t(5, i = h));

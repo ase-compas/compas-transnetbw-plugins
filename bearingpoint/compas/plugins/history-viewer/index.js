@@ -22926,7 +22926,7 @@ function Ph(n) {
   };
 }
 function Hh(n, e, t) {
-  let i, r, l, { loadingDone: a = !0 } = e, { label: s = crypto.randomUUID() } = e, { columnDefs: o = [] } = e, { rowData: u = [] } = e, { store: c } = e, { rowActions: d = [] } = e, f = { name: "", color: "", number: "" }, h = Lt([]);
+  let i, r, l, { loadingDone: a = !0 } = e, { label: s = "crypto.randomUUID()" } = e, { columnDefs: o = [] } = e, { rowData: u = [] } = e, { store: c } = e, { rowActions: d = [] } = e, f = { name: "", color: "", number: "" }, h = Lt([]);
   it(n, h, (b) => t(7, l = b));
   let g = Lt(null);
   it(n, g, (b) => t(5, i = b));
@@ -26933,7 +26933,7 @@ function Am(n, e, t) {
     let v = [
       ...u,
       {
-        id: crypto.randomUUID(),
+        id: "crypto.randomUUID()",
         key: l.label.toLowerCase(),
         value: h,
         operation: "=",
