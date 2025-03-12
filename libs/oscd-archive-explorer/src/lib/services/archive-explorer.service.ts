@@ -9,14 +9,14 @@ import {
 } from '@oscd-transnet-plugins/oscd-archiving-api-client';
 import { catchError, delay, from, map, Observable, of, take } from 'rxjs';
 import { ArchiveSearchResult } from '../domain';
-
+import { v4 as uuidv4 } from 'uuid';
 export class ArchiveExplorerService {
   private static instance: ArchiveExplorerService;
   private baseUrl = 'http://localhost:9090/compas-scl-data-service';
 
   private dummySearchResults = [
     new ArchiveSearchResult(
-      crypto.randomUUID(),
+      uuidv4(),
       'Dummy name',
       'My Note',
       'Jane Doe',
@@ -30,7 +30,7 @@ export class ArchiveExplorerService {
       []
     ),
     new ArchiveSearchResult(
-      crypto.randomUUID(),
+      uuidv4(),
       'Dummy name 2',
       'My Note 2',
       'Jane Doe',
@@ -89,7 +89,7 @@ export class ArchiveExplorerService {
         catchError(() => {
           return of([
             new ArchiveSearchResult(
-              crypto.randomUUID(),
+              uuidv4(),
               'Dummy name',
               'My Note',
               'Jane Doe',
@@ -103,7 +103,7 @@ export class ArchiveExplorerService {
               []
             ),
             new ArchiveSearchResult(
-              crypto.randomUUID(),
+              uuidv4(),
               'Dummy name',
               'My Note 2',
               'Jane Doe',

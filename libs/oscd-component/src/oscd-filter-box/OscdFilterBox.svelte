@@ -5,6 +5,7 @@
   import OscdChip from '../oscd-chip/OscdChip.svelte';
   import { Set } from '@smui/chips';
   import OscdDatePicker from '../oscd-datepicker/OscdDatePicker.svelte';
+  import { v4 as uuidv4 } from 'uuid';
 
   export let filterTypes: FilterType[] = [];
   export let activeFilters: ActiveFilter[] = [];
@@ -39,7 +40,7 @@
     let activeFilters_ = [
       ...activeFilters,
       {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         key: getSelectedFilterType.label.toLowerCase(),
         value: inputValue,
         operation: '=',

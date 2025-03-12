@@ -124,9 +124,10 @@
     OscdDeleteIcon,
   } from "@oscd-transnet-plugins/oscd-icons";
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
+  import { v4 as uuidv4 } from 'uuid';
 
   export let loadingDone = true;
-  export let label = crypto.randomUUID();
+  export let label = uuidv4();
   export let columnDefs = [];
   export let rowData = [];
   export let store;

@@ -34,6 +34,7 @@
     "svelte-loader": "^3.2.3",
     "svelte-material-ui": "^7.0.0",
     "tslib": "^2.3.0",
+    "uuid": "^11.1.0",
     "vite-plugin-svelte": "^3.0.1"
   },
   "devDependencies": {
