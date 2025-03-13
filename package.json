@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "npm run generate:history-api-client && npm run generate:archiving-api-client && npm run build:history-viewer && npm run build:archive-explorer && npm run build:location-viewer && npm run build:location-manager",
+    "build": "npm run generate:history-api-client && npm run generate:archiving-api-client && npm run build:history-viewer && npm run build:archive-explorer && npm run build:location-viewer && npm run build:location-manager && npm run build:tsld",
     "mock-server": "node mocks/server.js",
     "clean:history-viewer": "rm -rf dist/apps/history-viewer",
     "run:history-viewer": "nx run history-viewer:serve",
