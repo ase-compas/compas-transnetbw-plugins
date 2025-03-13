@@ -9,24 +9,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository (Main Branch)
         uses: actions/checkout@v3
 
       - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Build Project
         run: npm run build
+
+      - name: Store Build Files Temporarily
+        run: mv dist dist-temp
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v3
         with:
           ref: gh-pages
 
+      - name: Restore Build Files
+        run: mv dist-temp dist
+
       - name: Copy Built Files to Plugins Folder
         run: |
           mkdir -p bearingpoint/compas/plugins
-          cp -r dist/apps/* bearingpoint/compas/plugins
+          cp -r dist/* bearingpoint/compas/plugins
 
       - name: Commit and Push Changes
         run: |
