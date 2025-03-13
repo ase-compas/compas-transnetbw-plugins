@@ -1,6 +1,0 @@
-{
-  "name": "@oscd-transnet-plugins/oscd-history-api-client",
-  "version": "0.0.1",
-  "main": "./src/index.js",
-  "type": "commonjs"
-}
