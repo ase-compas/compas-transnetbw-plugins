@@ -41,7 +41,7 @@ jobs:
       - name: Copy Built Files to Plugins Folder
         run: |
           mkdir -p bearingpoint/compas/plugins
-          cp -r dist/* bearingpoint/compas/plugins
+          cp -r dist/apps/* bearingpoint/compas/plugins
 
       - name: Commit and Push Changes
         run: |
