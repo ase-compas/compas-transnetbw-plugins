@@ -18,16 +18,21 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Store Build Files Temporarily
-        run: mv dist dist-temp
-
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+      
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v3
         with:
           ref: gh-pages
-
-      - name: Restore Build Files
-        run: mv dist-temp dist
+      
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
 
       - name: Copy Built Files to Plugins Folder
         run: |
