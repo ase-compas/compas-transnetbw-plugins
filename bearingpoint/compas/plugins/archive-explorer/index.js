@@ -27398,7 +27398,7 @@ class ri {
 }
 class Cn {
   constructor() {
-    this.baseUrl = "/scl-data-service", this.dummySearchResults = [
+    this.baseUrl = "/compas-scl-data-service", this.dummySearchResults = [
       new ri(
         Pn(),
         "Dummy name",
@@ -27531,7 +27531,7 @@ class Cn {
 }
 class Hn {
   constructor() {
-    this.baseUrl = "/scl-data-service";
+    this.baseUrl = "/compas-scl-data-service";
   }
   static getInstance() {
     return Hn.instance || (Hn.instance = new Hn()), Hn.instance;
