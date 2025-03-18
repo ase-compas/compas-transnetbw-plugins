@@ -15,7 +15,7 @@ import { LocationModel, SclResourceModel } from '../domain';
 
 export class LocationViewerService {
   private static instance: LocationViewerService;
-  private readonly endpoint = '/scl-data-service';
+  private readonly endpoint = '/compas-scl-data-service';
   private readonly locationsApiClient: LocationsApi;
   private readonly historyApiClient: HistoryApi;
 
