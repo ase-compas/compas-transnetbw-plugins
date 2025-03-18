@@ -12,7 +12,7 @@ import { ArchiveSearchResult } from '../domain';
 import { v4 as uuidv4 } from 'uuid';
 export class ArchiveExplorerService {
   private static instance: ArchiveExplorerService;
-  private baseUrl = 'http://localhost:9090/compas-scl-data-service';
+  private baseUrl = 'http://compas.northeurope.cloudapp.azure.com:9090/compas-scl-data-service';
 
   private dummySearchResults = [
     new ArchiveSearchResult(

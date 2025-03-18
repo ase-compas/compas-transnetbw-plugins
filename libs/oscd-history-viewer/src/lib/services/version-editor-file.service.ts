@@ -4,7 +4,9 @@ import { Configuration, DataResourceSearch, HistoryApi } from '@oscd-transnet-pl
 
 export class VersionEditorFileService {
   private static instance: VersionEditorFileService;
-  private endpoint = 'http://localhost:9090/compas-scl-data-service';
+
+
+  private endpoint = 'http://compas.northeurope.cloudapp.azure.com:9090/compas-scl-data-service';
 
   private constructor() {}
 
