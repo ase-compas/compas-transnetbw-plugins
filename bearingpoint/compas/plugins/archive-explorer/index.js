@@ -27398,7 +27398,7 @@ class ri {
 }
 class Cn {
   constructor() {
-    this.baseUrl = "http://compas.northeurope.cloudapp.azure.com:9090/compas-scl-data-service", this.dummySearchResults = [
+    this.baseUrl = "http://scl-data-service:9090/compas-scl-data-service", this.dummySearchResults = [
       new ri(
         Pn(),
         "Dummy name",
@@ -27531,7 +27531,7 @@ class Cn {
 }
 class Hn {
   constructor() {
-    this.baseUrl = "http://compas.northeurope.cloudapp.azure.com:9090/compas-scl-data-service";
+    this.baseUrl = "http://scl-data-service:9090/compas-scl-data-service";
   }
   static getInstance() {
     return Hn.instance || (Hn.instance = new Hn()), Hn.instance;
