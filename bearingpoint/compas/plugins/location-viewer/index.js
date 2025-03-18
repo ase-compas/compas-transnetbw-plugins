@@ -1979,7 +1979,7 @@ class Ir {
 }
 class Dn {
   constructor() {
-    this.endpoint = "http://scl-data-service:9090/compas-scl-data-service", this.locationsApiClient = this.createLocationsApiClient(this.endpoint), this.historyApiClient = this.createHistoryApiClient(this.endpoint);
+    this.endpoint = "/scl-data-service", this.locationsApiClient = this.createLocationsApiClient(this.endpoint), this.historyApiClient = this.createHistoryApiClient(this.endpoint);
   }
   static getInstance() {
     return Dn.instance || (Dn.instance = new Dn()), Dn.instance;

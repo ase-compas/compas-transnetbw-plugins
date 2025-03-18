@@ -28377,7 +28377,7 @@ class Bp extends Pp {
 }
 class Nn {
   constructor() {
-    this.endpoint = "http://scl-data-service:9090/compas-scl-data-service";
+    this.endpoint = "/scl-data-service";
   }
   static getInstance() {
     return Nn.instance || (Nn.instance = new Nn()), Nn.instance;
