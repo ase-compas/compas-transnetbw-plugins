@@ -6,7 +6,7 @@ export class VersionEditorFileService {
   private static instance: VersionEditorFileService;
 
 
-  private endpoint = 'http://scl-data-service:9090/compas-scl-data-service';
+  private endpoint = '/scl-data-service';
 
   private constructor() {}
 
