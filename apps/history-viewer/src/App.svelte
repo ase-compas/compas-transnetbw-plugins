@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { OscdButton, OscdDataTable, OscdDialog, OscdFilterBox } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    OscdButton,
+    OscdDataTable,
+    OscdDialog,
+    OscdFilterBox,
+    OscdLoadingSpinner
+  } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
   import { catchError, finalize, switchMap, take, tap } from 'rxjs/operators';
   import { from, of } from 'rxjs';
@@ -12,6 +18,7 @@
   import { Label } from '@smui/button';
   import { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
   import { OscdCancelIcon, OscdSearchIcon } from '../../../libs/oscd-icons/src';
+  import {onMount} from "svelte";
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -24,6 +31,15 @@
 
   let loadingDone = true;
   let dialogOpen = false;
+
+  //loading quickfix for css to load
+  let loading = true;
+
+  onMount(() => {
+    setTimeout(() => {
+      loading = false;
+    }, 1000)
+  });
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
@@ -253,35 +269,38 @@
   }
 </script>
 
-<div class="version-editor-container">
-  <OscdDialog bind:open="{dialogOpen}">
-    <h3 slot="title">Version History of file {currentSelectFile?.filename}</h3>
-    <div slot="content">
-      <OscdDataTable columnDefs={modalColumnDef} store={historyStore} {loadingDone} rowActions={historyRowActions} />
+{#if loading}
+  <OscdLoadingSpinner loadingDone={!loading} />
+{:else}
+  <div class="version-editor-container">
+    <OscdDialog bind:open="{dialogOpen}">
+      <h3 slot="title">Version History of file {currentSelectFile?.filename}</h3>
+      <div slot="content">
+        <OscdDataTable columnDefs={modalColumnDef} store={historyStore} {loadingDone} rowActions={historyRowActions} />
+      </div>
+      <div slot="actions">
+        <OscdButton callback={onDialogClose} variant="raised">
+          <OscdCancelIcon />
+          <Label>Done</Label>
+        </OscdButton>
+      </div>
+    </OscdDialog>
+    <div class="search-filter">
+      <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
+        <OscdButton slot="filter-controls" variant="raised" callback={search}>
+          <OscdSearchIcon />
+          <Label>Search</Label>
+        </OscdButton>
+      </OscdFilterBox>
     </div>
-    <div slot="actions">
-      <OscdButton callback={onDialogClose} variant="raised">
-        <OscdCancelIcon />
-        <Label>Done</Label>
-      </OscdButton>
+    <div class="table-container">
+      <Card style="padding: 1rem; width: 100%; height: 100%;">
+        <h3 style="margin-bottom: 1rem;">Version Table</h3>
+        <OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions} />
+      </Card>
     </div>
-  </OscdDialog>
-  <div class="search-filter">
-    <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
-      <OscdButton slot="filter-controls" variant="raised" callback={search}>
-        <OscdSearchIcon />
-        <Label>Search</Label>
-      </OscdButton>
-    </OscdFilterBox>
   </div>
-  <div class="table-container">
-    <Card style="padding: 1rem; width: 100%; height: 100%;">
-      <h3 style="margin-bottom: 1rem;">Version Table</h3>
-      <OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions} />
-    </Card>
-  </div>
-</div>
-
+{/if}
 <style lang="css" global>
   @import "/global.css";
   @import "/material-icon.css";
