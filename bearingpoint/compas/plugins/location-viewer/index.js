@@ -1970,7 +1970,7 @@ class Ir {
 }
 class kn {
   constructor() {
-    this.endpoint = "http://localhost:9090/compas-scl-data-service", this.locationsApiClient = this.createLocationsApiClient(this.endpoint), this.historyApiClient = this.createHistoryApiClient(this.endpoint);
+    this.endpoint = "/compas-scl-data-service", this.locationsApiClient = this.createLocationsApiClient(this.endpoint), this.historyApiClient = this.createHistoryApiClient(this.endpoint);
   }
   static getInstance() {
     return kn.instance || (kn.instance = new kn()), kn.instance;

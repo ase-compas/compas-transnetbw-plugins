@@ -17304,7 +17304,7 @@ class Gt {
 }
 class jt {
   constructor() {
-    this.endpoint = "http://localhost:9090/compas-scl-data-service", this.locationsApiClient = this.createApiClient(this.endpoint);
+    this.endpoint = "/compas-scl-data-service", this.locationsApiClient = this.createApiClient(this.endpoint);
   }
   static getInstance() {
     return jt.instance || (jt.instance = new jt()), jt.instance;

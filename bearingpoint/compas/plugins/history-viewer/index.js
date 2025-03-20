@@ -28545,7 +28545,7 @@ class Yp extends Wp {
 }
 class Nn {
   constructor() {
-    this.endpoint = "http://localhost:9090/compas-scl-data-service";
+    this.endpoint = "/compas-scl-data-service";
   }
   static getInstance() {
     return Nn.instance || (Nn.instance = new Nn()), Nn.instance;
