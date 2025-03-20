@@ -8,7 +8,9 @@ import { catchError, type Observable, of, take } from 'rxjs';
 export class LocationService {
   private static instance: LocationService;
 
-  private baseUrl = '/compas-scl-data-service';
+  // private baseUrl = '/compas-scl-data-service';
+  private baseUrl = 'http://localhost:9090/compas-scl-data-service';
+  
 
   private constructor() {
     //

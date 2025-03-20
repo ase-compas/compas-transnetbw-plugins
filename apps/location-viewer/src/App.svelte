@@ -6,7 +6,7 @@
     ActiveFilter, FilterType,
     OscdButton,
     OscdDataTable, OscdExpansionPanel,
-    OscdFilterBox,
+    OscdFilterBox, OscdLoadingSpinner,
     OscdSelect
   } from "@oscd-transnet-plugins/oscd-component";
   import Card from "@smui/card";
@@ -19,6 +19,23 @@
   let selectedLocation;
   let loadingDone = false;
   let searchOpen = false;
+
+  //loading quickfix for css to load
+  let loading = true;
+
+  onMount(() => {
+    setTimeout(() => {
+      loading = false;
+    }, 1000)
+  });
+
+  onMount(() => {
+    locationViewerService.getLocations().subscribe({
+      next: (data) => {
+        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
+      }
+    })
+  })
 
   export let locationResourceStore = new ResourceStore();
   export let searchResourceStore = new ResourceStore();
@@ -163,14 +180,6 @@
     searchOpen = !searchOpen;
   }
 
-  onMount(() => {
-    locationViewerService.getLocations().subscribe({
-      next: (data) => {
-        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
-      }
-    })
-  })
-
   $: if (selectedLocation) {
     loadingDone = false; // Optional: Set a loading state
     locationViewerService.searchResources({}).subscribe({
@@ -190,41 +199,45 @@
   }
 </script>
 
-<div class="location-viewer-container">
-  <OscdSelect
-    bind:data={locations}
-    bind:value={selectedLocation}
-    label="Location"
-  />
-  <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
-    <div slot="content">
-      <div class="search-filter">
-        <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
-          <OscdButton slot="filter-controls" variant="raised" callback={search}>
-            <OscdSearchIcon />
-            <Label>Search</Label>
-          </OscdButton>
-        </OscdFilterBox>
+{#if loading}
+  <OscdLoadingSpinner loadingDone={!loading} />
+{:else}
+  <div class="location-viewer-container">
+    <OscdSelect
+      bind:data={locations}
+      bind:value={selectedLocation}
+      label="Location"
+    />
+    <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
+      <div slot="content">
+        <div class="search-filter">
+          <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
+            <OscdButton slot="filter-controls" variant="raised" callback={search}>
+              <OscdSearchIcon />
+              <Label>Search</Label>
+            </OscdButton>
+          </OscdFilterBox>
+        </div>
+        <div class="table-container">
+          <Card style="padding: 1rem; width: 100%; height: 100%;">
+            <h3 style="margin-bottom: 1rem;">Search Result</h3>
+            <OscdDataTable {columnDefs} store={searchResourceStore} {loadingDone} rowActions={searchRowActions} />
+          </Card>
+        </div>
       </div>
-      <div class="table-container">
-        <Card style="padding: 1rem; width: 100%; height: 100%;">
-          <h3 style="margin-bottom: 1rem;">Search Result</h3>
-          <OscdDataTable {columnDefs} store={searchResourceStore} {loadingDone} rowActions={searchRowActions} />
-        </Card>
-      </div>
+    </OscdExpansionPanel>
+    <div class="table-container">
+      <Card style="padding: 1rem; width: 100%; height: 100%;">
+        <h3 style="margin-bottom: 1rem;">
+          {selectedLocation
+            ? `Location: ${locations.find((item) => item.value === selectedLocation)?.label}`
+            : 'Select Location'}
+        </h3>
+        <OscdDataTable {columnDefs} store={locationResourceStore} {loadingDone} rowActions={locationRowActions}  />
+      </Card>
     </div>
-  </OscdExpansionPanel>
-  <div class="table-container">
-    <Card style="padding: 1rem; width: 100%; height: 100%;">
-      <h3 style="margin-bottom: 1rem;">
-        {selectedLocation
-          ? `Location: ${locations.find((item) => item.value === selectedLocation)?.label}`
-          : 'Select Location'}
-      </h3>
-      <OscdDataTable {columnDefs} store={locationResourceStore} {loadingDone} rowActions={locationRowActions}  />
-    </Card>
   </div>
-</div>
+{/if}
 
 <style>
   @import "/global.css";

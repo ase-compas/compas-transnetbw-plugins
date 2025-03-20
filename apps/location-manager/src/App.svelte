@@ -27,6 +27,15 @@
   let dialogState: DialogState = DialogState.Closed;
   let currentSelectLocation: Location | null = null;
 
+  //loading quickfix for css to load
+  let loading = true;
+
+  onMount(() => {
+    setTimeout(() => {
+      loading = false;
+    }, 1000)
+  });
+
   const columnDefs = [
     { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: 'Key', field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
@@ -110,61 +119,68 @@
 
 </script>
 
-<div class="location-manager-container">
-  <OscdLoadingSpinner {loadingDone} />
-  <OscdDialog open="{dialogState === DialogState.Remove}">
-    <h3 slot="title">Delete location {currentSelectLocation?.name}?</h3>
-    <div slot="actions">
-      <OscdButton callback={onRemoveConfirm} variant="raised">
-        <OscdSaveIcon />
-        <Label>Confirm</Label>
-      </OscdButton>
-      <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
-        <OscdCancelIcon />
-        <Label>Cancel</Label>
-      </OscdButton>
-    </div>
-  </OscdDialog>
-  <OscdDialog open="{dialogState === DialogState.Update || dialogState === DialogState.Create}">
-    <h3 slot="title">{dialogState === DialogState.Update ? `Location: ${currentSelectLocation?.name}` : 'New Location'}</h3>
-    <div slot="content">
-      {#if currentSelectLocation}
-        {#if dialogState === DialogState.Update}
-          <Label>{currentSelectLocation.uuid}</Label>
+
+{#if loading}
+  <OscdLoadingSpinner loadingDone={!loading} />
+{:else}
+  <div class="location-manager-container">
+    <OscdLoadingSpinner {loadingDone} />
+    <OscdDialog open="{dialogState === DialogState.Remove}">
+      <h3 slot="title">Delete location {currentSelectLocation?.name}?</h3>
+      <div slot="actions">
+        <OscdButton callback={onRemoveConfirm} variant="raised">
+          <OscdSaveIcon />
+          <Label>Confirm</Label>
+        </OscdButton>
+        <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
+          <OscdCancelIcon />
+          <Label>Cancel</Label>
+        </OscdButton>
+      </div>
+    </OscdDialog>
+    <OscdDialog open="{dialogState === DialogState.Update || dialogState === DialogState.Create}">
+      <h3 slot="title">{dialogState === DialogState.Update ? `Location: ${currentSelectLocation?.name}` : 'New Location'}</h3>
+      <div slot="content">
+        {#if currentSelectLocation}
+          {#if dialogState === DialogState.Update}
+            <Label>{currentSelectLocation.uuid}</Label>
+          {/if}
+          <OscdInput label="Name" bind:value={currentSelectLocation.name}></OscdInput>
+          <OscdInput label="Key" bind:value={currentSelectLocation.key}></OscdInput>
+          <OscdInput label="Description" bind:value={currentSelectLocation.description}></OscdInput>
         {/if}
-        <OscdInput label="Name" bind:value={currentSelectLocation.name}></OscdInput>
-        <OscdInput label="Key" bind:value={currentSelectLocation.key}></OscdInput>
-        <OscdInput label="Description" bind:value={currentSelectLocation.description}></OscdInput>
-      {/if}
-    </div>
-    <div slot="actions">
-      <OscdButton callback={onUpdateOrCreateSave} variant="raised">
-        <OscdSaveIcon />
-        <Label>Save</Label>
+      </div>
+      <div slot="actions">
+        <OscdButton callback={onUpdateOrCreateSave} variant="raised">
+          <OscdSaveIcon />
+          <Label>Save</Label>
+        </OscdButton>
+        <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
+          <OscdCancelIcon />
+          <Label>Cancel</Label>
+        </OscdButton>
+      </div>
+    </OscdDialog>
+    <div style="margin-top: 10px; margin-bottom: 10px">
+      <OscdButton class="button" callback={create} variant="raised">
+        <OscdAddIcon />
+        <Label>Add Location</Label>
       </OscdButton>
-      <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
-        <OscdCancelIcon />
-        <Label>Cancel</Label>
+      <OscdButton class="button" callback={load} variant="raised">
+        <OscdRefreshIcon />
+        <Label>Refresh</Label>
       </OscdButton>
     </div>
-  </OscdDialog>
-  <div style="margin-top: 10px; margin-bottom: 10px">
-    <OscdButton class="button" callback={create} variant="raised">
-      <OscdAddIcon />
-      <Label>Add Location</Label>
-    </OscdButton>
-    <OscdButton class="button" callback={load} variant="raised">
-      <OscdRefreshIcon />
-      <Label>Refresh</Label>
-    </OscdButton>
+    <div class="table-container">
+      <Card style="padding: 1rem; width: 100%; height: 100%;">
+        <h3 style="margin-bottom: 1rem;">Location Table</h3>
+        <OscdDataTable {columnDefs} store={locationStore} {loadingDone} {rowActions} />
+      </Card>
+    </div>
   </div>
-  <div class="table-container">
-    <Card style="padding: 1rem; width: 100%; height: 100%;">
-      <h3 style="margin-bottom: 1rem;">Location Table</h3>
-      <OscdDataTable {columnDefs} store={locationStore} {loadingDone} {rowActions} />
-    </Card>
-  </div>
-</div>
+{/if}
+
+
 
 <style>
   @import "/global.css";

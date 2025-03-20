@@ -37,6 +37,15 @@
 
   let loadingDone = false;
 
+  //loading quickfix for css to load
+  let loading = true;
+
+  onMount(() => {
+    setTimeout(() => {
+      loading = false;
+    }, 1000)
+  });
+
   $: uuidFilterSelected = filtersToSearch.length && !!filtersToSearch?.find(f => f.key === 'uuid');
 
   onMount(async () => {
