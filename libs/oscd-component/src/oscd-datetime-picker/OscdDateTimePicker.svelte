@@ -9,7 +9,7 @@
 
 <div class="custom-text-field">
   <input
-    type="date"
+    type="datetime-local"
     id="datetime-picker"
     bind:value={value}
     on:change={handleDateTimeChange}

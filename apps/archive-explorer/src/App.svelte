@@ -90,40 +90,43 @@
   Before all CSS is loaded, the select box expansion icons are briefly displayed extremely large.
   Setting display: none and overriding it in the CSS after it is loaded prevents this.
 -->
-<div class="archive-explorer-container" style="display: none;">
-  <OscdLoadingSpinner {loadingDone} />
-  <div class="search-filter">
-    <OscdFilterBox filterTypes="{locationFilterType}"
-                   bind:activeFilters={locationFiltersToSearch} useOptionLabelInChipText="{true}">
-    </OscdFilterBox>
+{#if loading}
+  <OscdLoadingSpinner loadingDone={!loading} />
+{:else}
+  <div class="archive-explorer-container" style="display: none;">
+    <OscdLoadingSpinner {loadingDone} />
+    <div class="search-filter">
+      <OscdFilterBox filterTypes="{locationFilterType}"
+                     bind:activeFilters={locationFiltersToSearch} useOptionLabelInChipText="{true}">
+      </OscdFilterBox>
 
-    <OscdFilterBox disabled="{uuidFilterSelected || !locationFiltersToSearch.length}" {filterTypes}
-                   bind:activeFilters={filtersToSearch}>
-      <OscdButton slot="filter-controls" variant="raised" callback={search}
-                  disabled="{!locationFiltersToSearch.length}">
-        <OscdSearchIcon />
-        <Label>Search</Label>
-      </OscdButton>
-    </OscdFilterBox>
+      <OscdFilterBox disabled="{uuidFilterSelected || !locationFiltersToSearch.length}" {filterTypes}
+                     bind:activeFilters={filtersToSearch}>
+        <OscdButton slot="filter-controls" variant="raised" callback={search}
+                    disabled="{!locationFiltersToSearch.length}">
+          <OscdSearchIcon />
+          <Label>Search</Label>
+        </OscdButton>
+      </OscdFilterBox>
+    </div>
+
+    <div class="content-container">
+      {#if (searchResults.size)}
+        {#each searchResults as result, index (result)}
+          <!-- result[0] => UUID of the location -->
+          <!-- result[1] => ArchiveSearchResult[] -->
+          <OscdExpansionPanel open="{index === 0}"
+                              title="{archiveExplorerLocationStore.getLocationNameByUuid(result[0])}">
+            <span slot="content">
+                <ArchivedResources searchResults="{result[1]}" />
+            </span>
+          </OscdExpansionPanel>
+          <div class="separator"></div>
+        {/each}
+      {/if}
+    </div>
   </div>
-
-  <div class="content-container">
-    {#if (searchResults.size)}
-      {#each searchResults as result, index (result)}
-        <!-- result[0] => UUID of the location -->
-        <!-- result[1] => ArchiveSearchResult[] -->
-        <OscdExpansionPanel open="{index === 0}"
-                            title="{archiveExplorerLocationStore.getLocationNameByUuid(result[0])}">
-          <span slot="content">
-              <ArchivedResources searchResults="{result[1]}" />
-          </span>
-        </OscdExpansionPanel>
-        <div class="separator"></div>
-      {/each}
-    {/if}
-  </div>
-</div>
-
+{/if}
 <style>
   @import "/global.css";
   @import '/smui.css';

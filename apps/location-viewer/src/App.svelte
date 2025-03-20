@@ -16,8 +16,7 @@
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = [];
-  let selectedLocation;
-  let loadingDone = false;
+  let selectedLocationUUID: string;
   let searchOpen = false;
 
   //loading quickfix for css to load
@@ -40,12 +39,22 @@
   export let locationResourceStore = new ResourceStore();
   export let searchResourceStore = new ResourceStore();
 
-  const columnDefs = [
+  const searchColumnDefs = [
     { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'location', field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Location', field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatLocation },
+    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Changed At', field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
+  ];
+
+  const locationColumnDefs = [
+    { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Changed At', field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
@@ -53,6 +62,15 @@
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
+  }
+
+  function formatLocation(uuid: string) {
+    if(!locations || !uuid) {
+      return uuid || '';
+    }
+    const foundLocation = locations.find((location) => location.value === uuid);
+    console.log("foundlocation", { foundLocation, bool: foundLocation?.label !== undefined });
+    return foundLocation?.label ? foundLocation.label : uuid;
   }
 
   const filterTypes: FilterType[] = [
@@ -100,13 +118,13 @@
     {
       id: 6,
       label: 'from',
-      inputType: { id: 1, type: 'timepicker', validatorFn: () => true, options: [] },
+      inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 7,
       label: 'to',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
+      inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
   ];
@@ -122,17 +140,16 @@
   let filtersToSearch: ActiveFilter[] = [];
 
   function assign(row: SclResourceModel) {
-    locationViewerService.assignResourceToLocation(selectedLocation, row.uuid).subscribe({
+    locationViewerService.assignResourceToLocation(selectedLocationUUID, row.uuid).subscribe({
       next: () => {
         searchResourceStore.remove(row.uuid);
-        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
-        locationResourceStore.add({...row, location: tempLocation.label});
+        locationResourceStore.add({...row, location: selectedLocationUUID});
       },
     });
   }
 
   function unassign(row: SclResourceModel) {
-    locationViewerService.unassignResourceFromLocation(selectedLocation, row.uuid).subscribe({
+    locationViewerService.unassignResourceFromLocation(selectedLocationUUID, row.uuid).subscribe({
       next: () => {
         locationResourceStore.remove(row.uuid);
       },
@@ -141,16 +158,11 @@
 
   function search() {
     const searchParams = convertFilterToSearchParams(filtersToSearch);
-    loadingDone = false;
     locationViewerService.searchResources(searchParams).pipe(
       take(1),
       tap((data: SclResourceModel[]) => {
-        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
-        searchResourceStore.set(data.filter((item) => item.location !== tempLocation.label));
+        searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
       }),
-      finalize(() => {
-        loadingDone = true;
-      })
     ).subscribe();
   }
 
@@ -180,20 +192,14 @@
     searchOpen = !searchOpen;
   }
 
-  $: if (selectedLocation) {
-    loadingDone = false; // Optional: Set a loading state
+  $: if (selectedLocationUUID) {
     locationViewerService.searchResources({}).subscribe({
       next: (data) => {
-        console.log({data, selectedLocation});
-        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
-        locationResourceStore.set(data.filter((item) => item.location === tempLocation.label));
-      },
-      complete: () => {
-        loadingDone = true;
+        console.log({data, selectedLocation: selectedLocationUUID});
+        locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
       },
       error: (err) => {
         console.error('Error loading resources:', err);
-        loadingDone = true;
       }
     });
   }
@@ -205,35 +211,37 @@
   <div class="location-viewer-container">
     <OscdSelect
       bind:data={locations}
-      bind:value={selectedLocation}
+      bind:value={selectedLocationUUID}
       label="Location"
     />
-    <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
-      <div slot="content">
-        <div class="search-filter">
-          <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
-            <OscdButton slot="filter-controls" variant="raised" callback={search}>
-              <OscdSearchIcon />
-              <Label>Search</Label>
-            </OscdButton>
-          </OscdFilterBox>
+      <div class="search-filter">
+      <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
+        <div slot="content">
+          <div class="filter-box">
+            <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
+              <OscdButton slot="filter-controls" variant="raised" callback={search}>
+                <OscdSearchIcon />
+                <Label>Search</Label>
+              </OscdButton>
+            </OscdFilterBox>
+          </div>
+          <div class="table-container">
+            <Card style="padding: 1rem; width: 100%; height: 100%;">
+              <h3 style="margin-bottom: 1rem;">Search Result</h3>
+              <OscdDataTable columnDefs="{searchColumnDefs}" store={searchResourceStore} rowActions={searchRowActions} />
+            </Card>
+          </div>
         </div>
-        <div class="table-container">
-          <Card style="padding: 1rem; width: 100%; height: 100%;">
-            <h3 style="margin-bottom: 1rem;">Search Result</h3>
-            <OscdDataTable {columnDefs} store={searchResourceStore} {loadingDone} rowActions={searchRowActions} />
-          </Card>
-        </div>
-      </div>
-    </OscdExpansionPanel>
+      </OscdExpansionPanel>
+    </div>
     <div class="table-container">
       <Card style="padding: 1rem; width: 100%; height: 100%;">
         <h3 style="margin-bottom: 1rem;">
-          {selectedLocation
-            ? `Location: ${locations.find((item) => item.value === selectedLocation)?.label}`
+          {selectedLocationUUID
+            ? `Location: ${locations.find((item) => item.value === selectedLocationUUID)?.label}`
             : 'Select Location'}
         </h3>
-        <OscdDataTable {columnDefs} store={locationResourceStore} {loadingDone} rowActions={locationRowActions}  />
+        <OscdDataTable columnDefs="{locationColumnDefs}" store={locationResourceStore} rowActions={locationRowActions}  />
       </Card>
     </div>
   </div>
@@ -246,6 +254,10 @@
 
   .search-filter {
     margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-box {
     margin-bottom: 1rem;
   }
 </style>
