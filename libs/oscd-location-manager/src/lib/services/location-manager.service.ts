@@ -4,8 +4,7 @@ import {LocationModel} from "../domain";
 
 export class LocationManagerService {
   private static instance: LocationManagerService;
-  // private readonly endpoint = '/compas-scl-data-service';
-  private readonly endpoint = 'http://localhost:9090/compas-scl-data-service';
+  private readonly endpoint = '/compas-scl-data-service';
   private readonly locationsApiClient: LocationsApi;
 
   private constructor() {
