@@ -1,0 +1,9 @@
+{
+  "name": "tsld",
+  "version": "0.0.1",
+  "dependencies": {
+    "cytoscape": "3.31.1"
+  },
+  "main": "./main.js",
+  "type": "commonjs"
+}
