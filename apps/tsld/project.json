@@ -2,54 +2,24 @@
   "name": "tsld",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/tsld/src",
-  "projectType": "application",
+  "projectType": "library",
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/esbuild:esbuild",
+      "executor": "@nx/vite:build",
       "outputs": ["{options.outputPath}"],
-      "defaultConfiguration": "production",
       "options": {
-        "platform": "node",
         "outputPath": "dist/apps/tsld",
-        "format": ["cjs"],
-        "bundle": false,
-        "main": "apps/tsld/src/main.ts",
-        "tsConfig": "apps/tsld/tsconfig.app.json",
-        "assets": ["apps/tsld/src/assets"],
-        "generatePackageJson": true,
-        "esbuildOptions": {
-          "sourcemap": true,
-          "outExtension": {
-            ".js": ".js"
-          }
-        }
-      },
-      "configurations": {
-        "development": {},
-        "production": {
-          "esbuildOptions": {
-            "sourcemap": false,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
+        "main": "apps/tsld/src/index.ts",
+        "tsConfig": "apps/tsld/tsconfig.lib.json",
+        "assets": ["apps/tsld/*.md"]
       }
     },
     "serve": {
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
+      "executor": "nx:run-commands",
       "options": {
-        "buildTarget": "tsld:build"
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "tsld:build:development"
-        },
-        "production": {
-          "buildTarget": "tsld:build:production"
-        }
+        "command": "vite",
+        "cwd": "apps/tsld/src"
       }
     }
   }

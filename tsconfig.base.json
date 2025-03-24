@@ -37,7 +37,8 @@
       ],
       "@oscd-transnet-plugins/oscd-location-viewer": [
         "libs/oscd-location-viewer/src/index.ts"
-      ]
+      ],
+      "@oscd-transnet-plugins/tsld": ["apps/tsld/src/index.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]
