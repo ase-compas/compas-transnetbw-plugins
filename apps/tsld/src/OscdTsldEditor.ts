@@ -862,7 +862,6 @@ export default class OscdTsldEditor extends LitElement {
   override render(): TemplateResult {
     // full height for canvas minus tab and header height
     return html`
-      <p>test</p>
       <div>
         <div
           id="cy"
@@ -871,5 +870,3 @@ export default class OscdTsldEditor extends LitElement {
       </div>`;
   }
 }
-
-customElements.define('test-component', OscdTsldEditor);
