@@ -1,9 +1,9 @@
 {
-  "name": "tsld",
+  "name": "@oscd-transnet-plugins/tsld",
   "version": "0.0.1",
-  "dependencies": {
-    "cytoscape": "3.31.1"
-  },
-  "main": "./main.js",
-  "type": "commonjs"
+  "dependencies": {},
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "typings": "./index.d.ts",
+  "private": true
 }
