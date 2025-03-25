@@ -23,7 +23,7 @@ const typeIcons: Partial<Record<string, TemplateResult>> = {
 };
 
 export default class OscdTsldEditor extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
       padding: 25px;
@@ -54,7 +54,7 @@ export default class OscdTsldEditor extends LitElement {
     return typeIcons[condEq] ?? generalConductingEquipmentIcon;
   }
 
-  protected firstUpdated() {
+  protected override firstUpdated() {
     this.initializeCytoscape();
   }
 
@@ -859,7 +859,7 @@ export default class OscdTsldEditor extends LitElement {
     }
   }
 
-  render(): TemplateResult {
+  override render(): TemplateResult {
     // full height for canvas minus tab and header height
     return html`
       <div>
@@ -870,5 +870,3 @@ export default class OscdTsldEditor extends LitElement {
       </div>`;
   }
 }
-
-customElements.define('test-component', OscdTsldEditor);
