@@ -1,0 +1,19 @@
+{
+  "name": "oscd-localization",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-localization/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-localization",
+        "main": "libs/oscd-localization/src/index.ts",
+        "tsConfig": "libs/oscd-localization/tsconfig.lib.json",
+        "assets": ["libs/oscd-localization/*.md"]
+      }
+    }
+  }
+}

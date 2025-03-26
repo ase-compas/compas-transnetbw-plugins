@@ -1,7 +1,12 @@
 <script context="module">
-  import {setupTranslation} from "./i18n/TranslationHandler";
+  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
+  import de from './i18n/de.json';
+  import en from './i18n/en.json';
 
-  setupTranslation();
+  setupTranslation({
+    en,
+    de,
+  });
 </script>
 <script lang="ts">
   import {
@@ -24,7 +29,7 @@
   import {Label} from "@smui/button";
   import {finalize, take, tap} from "rxjs/operators";
   import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
-  import {_} from "svelte-i18n";
+  import {_, locale} from "svelte-i18n";
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = [];
@@ -35,7 +40,7 @@
   export let locationResourceStore = new ResourceStore();
   export let searchResourceStore = new ResourceStore();
 
-  const columnDefs = [
+  $: columnDefs = [
     { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
