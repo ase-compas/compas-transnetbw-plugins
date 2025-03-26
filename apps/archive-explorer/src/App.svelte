@@ -116,7 +116,7 @@
         <OscdButton slot="filter-controls" variant="raised" callback={search}
                     disabled="{!locationFiltersToSearch.length}">
           <OscdSearchIcon />
-          <Label>Search</Label>
+          <Label>{$_('search')}</Label>
         </OscdButton>
       </OscdFilterBox>
     </div>
