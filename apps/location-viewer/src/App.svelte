@@ -1,18 +1,30 @@
-<script lang="ts">
+<script context="module">
+  import {setupTranslation} from "./i18n/TranslationHandler";
 
-  import {LocationViewerService, ResourceStore, SclResourceModel, SearchParams} from "@oscd-transnet-plugins/oscd-location-viewer";
+  setupTranslation();
+</script>
+<script lang="ts">
+  import {
+    LocationViewerService,
+    ResourceStore,
+    SclResourceModel,
+    SearchParams
+  } from "@oscd-transnet-plugins/oscd-location-viewer";
   import {onMount} from "svelte";
   import {
-    ActiveFilter, FilterType,
+    ActiveFilter,
+    FilterType,
     OscdButton,
-    OscdDataTable, OscdExpansionPanel,
+    OscdDataTable,
+    OscdExpansionPanel,
     OscdFilterBox,
     OscdSelect
   } from "@oscd-transnet-plugins/oscd-component";
   import Card from "@smui/card";
-  import {Icon, Label} from "@smui/button";
+  import {Label} from "@smui/button";
   import {finalize, take, tap} from "rxjs/operators";
   import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
+  import {_} from "svelte-i18n";
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = [];
@@ -24,13 +36,13 @@
   export let searchResourceStore = new ResourceStore();
 
   const columnDefs = [
-    { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'location', field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Changed At', field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('location'), field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
 
@@ -41,13 +53,13 @@
   const filterTypes: FilterType[] = [
     {
       id: 1,
-      label: 'UUID',
+      label: $_('uuid'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['='],
     },
     {
       id: 2,
-      label: 'Type',
+      label: $_('type'),
       inputType: {
         id: 2, type: 'select', validatorFn: () => true, options: [
           { value: 'SSD', label: 'SSD' },
@@ -64,31 +76,31 @@
     },
     {
       id: 3,
-      label: 'Name',
+      label: $_('name'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 4,
-      label: 'Location',
+      label: $_('location'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 5,
-      label: 'Author',
+      label: $_('author'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 6,
-      label: 'from',
+      label: $_('from'),
       inputType: { id: 1, type: 'timepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 7,
-      label: 'to',
+      label: $_('to'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
@@ -194,21 +206,21 @@
   <OscdSelect
     bind:data={locations}
     bind:value={selectedLocation}
-    label="Location"
+    label={$_('location')}
   />
-  <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
+  <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
     <div slot="content">
       <div class="search-filter">
         <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
           <OscdButton slot="filter-controls" variant="raised" callback={search}>
             <OscdSearchIcon />
-            <Label>Search</Label>
+            <Label>{$_('search')}</Label>
           </OscdButton>
         </OscdFilterBox>
       </div>
       <div class="table-container">
         <Card style="padding: 1rem; width: 100%; height: 100%;">
-          <h3 style="margin-bottom: 1rem;">Search Result</h3>
+          <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
           <OscdDataTable {columnDefs} store={searchResourceStore} {loadingDone} rowActions={searchRowActions} />
         </Card>
       </div>
@@ -218,14 +230,13 @@
     <Card style="padding: 1rem; width: 100%; height: 100%;">
       <h3 style="margin-bottom: 1rem;">
         {selectedLocation
-          ? `Location: ${locations.find((item) => item.value === selectedLocation)?.label}`
-          : 'Select Location'}
+          ? `${$_('location')}: ${locations.find((item) => item.value === selectedLocation)?.label}`
+          : $_('select_location')}
       </h3>
       <OscdDataTable {columnDefs} store={locationResourceStore} {loadingDone} rowActions={locationRowActions}  />
     </Card>
   </div>
 </div>
-
 <style>
   @import "/global.css";
   @import "/material-icon.css";

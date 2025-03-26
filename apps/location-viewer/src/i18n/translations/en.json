@@ -1,0 +1,14 @@
+{
+  "location": "Location",
+  "search": "Search",
+  "uuid": "UUID",
+  "name": "Name",
+  "author": "Author",
+  "type": "Type",
+  "version": "Version",
+  "changed_at": "Changed At",
+  "from": "From",
+  "to": "To",
+  "search_result": "Search Result",
+  "select_location": "Select Location"
+}
