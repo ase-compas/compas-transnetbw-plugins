@@ -11,7 +11,7 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": ["es2020","dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
@@ -40,6 +40,8 @@
       ],
       "@oscd-transnet-plugins/oscd-location-viewer": [
         "libs/oscd-location-viewer/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/tsld": ["apps/tsld/src/index.ts"],
       ]
     }
   },
