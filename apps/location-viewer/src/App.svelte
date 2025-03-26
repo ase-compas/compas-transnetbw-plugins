@@ -1,5 +1,5 @@
 <script context="module">
-  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
+  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
 
@@ -66,13 +66,13 @@
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
 
-  const locationColumnDefs = [
-    { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Changed At', field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+  $: locationColumnDefs = [
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
 
@@ -228,22 +228,22 @@
     <OscdSelect
       bind:data={locations}
       bind:value={selectedLocationUUID}
-      label="Location"
+      label={$_('location')}
     />
       <div class="search-filter">
-      <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
+      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
         <div slot="content">
           <div class="filter-box">
             <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
               <OscdButton slot="filter-controls" variant="raised" callback={search}>
                 <OscdSearchIcon />
-                <Label>Search</Label>
+                <Label>{$_('search')}</Label>
               </OscdButton>
             </OscdFilterBox>
           </div>
           <div class="table-container">
             <Card style="padding: 1rem; width: 100%; height: 100%;">
-              <h3 style="margin-bottom: 1rem;">Search Result</h3>
+              <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
               <OscdDataTable columnDefs="{searchColumnDefs}" store={searchResourceStore} rowActions={searchRowActions} />
             </Card>
           </div>
@@ -254,8 +254,8 @@
       <Card style="padding: 1rem; width: 100%; height: 100%;">
         <h3 style="margin-bottom: 1rem;">
           {selectedLocationUUID
-            ? `Location: ${locations.find((item) => item.value === selectedLocationUUID)?.label}`
-            : 'Select Location'}
+            ? `${$_('location')}: ${locations.find((item) => item.value === selectedLocationUUID)?.label}`
+            : $_('select_location')}
         </h3>
         <OscdDataTable columnDefs="{locationColumnDefs}" store={locationResourceStore} rowActions={locationRowActions}  />
       </Card>

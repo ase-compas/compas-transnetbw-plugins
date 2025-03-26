@@ -43,6 +43,7 @@
     { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('description'), field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
+    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
   //loading quickfix for css to load
   let loading = true;
@@ -125,7 +126,6 @@
     load();
   })
 </script>
-
 
 {#if loading}
   <OscdLoadingSpinner loadingDone={!loading} />

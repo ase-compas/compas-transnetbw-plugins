@@ -1,3 +1,13 @@
+<script context="module">
+  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
+  import de from './i18n/de.json';
+  import en from './i18n/en.json';
+
+  setupTranslation({
+    en,
+    de,
+  });
+</script>
 <script lang="ts">
   import {
     ActiveFilter,
@@ -21,6 +31,7 @@
   import { combineLatest, finalize, Observable, take, tap } from 'rxjs';
   import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ArchivedResources from './search-result/ArchivedResources.svelte';
+  import {_, locale} from "svelte-i18n";
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
