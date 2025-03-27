@@ -285,7 +285,7 @@
   <OscdLoadingSpinner loadingDone={!loading} />
 {:else}
   <div class="version-editor-container">
-    <OscdDialog bind:open="{dialogOpen}">
+    <OscdDialog bind:open="{dialogOpen}" on:close={onCloseDialog}>
       <h3 slot="title">{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
       <div slot="content">
         <OscdDataTable columnDefs={modalColumnDef}

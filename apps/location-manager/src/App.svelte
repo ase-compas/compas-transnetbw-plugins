@@ -37,6 +37,8 @@
   let dialogState: DialogState = DialogState.Closed;
   let currentSelectLocation: Location | null = null;
 
+  $: console.log("Dialogstate:", dialogState);
+
   $: columnDefs = [
     { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('key'), field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
@@ -132,8 +134,8 @@
 {:else}
   <div class="location-manager-container">
     <OscdLoadingSpinner {loadingDone} />
-    <OscdDialog open="{dialogState === DialogState.Remove}">
-      <h3 slot="title">{$_('delete_location', { values: { name: currentSelectLocation?.name}})}</h3>
+    <OscdDialog open="{dialogState === DialogState.Remove}" on:close={onCloseDialog}>
+      <h3 slot="title">{$_('delete_location', { values: { name: currentSelectLocation?.name }})}</h3>
       <div slot="actions">
         <OscdButton callback={onRemoveConfirm} variant="raised">
           <OscdSaveIcon />
@@ -145,7 +147,7 @@
         </OscdButton>
       </div>
     </OscdDialog>
-    <OscdDialog open="{dialogState === DialogState.Update || dialogState === DialogState.Create}">
+    <OscdDialog open="{dialogState === DialogState.Update || dialogState === DialogState.Create}" on:close={onCloseDialog}>
       <h3 slot="title">{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
       <div slot="content">
         {#if currentSelectLocation}
