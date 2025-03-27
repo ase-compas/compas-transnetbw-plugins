@@ -1,3 +1,13 @@
+<script context="module">
+  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
+  import de from './i18n/de.json';
+  import en from './i18n/en.json';
+
+  setupTranslation({
+    en,
+    de,
+  });
+</script>
 <script lang="ts">
   import {Icon, Label} from "@smui/button";
   import {
@@ -11,7 +21,7 @@
   import {take} from "rxjs";
   import {finalize, tap} from "rxjs/operators";
   import {onMount} from "svelte";
-
+  import {_} from "svelte-i18n";
 
   const locationManagerService = LocationManagerService.getInstance();
   export let locationStore = new LocationStore();
@@ -27,6 +37,14 @@
   let dialogState: DialogState = DialogState.Closed;
   let currentSelectLocation: Location | null = null;
 
+  $: columnDefs = [
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('key'), field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('description'), field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
+    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
+  ];
   //loading quickfix for css to load
   let loading = true;
 
@@ -35,15 +53,6 @@
       loading = false;
     }, 1000)
   });
-
-  const columnDefs = [
-    { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: 'Key', field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Description', field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Assigned Resources', field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
-    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
-  ];
 
   const rowActions = [
     { icon: 'edit', callback: (row) => update(row), disabled: () => false },
@@ -116,9 +125,7 @@
   onMount(() => {
     load();
   })
-
 </script>
-
 
 {#if loading}
   <OscdLoadingSpinner loadingDone={!loading} />
@@ -126,61 +133,63 @@
   <div class="location-manager-container">
     <OscdLoadingSpinner {loadingDone} />
     <OscdDialog open="{dialogState === DialogState.Remove}">
-      <h3 slot="title">Delete location {currentSelectLocation?.name}?</h3>
+      <h3 slot="title">{$_('delete_location', { values: { name: currentSelectLocation?.name}})}</h3>
       <div slot="actions">
         <OscdButton callback={onRemoveConfirm} variant="raised">
           <OscdSaveIcon />
-          <Label>Confirm</Label>
+          <Label>{$_('confirm')}</Label>
         </OscdButton>
         <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
           <OscdCancelIcon />
-          <Label>Cancel</Label>
+          <Label>{$_('cancel')}</Label>
         </OscdButton>
       </div>
     </OscdDialog>
     <OscdDialog open="{dialogState === DialogState.Update || dialogState === DialogState.Create}">
-      <h3 slot="title">{dialogState === DialogState.Update ? `Location: ${currentSelectLocation?.name}` : 'New Location'}</h3>
+      <h3 slot="title">{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
       <div slot="content">
         {#if currentSelectLocation}
           {#if dialogState === DialogState.Update}
             <Label>{currentSelectLocation.uuid}</Label>
           {/if}
-          <OscdInput label="Name" bind:value={currentSelectLocation.name}></OscdInput>
-          <OscdInput label="Key" bind:value={currentSelectLocation.key}></OscdInput>
-          <OscdInput label="Description" bind:value={currentSelectLocation.description}></OscdInput>
+          <OscdInput label={$_('name')} bind:value={currentSelectLocation.name}></OscdInput>
+          <OscdInput label={$_('key')} bind:value={currentSelectLocation.key}></OscdInput>
+          <OscdInput label={$_('description')} bind:value={currentSelectLocation.description}></OscdInput>
         {/if}
       </div>
       <div slot="actions">
         <OscdButton callback={onUpdateOrCreateSave} variant="raised">
           <OscdSaveIcon />
-          <Label>Save</Label>
+          <Label>{$_('save')}</Label>
         </OscdButton>
         <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
           <OscdCancelIcon />
-          <Label>Cancel</Label>
+          <Label>{$_('cancel')}</Label>
         </OscdButton>
       </div>
     </OscdDialog>
     <div style="margin-top: 10px; margin-bottom: 10px">
       <OscdButton class="button" callback={create} variant="raised">
         <OscdAddIcon />
-        <Label>Add Location</Label>
+        <Label>{$_('add_location')}</Label>
       </OscdButton>
       <OscdButton class="button" callback={load} variant="raised">
         <OscdRefreshIcon />
-        <Label>Refresh</Label>
+        <Label>{$_('refresh')}</Label>
       </OscdButton>
     </div>
     <div class="table-container">
       <Card style="padding: 1rem; width: 100%; height: 100%;">
-        <h3 style="margin-bottom: 1rem;">Location Table</h3>
-        <OscdDataTable {columnDefs} store={locationStore} {loadingDone} {rowActions} />
+        <h3 style="margin-bottom: 1rem;">{$_('location_table')}</h3>
+        <OscdDataTable {columnDefs}
+                       store={locationStore}
+                       {loadingDone}
+                       {rowActions}
+                       searchInputLabel={$_('search')}/>
       </Card>
     </div>
   </div>
 {/if}
-
-
 
 <style>
   @import "/global.css";

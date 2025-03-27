@@ -1,0 +1,15 @@
+{
+  "location": "Ort",
+  "search": "Suche",
+  "uuid": "UUID",
+  "filename": "File Name",
+  "author": "Autor",
+  "type": "Typ",
+  "version": "Version",
+  "date": "Datum",
+  "versionHistory.title": "Versionsverlauf der Datei {filename}",
+  "versionTable.heading": "Versionstabelle",
+  "done": "Fertig",
+  "filter_types": "Filtertypen",
+  "add_filter": "Filter Hinzufügen"
+}

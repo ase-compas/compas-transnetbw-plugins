@@ -1,0 +1,17 @@
+{
+  "search": "Search",
+  "add_location": "Add Location",
+  "refresh": "Refresh",
+  "delete_location": "Delete location {name}?",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "save": "Save",
+  "new_location": "New Location",
+  "location": "Location: {name}",
+  "name": "Name",
+  "key": "Key",
+  "description": "Description",
+  "location_table": "Location Table",
+  "uuid": "UUID",
+  "assigned_resources": "Assigned Resources"
+}

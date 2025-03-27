@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "allowJs": false,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "types": ["vite/client", "vitest"]
   },
   "files": [],

@@ -3,7 +3,8 @@
     "allowJs": false,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "types": ["vite/client", "vitest"]
+    "module": "esnext",
+    "types": ["vite/client", "vitest"],
   },
   "files": [],
   "include": [],

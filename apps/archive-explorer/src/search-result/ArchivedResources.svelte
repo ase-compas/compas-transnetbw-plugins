@@ -4,6 +4,7 @@
   import ResourceHistory from './resource-history/ResourceHistory.svelte';
 
   export let searchResults: ArchiveSearchResult[] = [];
+  export let noResourcesLabel: string = "No resources found.";
 </script>
 
 <div class="result-container">
@@ -18,7 +19,7 @@
         <br>
       {/each}
     {:else}
-      <i>No resources found.</i>
+      <i>{noResourcesLabel}</i>
     {/if}
   </div>
 </div>

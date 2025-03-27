@@ -1,3 +1,13 @@
+<script context="module">
+  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
+  import de from './i18n/de.json';
+  import en from './i18n/en.json';
+
+  setupTranslation({
+    en,
+    de,
+  });
+</script>
 <script lang="ts">
   import {
     OscdButton,
@@ -19,6 +29,7 @@
   import { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
   import { OscdCancelIcon, OscdSearchIcon } from '../../../libs/oscd-icons/src';
   import {onMount} from "svelte";
+  import {_, locale} from 'svelte-i18n';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -45,22 +56,6 @@
     return new Date(date).toLocaleDateString();
   }
 
-  const columnDefs = [
-    { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: 'Filename', field: 'filename', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    {
-      headerName: 'Date',
-      field: 'date',
-      numeric: false,
-      filter: true,
-      filterType: 'text',
-      sortable: true,
-      valueFormatter: formatDate
-    },
-    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true }
-  ];
   const columnDefsActions = {
     headerName: '',
     field: 'actions',
@@ -70,12 +65,29 @@
     minWidth: '100px',
     sortable: false
   };
-  const modalColumnDef = [
-    ...columnDefs,
-    { headerName: 'Comment', field: 'comment', numeric: false, filter: true, filterType: 'text', sortable: true },
+
+  $: columnDefs = [
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('filename'), field: 'filename', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    {
+      headerName: $_('date'),
+      field: 'date',
+      numeric: false,
+      filter: true,
+      filterType: 'text',
+      sortable: true,
+      valueFormatter: formatDate
+    },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
     columnDefsActions
   ];
-  columnDefs.push(columnDefsActions);
+
+  $: modalColumnDef = [
+    ...columnDefs,
+    { headerName: 'Comment', field: 'comment', numeric: false, filter: true, filterType: 'text', sortable: true },
+  ];
 
   const rowActions = [
     {
@@ -274,29 +286,37 @@
 {:else}
   <div class="version-editor-container">
     <OscdDialog bind:open="{dialogOpen}">
-      <h3 slot="title">Version History of file {currentSelectFile?.filename}</h3>
+      <h3 slot="title">{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
       <div slot="content">
-        <OscdDataTable columnDefs={modalColumnDef} store={historyStore} {loadingDone} rowActions={historyRowActions} />
+        <OscdDataTable columnDefs={modalColumnDef}
+                       store={historyStore}
+                       {loadingDone}
+                       rowActions={historyRowActions}
+                       searchInputLabel={$_('search')} />
       </div>
       <div slot="actions">
         <OscdButton callback={onDialogClose} variant="raised">
           <OscdCancelIcon />
-          <Label>Done</Label>
+          <Label>{$_('done')}</Label>
         </OscdButton>
       </div>
     </OscdDialog>
     <div class="search-filter">
-      <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
+      <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch} addFilterLabel={$_('add_filter')} selectFilterLabel={$_('filter_types')}>
         <OscdButton slot="filter-controls" variant="raised" callback={search}>
           <OscdSearchIcon />
-          <Label>Search</Label>
+          <Label>{$_('search')}</Label>
         </OscdButton>
       </OscdFilterBox>
     </div>
     <div class="table-container">
       <Card style="padding: 1rem; width: 100%; height: 100%;">
-        <h3 style="margin-bottom: 1rem;">Version Table</h3>
-        <OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions} />
+        <h3 style="margin-bottom: 1rem;">{$_('versionTable.heading')}</h3>
+        <OscdDataTable {columnDefs}
+                       store={dataStore}
+                       {loadingDone}
+                       {rowActions}
+                       searchInputLabel={$_('search')}/>
       </Card>
     </div>
   </div>

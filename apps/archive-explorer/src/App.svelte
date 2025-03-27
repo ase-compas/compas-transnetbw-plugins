@@ -1,3 +1,13 @@
+<script context="module">
+  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
+  import de from './i18n/de.json';
+  import en from './i18n/en.json';
+
+  setupTranslation({
+    en,
+    de,
+  });
+</script>
 <script lang="ts">
   import {
     ActiveFilter,
@@ -21,6 +31,7 @@
   import { combineLatest, finalize, Observable, take, tap } from 'rxjs';
   import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ArchivedResources from './search-result/ArchivedResources.svelte';
+  import {_} from "svelte-i18n";
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
@@ -97,15 +108,20 @@
     <OscdLoadingSpinner {loadingDone} />
     <div class="search-filter">
       <OscdFilterBox filterTypes="{locationFilterType}"
-                     bind:activeFilters={locationFiltersToSearch} useOptionLabelInChipText="{true}">
+                     bind:activeFilters={locationFiltersToSearch}
+                     useOptionLabelInChipText="{true}"
+                     addFilterLabel={$_('add_filter')}
+                     selectFilterLabel={$_('filter_types')}>
       </OscdFilterBox>
 
       <OscdFilterBox disabled="{uuidFilterSelected || !locationFiltersToSearch.length}" {filterTypes}
-                     bind:activeFilters={filtersToSearch}>
+                     bind:activeFilters={filtersToSearch}
+                     addFilterLabel={$_('add_filter')}
+                     selectFilterLabel={$_('filter_types')}>
         <OscdButton slot="filter-controls" variant="raised" callback={search}
                     disabled="{!locationFiltersToSearch.length}">
           <OscdSearchIcon />
-          <Label>Search</Label>
+          <Label>{$_('search')}</Label>
         </OscdButton>
       </OscdFilterBox>
     </div>
@@ -118,7 +134,7 @@
           <OscdExpansionPanel open="{index === 0}"
                               title="{archiveExplorerLocationStore.getLocationNameByUuid(result[0])}">
             <span slot="content">
-                <ArchivedResources searchResults="{result[1]}" />
+                <ArchivedResources searchResults="{result[1]}" noResourcesLabel={$_('no_resources_found')} />
             </span>
           </OscdExpansionPanel>
           <div class="separator"></div>

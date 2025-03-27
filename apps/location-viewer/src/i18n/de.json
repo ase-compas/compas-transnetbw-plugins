@@ -1,0 +1,16 @@
+{
+  "location": "Ort",
+  "search": "Suche",
+  "uuid": "UUID",
+  "name": "Name",
+  "author": "Autor",
+  "type": "Typ",
+  "version": "Version",
+  "changed_at": "Geändert am",
+  "from": "Von",
+  "to": "Bis",
+  "search_result": "Suchergebnis",
+  "select_location": "Ort auswählen",
+  "add_filter": "Filter Hinzufügen",
+  "filter_types": "Filtertypen"
+}

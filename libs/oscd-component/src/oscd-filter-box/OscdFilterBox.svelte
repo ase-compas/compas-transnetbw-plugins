@@ -12,6 +12,8 @@
   export let useOptionLabelInChipText = false;
   export let selectedOptionIndex = -1;
   export let disabled = false;
+  export let addFilterLabel = 'Add Filter';
+  export let selectFilterLabel = 'Filter Types';
 
   let inputValue = '';
   let selectedFilterType = '';
@@ -90,7 +92,7 @@
   <div class="filter-box-container">
     <div class="input-section">
       <div class="filter-input-controls">
-        <OscdSelect {disabled} label="Filter types" data={convertTypeToSelection} bind:value={selectedFilterType} />
+        <OscdSelect {disabled} label={selectFilterLabel} data={convertTypeToSelection} bind:value={selectedFilterType} />
 
         {#if getSelectedFilterType?.inputType?.type === 'string'}
           <OscdInput label="Input" bind:value={inputValue}></OscdInput>
@@ -110,7 +112,7 @@
         {/if}
       </div>
       <div class="filter-button-controls">
-        <OscdButton callback={addFilter} disabled={addFilterDisabled}>Add Filter</OscdButton>
+        <OscdButton callback={addFilter} disabled={addFilterDisabled}>{addFilterLabel}</OscdButton>
         <slot name="filter-controls"></slot>
       </div>
     </div>
