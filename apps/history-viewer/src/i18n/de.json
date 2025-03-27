@@ -9,5 +9,7 @@
   "date": "Datum",
   "versionHistory.title": "Versionsverlauf der Datei {filename}",
   "versionTable.heading": "Versionstabelle",
-  "done": "Fertig"
+  "done": "Fertig",
+  "filter_types": "Filtertypen",
+  "add_filter": "Filter Hinzufügen"
 }

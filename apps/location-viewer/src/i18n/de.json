@@ -10,5 +10,7 @@
   "from": "Von",
   "to": "Bis",
   "search_result": "Suchergebnis",
-  "select_location": "Ort auswählen"
+  "select_location": "Ort auswählen",
+  "add_filter": "Filter Hinzufügen",
+  "filter_types": "Filtertypen"
 }

@@ -1,3 +1,7 @@
 {
-  "search": "Suche"
+  "search": "Suche",
+  "filter_types": "Filtertypen",
+  "add_filter": "Filter hinzufügen",
+  "no_resources_found": "Keine Ressourcen gefunden",
+  "loading": "Loading..."
 }

@@ -234,7 +234,11 @@
       <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
         <div slot="content">
           <div class="filter-box">
-            <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
+            <OscdFilterBox {filterTypes}
+                           addFilterLabel={$_('add_filter')}
+                           selectFilterLabel={$_('filter_types')}
+                           bind:activeFilters={filtersToSearch}
+            >
               <OscdButton slot="filter-controls" variant="raised" callback={search}>
                 <OscdSearchIcon />
                 <Label>{$_('search')}</Label>
@@ -244,7 +248,10 @@
           <div class="table-container">
             <Card style="padding: 1rem; width: 100%; height: 100%;">
               <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
-              <OscdDataTable columnDefs="{searchColumnDefs}" store={searchResourceStore} rowActions={searchRowActions} />
+              <OscdDataTable columnDefs="{searchColumnDefs}"
+                             store={searchResourceStore}
+                             rowActions={searchRowActions}
+                             searchInputLabel={$_('search')}/>
             </Card>
           </div>
         </div>
@@ -257,7 +264,10 @@
             ? `${$_('location')}: ${locations.find((item) => item.value === selectedLocationUUID)?.label}`
             : $_('select_location')}
         </h3>
-        <OscdDataTable columnDefs="{locationColumnDefs}" store={locationResourceStore} rowActions={locationRowActions}  />
+        <OscdDataTable columnDefs="{locationColumnDefs}"
+                       store={locationResourceStore}
+                       rowActions={locationRowActions}
+                       searchInputLabel={$_('search')} />
       </Card>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <script context="module">
-  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
+  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
 
@@ -31,7 +31,7 @@
   import { combineLatest, finalize, Observable, take, tap } from 'rxjs';
   import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ArchivedResources from './search-result/ArchivedResources.svelte';
-  import {_, locale} from "svelte-i18n";
+  import {_} from "svelte-i18n";
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
@@ -108,11 +108,16 @@
     <OscdLoadingSpinner {loadingDone} />
     <div class="search-filter">
       <OscdFilterBox filterTypes="{locationFilterType}"
-                     bind:activeFilters={locationFiltersToSearch} useOptionLabelInChipText="{true}">
+                     bind:activeFilters={locationFiltersToSearch}
+                     useOptionLabelInChipText="{true}"
+                     addFilterLabel={$_('add_filter')}
+                     selectFilterLabel={$_('filter_types')}>
       </OscdFilterBox>
 
       <OscdFilterBox disabled="{uuidFilterSelected || !locationFiltersToSearch.length}" {filterTypes}
-                     bind:activeFilters={filtersToSearch}>
+                     bind:activeFilters={filtersToSearch}
+                     addFilterLabel={$_('add_filter')}
+                     selectFilterLabel={$_('filter_types')}>
         <OscdButton slot="filter-controls" variant="raised" callback={search}
                     disabled="{!locationFiltersToSearch.length}">
           <OscdSearchIcon />

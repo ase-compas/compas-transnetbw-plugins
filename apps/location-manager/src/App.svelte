@@ -1,5 +1,5 @@
 <script context="module">
-  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
+  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
 
@@ -21,7 +21,7 @@
   import {take} from "rxjs";
   import {finalize, tap} from "rxjs/operators";
   import {onMount} from "svelte";
-  import {_, locale} from "svelte-i18n";
+  import {_} from "svelte-i18n";
 
   const locationManagerService = LocationManagerService.getInstance();
   export let locationStore = new LocationStore();
@@ -181,7 +181,11 @@
     <div class="table-container">
       <Card style="padding: 1rem; width: 100%; height: 100%;">
         <h3 style="margin-bottom: 1rem;">{$_('location_table')}</h3>
-        <OscdDataTable {columnDefs} store={locationStore} {loadingDone} {rowActions} />
+        <OscdDataTable {columnDefs}
+                       store={locationStore}
+                       {loadingDone}
+                       {rowActions}
+                       searchInputLabel={$_('search')}/>
       </Card>
     </div>
   </div>

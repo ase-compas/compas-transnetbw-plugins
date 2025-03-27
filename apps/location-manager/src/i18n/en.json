@@ -1,4 +1,5 @@
 {
+  "search": "Search",
   "add_location": "Add Location",
   "refresh": "Refresh",
   "delete_location": "Delete location {name}?",

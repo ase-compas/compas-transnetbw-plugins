@@ -9,5 +9,7 @@
   "date": "Date",
   "versionHistory.title": "Version History of file {filename}",
   "versionTable.heading": "Version Table",
-  "done": "Done"
+  "done": "Done",
+  "filter_types": "Filter Types",
+  "add_filter": "Add Filter"
 }

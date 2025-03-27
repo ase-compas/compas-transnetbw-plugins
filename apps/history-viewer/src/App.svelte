@@ -288,7 +288,11 @@
     <OscdDialog bind:open="{dialogOpen}">
       <h3 slot="title">{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
       <div slot="content">
-        <OscdDataTable columnDefs={modalColumnDef} store={historyStore} {loadingDone} rowActions={historyRowActions} />
+        <OscdDataTable columnDefs={modalColumnDef}
+                       store={historyStore}
+                       {loadingDone}
+                       rowActions={historyRowActions}
+                       searchInputLabel={$_('search')} />
       </div>
       <div slot="actions">
         <OscdButton callback={onDialogClose} variant="raised">
@@ -298,7 +302,7 @@
       </div>
     </OscdDialog>
     <div class="search-filter">
-      <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
+      <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch} addFilterLabel={$_('add_filter')} selectFilterLabel={$_('filter_types')}>
         <OscdButton slot="filter-controls" variant="raised" callback={search}>
           <OscdSearchIcon />
           <Label>{$_('search')}</Label>
@@ -308,7 +312,11 @@
     <div class="table-container">
       <Card style="padding: 1rem; width: 100%; height: 100%;">
         <h3 style="margin-bottom: 1rem;">{$_('versionTable.heading')}</h3>
-        <OscdDataTable {columnDefs} store={dataStore} {loadingDone} {rowActions} />
+        <OscdDataTable {columnDefs}
+                       store={dataStore}
+                       {loadingDone}
+                       {rowActions}
+                       searchInputLabel={$_('search')}/>
       </Card>
     </div>
   </div>
