@@ -230,7 +230,7 @@
       .subscribe();
   }
 
-  function onDialogClose(result: any) {
+  function onCloseDialog(result: any) {
     console.log('Dialog closed with result: ', result);
     dialogOpen = false;
   }
@@ -295,7 +295,7 @@
                        searchInputLabel={$_('search')} />
       </div>
       <div slot="actions">
-        <OscdButton callback={onDialogClose} variant="raised">
+        <OscdButton callback={onCloseDialog} variant="raised">
           <OscdCancelIcon />
           <Label>{$_('done')}</Label>
         </OscdButton>
