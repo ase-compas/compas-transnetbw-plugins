@@ -31957,7 +31957,11 @@ function B0(t) {
   };
   /*dialogOpen*/
   t[6] !== void 0 && (h.open = /*dialogOpen*/
-  t[6]), n = new Kp({ props: h }), le.push(() => vt(n, "open", d)), n.$on("close", onCloseDialog);
+  t[6]), n = new Kp({ props: h }), le.push(() => vt(n, "open", d)), n.$on(
+    "close",
+    /*onCloseDialog*/
+    t[14]
+  );
   function p(m) {
     t[16](m);
   }
@@ -32205,7 +32209,7 @@ function z0(t) {
   return n = new Wi({
     props: {
       callback: (
-        /*onDialogClose*/
+        /*onCloseDialog*/
         t[14]
       ),
       variant: "raised",
