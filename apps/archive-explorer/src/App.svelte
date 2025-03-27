@@ -134,7 +134,7 @@
           <OscdExpansionPanel open="{index === 0}"
                               title="{archiveExplorerLocationStore.getLocationNameByUuid(result[0])}">
             <span slot="content">
-                <ArchivedResources searchResults="{result[1]}" />
+                <ArchivedResources searchResults="{result[1]}" noResourcesLabel={$_('no_resources_found')} />
             </span>
           </OscdExpansionPanel>
           <div class="separator"></div>
