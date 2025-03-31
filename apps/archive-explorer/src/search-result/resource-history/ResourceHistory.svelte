@@ -23,7 +23,7 @@
     },
     { headerName: 'Approver', field: 'approver', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Modifed', field: 'modifiedAt', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Modifed', field: 'modifiedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     {
       headerName: 'Note',
       field: 'note',
@@ -60,6 +60,10 @@
       disabled: () => false
     }
   ];
+
+  function formatDate(date: string) {
+    return new Date(date).toLocaleDateString();
+  }
 
   onMount(() => {
     if (!searchResult) {
