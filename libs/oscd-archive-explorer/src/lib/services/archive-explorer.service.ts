@@ -96,8 +96,8 @@ export class ArchiveExplorerService {
               'John Doe',
               'SCD',
               '220',
-              this.formatDate(new Date().toISOString()),
-              this.formatDate(new Date().toISOString()),
+              new Date().toDateString(),
+              new Date().toDateString(),
               'application/xml',
               '2.0.0',
               [{key: 'SOURCE_RESOURCE_ID', value: uuidv4()}]
@@ -110,8 +110,8 @@ export class ArchiveExplorerService {
               'John Doe',
               'SCD',
               '220',
-              this.formatDate(new Date().toISOString()),
-              this.formatDate(new Date().toISOString()),
+              new Date().toDateString(),
+              new Date().toDateString(),
               'application/xml',
               '5.1.0',
               [{key: 'SOURCE_RESOURCE_ID', value: uuidv4()}]
@@ -150,8 +150,8 @@ export class ArchiveExplorerService {
       data.approver,
       data.type,
       data.voltage,
-      this.formatDate(data.modifiedAt),
-      this.formatDate(data.archivedAt),
+      new Date(data.modifiedAt).toDateString(),
+      new Date(data.archivedAt).toDateString(),
       data.contentType,
       data.version,
       data.fields
