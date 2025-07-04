@@ -10,6 +10,7 @@
     "run:archive-explorer": "nx run archive-explorer:serve",
     "run:location-viewer": "nx run location-viewer:serve",
     "run:location-manager": "nx run location-manager:serve",
+    "run:engineering-wizard": "nx run engineering-wizard:serve",
     "build:history-viewer": "nx run --prod history-viewer:build --no-outputhashing --emptyOutDir --verbose",
     "build:archive-explorer": "nx run --prod archive-explorer:build --no-outputhashing --emptyOutDir --verbose",
     "build:location-viewer": "nx run --prod location-viewer:build --no-outputhashing --emptyOutDir --verbose",

@@ -1,0 +1,74 @@
+{
+  "name": "engineering-wizard",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/engineering-wizard/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "command": "eslint apps/engineering-wizard/**/*.{ts,svelte,spec.ts}"
+    },
+    "check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "svelte-check",
+        "cwd": "apps/engineering-wizard"
+      }
+    },
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/engineering-wizard"
+      },
+      "configurations": {
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "mode": "production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "engineering-wizard:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "engineering-wizard:build:development",
+          "hmr": true
+        },
+        "production": {
+          "buildTarget": "engineering-wizard:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "engineering-wizard:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "engineering-wizard:build:development"
+        },
+        "production": {
+          "buildTarget": "engineering-wizard:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/engineering-wizard"
+      }
+    }
+  }
+}
