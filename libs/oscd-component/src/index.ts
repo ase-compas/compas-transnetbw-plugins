@@ -7,6 +7,7 @@ export { default as OscdFilterBox } from './oscd-filter-box/OscdFilterBox.svelte
 export { default as OscdLoadingSpinner } from './oscd-loading-spinner/OscdLoadingSpinner.svelte';
 export { default as OscdDatePicker } from './oscd-datepicker/OscdDatePicker.svelte';
 export { default as OscdExpansionPanel } from './oscd-expansion-panel/OscdExpansionPanel.svelte';
+export { default as OscdTooltip } from './oscd-tooltip/OscdTooltip.svelte';
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
 

@@ -16,6 +16,8 @@
     "build:location-viewer": "nx run --prod location-viewer:build --no-outputhashing --emptyOutDir --verbose",
     "build:location-manager": "nx run --prod location-manager:build --no-outputhashing --emptyOutDir --verbose",
     "build:engineering-wizard": "nx run --prod engineering-wizard:build --no-outputhashing --emptyOutDir --verbose",
+    "build:template-generator": "nx run --prod template-generator:build --no-outputhashing --emptyOutDir --verbose",
+    "preview:template-generator": "nx run --prod template-generator:preview --no-outputhashing --emptyOutDir --verbose",
     "build:tsld": "nx run --prod tsld:build --no-outputhashing --emptyOutDir --verbose",
     "http-server:history-viewer": "http-server dist/apps/history-viewer -p 4202 --cors",
     "generate:history-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/history-api.yml --package-name history-api-client --enable-post-process-file  --additional-properties \"artifactId=history-api,npmName=history-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-history-api-client/src/lib",
