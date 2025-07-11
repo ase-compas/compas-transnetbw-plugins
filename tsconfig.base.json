@@ -37,6 +37,9 @@
       "@oscd-transnet-plugins/oscd-location-manager": [
         "libs/oscd-location-manager/src/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-template-generator": [
+        "libs/oscd-template-generator/src/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-location-viewer": [
         "libs/oscd-location-viewer/src/index.ts"
       ],
