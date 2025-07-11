@@ -28,6 +28,10 @@ export default class NewOSCDPlugin extends HTMLElement {
     this.plugin.$set({ doc: newDoc });
   }
 
+  public get doc(): XMLDocument | undefined {
+    return this._doc;
+  }
+
   public set editCount(newCount: number) {
     if (!this.plugin) {
       return;
