@@ -6,7 +6,7 @@
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
-  export let host: Element | null = null;
+  export let host: HTMLElement | null = null;
 
   async function handleFileChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];

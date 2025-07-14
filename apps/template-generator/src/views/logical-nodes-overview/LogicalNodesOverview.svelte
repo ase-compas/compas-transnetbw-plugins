@@ -6,8 +6,8 @@
   import IconButton from '@smui/icon-button';
   import LogicalNodeTypeRow from './LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { templateService, type SimpleLogicalNodeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
-  import { selectedLNodeTypeId } from "../../lib/stores";
+  import { templateService, type SimpleLogicalNodeTypeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
+  import { selectedLNodeTypeId, host } from "../../lib/stores";
 
   export let doc: XMLDocument;
 
@@ -18,7 +18,7 @@
   let nodeSearchTerm = '';
   let sort: 'id' | 'lnClass' = 'id';
   let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
-  let items: SimpleLogicalNodeListItem[] = [];
+  let items: SimpleLogicalNodeTypeListItem[] = [];
   let isLoading = false;
 
 
@@ -45,7 +45,7 @@
   };
 
   const handleDelete = (lNodeTypeId: string) => {
-    console.log('Delete Node', lNodeTypeId);
+    templateService.deleteLogicalNodeType(doc, $host, lNodeTypeId);
   };
 
   const handleNodeClick = (lNodeTypeId: string) => {

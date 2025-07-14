@@ -7,7 +7,7 @@
 
   export let doc: XMLDocument;
   export let dev = false;
-  export let host: Element;
+  export let host: HTMLElement;
 
 </script>
 

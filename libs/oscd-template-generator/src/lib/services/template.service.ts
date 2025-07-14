@@ -1,4 +1,6 @@
 import { type SimpleLogicalNodeTypeListItem } from '../domain';
+import { getElementById } from '@oscd-transnet-plugins/oscd-xml-utils'
+import { buildRemove, createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
 
 class TemplateService {
   /**
@@ -29,14 +31,20 @@ class TemplateService {
     return result;
   };
 
-  public duplicateLogicalNodeType(doc: XMLDocument, id: string): void {
+  public duplicateLogicalNodeType(doc: XMLDocument, host: HTMLElement, id: string): void {
     // TODO: Implement the logic to duplicate a logical node type
     return null;
   }
 
-  public deleteLogicalNodeType(doc: XMLDocument, id: string): void {
-    // TODO: Implement the logic to duplicate a logical node type
-    return null;
+  public deleteLogicalNodeType(doc: XMLDocument, host: HTMLElement, logicalNodeTypeId: string): void {
+    const element = getElementById(doc, logicalNodeTypeId)
+    if (!element) {
+      console.error("Remove failed. Could not find logical node type with id:", logicalNodeTypeId);
+      return;
+    }
+
+    const edit = buildRemove(element);
+    createAndDispatchEditEvent(host, edit)
   }
 }
 
