@@ -41,7 +41,7 @@
 
   // ===== Handlers =====
   const handleDuplicate = (lNodeTypeId: string) => {
-    console.log('Duplicate Node', lNodeTypeId);
+    templateService.duplicateLogicalNodeType(doc, $host, lNodeTypeId);
   };
 
   const handleDelete = (lNodeTypeId: string) => {
