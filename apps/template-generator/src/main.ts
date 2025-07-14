@@ -7,7 +7,8 @@ const app = new App({
   target: document.body,
   props: {
     name: 'template-generator',
-    devMode: true
+    devMode: true,
+    host: this
   },
 });
 

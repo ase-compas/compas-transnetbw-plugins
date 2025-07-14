@@ -11,6 +11,7 @@ export default class NewOSCDPlugin extends HTMLElement {
       props: {
         doc: this._doc,
         editCount: -1,
+        host: this
       },
     });
 

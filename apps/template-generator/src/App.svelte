@@ -1,11 +1,12 @@
 <script lang="ts">
   import LogicalNodesOverview from "./views/logical-nodes-overview/LogicalNodesOverview.svelte";
   import LogicalNodeDetailsView from "./views/logical-node-details-view/LogicalNodeDetailsView.svelte";
-  import { selectedLNodeTypeId } from "./lib/stores";
+  import { selectedLNodeTypeId, host as storeHost } from "./lib/stores";
+  import { onMount } from 'svelte';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
-
+  export let host: Element | null = null;
 
   async function handleFileChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -14,6 +15,10 @@
     const parser = new DOMParser();
     doc = parser.parseFromString(text, "application/xml");
   }
+
+  onMount(() => {
+    storeHost.set(host)
+  })
 
 </script>
 

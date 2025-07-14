@@ -7,11 +7,12 @@
 
   export let doc: XMLDocument;
   export let dev = false;
+  export let host: Element;
 
 </script>
 
 {#if doc || dev}
-    <App {doc}></App>
+    <App {doc} {host}></App>
 {/if}
 
 <input type="hidden" name="package-name" value={pckg.name} />
