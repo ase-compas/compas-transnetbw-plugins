@@ -66,7 +66,10 @@ class TemplateService {
     const clone = lNodeType.cloneNode(true) as Element;
     clone.setAttribute('id', newId);
 
-    const edit = buildInsert(dataTypeTemplates, clone);
+    // Reference element, add duplicate as the first child of DataTypeTemplates
+    const reference = dataTypeTemplates.firstElementChild ?? null;
+
+    const edit = buildInsert(dataTypeTemplates, clone, reference);
     createAndDispatchEditEvent(host, edit);
   }
 
