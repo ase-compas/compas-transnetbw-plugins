@@ -1,16 +1,11 @@
 <script lang="ts">
   import LogicalNodesOverview from "./views/logical-nodes-overview/LogicalNodesOverview.svelte";
   import LogicalNodeDetailsView from "./views/logical-node-details-view/LogicalNodeDetailsView.svelte";
-  import {TemplateStore } from "@oscd-transnet-plugins/oscd-template-generator";
-
-  let templateStore: TemplateStore = TemplateStore.getInstance();
-  const selectedLNodeTypeId = templateStore.getSelectedLNodeTypeId();
-
+  import { selectedLNodeTypeId } from "./lib/stores";
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
 
-  $: templateStore.setDoc(doc)
 
   async function handleFileChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -30,8 +25,8 @@
     <p>Please load an XML file to start.</p>
   {:else}
     <div class="template-generator-container">
-      {#if !$selectedLNodeTypeId}
-        <LogicalNodesOverview/>
+      {#if !$selectedLNodeTypeId }
+        <LogicalNodesOverview {doc}/>
       {:else}
         <LogicalNodeDetailsView/>
       {/if}
@@ -45,6 +40,6 @@
   @import '/smui.css';
 
   .template-generator-container {
-    padding: 0 2rem;
+    padding: 1rem 2rem;
   }
 </style>

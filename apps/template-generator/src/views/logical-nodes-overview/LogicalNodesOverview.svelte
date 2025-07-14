@@ -5,12 +5,13 @@
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
   import LogicalNodeTypeRow from './LogicalNodeTypeRow.svelte';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { TemplateStore, TemplateService, type SimpleLogicalNodeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
+  import { createEventDispatcher } from 'svelte';
+  import { templateService, type SimpleLogicalNodeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
+  import { selectedLNodeTypeId } from "../../lib/stores";
+
+  export let doc: XMLDocument;
 
   // ===== Store and Service Instances =====
-  const templateStore = TemplateStore.getInstance();
-  const templateService = TemplateService.getInstance();
   const dispatch = createEventDispatcher();
 
   // ===== State =====
@@ -20,14 +21,14 @@
   let items: SimpleLogicalNodeListItem[] = [];
   let isLoading = false;
 
-  // Initialize items on component mount
-  onMount(() => {
-    if (templateStore.getDoc()) {
-      items = templateService.getAllLogicalNodeTypes();
-    }
-  });
+
+  $: init(doc)
+  const init = (xmlDocument: XMLDocument) => {
+    items = templateService.getAllLogicalNodeTypes(xmlDocument)
+  }
 
   // ===== Derived Values =====
+
   $: filteredAndSortedItems = items
     .filter(node => node.id.toLowerCase().includes(nodeSearchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -48,7 +49,7 @@
   };
 
   const handleNodeClick = (lNodeTypeId: string) => {
-    templateStore.setSelectedLNodeTypeId(lNodeTypeId);
+    selectedLNodeTypeId.set(lNodeTypeId);
   };
 
   const handleAddNewTemplate = () => {
@@ -131,10 +132,6 @@
 </div>
 
 <style>
-  .logical-nodes-overview {
-    margin-top: 1rem;
-  }
-
   .overview-toolbar {
     display: flex;
     justify-content: space-between;
