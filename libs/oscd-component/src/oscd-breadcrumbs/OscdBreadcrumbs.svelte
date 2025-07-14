@@ -55,7 +55,6 @@
 
   .breadcrumb {
     cursor: pointer;
-    background: none;
     border: none;
     font-size: 1.3rem;
     display: flex;
@@ -79,7 +78,7 @@
 
   .secondary-label {
     font-size: 1em;
-    color: var(--mdc-theme-on-surface);
+    color: var(--mdc-theme-primary);
     opacity: 0.6;
   }
 
@@ -98,7 +97,7 @@
 
   .separator {
     font-size: 1.1rem;
-    color: var(--mdc-theme-on-surface);
+    color: var(--mdc-theme-primary);
     opacity: 0.7;
     margin: 0 0.25rem;
     display: flex;

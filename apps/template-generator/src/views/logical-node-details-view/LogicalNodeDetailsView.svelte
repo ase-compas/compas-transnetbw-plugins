@@ -39,7 +39,5 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px;
-    background-color: var(--mdc-theme-surface);
-    border-bottom: 1px solid var(--mdc-theme-on-surface);
   }
 </style>

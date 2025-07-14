@@ -23,7 +23,7 @@
 </script>
 
 {#if devMode}<h1>Dev Mode Active</h1>{/if}
-<div>
+<div class="oscd-app">
   {#if !doc && devMode}
     <!-- Development mode: allow file upload -->
     <input type="file" accept=".ssd" on:change={handleFileChange} />
