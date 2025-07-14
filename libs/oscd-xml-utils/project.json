@@ -15,14 +15,14 @@
         "main": "libs/oscd-xml-utils/src/index.ts",
         "assets": ["libs/oscd-xml-utils/*.md"]
       }
-    }
-  },
-  "test": {
-    "executor": "@nx/jest:jest",
-    "outputs": ["coverage/libs/oscd-xml-utils"],
-    "options": {
-      "jestConfig": "libs/oscd-xml-utils/jest.config.ts",
-      "passWithNoTests": true
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["coverage/libs/oscd-xml-utils"],
+      "options": {
+        "jestConfig": "libs/oscd-xml-utils/jest.config.ts",
+        "passWithNoTests": true
+      }
     }
   }
 }
