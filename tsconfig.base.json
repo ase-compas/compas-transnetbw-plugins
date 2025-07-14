@@ -42,6 +42,12 @@
       ],
       "@oscd-transnet-plugins/oscd-icons": [
         "libs/oscd-icons/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/oscd-event-api": [
+        "libs/oscd-event-api/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/oscd-xml-utils": [
+        "libs/oscd-xml-utils/src/index.ts"
       ]
     }
   },
