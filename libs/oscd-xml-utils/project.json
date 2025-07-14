@@ -1,0 +1,28 @@
+{
+  "name": "oscd-xml-utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-xml-utils/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-xml-utils",
+        "tsConfig": "libs/oscd-xml-utils/tsconfig.lib.json",
+        "packageJson": "libs/oscd-xml-utils/package.json",
+        "main": "libs/oscd-xml-utils/src/index.ts",
+        "assets": ["libs/oscd-xml-utils/*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["coverage/libs/oscd-xml-utils"],
+      "options": {
+        "jestConfig": "libs/oscd-xml-utils/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}
