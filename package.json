@@ -17,7 +17,8 @@
     "http-server:history-viewer": "http-server dist/apps/history-viewer -p 4202 --cors",
     "generate:history-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/history-api.yml --package-name history-api-client --enable-post-process-file  --additional-properties \"artifactId=history-api,npmName=history-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-history-api-client/src/lib",
     "generate:archiving-api-client": "openapi-generator-cli generate -g typescript-rxjs -i docs/archiving-api.yml --package-name archiving-api-client --enable-post-process-file  --additional-properties \"artifactId=archiving-api,npmName=archiving-api,hideGenerationTimestamp:true,serializableModel:true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/oscd-archiving-api-client/src/lib",
-    "build:oscd-api-client": "nx run oscd-history-api-client:build --no-outputhashing --emptyOutDir --verbose"
+    "build:oscd-api-client": "nx run oscd-history-api-client:build --no-outputhashing --emptyOutDir --verbose",
+    "build:oscd-xml-utils": "nx run oscd-xml-utils:build --no-outputhashing --emptyOutDir --verbose"
   },
   "private": true,
   "dependencies": {
@@ -83,6 +84,7 @@
     "express": "^4.21.1",
     "http-server": "^14.1.1",
     "jest": "^29.4.1",
+    "jest-environment-jsdom": "^30.0.4",
     "jest-environment-node": "^29.4.1",
     "jsdom": "~22.1.0",
     "json-server": "0.17.4",
