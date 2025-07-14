@@ -44,7 +44,7 @@
         "libs/oscd-icons/src/index.ts"
       ],
       "@oscd-transnet-plugins/oscd-event-api": [
-        "libs/oscd-icons/src/index.ts"
+        "libs/oscd-event-api/src/index.ts"
       ]
     }
   },
