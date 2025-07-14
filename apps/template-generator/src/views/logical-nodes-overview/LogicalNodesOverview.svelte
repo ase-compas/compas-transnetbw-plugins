@@ -113,7 +113,7 @@
       {#if filteredAndSortedItems.length === 0}
         <tr>
           <td colspan="4" style="text-align: center; color: #888; padding: 32px;">
-            No logical nodes types found.
+            No logical node types found.
           </td>
         </tr>
       {/if}
