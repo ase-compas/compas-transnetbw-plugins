@@ -5,3 +5,8 @@ export type SimpleLogicalNodeTypeListItem = {
   lnClass: string;
   references: number;
 };
+
+export type SimpleLogicalNodeType = {
+  id: string,
+  lnClass: string,
+}

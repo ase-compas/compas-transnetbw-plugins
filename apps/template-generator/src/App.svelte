@@ -33,7 +33,7 @@
       {#if !$selectedLNodeTypeId }
         <LogicalNodesOverview {doc}/>
       {:else}
-        <LogicalNodeDetailsView/>
+        <LogicalNodeDetailsView {doc}/>
       {/if}
     </div>
   {/if}

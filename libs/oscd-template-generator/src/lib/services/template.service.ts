@@ -1,6 +1,7 @@
 import { type SimpleLogicalNodeTypeListItem } from '../domain';
 import { getElementById } from '@oscd-transnet-plugins/oscd-xml-utils'
 import { buildRemove, buildInsert, createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
+import { type SimpleLogicalNodeType } from '../domain/';
 
 class TemplateService {
   /**
@@ -30,6 +31,26 @@ class TemplateService {
 
     return result;
   };
+
+  /**
+   * Gets logical node type by id.
+   * @param doc
+   * @param id
+   */
+  public getLogicalNodeTypeById = (doc: XMLDocument, id: string): SimpleLogicalNodeType | null => {
+    if (!doc) return null;
+
+    const dataTypeTemplates = doc.querySelector('DataTypeTemplates');
+    if (!dataTypeTemplates) return null;
+
+    const lNodeType = dataTypeTemplates.querySelector(`LNodeType[id="${id}"]`);
+    if (!lNodeType) return null;
+
+    return {
+      id: lNodeType.getAttribute('id') || '',
+      lnClass: lNodeType.getAttribute('lnClass') || '',
+    };
+  }
 
   /**
    * Duplicates an `LNodeType` element in the given XML document.
@@ -91,5 +112,6 @@ class TemplateService {
     createAndDispatchEditEvent(host, edit)
   }
 }
+
 
 export const templateService = new TemplateService();
