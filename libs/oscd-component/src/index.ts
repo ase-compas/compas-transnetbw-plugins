@@ -9,6 +9,7 @@ export { default as OscdDatePicker } from './oscd-datepicker/OscdDatePicker.svel
 export { default as OscdExpansionPanel } from './oscd-expansion-panel/OscdExpansionPanel.svelte';
 export { default as OscdTooltip } from './oscd-tooltip/OscdTooltip.svelte';
 export { default as OscdBreadcrumbs } from './oscd-breadcrumbs/OscdBreadcrumbs.svelte';
+export { default as OscdSwitch } from './oscd-switch/OscdSwitch.svelte';
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
 
