@@ -2,7 +2,7 @@
 
 A small utility library to help construct and dispatch `oscd-edit-v2` events for OpenSCD-based plugins. This library provides helpers to build standard OpenSCD edit operations (`InsertV2`, `RemoveV2`, etc.) and dispatch them correctly through the event-based editing API.
 
-## Usgage
+## Usage
 
 ```
 createAndDispatchEditEvent(host: HTMLElement, edit: EditV2, options?: EditEventOptionsV2): boolean;
