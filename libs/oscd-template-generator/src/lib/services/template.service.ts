@@ -62,6 +62,7 @@ class TemplateService {
    * @param logicalNodeTypeId - The id of the `LNodeType` to duplicate.
    */
   public duplicateLogicalNodeType(doc: XMLDocument, host: HTMLElement, logicalNodeTypeId: string): void {
+    if (this.warnIfHostNotSet(host, 'duplicateLogicalNodeType')) return;
     const dataTypeTemplates = doc.querySelector('DataTypeTemplates');
     if (!dataTypeTemplates) {
       console.error('No DataTypeTemplates found.');
@@ -102,6 +103,7 @@ class TemplateService {
    * @param logicalNodeTypeId - The id of the `LNodeType` to delete.
    */
   public deleteLogicalNodeType(doc: XMLDocument, host: HTMLElement, logicalNodeTypeId: string): void {
+    if (this.warnIfHostNotSet(host, 'deleteLogicalNodeType')) return;
     const element = getElementById(doc, logicalNodeTypeId)
     if (!element) {
       console.error("Remove failed. Could not find logical node type with id:", logicalNodeTypeId);
@@ -110,6 +112,19 @@ class TemplateService {
 
     const edit = buildRemove(element);
     createAndDispatchEditEvent(host, edit)
+  }
+
+  /**
+   * Warns if the host element is not set.
+   * @param host - The host element.
+   * @param action - The action being performed.
+   */
+  private warnIfHostNotSet(host: HTMLElement, action: string): boolean {
+    if (!host) {
+      console.warn(`Host element is not set. Action "${action}" cannot be performed. This action only works in the context of an editor (integrated as plugin).`);
+      return true;
+    }
+    return false;
   }
 }
 
