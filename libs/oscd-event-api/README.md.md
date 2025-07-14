@@ -11,7 +11,7 @@ createAndDispatchEditEvent(host: HTMLElement, edit: EditV2, options?: EditEventO
 Creates and immediately dispatches an oscd-edit-v2 event on the provided host element.
 
 - `host`: The root HTMLElement of your plugin, usually the custom element that wraps your plugin's view. It is passed to your plugin by the OpenSCD plugin loader. Events must be dispatched on this element so that OpenSCD can intercept and apply edits correctly.
-- `edit`: One EditV2 objects that describe the intended change(s) to the XMLDocument.
+- `edit`: A single EditV2 object that describes the intended change(s) to the XMLDocument.
 
 You can use the provided helper functions to build valid EditV2 objects defined in `edit-helpers.ts`:
 
