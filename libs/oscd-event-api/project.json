@@ -1,0 +1,26 @@
+{
+  "name": "oscd-event-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/oscd-event-api/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "command": "eslint libs/oscd-event-api/**/*.{ts,svelte,spec.ts}"
+    },
+    "check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "svelte-check",
+        "cwd": "libs/oscd-event-api"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/libs/oscd-event-api"
+      }
+    }
+  }
+}
