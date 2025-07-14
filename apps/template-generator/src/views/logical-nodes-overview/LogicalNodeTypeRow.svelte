@@ -1,5 +1,5 @@
 <script lang="ts">
-  import NodeActionButton from './NodeActionButton.svelte';
+  import NodeActionButton from '../../lib/components/NodeActionButton.svelte';
   import DataTable, {Row, Cell} from '@smui/data-table';
 
   export let node: {
