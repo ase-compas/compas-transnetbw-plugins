@@ -134,7 +134,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 0 0 1.5rem 0;
   }
 
   .oscd-details-toolbar-right {
