@@ -96,7 +96,7 @@
           <Cell columnId="references" sortable={false} style="background: rgba(0, 0, 0, 0.1);">
             <Label><strong>References</strong></Label>
           </Cell>
-          <Cell sortable={false} style="background: rgba(0,0,0,0.1"></Cell> <!-- Action buttons column -->
+          <Cell sortable={false} style="background: rgba(0,0,0,0.1)"></Cell> <!-- Action buttons column -->
         </Row>
       </Head>
 
