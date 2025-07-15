@@ -40,6 +40,7 @@
 
 <div class="oscd-details">
 
+  <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
     <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
 
@@ -49,7 +50,7 @@
         label="Edit Mode"
         bind:checked={isEditMode}
         id="edit-mode-switch"
-        labelStyle="font-weight: bold; text-transform: uppercase;"
+        labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
 
@@ -58,6 +59,7 @@
       </OscdButton>
     </div>
   </div>
+  <!-- END: Toolbar -->
 
 
 </div>

@@ -26,7 +26,15 @@
     {icons}
     on:change={handleChange}
   />
-  <label for={id} style={labelStyle}>
+  {#if label}
+  <label for={id} style={labelStyle} class="oscd-switch-label">
     {label}
   </label>
+  {/if}
 </FormField>
+
+<style>
+  .oscd-switch-label {
+    cursor: pointer
+  }
+</style>
