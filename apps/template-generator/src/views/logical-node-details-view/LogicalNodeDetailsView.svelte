@@ -1,6 +1,6 @@
 <script lang="ts">
   import { selectedLNodeTypeId } from '../../lib/stores';
-  import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdCardList } from '@oscd-transnet-plugins/oscd-component';
   import { templateService } from '@oscd-transnet-plugins/oscd-template-generator';
 
   // ===== Parameters =====
@@ -12,6 +12,14 @@
   let logicalNodeType = templateService.getLogicalNodeTypeById(doc, $selectedLNodeTypeId);
   let isDirty = false; // Track if there are unsaved changes
   let isEditMode = false; // Track if the view is in edit mode
+
+  let items = [
+    'DataType1',
+    'DataType2',
+    'DataType3',
+    'DataType4',
+    'DataType5'
+  ]; // Example items, replace with actual data types
 
   let breadcrumbs = [
     { label: 'Logical Nodes Types', enabled: true },
@@ -54,14 +62,70 @@
       />
 
 
-      <OscdButton variant="unelevated" on:click={handleSaveChanges} disabled={!isDirty}>
+      <OscdButton
+        variant="unelevated" on:click={handleSaveChanges} disabled={!isDirty}>
         SAVE CHANGES
       </OscdButton>
     </div>
   </div>
   <!-- END: Toolbar -->
 
+  <!-- START: Board -->
+  <div class="oscd-details-board">
+    <OscdCardList
+      title="Reference Data Types"
+      showSearch={true}
+      actionText="ADD NEW"
+    >
 
+      <div slot="default" let:searchQuery>
+        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
+          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
+        {/each}
+      </div>
+
+    </OscdCardList>
+    <OscdCardList
+      title="Reference Data Types"
+      showSearch={true}
+      actionText="ADD NEW"
+    >
+
+      <div slot="default" let:searchQuery>
+        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
+          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
+        {/each}
+      </div>
+
+    </OscdCardList>
+    <OscdCardList
+      title="Reference Data Types"
+      showSearch={true}
+      actionText="ADD NEW"
+    >
+
+      <div slot="default" let:searchQuery>
+        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
+          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
+        {/each}
+      </div>
+
+    </OscdCardList>
+    <OscdCardList
+      title="Reference Data Types"
+      showSearch={true}
+      actionText="ADD NEW"
+    >
+
+      <div slot="default" let:searchQuery>
+        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
+          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
+        {/each}
+      </div>
+
+    </OscdCardList>
+
+  </div>
 </div>
 
 
@@ -77,5 +141,10 @@
     display: flex;
     align-items: center;
     gap: 3rem;
+  }
+
+  .oscd-details-board {
+    display: flex;
+    gap: 2rem;
   }
 </style>
