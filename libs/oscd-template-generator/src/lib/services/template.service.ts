@@ -21,7 +21,7 @@ class TemplateService {
     const lNodeTypes = dataTypeTemplates.querySelectorAll('LNodeType');
     lNodeTypes.forEach((lNodeType) => {
       const id = lNodeType.getAttribute('id') || '';
-      const refCount = doc.querySelectorAll(`[lnType="${id}"]`).length;
+      const refCount = lNodeType.querySelectorAll('DO').length;
       result.push({
         id: id,
         lnClass: lNodeType.getAttribute('lnClass') || '',
