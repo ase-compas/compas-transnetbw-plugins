@@ -51,13 +51,14 @@
         {#if secondaryTitle}<span class="secondary-title">{secondaryTitle}</span>{/if}
       </h3>
 
-      {#if actionText}
+      <div class:invisible={!actionText}>
+
         <OscdButton
           callback={onActionClick}
         >
           {actionText}
         </OscdButton>
-      {/if}
+      </div>
     </div>
 
 
@@ -82,10 +83,6 @@
 
 <style>
 
-  .search-wrapper {
-    height: 2.5rem; /* Reserve vertical space */
-  }
-
   .invisible {
     visibility: hidden;
   }
@@ -104,7 +101,7 @@
   .oscd-card-list {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: 1rem;
     min-width: 350px;
     width: 100%;
   }

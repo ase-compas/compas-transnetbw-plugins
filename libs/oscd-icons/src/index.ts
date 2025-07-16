@@ -9,4 +9,5 @@ export { default as OscdSearchIcon } from './oscd-search-icon/OscdSearchIcon.sve
 export { default as OscdRemoveIcon } from './oscd-remove-icon/OscdRemoveIcon.svelte';
 export { default as OscdEditIcon } from './oscd-edit-icon/OscdEditIcon.svelte';
 export { default as OscdDeleteIcon } from './oscd-delete-icon/OscdDeleteIcon.svelte';
+export { default as OscdVisibilityIcon } from './oscd-visibility-icon/OscdVisibilityIcon.svelte';
 export { default as OscdControlPointDuplicateIcon } from './oscd-control-point-duplicate-icon/OscdControlPointDuplicateIcon.svelte';

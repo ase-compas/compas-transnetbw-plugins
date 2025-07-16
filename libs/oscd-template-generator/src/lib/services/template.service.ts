@@ -1,7 +1,19 @@
-import { type SimpleLogicalNodeTypeListItem } from '../domain';
-import { getElementById } from '@oscd-transnet-plugins/oscd-xml-utils'
-import { buildRemove, buildInsert, createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
-import { type SimpleLogicalNodeType } from '../domain/';
+import { getElementById } from '@oscd-transnet-plugins/oscd-xml-utils';
+import {
+  buildInsert,
+  buildRemove,
+  createAndDispatchEditEvent,
+} from '@oscd-transnet-plugins/oscd-event-api';
+import {
+  type DataObject,
+  type DAType,
+  type DOType,
+  type EnumType,
+  type EnumVal,
+  type LogicalNodeType,
+  type SimpleLogicalNodeType,
+  type SimpleLogicalNodeTypeListItem,
+} from '../domain/';
 
 class TemplateService {
   /**
@@ -37,7 +49,10 @@ class TemplateService {
    * @param doc
    * @param id
    */
-  public getLogicalNodeTypeById = (doc: XMLDocument, id: string): SimpleLogicalNodeType | null => {
+  public getLogicalNodeTypeById = (
+    doc: XMLDocument,
+    id: string
+  ): SimpleLogicalNodeType | null => {
     if (!doc) return null;
 
     const dataTypeTemplates = doc.querySelector('DataTypeTemplates');
@@ -50,7 +65,80 @@ class TemplateService {
       id: lNodeType.getAttribute('id') || '',
       lnClass: lNodeType.getAttribute('lnClass') || '',
     };
-  }
+  };
+
+  public getLogicalNodeTypeByIdWithChildren = (
+    doc: XMLDocument,
+    id: string
+  ): LogicalNodeType | null => {
+    const lNodeTypeEl = Array.from(doc.getElementsByTagName('LNodeType')).find(
+      (el) => el.getAttribute('id') === id
+    );
+
+    if (!lNodeTypeEl) return null;
+
+    const lnClass = lNodeTypeEl.getAttribute('lnClass') ?? '';
+
+    const children: DataObject[] = Array.from(
+      lNodeTypeEl.getElementsByTagName('DO')
+    ).map((doEl) => ({
+      name: doEl.getAttribute('name') ?? '',
+      desc: doEl.getAttribute('desc') ?? '',
+      type: doEl.getAttribute('type') ?? '',
+    }));
+
+    return {
+      id,
+      lnClass,
+      children,
+    };
+  };
+
+  public getAllDOTypes = (doc: XMLDocument): DOType[] => {
+    const doTypeEls = Array.from(doc.getElementsByTagName('DOType'));
+
+    return doTypeEls.map((doTypeEl) => {
+      const id = doTypeEl.getAttribute('id') ?? '';
+      const cdc = doTypeEl.getAttribute('cdc') ?? '';
+
+      const childrenEls = Array.from(doTypeEl.children).filter(
+        (el) => el.tagName === 'DA' || el.tagName === 'BDA'
+      );
+
+      const children = childrenEls.map((child) => ({
+        name: child.getAttribute('name') ?? '',
+        type: child.getAttribute('type') ?? '',
+        bType: child.getAttribute('bType') ?? '',
+        tag: child.tagName as 'DA' | 'BDA',
+      }));
+
+      return { id, cdc, children };
+    });
+  };
+
+  public getAllDATypes = (doc: XMLDocument): DAType[] => {
+    const daTypeEls = Array.from(doc.getElementsByTagName('DAType'));
+    return daTypeEls.map((daTypeEl) => ({
+      id: daTypeEl.getAttribute('id') ?? '',
+    }));
+  };
+
+  public getAllEnumTypes = (doc: XMLDocument): EnumType[] => {
+    const enumTypeEls = Array.from(doc.getElementsByTagName('EnumType'));
+
+    return enumTypeEls.map((enumTypeEl) => {
+      const id = enumTypeEl.getAttribute('id') ?? '';
+
+      const values: EnumVal[] = Array.from(
+        enumTypeEl.getElementsByTagName('EnumVal')
+      ).map((enumValEl) => ({
+        ord: enumValEl.getAttribute('ord') ?? '',
+        val: enumValEl.textContent?.trim() ?? '',
+      }));
+
+      return { id, values };
+    });
+  };
 
   /**
    * Duplicates an `LNodeType` element in the given XML document.
@@ -61,7 +149,11 @@ class TemplateService {
    * @param host - The host element used to dispatch the edit event.
    * @param logicalNodeTypeId - The id of the `LNodeType` to duplicate.
    */
-  public duplicateLogicalNodeType(doc: XMLDocument, host: HTMLElement, logicalNodeTypeId: string): void {
+  public duplicateLogicalNodeType(
+    doc: XMLDocument,
+    host: HTMLElement,
+    logicalNodeTypeId: string
+  ): void {
     if (this.warnIfHostNotSet(host, 'duplicateLogicalNodeType')) return;
     const dataTypeTemplates = doc.querySelector('DataTypeTemplates');
     if (!dataTypeTemplates) {
@@ -69,7 +161,9 @@ class TemplateService {
       return;
     }
 
-    const lNodeType = dataTypeTemplates.querySelector(`LNodeType[id="${logicalNodeTypeId}"]`);
+    const lNodeType = dataTypeTemplates.querySelector(
+      `LNodeType[id="${logicalNodeTypeId}"]`
+    );
     if (!lNodeType) {
       console.error('LNodeType not found:', logicalNodeTypeId);
       return;
@@ -102,16 +196,23 @@ class TemplateService {
    * @param host - The host element used to dispatch the edit event.
    * @param logicalNodeTypeId - The id of the `LNodeType` to delete.
    */
-  public deleteLogicalNodeType(doc: XMLDocument, host: HTMLElement, logicalNodeTypeId: string): void {
+  public deleteLogicalNodeType(
+    doc: XMLDocument,
+    host: HTMLElement,
+    logicalNodeTypeId: string
+  ): void {
     if (this.warnIfHostNotSet(host, 'deleteLogicalNodeType')) return;
-    const element = getElementById(doc, logicalNodeTypeId)
+    const element = getElementById(doc, logicalNodeTypeId);
     if (!element) {
-      console.error("Remove failed. Could not find logical node type with id:", logicalNodeTypeId);
+      console.error(
+        'Remove failed. Could not find logical node type with id:',
+        logicalNodeTypeId
+      );
       return;
     }
 
     const edit = buildRemove(element);
-    createAndDispatchEditEvent(host, edit)
+    createAndDispatchEditEvent(host, edit);
   }
 
   /**
@@ -121,12 +222,13 @@ class TemplateService {
    */
   private warnIfHostNotSet(host: HTMLElement, action: string): boolean {
     if (!host) {
-      console.warn(`Host element is not set. Action "${action}" cannot be performed. This action only works in the context of an editor (integrated as plugin).`);
+      console.warn(
+        `Host element is not set. Action "${action}" cannot be performed. This action only works in the context of an editor (integrated as plugin).`
+      );
       return true;
     }
     return false;
   }
 }
-
 
 export const templateService = new TemplateService();

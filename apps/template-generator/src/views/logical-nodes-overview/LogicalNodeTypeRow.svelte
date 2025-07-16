@@ -1,5 +1,5 @@
 <script lang="ts">
-  import NodeActionButton from '../../lib/components/NodeActionButton.svelte';
+  import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, {Row, Cell} from '@smui/data-table';
 
   export let node: {
@@ -17,12 +17,12 @@
   <Cell>{node.class}</Cell>
   <Cell>{node.references}</Cell>
   <Cell>
-    <NodeActionButton
+    <OscdIconActionButton
       tooltip="Duplicate"
       type="duplicate"
       onClick={onDuplicate}
     />
-    <NodeActionButton
+    <OscdIconActionButton
       tooltip="Delete"
       type="delete"
       fillColor="red"

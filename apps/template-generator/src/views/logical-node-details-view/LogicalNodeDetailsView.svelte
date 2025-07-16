@@ -1,7 +1,8 @@
 <script lang="ts">
   import { selectedLNodeTypeId } from '../../lib/stores';
-  import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdCardList } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdBreadcrumbs, OscdButton, OscdListBoard, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import { templateService } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { onMount } from 'svelte';
 
   // ===== Parameters =====
 
@@ -13,13 +14,110 @@
   let isDirty = false; // Track if there are unsaved changes
   let isEditMode = false; // Track if the view is in edit mode
 
-  let items = [
-    'DataType1',
-    'DataType2',
-    'DataType3',
-    'DataType4',
-    'DataType5'
-  ]; // Example items, replace with actual data types
+
+  // State: Tracks marked items per list
+  let markedSets: Set<any>[] = [];
+
+  onMount(() => {
+    markedSets = [new Set(), new Set(), new Set(), new Set()]; // initialize marked sets for each list
+  });
+
+
+  let rawLogicalNode = templateService.getLogicalNodeTypeByIdWithChildren(doc, $selectedLNodeTypeId);
+  let rawDOTypes = templateService.getAllDOTypes(doc);
+  let rawDATypes = templateService.getAllDATypes(doc);
+  let rawEnumTypes = templateService.getAllEnumTypes(doc);
+
+  let dataObjectItems = rawLogicalNode.children ?? [];
+
+  $: filteredDataObjectItems = rawDOTypes.filter(doType => {
+    const marked = markedSets[0];
+    const references = marked?.size > 0
+      ? Array.from(marked)
+      : dataObjectItems;
+
+    return references.some(item => item.type === doType.id);
+  });
+
+  $: filteredDATypes = rawDATypes.filter(dataType => {
+    const marked = markedSets[1];
+    const markedDataTypes = marked?.size > 0 ? Array.from(marked) : filteredDataObjectItems;
+
+    // Collect all Enum-type references from selected DOType children
+    const referencedIds = markedDataTypes
+      .flatMap(dt => dt.children ?? [])
+      .map(child => child.type);
+
+    return referencedIds.includes(dataType.id);
+  });
+
+  $: filteredEnumTypes = rawEnumTypes.filter(enumType => {
+    const marked = markedSets[1];
+    const markedDataTypes = marked?.size > 0 ? Array.from(marked) : filteredDataObjectItems;
+
+    // Collect all Enum-type references from selected DOType children
+    const referencedEnumIds = markedDataTypes
+      .flatMap(dt => dt.children ?? [])
+      .filter(child => child.bType === 'Enum')
+      .map(child => child.type);
+
+    return referencedEnumIds.includes(enumType.id);
+  });
+
+
+  let items = ['Boolean', 'Integer'];
+
+  $: boardSettings = [
+    {
+      id: 'ref-data-types',
+      title: 'Reference Data Types',
+      showSearch: false,
+      items: dataObjectItems,
+      canMark: true,
+      canEdit: true,
+      getItemState: (item) => markedSets[0]?.has(item) ? 'marked' : 'default',
+      getItemTitle: (item) => item.name,
+      getItemSubtitle: (item) => item.type,
+      getItemReferences: (item) => null
+    },
+    {
+      id: 'object-data-types',
+      title: 'Object Data Types',
+      actionText: 'ADD NEW',
+      showSearch: true,
+      canEdit: true,
+      canMark: true,
+      items: filteredDataObjectItems,
+      getItemState: (item) => markedSets[1]?.has(item) ? 'marked' : 'default',
+      getItemTitle: (item) => item.cdc,
+      getItemSubtitle: (item) => item.id,
+      getItemReferences: null
+    },
+    {
+      id: 'attribute-data-types',
+      title: 'Attribute Data Types',
+      actionText: 'ADD NEW',
+      showSearch: true,
+      canEdit: true,
+      items: filteredDATypes,
+      getItemState: (item) => markedSets[2]?.has(item) ? 'marked' : 'default',
+      getItemTitle: (item) => item.id,
+      getItemSubtitle: null,
+      getItemReferences: null
+    },
+    {
+      id: 'enum-types',
+      title: 'Enum Types',
+      actionText: 'ADD NEW',
+      showSearch: true,
+      canEdit: true,
+      items: filteredEnumTypes,
+      getItemState: (item) => markedSets[3]?.has(item) ? 'marked' : 'default',
+      getItemTitle: (item) => item.id,
+      getItemSubtitle: null,
+      getItemReferences: (item) => item.values.length
+    }
+  ];
 
   let breadcrumbs = [
     { label: 'Logical Nodes Types', enabled: true },
@@ -44,88 +142,61 @@
     }
   };
 
+  const handleOnMark = ({ listIndex, listId, item, itemIndex }) => {
+    const updatedSet = new Set(markedSets[listIndex]); // clone to preserve immutability
+    if (updatedSet.has(item)) {
+      updatedSet.delete(item);
+    } else {
+      updatedSet.add(item);
+    }
+
+    // Re-assign the entire array to trigger reactivity
+    markedSets = [
+      ...markedSets.slice(0, listIndex),
+      updatedSet,
+      ...markedSets.slice(listIndex + 1)
+    ];
+
+    console.log(markedSets);
+  };
+
 </script>
 
 <div class="oscd-details">
 
+
   <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
-    <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
+    <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={handleBreadcrumbClick} />
 
     <div class="oscd-details-toolbar-right">
 
       <OscdSwitch
-        label="Edit Mode"
         bind:checked={isEditMode}
         id="edit-mode-switch"
+        label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
 
       <OscdButton
-        variant="unelevated" on:click={handleSaveChanges} disabled={!isDirty}>
+        disabled={!isDirty} on:click={handleSaveChanges} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
     </div>
   </div>
   <!-- END: Toolbar -->
 
-  <!-- START: Board -->
+
   <div class="oscd-details-board">
-    <OscdCardList
-      title="Reference Data Types"
-      showSearch={true}
-      actionText="ADD NEW"
-    >
-
-      <div slot="default" let:searchQuery>
-        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
-          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
-        {/each}
-      </div>
-
-    </OscdCardList>
-    <OscdCardList
-      title="Reference Data Types"
-      showSearch={true}
-      actionText="ADD NEW"
-    >
-
-      <div slot="default" let:searchQuery>
-        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
-          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
-        {/each}
-      </div>
-
-    </OscdCardList>
-    <OscdCardList
-      title="Reference Data Types"
-      showSearch={true}
-      actionText="ADD NEW"
-    >
-
-      <div slot="default" let:searchQuery>
-        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
-          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
-        {/each}
-      </div>
-
-    </OscdCardList>
-    <OscdCardList
-      title="Reference Data Types"
-      showSearch={true}
-      actionText="ADD NEW"
-    >
-
-      <div slot="default" let:searchQuery>
-        {#each items.filter(i => i.toLowerCase().includes(searchQuery.toLowerCase())) as item}
-          <div class="p-3 bg-gray-100 rounded shadow">{item}</div>
-        {/each}
-      </div>
-
-    </OscdCardList>
-
+    <OscdListBoard
+      on:actionClick={(e) => console.info('Action Click:', e.detail)}
+      on:itemEdit={(e) => console.info('Item Edit:', e.detail)}
+      on:itemMark={(e) => handleOnMark(e.detail)}
+      settings={boardSettings}
+    />
   </div>
+
 </div>
 
 

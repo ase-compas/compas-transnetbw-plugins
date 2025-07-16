@@ -1,6 +1,10 @@
 <script lang="ts">
-  import Tooltip, { Wrapper } from '@smui/tooltip';
-  import { OscdControlPointDuplicateIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import {
+    OscdControlPointDuplicateIcon,
+    OscdDeleteIcon,
+    OscdEditIcon,
+    OscdVisibilityIcon
+  } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   // ===== Parameters =====
@@ -20,7 +24,7 @@
 
   <button
     aria-label={tooltip}
-    class="icon-button button-duplicate"
+    class="icon-button"
     on:click={(e)=> {
       e.stopPropagation(); // blocks bubbling forward to the row click handler
       onClick?.(e);
@@ -30,6 +34,10 @@
       <OscdDeleteIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
     {:else if type === 'duplicate'}
       <OscdControlPointDuplicateIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+    {:else if type === 'edit'}
+      <OscdEditIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+    {:else if type === 'visibility'}
+      <OscdVisibilityIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
     {:else}
       Unsupported supported type: {type}
     {/if}
