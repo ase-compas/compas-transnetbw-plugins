@@ -69,7 +69,8 @@
   .item-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
+    word-break: break-word;
   }
 
   .item-bot {
