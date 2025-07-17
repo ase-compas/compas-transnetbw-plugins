@@ -18391,3 +18391,7 @@ a.smui-fab--color-primary:visited:disabled .mdc-fab__label {
   cursor: pointer;
   background: #D9D800 !important;
 }
+
+.smui-autocomplete, .smui-autocomplete .mdc-text-field {
+  width: 100%;
+}

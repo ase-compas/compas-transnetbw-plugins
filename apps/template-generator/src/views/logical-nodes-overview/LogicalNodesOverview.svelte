@@ -1,6 +1,7 @@
 <script lang="ts">
   // ===== Imports =====
   import { OscdInput, OscdButton } from '@oscd-transnet-plugins/oscd-component';
+  import NewLNodeTypeDialog from './NewLNodeTypeDialog.svelte';
   import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
@@ -20,6 +21,8 @@
   let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
   let items: SimpleLogicalNodeTypeListItem[] = [];
   let isLoading = false;
+  let showDialog = false;
+
 
 
   $: init(doc)
@@ -52,12 +55,30 @@
     selectedLNodeTypeId.set(lNodeTypeId);
   };
 
-  const handleAddNewTemplate = () => {
-    console.log('Add New Template');
-  };
+  function openDialog() {
+    showDialog = true;
+  }
+
+  function handleDialogCreate(event: CustomEvent) {
+    const { id, lnClass } = event.detail;
+    console.log('Confirmed with:', id, lnClass);
+    showDialog = false;
+  }
+
+  function handleDialogCancel() {
+    console.log('Dialog cancel');
+    showDialog = false;
+  }
+
 </script>
 
 <div class="logical-nodes-overview">
+
+  <NewLNodeTypeDialog
+    bind:open={showDialog}
+    on:success={handleDialogCreate}
+    on:abort={handleDialogCancel}
+  />
 
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">
@@ -69,8 +90,8 @@
         bind:value={nodeSearchTerm}
       />
     </div>
-    <OscdButton variant="unelevated" on:click={handleAddNewTemplate}>
-      ADD NEW TEMPLATE
+    <OscdButton variant="unelevated" callback={openDialog}>
+      ADD NEW LNODE TYPE
     </OscdButton>
   </div>
 
