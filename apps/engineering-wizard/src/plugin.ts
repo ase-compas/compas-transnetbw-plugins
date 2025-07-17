@@ -10,7 +10,7 @@ export default class NewOSCDPlugin extends HTMLElement {
       target: this.shadowRoot!,
       props: {
         doc: this._doc,
-        editCount: -1,
+        editCount: -1
       },
     });
 
@@ -26,6 +26,10 @@ export default class NewOSCDPlugin extends HTMLElement {
     }
 
     this.plugin.$set({ doc: newDoc });
+  }
+
+  public get doc(): XMLDocument | undefined {
+    return this._doc;
   }
 
   public set editCount(newCount: number) {

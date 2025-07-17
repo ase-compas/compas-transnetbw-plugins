@@ -5,10 +5,12 @@
 
   export let doc: XMLDocument;
   export let dev = false;
+  export let editCount = 0;
+  console.log("editcount", editCount);
 </script>
 
 {#if doc || dev}
-    <App></App>
+    <App { doc } { editCount }></App>
 {/if}
 
 <input type="hidden" name="package-name" value={pckg.name} />
