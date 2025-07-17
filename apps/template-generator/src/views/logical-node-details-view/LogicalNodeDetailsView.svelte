@@ -120,7 +120,7 @@
   ];
 
   let breadcrumbs = [
-    { label: 'Logical Nodes Types', enabled: true },
+    { label: 'Logical Node Types', enabled: true },
     { label: 'Current-LN', secondaryLabel: logicalNodeType.lnClass, enabled: false }
   ];
 
