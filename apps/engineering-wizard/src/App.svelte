@@ -1,11 +1,14 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
+  import {OscdCheckIcon} from "../../../libs/oscd-icons/src";
+  import {OscdTooltip} from "../../../libs/oscd-component/src";
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
 
   let tagName: string | null = null;
   let editorTabsVisible = false;
+  let visited: string[] = [];
 
   const dispatch = createEventDispatcher<{
     'toggle-editor-tabs': { visible?: boolean };
@@ -27,7 +30,6 @@
     );
   }
 
-  /** Registry of all editors in the desired order */
   const plugins = [
     {
       tag: 'engineering-wizard',
@@ -50,7 +52,12 @@
     const mod = await import(plugin.src);
     if (!customElements.get(plugin.tag))
       customElements.define(plugin.tag, mod.default);
+
     tagName = plugin.tag;
+
+    if (!visited.includes(plugin.tag)) {
+      visited = [...visited, plugin.tag];
+    }
   }
 
   onMount(() => {
@@ -68,7 +75,6 @@
     loadPlugin(plugins[(idx - 1 + plugins.length) % plugins.length]);
   }
 
-  /** Helper to forward props into the dynamically created element */
   function setProps(node: HTMLElement, props: any) {
     Object.assign(node, props);
     return { update: (p: any) => Object.assign(node, p) };
@@ -81,7 +87,20 @@
   <div class="plugin-steps">
     {#each plugins as plugin, i}
       <div class="plugin-step">
-        <button on:click={() => loadPlugin(plugin)}>{i + 1}</button>
+        <OscdTooltip text="Load the {plugin.label} editor" position="bottom">
+          <button
+            on:click={() => loadPlugin(plugin)}
+            class:not-visited={!visited.includes(plugin.tag)}
+            class:current={plugin.tag === tagName}
+            class:visited={visited.includes(plugin.tag) && plugin.tag !== tagName}
+          >
+            {#if visited.includes(plugin.tag) && plugin.tag !== tagName}
+              <OscdCheckIcon />
+            {:else}
+              {i + 1}
+            {/if}
+          </button>
+        </OscdTooltip>
         <p>{plugin.label}</p>
       </div>
       {#if i < plugins.length - 1}
@@ -122,34 +141,6 @@
     align-items: center;
   }
 
-  .plugin-step {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    color: white;
-    gap: 0.8rem;
-    text-transform: uppercase;
-
-    & button {
-      background-color: #ffffff;
-      width: 2rem;
-      height: 2rem;
-      border: 1px solid transparent;
-      border-radius: 50%;
-    }
-
-    & p {
-      margin: 0;
-      font-size: 14px;
-    }
-  }
-
-  .plugin-step-line {
-    width: 56px;
-    height: 1px;
-    background-color: #6B9197;
-  }
-
   .plugin-flow-title {
     font-weight: 500;
     color: #ffffff;
@@ -161,25 +152,70 @@
     justify-self: end;
   }
 
-  .back-button {
+  .back-button,
+  .next-button {
     height: 36px;
     width: 70px;
     text-transform: uppercase;
-    color: white;
-    background-color: #6B9197;
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
   }
 
+  .back-button {
+    color: white;
+    background-color: #6B9197;
+  }
+
   .next-button {
-    height: 36px;
-    width: 70px;
-    text-transform: uppercase;
     background-color: white;
     color: #004552;
-    border: 1px solid transparent;
-    border-radius: 4px;
+  }
+
+  .plugin-step {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: white;
+    gap: 0.8rem;
+    text-transform: uppercase;
     cursor: pointer;
+
+    & button {
+      display:  flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+  }
+
+  .plugin-step-line {
+    width: 56px;
+    height: 1px;
+    background-color: #6B9197;
+  }
+
+  .plugin-step button {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+
+  .plugin-step button.not-visited {
+    background-color: #6B9197;
+    color: #ffffff;
+  }
+
+  .plugin-step button.current {
+    background-color: #D9D800;
+    color: #004552;
+  }
+
+  .plugin-step button.visited {
+    background-color: #ffffff;
+    color: #004552;
   }
 </style>
