@@ -77,6 +77,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    word-break: break-word;
+    gap: 2rem;
   }
 
   .icon-wrapper {
