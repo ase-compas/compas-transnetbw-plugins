@@ -30,7 +30,7 @@
     <p>Please load an XML file to start.</p>
   {:else}
     <div class="template-generator-container">
-      {#if $route.path[0] !== 'view' && $route.path[0] !== 'new'}
+      {#if $route.path[0] === 'overview'}
         <LogicalNodesOverview {doc}/>
       {:else}
         <LogicalNodeDetailsView {doc}/>
