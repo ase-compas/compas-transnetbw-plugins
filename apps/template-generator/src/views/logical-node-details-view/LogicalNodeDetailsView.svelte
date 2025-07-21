@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { selectedLNodeTypeId } from '../../lib/stores';
+  import { route } from '../../lib/stores';
   import { OscdBreadcrumbs, OscdButton, OscdListBoard, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import { templateService } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
@@ -9,8 +9,10 @@
   export let doc: XMLDocument;
 
   // ===== State =====
+  let lNodeTypeId = $route.meta.lNodeTypeId;
 
-  let logicalNodeType = templateService.getLogicalNodeTypeById(doc, $selectedLNodeTypeId);
+
+  let logicalNodeType = templateService.getLogicalNodeTypeById(doc, lNodeTypeId);
   let isDirty = false; // Track if there are unsaved changes
   let isEditMode = false; // Track if the view is in edit mode
 
@@ -23,7 +25,7 @@
   });
 
 
-  let rawLogicalNode = templateService.getLogicalNodeTypeByIdWithChildren(doc, $selectedLNodeTypeId);
+  let rawLogicalNode = $route.path[0] === 'view' ? templateService.getLogicalNodeTypeByIdWithChildren(doc, lNodeTypeId) : [];
   let rawDOTypes = templateService.getAllDOTypes(doc);
   let rawDATypes = templateService.getAllDATypes(doc);
   let rawEnumTypes = templateService.getAllEnumTypes(doc);
@@ -121,7 +123,8 @@
 
   let breadcrumbs = [
     { label: 'Logical Node Types', enabled: true },
-    { label: 'Current-LN', secondaryLabel: logicalNodeType.lnClass, enabled: false }
+    $route.path[0] === 'view' ? { label: 'Current-LN', secondaryLabel: logicalNodeType.lnClass, enabled: false } :
+      { label: 'New Logical Node Type', secondaryLabel: $route.meta.lnClass, enabled: false }
   ];
 
   // ===== Handlers =====
@@ -129,7 +132,9 @@
   const handleBreadcrumbClick = (event) => {
     const { index } = event.detail;
     if (index === 0) {
-      selectedLNodeTypeId.set(null);
+      route.set({
+        path: ['overview'],
+      })
     } else {
       // Handle other breadcrumb clicks if needed
     }

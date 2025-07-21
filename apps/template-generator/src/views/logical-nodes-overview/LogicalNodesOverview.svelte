@@ -8,7 +8,7 @@
   import LogicalNodeTypeRow from './LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
   import { templateService, type SimpleLogicalNodeTypeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
-  import { selectedLNodeTypeId, host } from "../../lib/stores";
+  import { type Route, route, host } from "../../lib/stores";
 
   export let doc: XMLDocument;
 
@@ -52,7 +52,12 @@
   };
 
   const handleNodeClick = (lNodeTypeId: string) => {
-    selectedLNodeTypeId.set(lNodeTypeId);
+    route.set({
+      path: ['view'],
+      meta: {
+       lNodeTypeId: lNodeTypeId
+      }
+    } as Route);
   };
 
   function openDialog() {
@@ -63,6 +68,13 @@
     const { id, lnClass } = event.detail;
     console.log('Confirmed with:', id, lnClass);
     showDialog = false;
+    route.set({
+      path: ['new'],
+      meta: {
+        lNodeTypeId: id,
+        lnClass: lnClass
+      }
+    } as Route)
   }
 
   function handleDialogCancel() {

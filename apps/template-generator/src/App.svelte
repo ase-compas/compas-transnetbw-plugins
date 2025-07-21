@@ -1,7 +1,7 @@
 <script lang="ts">
   import LogicalNodesOverview from "./views/logical-nodes-overview/LogicalNodesOverview.svelte";
   import LogicalNodeDetailsView from "./views/logical-node-details-view/LogicalNodeDetailsView.svelte";
-  import { selectedLNodeTypeId, host as storeHost } from "./lib/stores";
+  import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
 
   export let doc: XMLDocument | null = null;
@@ -30,7 +30,7 @@
     <p>Please load an XML file to start.</p>
   {:else}
     <div class="template-generator-container">
-      {#if !$selectedLNodeTypeId }
+      {#if $route.path[0] !== 'view' && $route.path[0] !== 'new'}
         <LogicalNodesOverview {doc}/>
       {:else}
         <LogicalNodeDetailsView {doc}/>

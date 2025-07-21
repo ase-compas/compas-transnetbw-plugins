@@ -1,4 +1,11 @@
 import { writable } from 'svelte/store';
 
-export const selectedLNodeTypeId = writable<string | null>(null);
+export type Route = {
+  path: string[];
+  mata?: Record<string, any>;
+}
+
+export const route = writable<Route | null>({
+  path: ['overview']
+});
 export const host = writable<HTMLElement>();
