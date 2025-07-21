@@ -5,7 +5,7 @@ export type Route = {
   mata?: Record<string, any>;
 }
 
-export const route = writable<Route | null>({
+export const route = writable<Route>({
   path: ['overview']
 });
 export const host = writable<HTMLElement>();
