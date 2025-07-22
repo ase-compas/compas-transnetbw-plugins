@@ -12,6 +12,7 @@
   // ===== State Variables =====
   let id: string = '';
   let selectedLnClass = null;
+  let idTouched = false;
 
   const dispatch = createEventDispatcher();
 
@@ -33,7 +34,8 @@
   });
 
   // ===== Computed Variables =====
-  $: isValid = id && selectedLnClass !== null;
+  $: idIsValid = /^[^\s]+$/.test(id); // No whitespace
+  $: isValid = idIsValid && id && selectedLnClass !== null;
 
   $: if (!open) {
     resetFormValues();
@@ -57,6 +59,7 @@
   const resetFormValues = () => {
     id = '';
     selectedLnClass = null;
+    idTouched = false;
   };
 </script>
 
@@ -76,7 +79,16 @@
         bind:value={id}
         required
         style="width: 100%;"
-      />
+        {idIsValid}
+        invalid={idTouched && !idIsValid}
+        on:input={() => idTouched = true}
+        >
+        <svelte:fragment slot="helper">
+          {#if idTouched && !idIsValid}
+            <span style="color: var(--mdc-theme-error, #b71c1c);">ID must not contain whitespace.</span>
+          {/if}
+        </svelte:fragment>
+        </TextField>
 
       <Autocomplete
         label="Logical Node Class"
