@@ -161,8 +161,6 @@
       updatedSet,
       ...markedSets.slice(listIndex + 1)
     ];
-
-    console.log(markedSets);
   };
 
 </script>
