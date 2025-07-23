@@ -4,6 +4,7 @@
   import Button, { Label } from '@smui/button';
   import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
+  import {lnClassDescriptions} from './lnClassDescriptions.ts'
 
   // ===== Parameters =====
 
@@ -20,17 +21,10 @@
 
 
   onMount(async () => {
-    const response = await fetch('../../../public/data/lnClass-descriptions.json');
-    if (response.ok) {
-      const data = await response.json();
-      options = data.map(item => ({
-        title: item.lnClass,
-        subtitle: item.description
-      }));
-
-    } else {
-      console.error('Failed to load data:', response.statusText);
-    }
+      options = lnClassDescriptions.map(item => ({
+      title: item.lnClass,
+      subtitle: item.description
+    }));
   });
 
   // ===== Computed Variables =====

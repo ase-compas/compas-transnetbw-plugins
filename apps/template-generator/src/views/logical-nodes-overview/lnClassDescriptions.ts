@@ -1,4 +1,4 @@
-[
+export const lnClassDescriptions = [
   {
     "lnClass": "LPHD",
     "description": "Zustand des Physischen Geräts"

@@ -1,6 +1,7 @@
 <script lang="ts">
   import LogicalNodesOverview from "./views/logical-nodes-overview/LogicalNodesOverview.svelte";
   import LogicalNodeDetailsView from "./views/logical-node-details-view/LogicalNodeDetailsView.svelte";
+  import MasterView from './views/MasterView.svelte';
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
 
@@ -32,6 +33,8 @@
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
         <LogicalNodesOverview {doc}/>
+      {:else if $route.path[0] === 'master'}
+        <MasterView {doc}/>
       {:else}
         <LogicalNodeDetailsView {doc}/>
       {/if}
