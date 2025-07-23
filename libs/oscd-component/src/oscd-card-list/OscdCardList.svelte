@@ -55,6 +55,7 @@
 
         <OscdButton
           callback={onActionClick}
+          backgroundColor="white"
         >
           {actionText}
         </OscdButton>
