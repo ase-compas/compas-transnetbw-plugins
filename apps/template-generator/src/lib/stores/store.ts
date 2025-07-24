@@ -6,6 +6,6 @@ export type Route = {
 }
 
 export const route = writable<Route>({
-  path: ['master']
+  path: ['masterv2']
 });
 export const host = writable<HTMLElement>();

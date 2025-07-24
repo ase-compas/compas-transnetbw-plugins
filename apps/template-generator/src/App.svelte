@@ -4,6 +4,7 @@
   import MasterView from './views/MasterView.svelte';
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
+  import MasterV2 from './views/MasterV2.svelte';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -35,6 +36,8 @@
         <LogicalNodesOverview {doc}/>
       {:else if $route.path[0] === 'master'}
         <MasterView {doc}/>
+      {:else if $route.path[0] === 'masterv2'}
+        <MasterV2 {doc}/>
       {:else}
         <LogicalNodeDetailsView {doc}/>
       {/if}

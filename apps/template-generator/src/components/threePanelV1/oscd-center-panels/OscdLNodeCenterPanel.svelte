@@ -1,11 +1,9 @@
 <script lang="ts">
   import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
+  import { selectedItem } from '../../../lib/stores/threePanelStore.ts'
   export let data: any;
-  $: dataAttributes = data?.item?.reference?.children || [];
-  $: if(dataAttributes) {
-    console.log(data);
-  }
+  $: dataObjects = data?.data?.children || [];
 </script>
 
 <div class="test">
@@ -15,23 +13,19 @@
         <Cell checkbox>
           <Checkbox />
         </Cell>
-        <Cell>name</Cell>
-        <Cell>fc</Cell>
-        <Cell>bType</Cell>
-        <Cell>type</Cell>
+        <Cell>Name</Cell>
+        <Cell>Type</Cell>
       </Row>
     </Head>
     <Body>
-    {#each dataAttributes as dataObject, i (i)}
+    {#each dataObjects as dataObject (dataObject.attributes.name)}
       <Row>
         <Cell checkbox>
           <Checkbox
           />
         </Cell>
         <Cell>{dataObject.attributes.name}</Cell>
-        <Cell>{dataObject.attributes?.fc || ''}</Cell>
-        <Cell>{dataObject.attributes.bType}</Cell>
-        <Cell>{dataObject.attributes?.type || ''}</Cell>
+        <Cell on:click={() => console.log(data)}>{dataObject.attributes.type}</Cell>
       </Row>
     {/each}
     </Body>

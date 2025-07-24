@@ -1,6 +1,6 @@
 <script lang="ts">
   import ItemNode from './ItemNode.svelte';
-  import {type ToggleItem, type Item } from '../../layouts/three-panel-layout/types.ts'
+  import {type ToggleItem, type Item } from '../../../layouts/three-panel-layout/types.ts'
 
   // ===== Props =====
   export let item: ToggleItem;
@@ -19,7 +19,7 @@
   <div on:click|stopPropagation={() => onSelect(item)} class="item" class:selected={item.selected}>
     <div class="item-row">
       {#if canToggle(item)}
-          <button style="all: unset; cursor: pointer," on:click|stopPropagation={() => onToggle(item)}>
+          <button style="all: unset; cursor: pointer;" on:click|stopPropagation={() => onToggle(item)}>
             {item.isOpen ? '▼' : '▶'}
           </button>
       {/if}
@@ -29,7 +29,7 @@
             <span class="prefix-label">{prefixLabel(item)}</span>
           {/if}
 
-          <span >{item.name}</span>
+          <span>{item.name}</span>
 
           {#if suffixLabel && suffixLabel(item)}
             <span class="suffix-label">{suffixLabel(item)}</span>

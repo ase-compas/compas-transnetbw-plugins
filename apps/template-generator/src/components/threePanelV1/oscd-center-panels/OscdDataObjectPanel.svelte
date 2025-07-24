@@ -2,7 +2,10 @@
   import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
   export let data: any;
-  $: dataObjects = data?.item?.children || [];
+  $: dataAttributes = data?.data?.reference?.children || [];
+  $: if(dataAttributes) {
+    console.log(data);
+  }
 </script>
 
 <div class="test">
@@ -12,19 +15,23 @@
         <Cell checkbox>
           <Checkbox />
         </Cell>
-        <Cell>Name</Cell>
-        <Cell>Type</Cell>
+        <Cell>name</Cell>
+        <Cell>fc</Cell>
+        <Cell>bType</Cell>
+        <Cell>type</Cell>
       </Row>
     </Head>
     <Body>
-    {#each dataObjects as dataObject (dataObject.attributes.name)}
+    {#each dataAttributes as dataObject (dataObject.attributes.name)}
       <Row>
         <Cell checkbox>
           <Checkbox
           />
         </Cell>
         <Cell>{dataObject.attributes.name}</Cell>
-        <Cell>{dataObject.attributes.type}</Cell>
+        <Cell>{dataObject.attributes?.fc || ''}</Cell>
+        <Cell>{dataObject.attributes.bType}</Cell>
+        <Cell>{dataObject.attributes?.type || ''}</Cell>
       </Row>
     {/each}
     </Body>

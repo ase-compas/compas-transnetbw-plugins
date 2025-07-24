@@ -4,6 +4,7 @@ export type Item = {
   type: string;
   item: any;
   children?: Item[];
+  parent?: Item
 };
 
 export type ToggleItem = Omit<Item, 'children'> & {
