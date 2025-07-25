@@ -2,10 +2,11 @@ import { writable } from 'svelte/store';
 
 export type Route = {
   path: string[];
-  mata?: Record<string, any>;
+  meta?: Record<string, any>;
 }
 
 export const route = writable<Route>({
-  path: ['masterv2']
+  path: ['overview']
 });
+
 export const host = writable<HTMLElement>();

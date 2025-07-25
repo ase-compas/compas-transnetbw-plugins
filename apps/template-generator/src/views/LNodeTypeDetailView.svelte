@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { route } from '../../lib/stores';
+  import { route } from '../lib/stores';
   import { OscdBreadcrumbs, OscdButton, OscdListBoard, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import { templateService } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';

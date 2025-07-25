@@ -4,7 +4,7 @@
   import Button, { Label } from '@smui/button';
   import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
-  import {lnClassDescriptions} from './lnClassDescriptions.ts'
+  import {lnClassDescriptions} from '../../../data/lnClassDescriptions.ts'
 
   // ===== Parameters =====
 

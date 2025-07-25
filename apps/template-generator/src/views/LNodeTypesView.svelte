@@ -1,37 +1,41 @@
 <script lang="ts">
   // ===== Imports =====
   import { OscdInput, OscdButton } from '@oscd-transnet-plugins/oscd-component';
-  import NewLNodeTypeDialog from './NewLNodeTypeDialog.svelte';
+  import NewLNodeTypeDialog from '../lib/components/dialogs/NewLNodeTypeDialog.svelte';
   import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import LogicalNodeTypeRow from './LogicalNodeTypeRow.svelte';
+  import LogicalNodeTypeRow from '../lib/components/tables/LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
   import { templateService, type SimpleLogicalNodeTypeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
-  import { type Route, route, host } from "../../lib/stores";
+  import { getLNodeTypeService } from '../lib/services/context';
+  import { type Route, route, host } from "../lib/stores";
+  import { LNodeType } from '../lib/domain';
 
   export let doc: XMLDocument;
 
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
+  const lNodeTypeService = getLNodeTypeService();
 
   // ===== State =====
   let nodeSearchTerm = '';
   let sort: 'id' | 'lnClass' = 'id';
   let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
-  let items: SimpleLogicalNodeTypeListItem[] = [];
+  let items: LNodeType[] = [];
   let isLoading = false;
   let showDialog = false;
 
 
 
   $: init(doc)
-  const init = (xmlDocument: XMLDocument) => {
-    items = templateService.getAllLogicalNodeTypes(xmlDocument)
+  const init = (_: XMLDocument) => {
+    items = lNodeTypeService.findAll();
   }
 
   // ===== Derived Values =====
 
+  let filteredAndSortedItems: LNodeType[] = [];
   $: filteredAndSortedItems = items
     .filter(node => node.id.toLowerCase().includes(nodeSearchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -44,11 +48,11 @@
 
   // ===== Handlers =====
   const handleDuplicate = (lNodeTypeId: string) => {
-    templateService.duplicateLogicalNodeType(doc, $host, lNodeTypeId);
+    lNodeTypeService.duplicate(lNodeTypeId);
   };
 
   const handleDelete = (lNodeTypeId: string) => {
-    templateService.deleteLogicalNodeType(doc, $host, lNodeTypeId);
+    lNodeTypeService.delete(lNodeTypeId);
   };
 
   const handleNodeClick = (lNodeTypeId: string) => {
@@ -151,9 +155,9 @@
         </tr>
       {/if}
 
-      {#each filteredAndSortedItems as node}
+      {#each filteredAndSortedItems as node (node.id)}
         <LogicalNodeTypeRow
-          node={{name: node.id, class: node.lnClass, references: node.references}}
+          node={{name: node.id, class: node.lnClass, references: node.dataObjects.length}}
           onDuplicate={() => handleDuplicate(node.id)}
           onDelete={() => handleDelete(node.id)}
           onClick={() => handleNodeClick(node.id)}

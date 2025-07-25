@@ -1,10 +1,9 @@
 <script lang="ts">
-  import LogicalNodesOverview from "./views/logical-nodes-overview/LogicalNodesOverview.svelte";
-  import LogicalNodeDetailsView from "./views/logical-node-details-view/LogicalNodeDetailsView.svelte";
-  import MasterView from './views/MasterView.svelte';
+  import LNodeTypesView from "./views/LNodeTypesView.svelte";
+  import LNodeTypeDetailView from "./views/LNodeTypeDetailView.svelte";
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
-  import MasterV2 from './views/MasterV2.svelte';
+  import { initServices } from './lib/services/context';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -18,10 +17,25 @@
     doc = parser.parseFromString(text, "application/xml");
   }
 
+  function createMockHost(): HTMLElement | null {
+    const mockHost = document.createElement('div');
+    mockHost.id = 'oscd-host';
+    mockHost.addEventListener('oscd-edit-v2', (e) => {
+      console.log('Mock host clicked:', e);
+    });
+    document.body.appendChild(mockHost);
+    return mockHost;
+  }
+
   onMount(() => {
-    storeHost.set(host)
+    if(devMode) host = createMockHost(); // Create a mock host element in dev mode
+    storeHost.set(host);
   })
 
+  $: if(doc) {
+    console.log(host)
+    initServices(doc, host);
+  }
 </script>
 
 {#if devMode}<h1>Dev Mode Active</h1>{/if}
@@ -33,13 +47,9 @@
   {:else}
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
-        <LogicalNodesOverview {doc}/>
-      {:else if $route.path[0] === 'master'}
-        <MasterView {doc}/>
-      {:else if $route.path[0] === 'masterv2'}
-        <MasterV2 {doc}/>
+        <LNodeTypesView {doc}/>
       {:else}
-        <LogicalNodeDetailsView {doc}/>
+        <LNodeTypeDetailView {doc}/>
       {/if}
     </div>
   {/if}
