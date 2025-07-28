@@ -75,7 +75,7 @@
         actionText: 'ADD NEW',
         showSearch: true,
         canEdit: true,
-        canMark: true,
+        canMark: false,
         items: filteredDOTypes,
         getItemState: (item) => markedSets[1]?.has(item) ? 'marked' : 'default',
         getItemTitle: (item) => item.cdc,
