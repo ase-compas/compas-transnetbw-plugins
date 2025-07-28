@@ -64,10 +64,11 @@
     selection
     aria-labelledby="lnclass-title"
     aria-describedby="lnclass-description"
-    surface$style="width: 100vw; height: 100vh;"
+    surface$style="width: 700px; max-width:90vw; height: 100vh;"
+
   >
     <Title id="lnclass-title"><h3 style="margin: 0; padding: 0;">Create Logical Node Type</h3></Title>
-    <Content id="dialog-ln-content" style="padding: 1rem;">
+    <Content id="dialog-ln-content" style="padding: 1rem;" fullscreen={true}>
       <TextField
         label="Logical Node ID"
         bind:value={id}
