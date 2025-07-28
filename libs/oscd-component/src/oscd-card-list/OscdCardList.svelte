@@ -67,7 +67,6 @@
     <div class="search-wrapper" class:invisible={!showSearch}>
       <OscdInput
         bind:value={searchQuery}
-        disabled={!showSearch}
         icon="search"
         label="Search..."
         variant="outlined"

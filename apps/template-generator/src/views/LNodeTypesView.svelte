@@ -65,9 +65,10 @@
   }
 
   function handleDialogCreate(event: CustomEvent) {
+    console.log("here")
+    showDialog = false;
     const { id, lnClass } = event.detail;
     console.log('Confirmed with:', id, lnClass);
-    showDialog = false;
     route.set({
       path: ['new'],
       meta: {
@@ -78,7 +79,6 @@
   }
 
   function handleDialogCancel() {
-    console.log('Dialog cancel');
     showDialog = false;
   }
 
@@ -88,8 +88,8 @@
 
   <NewLNodeTypeDialog
     bind:open={showDialog}
-    on:success={handleDialogCreate}
     on:abort={handleDialogCancel}
+    on:success={handleDialogCreate}
   />
 
   <!-- Toolbar for search and add new template button -->

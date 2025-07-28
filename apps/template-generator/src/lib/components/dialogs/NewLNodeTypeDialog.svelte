@@ -41,12 +41,10 @@
   // ===== Event Handlers =====
   const handleCreate = () => {
     dispatch('success', { id: id, lnClass: selectedLnClass.title });
-    open = false;
   };
 
   const handleCancel = () => {
     dispatch('abort');
-    open = false;
   };
 
   // ===== Util Functions =====
@@ -64,14 +62,19 @@
 <div class="oscd-new-lnode-type-dialog">
   <Dialog
     bind:open
-    selection
     aria-labelledby="lnclass-title"
     aria-describedby="lnclass-description"
     surface$style="width: 700px; max-width:90vw; height: 100vh;"
-
+    on:SMUIDialog:closed={(e) => {
+      if (e.detail.action === 'abort') {
+        handleCancel();
+      } else if (e.detail.action === 'success') {
+        handleCreate();
+      }
+    }}
   >
     <Title id="lnclass-title"><h3 style="margin: 0; padding: 0;">Create Logical Node Type</h3></Title>
-    <Content id="dialog-ln-content" style="padding: 1rem;" fullscreen={true}>
+    <Content id="dialog-ln-content" style="padding: 1rem;">
       <TextField
         label="Logical Node ID"
         bind:value={id}
@@ -109,10 +112,10 @@
 
     </Content>
     <Actions>
-      <Button action="none" on:click={handleCancel}>
+      <Button action="abort">
         <Label>Cancel</Label>
       </Button>
-      <Button action="all" on:click={handleCreate} variant="raised" disabled="{!isValid}">
+      <Button action="success" variant="raised" disabled="{!isValid}">
         <Label>Create</Label>
       </Button>
     </Actions>
