@@ -49,7 +49,7 @@ export class DOTypeMapper {
   static toElement(doc: XMLDocument, doType: DOType): Element {
     const element = doc.createElement('DOType');
     element.setAttribute('id', doType.id);
-    element.setAttribute('cdc', doType.cd);
+    element.setAttribute('cdc', doType.cdc);
 
     // append child DA elements
     for (const da of doType.dataAttributes) {
