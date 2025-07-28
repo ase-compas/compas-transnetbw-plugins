@@ -1,132 +1,114 @@
 <script lang="ts">
-  import { route } from '../lib/stores';
+  import { Route, route } from '../lib/stores';
   import { OscdBreadcrumbs, OscdButton, OscdListBoard, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
-  import { templateService } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
+  import { getLNodeTypeService, LNodeTypeService } from '../lib/services';
+  import { LNodeType, ReferencedTypes } from '../lib/domain';
+  import { filterDATypes, filterDOTypes, filterEnumTypes, getReferences } from '../lib/utils/typeFiltering';
 
   // ===== Parameters =====
 
   export let doc: XMLDocument;
 
+  const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
+
   // ===== State =====
-  let lNodeTypeId = $route.meta.lNodeTypeId;
 
+  let lNodeTypeId: string;
+  let logicalNodeType: LNodeType | null = null
+  let referenceDataTypes: ReferencedTypes = {
+    dataObjectTypes: [],
+    dataAttributeTypes: [],
+    enumTypes: []
+  };
 
-  let logicalNodeType = templateService.getLogicalNodeTypeById(doc, lNodeTypeId);
   let isDirty = false; // Track if there are unsaved changes
   let isEditMode = false; // Track if the view is in edit mode
-
-
-  // State: Tracks marked items per list
-  let markedSets: Set<any>[] = [];
+  let markedSets: Set<any>[] = []; // State: Tracks marked items per list
 
   onMount(() => {
+    lNodeTypeId = $route.meta.lNodeTypeId;
+    logicalNodeType = lNodeTypeService.findById(lNodeTypeId);
+    referenceDataTypes = lNodeTypeService.findReferencedTypesById(lNodeTypeId);
     markedSets = [new Set(), new Set(), new Set(), new Set()]; // initialize marked sets for each list
   });
 
 
-  let rawLogicalNode = $route.path[0] === 'view' ? templateService.getLogicalNodeTypeByIdWithChildren(doc, lNodeTypeId) : [];
-  let rawDOTypes = templateService.getAllDOTypes(doc);
-  let rawDATypes = templateService.getAllDATypes(doc);
-  let rawEnumTypes = templateService.getAllEnumTypes(doc);
+  // Derived data
+  $: dataObjects = logicalNodeType?.dataObjects ?? [];
 
-  let dataObjectItems = rawLogicalNode.children ?? [];
+  $: selectedDOs = getReferences(markedSets[0], dataObjects ?? []);
+  $: filteredDOTypes = filterDOTypes(referenceDataTypes.dataObjectTypes, selectedDOs);
 
-  $: filteredDataObjectItems = rawDOTypes.filter(doType => {
-    const marked = markedSets[0];
-    const references = marked?.size > 0
-      ? Array.from(marked)
-      : dataObjectItems;
-
-    return references.some(item => item.type === doType.id);
-  });
-
-  $: filteredDATypes = rawDATypes.filter(dataType => {
-    const marked = markedSets[1];
-    const markedDataTypes = marked?.size > 0 ? Array.from(marked) : filteredDataObjectItems;
-
-    // Collect all Enum-type references from selected DOType children
-    const referencedIds = markedDataTypes
-      .flatMap(dt => dt.children ?? [])
-      .map(child => child.type);
-
-    return referencedIds.includes(dataType.id);
-  });
-
-  $: filteredEnumTypes = rawEnumTypes.filter(enumType => {
-    const marked = markedSets[1];
-    const markedDataTypes = marked?.size > 0 ? Array.from(marked) : filteredDataObjectItems;
-
-    // Collect all Enum-type references from selected DOType children
-    const referencedEnumIds = markedDataTypes
-      .flatMap(dt => dt.children ?? [])
-      .filter(child => child.bType === 'Enum')
-      .map(child => child.type);
-
-    return referencedEnumIds.includes(enumType.id);
-  });
+  $: selectedDOTypes = getReferences(markedSets[1], filteredDOTypes);
+  $: filteredDATypes = filterDATypes(referenceDataTypes.dataAttributeTypes, selectedDOTypes);
+  $: filteredEnumTypes = filterEnumTypes(referenceDataTypes.enumTypes, selectedDOTypes);
 
 
-  let items = ['Boolean', 'Integer'];
+  $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
 
-  $: boardSettings = [
-    {
-      id: 'ref-data-types',
-      title: 'Reference Data Types',
-      showSearch: false,
-      items: dataObjectItems,
-      canMark: true,
-      canEdit: true,
-      getItemState: (item) => markedSets[0]?.has(item) ? 'marked' : 'default',
-      getItemTitle: (item) => item.name,
-      getItemSubtitle: (item) => item.type,
-      getItemReferences: (item) => null
-    },
-    {
-      id: 'object-data-types',
-      title: 'Object Data Types',
-      actionText: 'ADD NEW',
-      showSearch: true,
-      canEdit: true,
-      canMark: true,
-      items: filteredDataObjectItems,
-      getItemState: (item) => markedSets[1]?.has(item) ? 'marked' : 'default',
-      getItemTitle: (item) => item.cdc,
-      getItemSubtitle: (item) => item.id,
-      getItemReferences: null
-    },
-    {
-      id: 'attribute-data-types',
-      title: 'Attribute Data Types',
-      actionText: 'ADD NEW',
-      showSearch: true,
-      canEdit: true,
-      items: filteredDATypes,
-      getItemState: (item) => markedSets[2]?.has(item) ? 'marked' : 'default',
-      getItemTitle: (item) => item.id,
-      getItemSubtitle: null,
-      getItemReferences: null
-    },
-    {
-      id: 'enum-types',
-      title: 'Enum Types',
-      actionText: 'ADD NEW',
-      showSearch: true,
-      canEdit: true,
-      items: filteredEnumTypes,
-      getItemState: (item) => markedSets[3]?.has(item) ? 'marked' : 'default',
-      getItemTitle: (item) => item.id,
-      getItemSubtitle: null,
-      getItemReferences: (item) => item.values.length
-    }
-  ];
+    $: boardSettings = [
+      {
+        id: 'ref-data-types',
+        title: 'Reference Data Types',
+        showSearch: false,
+        items: dataObjects,
+        canMark: true,
+        canEdit: true,
+        getItemState: (item) => markedSets[0]?.has(item) ? 'marked' : 'default',
+        getItemTitle: (item) => item.name,
+        getItemSubtitle: (item) => item.type,
+        getItemReferences: (item) => null
+      },
+      {
+        id: 'object-data-types',
+        title: 'Object Data Types',
+        actionText: 'ADD NEW',
+        showSearch: true,
+        canEdit: true,
+        canMark: true,
+        items: filteredDOTypes,
+        getItemState: (item) => markedSets[1]?.has(item) ? 'marked' : 'default',
+        getItemTitle: (item) => item.cdc,
+        getItemSubtitle: (item) => item.id,
+        getItemReferences: (item) => item.dataAttributes.length
+      },
+      {
+        id: 'attribute-data-types',
+        title: 'Attribute Data Types',
+        actionText: 'ADD NEW',
+        showSearch: true,
+        canEdit: true,
+        items: filteredDATypes,
+        getItemState: (item) => markedSets[2]?.has(item) ? 'marked' : 'default',
+        getItemTitle: (item) => item.id,
+        getItemSubtitle: null,
+        getItemReferences: (item) => item.basicDataAttributes.length
+      },
+      {
+        id: 'enum-types',
+        title: 'Enum Types',
+        actionText: 'ADD NEW',
+        showSearch: true,
+        canEdit: true,
+        items: filteredEnumTypes,
+        getItemState: (item) => markedSets[3]?.has(item) ? 'marked' : 'default',
+        getItemTitle: (item) => item.id,
+        getItemSubtitle: null,
+        getItemReferences: (item) => item.values.length
+      }
+    ];
 
-  let breadcrumbs = [
-    { label: 'Logical Node Types', enabled: true },
-    $route.path[0] === 'view' ? { label: 'Current-LN', secondaryLabel: logicalNodeType.lnClass, enabled: false } :
-      { label: 'New Logical Node Type', secondaryLabel: $route.meta.lnClass, enabled: false }
-  ];
+  function createBreadcrumbs(route: Route, lNodeType: LNodeType) {
+    const base = { label: 'Logical Node Types', enabled: true };
+    const isView = route.path[0] === 'view';
 
+    const detail = isView
+      ? { label: 'Current-LN', secondaryLabel: lNodeType?.lnClass ?? '', enabled: false }
+      : { label: 'New Logical Node Type', secondaryLabel: route.meta?.lnClass ?? '', enabled: false };
+
+    return [base, detail];
+  }
   // ===== Handlers =====
 
   const handleBreadcrumbClick = (event) => {

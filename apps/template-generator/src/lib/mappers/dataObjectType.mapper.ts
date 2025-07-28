@@ -37,19 +37,19 @@ export class DAMapper {
 export class DOTypeMapper {
   static fromElement(element: Element): DOType {
     const id = element.getAttribute('id') ?? '';
-    const cd = element.getAttribute('cd') ?? '';
+    const cdc = element.getAttribute('cdc') ?? '';
 
     // map child DA elements
     const daElements = Array.from(element.querySelectorAll('DA'));
     const dataAttributes: DA[] = daElements.map(DAMapper.fromElement);
 
-    return { id, cd, dataAttributes };
+    return { id, cdc, dataAttributes };
   }
 
   static toElement(doc: XMLDocument, doType: DOType): Element {
     const element = doc.createElement('DOType');
     element.setAttribute('id', doType.id);
-    element.setAttribute('cd', doType.cd);
+    element.setAttribute('cdc', doType.cd);
 
     // append child DA elements
     for (const da of doType.dataAttributes) {

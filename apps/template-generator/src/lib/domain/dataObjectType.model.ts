@@ -10,6 +10,6 @@ export type DA = {
 
 export type DOType = {
   id: string;
-  cd: string;
+  cdc: string;
   dataAttributes: DA[];
 };

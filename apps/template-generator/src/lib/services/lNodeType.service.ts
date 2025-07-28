@@ -1,4 +1,4 @@
-import type { LNodeType } from '../domain';
+import type { LNodeType, ReferencedTypes } from '../domain';
 import type { LNodeTypeRepository } from '../repositories';
 
 export class LNodeTypeService {
@@ -10,6 +10,10 @@ export class LNodeTypeService {
 
   findById(id: string): LNodeType | null {
     return this.repo.findById(id);
+  }
+
+  findReferencedTypesById(id: string): ReferencedTypes {
+    return this.repo.findReferencedTypesById(id);
   }
 
   duplicate(id: string): LNodeType | null {
