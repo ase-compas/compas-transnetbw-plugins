@@ -16,6 +16,10 @@ export class LNodeTypeService {
     return this.repo.findReferencedTypesById(id);
   }
 
+  isIdTaken(id: string): boolean {
+    return this.findById(id) !== null;
+  }
+
   duplicate(id: string): LNodeType | null {
     const existing = this.repo.findById(id);
     if (!existing) return null;

@@ -5,6 +5,9 @@
   import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
   import {lnClassDescriptions} from '../../../data/lnClassDescriptions.ts'
+  import { getLNodeTypeService, LNodeTypeService } from '../../services';
+
+  const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
 
   // ===== Parameters =====
 
@@ -19,7 +22,6 @@
 
   let options = [];
 
-
   onMount(async () => {
       options = lnClassDescriptions.map(item => ({
       title: item.lnClass,
@@ -29,7 +31,8 @@
 
   // ===== Computed Variables =====
   $: idIsValid = /^[^\s]+$/.test(id); // No whitespace
-  $: isValid = idIsValid && id && selectedLnClass !== null;
+  $: isIdTaken = id ? lNodeTypeService.isIdTaken(id) : false;
+  $: isValid = idIsValid && !isIdTaken && id && selectedLnClass !== null;
 
   $: if (!open) {
     resetFormValues();
@@ -81,6 +84,8 @@
         <svelte:fragment slot="helper">
           {#if idTouched && !idIsValid}
             <span style="color: var(--mdc-theme-error, #b71c1c);">ID must not contain whitespace.</span>
+          {:else if idTouched && isIdTaken}
+            <span style="color: var(--mdc-theme-error, #b71c1c);">This ID is already taken.</span>
           {/if}
         </svelte:fragment>
         </TextField>
