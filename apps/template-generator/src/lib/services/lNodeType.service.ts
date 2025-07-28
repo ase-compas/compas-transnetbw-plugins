@@ -1,5 +1,5 @@
-import type { LNodeType } from '../domain'
-import type { LNodeTypeRepository } from '../repositories/lNodeType.repository'
+import type { LNodeType } from '../domain';
+import type { LNodeTypeRepository } from '../repositories';
 
 export class LNodeTypeService {
   constructor(private repo: LNodeTypeRepository) {}

@@ -7,8 +7,7 @@
   import IconButton from '@smui/icon-button';
   import LogicalNodeTypeRow from '../lib/components/tables/LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { templateService, type SimpleLogicalNodeTypeListItem } from "@oscd-transnet-plugins/oscd-template-generator";
-  import { getLNodeTypeService } from '../lib/services/context';
+  import { getLNodeTypeService } from '../lib/services';
   import { type Route, route, host } from "../lib/stores";
   import { LNodeType } from '../lib/domain';
 
@@ -26,10 +25,7 @@
   let isLoading = false;
   let showDialog = false;
 
-
-
-  $: init(doc)
-  const init = (_: XMLDocument) => {
+  $: if(doc) {
     items = lNodeTypeService.findAll();
   }
 

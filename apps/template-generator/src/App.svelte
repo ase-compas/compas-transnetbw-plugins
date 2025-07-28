@@ -3,7 +3,7 @@
   import LNodeTypeDetailView from "./views/LNodeTypeDetailView.svelte";
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
-  import { initServices } from './lib/services/context';
+  import { initServices } from './lib/services';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -33,7 +33,6 @@
   })
 
   $: if(doc) {
-    console.log(host)
     initServices(doc, host);
   }
 </script>

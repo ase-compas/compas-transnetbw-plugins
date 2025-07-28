@@ -6,6 +6,6 @@ export interface DO {
 export interface LNodeType {
   id: string;
   lnClass: string;
-  description: string;
+  desc: string;
   dataObjects: DO[];
 }
