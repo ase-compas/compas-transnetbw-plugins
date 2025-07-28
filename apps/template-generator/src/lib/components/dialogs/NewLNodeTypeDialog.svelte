@@ -1,11 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import Dialog, { Actions, Content, Title } from '@smui/dialog';
-  import Button, { Label } from '@smui/button';
   import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
   import {lnClassDescriptions} from '../../../data/lnClassDescriptions.ts'
   import { getLNodeTypeService, LNodeTypeService } from '../../services';
+  import BaseDialog from './BaseDialog.svelte';
 
   const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
 
@@ -60,66 +59,53 @@
 
 
 <div class="oscd-new-lnode-type-dialog">
-  <Dialog
+  <BaseDialog
+    title="Create Logical Node Type"
+    confirmActionText="Create"
+    maxWidth="800px"
     bind:open
-    aria-labelledby="lnclass-title"
-    aria-describedby="lnclass-description"
-    surface$style="width: 700px; max-width:90vw; height: 100vh;"
-    on:SMUIDialog:closed={(e) => {
-      if (e.detail.action === 'abort') {
-        handleCancel();
-      } else if (e.detail.action === 'success') {
-        handleCreate();
-      }
-    }}
+    on:confirm={handleCreate}
+    on:cancel={handleCancel}
+    confirmDisabled={!isValid}
   >
-    <Title id="lnclass-title"><h3 style="margin: 0; padding: 0;">Create Logical Node Type</h3></Title>
-    <Content id="dialog-ln-content" style="padding: 1rem;">
-      <TextField
-        label="Logical Node ID"
-        bind:value={id}
-        required
-        style="width: 100%;"
-        {idIsValid}
-        invalid={idTouched && !idIsValid}
-        on:input={() => idTouched = true}
-        >
-        <svelte:fragment slot="helper">
-          {#if idTouched && !idIsValid}
-            <span style="color: var(--mdc-theme-error, #b71c1c);">ID must not contain whitespace.</span>
-          {:else if idTouched && isIdTaken}
-            <span style="color: var(--mdc-theme-error, #b71c1c);">This ID is already taken.</span>
-          {/if}
-        </svelte:fragment>
-        </TextField>
 
-      <Autocomplete
-        label="Logical Node Class"
-        bind:value={selectedLnClass}
-        {options}
-        {getOptionLabel}
-        let:match
-        textfield$required
-        menu$style="max-height: 400px;"
-      >
-        <svelte:fragment slot="match" let:match>
-          <div class="custom-item">
-            <div class="title">{match.title}</div>
-            <div class="subtitle">{match.subtitle}</div>
-          </div>
-        </svelte:fragment>
-      </Autocomplete>
+  <div style="padding: 1rem;" slot="content">
+    <TextField
+      label="Logical Node ID"
+      bind:value={id}
+      required
+      style="width: 100%;"
+      {idIsValid}
+      invalid={idTouched && !idIsValid}
+      on:input={() => idTouched = true}
+    >
+      <svelte:fragment slot="helper">
+        {#if idTouched && !idIsValid}
+          <span style="color: var(--mdc-theme-error, #b71c1c);">ID must not contain whitespace.</span>
+        {:else if idTouched && isIdTaken}
+          <span style="color: var(--mdc-theme-error, #b71c1c);">This ID is already taken.</span>
+        {/if}
+      </svelte:fragment>
+    </TextField>
 
-    </Content>
-    <Actions>
-      <Button action="abort">
-        <Label>Cancel</Label>
-      </Button>
-      <Button action="success" variant="raised" disabled="{!isValid}">
-        <Label>Create</Label>
-      </Button>
-    </Actions>
-  </Dialog>
+    <Autocomplete
+      label="Logical Node Class"
+      bind:value={selectedLnClass}
+      {options}
+      {getOptionLabel}
+      let:match
+      textfield$required
+      menu$style="max-height: 500px;"
+    >
+      <svelte:fragment slot="match" let:match>
+        <div class="custom-item">
+          <div class="title">{match.title}</div>
+          <div class="subtitle">{match.subtitle}</div>
+        </div>
+      </svelte:fragment>
+    </Autocomplete>
+    </div>
+  </BaseDialog>
 </div>
 
 
