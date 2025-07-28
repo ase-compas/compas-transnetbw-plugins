@@ -24,17 +24,26 @@
 
   let isDirty = false; // Track if there are unsaved changes
   let isEditMode = false; // Track if the view is in edit mode
+  let isCreateMode = false; // Track if the view is in create mode
   let markedSets: Set<any>[] = []; // State: Tracks marked items per list
 
   onMount(() => {
     lNodeTypeId = $route.meta.lNodeTypeId;
-    logicalNodeType = lNodeTypeService.findById(lNodeTypeId);
-    referenceDataTypes = lNodeTypeService.findReferencedTypesById(lNodeTypeId);
-    markedSets = [new Set(), new Set(), new Set(), new Set()]; // initialize marked sets for each list
+    if(isCreateMode){
+        logicalNodeType = createNewLNodeType(lNodeTypeId, $route.meta.lnClass);
+        isEditMode = true;
+    } else {
+      logicalNodeType = lNodeTypeService.findById(lNodeTypeId);
+      referenceDataTypes = lNodeTypeService.findReferencedTypesById(lNodeTypeId);
+    }
+    // Initialize marked sets for each list
+    markedSets = [new Set(), new Set(), new Set(), new Set()];
   });
 
 
   // Derived data
+  $: isCreateMode = $route.path[0] === 'new';
+
   $: dataObjects = logicalNodeType?.dataObjects ?? [];
 
   $: selectedDOs = getReferences(markedSets[0], dataObjects ?? []);
@@ -98,6 +107,15 @@
         getItemReferences: (item) => item.values.length
       }
     ];
+
+  function createNewLNodeType(id: string, lnClass: string): LNodeType {
+    return {
+      id: id,
+      lnClass: lnClass,
+      desc: '',
+      dataObjects: [],
+    };
+  }
 
   function createBreadcrumbs(route: Route, lNodeType: LNodeType) {
     const base = { label: 'Logical Node Types', enabled: true };
