@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { Title, Content, Actions } from '@smui/dialog';
-  import Dialog from '@smui/dialog';
+  import Dialog, { Actions, Content } from '@smui/dialog';
   import { createEventDispatcher } from 'svelte';
   import Button from '@smui/button';
-  import { isValid } from 'date-fns';
 
   export let open: boolean = false;
   export let title: string = '';
@@ -39,8 +37,8 @@
     <slot name="content" />
   </Content>
 
-  <div  class="actions">
-  <Actions>
+  <div class="actions">
+    <Actions>
       <Button action="cancel" style="margin: 0 0.5rem 0 0">{cancelActionText}</Button>
       <Button
         action="confirm"
@@ -48,7 +46,7 @@
         style="margin: 0"
         disabled={confirmDisabled}
       >{confirmActionText}</Button>
-  </Actions>
+    </Actions>
   </div>
 </Dialog>
 
@@ -56,7 +54,7 @@
   .dialog-title {
     font-size: 20px;
     font-weight: 500;
-    border-bottom: 1px solid var(--mdc-theme-on-surface-divider-color);
+    border-bottom: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bottom shadow */
     color: white;
     padding: 1.2rem 1rem;
@@ -65,7 +63,7 @@
 
   .actions {
     background-color: white;
-    border-top: 1px solid var(--mdc-theme-on-surface-divider-color);
+    border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
   }
 
   h4 {

@@ -5,6 +5,14 @@
   import { getLNodeTypeService, LNodeTypeService } from '../lib/services';
   import { LNodeType, ReferencedTypes } from '../lib/domain';
   import { filterDATypes, filterDOTypes, filterEnumTypes, getReferences } from '../lib/utils/typeFiltering';
+  import DataTypeDialog from '../lib/components/dialogs/DataTypeDialog.svelte';
+  import DataAttributeDialog from '../lib/components/dialogs/DataAttributeDialog.svelte';
+
+  enum DialogType {
+    DataObjectType,
+    DataAttributeType,
+    EnumType
+  }
 
   // ===== Parameters =====
 
@@ -26,6 +34,9 @@
   let isEditMode = false; // Track if the view is in edit mode
   let isCreateMode = false; // Track if the view is in create mode
   let markedSets: Set<any>[] = []; // State: Tracks marked items per list
+  // Dialog vars
+  let openDialogType: DialogType | null = null; // Track which dialog is open
+  let dialogEditId: string | null = null; // Track the ID of the item being edited in the dialog
 
   onMount(() => {
     lNodeTypeId = $route.meta.lNodeTypeId;
@@ -63,7 +74,7 @@
         showSearch: false,
         items: dataObjects,
         canMark: true,
-        canEdit: true,
+        canEdit: false,
         getItemState: (item) => markedSets[0]?.has(item) ? 'marked' : 'default',
         getItemTitle: (item) => item.name,
         getItemSubtitle: (item) => item.type,
@@ -163,9 +174,68 @@
     ];
   };
 
+  function handleActionClick({listId}) {
+    if(listId === 'ref-data-types') {
+      // nope
+    } else if (listId === 'object-data-types') {
+      openDialogType = DialogType.DataObjectType;
+    } else if (listId === 'attribute-data-types') {
+      openDialogType = DialogType.DataAttributeType;
+    } else if (listId === 'enum-types') {
+      openDialogType = DialogType.EnumType;
+    }
+  }
+
+  function handleOnEdit({listIndex, listId, item, itemIndex}) {
+    const id = item.id;
+    if (listId === 'object-data-types') {
+      openDialog(DialogType.DataObjectType, id);
+    } else if (listId === 'attribute-data-types') {
+      openDialog(DialogType.DataAttributeType, id);
+    } else if (listId === 'enum-types') {
+      //openDialogType = DialogType.EnumType;
+      //TODO: To implement
+    }
+  }
+
+  function openDialog(dialogType: DialogType, id: string) {
+    dialogEditId = id;
+    openDialogType = dialogType;
+  }
+
 </script>
 
 <div class="oscd-details">
+
+  <DataTypeDialog
+    open={openDialogType === DialogType.DataObjectType}
+    typeId={dialogEditId}
+    isEditMode={isEditMode}
+    on:confirm={(e) => {
+      console.info('Data Object Type Dialog Confirmed:', e.detail);
+      openDialogType = null; // Close dialog
+      isDirty = true; // Mark as dirty
+    }}
+    on:cancel={(e) => {
+      console.info('Data Object Type Dialog Cancelled');
+      openDialogType = null; // Close dialog
+    }}
+  />
+
+  <DataAttributeDialog
+    open={openDialogType === DialogType.DataAttributeType}
+    typeId={dialogEditId}
+    isEditMode={isEditMode}
+    on:confirm={(e) => {
+      console.info('Data Object Type Dialog Confirmed:', e.detail);
+      openDialogType = null; // Close dialog
+      isDirty = true; // Mark as dirty
+    }}
+    on:cancel={(e) => {
+      console.info('Data Object Type Dialog Cancelled');
+      openDialogType = null; // Close dialog
+    }}
+  />
 
 
   <!-- START: Toolbar -->
@@ -193,8 +263,8 @@
 
   <div class="oscd-details-board">
     <OscdListBoard
-      on:actionClick={(e) => console.info('Action Click:', e.detail)}
-      on:itemEdit={(e) => console.info('Item Edit:', e.detail)}
+      on:actionClick={(e) => handleActionClick(e.detail)}
+      on:itemEdit={(e) => handleOnEdit(e.detail)}
       on:itemMark={(e) => handleOnMark(e.detail)}
       settings={boardSettings}
     />

@@ -1,4 +1,4 @@
-import type { DOType } from '../domain';
+import type { DOType, ReferencedTypes } from '../domain';
 import { DataObjectTypeRepository } from '../repositories';
 
 export class DataObjectTypeService {
@@ -12,7 +12,11 @@ export class DataObjectTypeService {
     return this.repo.findById(id);
   }
 
-  create(node: DOType): void {
+  public findReferencedTypesById(id: string): ReferencedTypes | null {
+    return this.repo.findReferencedTypesById(id);
+  }
+
+    create(node: DOType): void {
     this.repo.insert(node);
   }
 
