@@ -12,7 +12,7 @@
   export let onClick: () => void;
 </script>
 
-<Row key={node.name} on:click={onClick} class="mdc-data-table__logical-node-row">
+<Row key={node.name} on:click={onClick} class="mdc-data-table__logical-node-row" style="background: white">
   <Cell><div class="node-name-cell"><strong>{node.name}</strong></div></Cell>
   <Cell>{node.class}</Cell>
   <Cell>{node.references}</Cell>
