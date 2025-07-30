@@ -87,8 +87,8 @@
       items: dataObjectTypes,
       canMark: false,
       canEdit: false,
-      getItemTitle: (item) => item.id,
-      getItemSubtitle: (item) => item.type,
+      getItemTitle: (item) => item.cdc,
+      getItemSubtitle: (item) => item.id,
       getItemReferences: (item) => null,
       getItemState: (item) => 'default'
     },
