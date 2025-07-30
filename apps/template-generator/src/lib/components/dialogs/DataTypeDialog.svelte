@@ -86,7 +86,7 @@
       showSearch: true,
       items: dataObjectTypes,
       canMark: false,
-      canEdit: true,
+      canEdit: false,
       getItemTitle: (item) => item.id,
       getItemSubtitle: (item) => item.type,
       getItemReferences: (item) => null,
