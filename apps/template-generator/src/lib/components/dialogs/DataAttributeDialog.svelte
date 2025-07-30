@@ -23,6 +23,7 @@
 
   let dataAttributeTypes: DAType[] = [];
   let enumTypes: EnumType[] = [];
+  let markedItem: Set<string> = new Set<string>();
 
 
   let boardData = [];
@@ -43,7 +44,7 @@
     basicDataAttributes = dataAttributeType.basicDataAttributes;
 
 
-    let referencedDataTypes: ReferencedTypes = dataAttributeService.findReferencedTypesById(typeId);
+    let referencedDataTypes: ReferencedTypes = dataAttributeService.findReferencedTypesById(typeId, Array.from(markedItem));
     dataAttributeTypes = referencedDataTypes.dataAttributeTypes;
     enumTypes = referencedDataTypes.enumTypes;
   }
@@ -52,17 +53,33 @@
     loadData();
   }
 
+  $: if(!open) {
+    markedItem.clear();
+  }
+
+  function handleOnMark({ item }) {
+    const name = item.name;
+    if (markedItem.has(name)) {
+      markedItem.delete(name);
+    } else {
+      markedItem.add(name);
+    }
+    markedItem = new Set<string>(markedItem);
+    loadData()
+  }
+
   $: boardSettings = [
     {
       id: 'ref-data-types',
       title: 'Data Object Structure',
       items: basicDataAttributes,
       showSearch: false,
-      canMark: false,
+      canMark: true,
       canEdit: true,
       getItemTitle: (item) => item.name,
+      getItemSubtitle: (item) => item.type,
       getItemReferences: (item) => null,
-      getItemState: (item) => 'default'
+      getItemState: (item) => markedItem.has(item.name) ? 'marked' : 'default'
     },
     {
       id: 'attribute-data-types',
@@ -70,7 +87,7 @@
       items: dataAttributeTypes,
       showSearch: true,
       canMark: false,
-      canEdit: true,
+      canEdit: false,
       getItemTitle: (item) => item.id,
       getItemReferences: (item) => null,
       getItemState: (item) => 'default'
@@ -99,18 +116,18 @@
 
 <BaseDialog
   bind:open
-  title="Data Attribute Type: ------"
+  title={`Data Attribute Type: ${dataAttributeType?.id ?? '------'}`}
   confirmActionText="Save"
   cancelActionText="Cancel"
   maxWidth="calc(100vw - 2rem)"
-  width="100%"
+  width="2024px"
   on:confirm={() => handleConfirm()}
   on:cancel={() => handleCancel()}>
   <Content slot="content">
     <OscdListBoard
       on:actionClick={(e) => console.info('Action Click:', e.detail)}
       on:itemEdit={(e) => console.info('Item Edit:', e.detail)}
-      on:itemMark={(e) => console.info('Item Mark:', e.detail)}
+      on:itemMark={(e) => handleOnMark(e.detail)}
       settings={boardSettings}
     />
   </Content>

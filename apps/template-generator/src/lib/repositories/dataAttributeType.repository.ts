@@ -14,13 +14,13 @@ export class DataAttributeTypeRepository extends GenericCrudTypeRepository<DATyp
     this.resolver = new TypeResolver(doc)
   }
 
-  public findReferencedTypesById(id: string): ReferencedTypes | null {
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
     const dataObjectType: Element = this.doc.querySelector(`${this.tagName}[id="${id}"]`);
     if (!dataObjectType) return null; // Not found
 
     const tracker = new ReferenceTracker();
 
-    this.resolver.resolveDAType(id, tracker, false);
+    this.resolver.resolveDAType(id, tracker, false, childNameFilter);
 
     return tracker.result;
   }

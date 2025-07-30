@@ -27,10 +27,7 @@ export class TypeResolver {
     if (includeSelf && !tracker.addDO(id, el)) return;
 
     Array.from(el.querySelectorAll('DA'))
-      .filter((da) => {
-        if(!childNameFilter.length) return true;
-        return childNameFilter.includes(da.getAttribute("name"))
-      })
+      .filter((da) => this.matchesChildNameFilter(da, childNameFilter))
       .forEach((da) => {
       const typeId = da.getAttribute('type');
       const bType = da.getAttribute('bType');
@@ -41,10 +38,7 @@ export class TypeResolver {
     });
 
     Array.from(el.querySelectorAll('SDO'))
-      .filter((sdo) => {
-        if(!childNameFilter.length) return true;
-        return childNameFilter.includes(sdo.getAttribute("name"))
-      })
+      .filter((sdo) => this.matchesChildNameFilter(sdo, childNameFilter))
       .forEach((sdo) => {
       const typeId = sdo.getAttribute('type');
       if (typeId) this.resolveDOType(typeId, tracker);
@@ -58,12 +52,14 @@ export class TypeResolver {
    * @param tracker - The ReferenceTracker used to collect references.
    * @param includeSelf - Whether to include the DOType itself in the results (default: true).
    */
-  resolveDAType(id: string, tracker: ReferenceTracker, includeSelf = true) {
+  resolveDAType(id: string, tracker: ReferenceTracker, includeSelf = true, childNameFilter: string[] = []) {
     const el = this.doc.querySelector(`DAType[id="${id}"]`);
     if (!el) return;
     if(includeSelf && !tracker.addDA(id, el)) return;
 
-    el.querySelectorAll('BDA').forEach((bda) => {
+    Array.from(el.querySelectorAll('BDA'))
+      .filter((bda) => this.matchesChildNameFilter(bda, childNameFilter))
+      .forEach((bda) => {
       const typeId = bda.getAttribute('type');
       const bType = bda.getAttribute('bType');
       if (!typeId) return;
@@ -83,5 +79,15 @@ export class TypeResolver {
     const el = this.doc.querySelector(`EnumType[id="${id}"]`);
     if (!el) return;
     tracker.addEnum(id, el);
+  }
+
+  /**
+   * Checks whether the element's 'name' attribute matches any in the provided filter.
+   * If the filter is empty, it always returns true.
+   */
+  private matchesChildNameFilter(el: Element, filter: string[]): boolean {
+    if (!filter.length) return true;
+    const name = el.getAttribute("name");
+    return name !== null && filter.includes(name);
   }
 }
