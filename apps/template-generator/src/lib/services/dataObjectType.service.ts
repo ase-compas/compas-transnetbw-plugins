@@ -12,8 +12,8 @@ export class DataObjectTypeService {
     return this.repo.findById(id);
   }
 
-  public findReferencedTypesById(id: string): ReferencedTypes | null {
-    return this.repo.findReferencedTypesById(id);
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
+    return this.repo.findReferencedTypesById(id, childNameFilter);
   }
 
     create(node: DOType): void {

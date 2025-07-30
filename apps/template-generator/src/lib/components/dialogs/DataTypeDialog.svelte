@@ -4,8 +4,7 @@
   import { Content } from '@smui/dialog';
   import { OscdListBoard } from '@oscd-transnet-plugins/oscd-component';
   import { DataObjectTypeService, getDataObjectTypeService } from '../../services';
-  import { DA, DAType, DOType, ReferencedTypes } from '../../domain';
-  import { EnumTypeMapper } from '../../mappers';
+  import { DA, DAType, DOType, EnumType, ReferencedTypes } from '../../domain';
 
   const dataObjectTypeService: DataObjectTypeService = getDataObjectTypeService();
 
@@ -20,7 +19,8 @@
 
   let dataObjectTypes: DOType[] = [];
   let dataAttributeTypes: DAType[] = [];
-  let enumTypes: EnumTypeMapper[] = [];
+  let enumTypes: EnumType[] = [];
+  let markedItem: Set<string> = new Set<string>();
 
 
   let boardData = [];
@@ -40,7 +40,7 @@
     dataAttributes = dataObjectType.dataAttributes
 
 
-    let referencedDataTypes: ReferencedTypes = dataObjectTypeService.findReferencedTypesById(typeId);
+    let referencedDataTypes: ReferencedTypes = dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItem));
     dataObjectTypes = referencedDataTypes.dataObjectTypes;
     dataAttributeTypes = referencedDataTypes.dataAttributeTypes;
     enumTypes = referencedDataTypes.enumTypes;
@@ -48,6 +48,22 @@
 
   $: if (open) {
     loadData();
+  }
+
+  $: if(!open) {
+    markedItem.clear();
+  }
+
+
+  function handleOnMark({ item }) {
+    const name = item.name;
+    if (markedItem.has(name)) {
+      markedItem.delete(name);
+    } else {
+      markedItem.add(name);
+    }
+    markedItem = new Set<string>(markedItem);
+    loadData()
   }
 
   $: boardSettings = [
@@ -61,7 +77,7 @@
       getItemTitle: (item) => item.name,
       getItemSubtitle: (item) => item.type,
       getItemReferences: (item) => null,
-      getItemState: (item) => 'default'
+      getItemState: (item) => markedItem.has(item.name) ? 'marked' : 'default'
     },
     {
       id: 'object-data-types',
@@ -114,7 +130,7 @@
 
 <BaseDialog
   bind:open
-  title="Data Object Type: ------"
+  title={`Data Object Type: ${dataObjectType?.id ?? '------'}`}
   confirmActionText="Save"
   cancelActionText="Cancel"
   maxWidth="calc(100vw - 2rem)"
@@ -124,7 +140,7 @@
     <OscdListBoard
       on:actionClick={(e) => console.info('Action Click:', e.detail)}
       on:itemEdit={(e) => console.info('Item Edit:', e.detail)}
-      on:itemMark={(e) => console.info('Item Mark:', e.detail)}
+      on:itemMark={(e) => handleOnMark(e.detail)}
       settings={boardSettings}
     />
   </Content>

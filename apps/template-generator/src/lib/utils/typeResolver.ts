@@ -19,13 +19,19 @@ export class TypeResolver {
    *
    * Skips adding the DOType if `includeSelf` is false. Useful when the caller only wants
    * to resolve dependencies of a type, not the type itself.
+   * @param childNameFilter
    */
-  resolveDOType(id: string, tracker: ReferenceTracker, includeSelf = true) {
+  resolveDOType(id: string, tracker: ReferenceTracker, includeSelf = true, childNameFilter: string[] = []) {
     const el = this.doc.querySelector(`DOType[id="${id}"]`);
     if (!el) return
     if (includeSelf && !tracker.addDO(id, el)) return;
 
-    el.querySelectorAll('DA').forEach((da) => {
+    Array.from(el.querySelectorAll('DA'))
+      .filter((da) => {
+        if(!childNameFilter.length) return true;
+        return childNameFilter.includes(da.getAttribute("name"))
+      })
+      .forEach((da) => {
       const typeId = da.getAttribute('type');
       const bType = da.getAttribute('bType');
       if (!typeId) return;
@@ -34,7 +40,12 @@ export class TypeResolver {
       else if (bType === 'Enum') this.resolveEnumType(typeId, tracker);
     });
 
-    el.querySelectorAll('SDO').forEach((sdo) => {
+    Array.from(el.querySelectorAll('SDO'))
+      .filter((sdo) => {
+        if(!childNameFilter.length) return true;
+        return childNameFilter.includes(sdo.getAttribute("name"))
+      })
+      .forEach((sdo) => {
       const typeId = sdo.getAttribute('type');
       if (typeId) this.resolveDOType(typeId, tracker);
     });
