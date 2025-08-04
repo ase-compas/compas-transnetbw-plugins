@@ -1,9 +1,10 @@
 <script lang="ts">
-  import LNodeTypesView from "./views/LNodeTypesView.svelte";
-  import LNodeTypeDetailView from "./views/LNodeTypeDetailView.svelte";
+  import LNodeTypesView from "./views/lNodeTypesView/LNodeTypesView.svelte";
+  import LNodeTypeDetailView from "./views/lNodeTypeDetailsView/LNodeTypeDetailView.svelte";
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
   import { initServices } from './lib/services';
+  import TestView from './views/TestView.svelte';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -47,6 +48,8 @@
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
         <LNodeTypesView {doc}/>
+      {:else if $route.path[0] === 'test'}
+        <TestView/>
       {:else}
         <LNodeTypeDetailView {doc}/>
       {/if}

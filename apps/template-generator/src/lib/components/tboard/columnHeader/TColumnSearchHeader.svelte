@@ -19,6 +19,7 @@
   {subtitle}
   {actionLabel}
   {hasAction}
+  on:action={() => dispatch('action')}
 >
 <svelte:fragment slot="bot-action">
   {#if hasSearch}

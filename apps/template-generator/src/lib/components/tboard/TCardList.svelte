@@ -87,7 +87,7 @@
                items: [item],
                dragDisabled: true,
                dropAnimationDisabled: true,
-                dropTargetStyle: {}
+              dropTargetStyle: {}
              }}
          on:consider={e => handleDropConsider(e, item.id)}
          on:finalize={e => handleDropFinalize(e, item.id)}>
@@ -101,9 +101,9 @@
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
       isOver={isOverId === item.id}
-      bind:marked={item.marked}
+      marked={item.marked}
       bind:selected={item.selected}
-      on:marked={() => forwardEvent('itemMarkChange', item)}
+      on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
       on:click={() => forwardEvent('itemClick', item)}
       on:edit={() => forwardEvent('itemEdit', item)}
     />

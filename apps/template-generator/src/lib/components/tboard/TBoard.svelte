@@ -46,6 +46,7 @@
   $: {
     columns.forEach(column => {
       if (!data[column.id]) {
+        data[column.id] = []; // Initialize with an empty array if no data exists for this column
         console.warn(`Warning: No data found for column with id "${column.id}"`);
       }
     });
@@ -86,7 +87,7 @@
       itemsDraggable={column.itemsDraggable}
       items={data[column.id]}
       dropCandidate={dropCandidate?.item ?? null}
-      on:action={e => forwardEvent('action', column.id, e.detail)}
+      on:columnActionClick={e => forwardEvent('columnActionClick', column.id, e.detail)}
       on:applyDefaults={e => forwardEvent('applyDefaults', column.id, e.detail)}
       on:itemClick={e => forwardEvent('itemClick', column.id, e.detail)}
       on:itemEdit={e => forwardEvent('itemEdit', column.id, e.detail)}

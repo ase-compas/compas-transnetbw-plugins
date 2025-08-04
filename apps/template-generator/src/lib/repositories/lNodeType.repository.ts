@@ -18,13 +18,15 @@ export class LNodeTypeRepository extends GenericCrudTypeRepository<LNodeType> {
     this.resolver = new TypeResolver(doc);
   }
 
-  public findReferencedTypesById(id: string): ReferencedTypes | null {
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
     const lNodeType: Element = this.doc.querySelector(`${this.tagName}[id="${id}"]`);
     if (!lNodeType) return null; // Not found
 
     const tracker = new ReferenceTracker();
 
-    lNodeType.querySelectorAll('DO').forEach((doElement) => {
+    Array.from(lNodeType.querySelectorAll('DO'))
+      .filter(doElement => childNameFilter.length > 0 ? childNameFilter.includes(doElement.getAttribute('name')) : true )
+      .forEach(doElement => {
       const typeId = doElement.getAttribute('type');
       if (typeId) this.resolver.resolveDOType(typeId, tracker);
     });

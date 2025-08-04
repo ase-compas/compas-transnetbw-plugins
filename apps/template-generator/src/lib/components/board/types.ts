@@ -1,15 +1,14 @@
 export type BaseItem = {
-  id: string;
-  marked?: boolean;
-  selected?: boolean;
+  _id: string;
+  _marked: boolean;
+  _selected: boolean;
 };
 
 export type CardProps = {
   title: string;
   subtitle: string | null;
   references: number | null;
-  marked: boolean;
-  selected: boolean;
+
   canEdit: boolean;
   canMark: boolean;
   canClick: boolean;

@@ -47,9 +47,8 @@
   }
 
   function toggleMark() {
-    if (canMark) {
-      marked = !marked;
-      dispatch('marked', marked);
+    if(canMark) {
+      dispatch('marked', !marked);
     }
   }
 

@@ -12,8 +12,8 @@ export class LNodeTypeService {
     return this.repo.findById(id);
   }
 
-  findReferencedTypesById(id: string): ReferencedTypes {
-    return this.repo.findReferencedTypesById(id);
+  findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes {
+    return this.repo.findReferencedTypesById(id, childNameFilter);
   }
 
   isIdTaken(id: string): boolean {

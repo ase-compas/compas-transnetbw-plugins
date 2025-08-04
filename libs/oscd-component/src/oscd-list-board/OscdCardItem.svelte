@@ -28,9 +28,9 @@
 </script>
 
 <div class="oscd-card-item" on:click={handleOnClick} class:marked={state === 'marked'}>
-  <div class="item-top">
+  <div class="header-row">
     <span class="oscd-card-title">{title}</span>
-    <div class="icon-wrapper">
+    <div class="actions">
 
       {#if canMark}
       <OscdIconActionButton
@@ -49,7 +49,7 @@
       {/if}
     </div>
   </div>
-  <div class="item-bot">
+  <div class="sub-row">
     <span class="oscd-card-subtitle" class:invisible={!subtitle}>{subtitle}</span>
     <span class="oscd-card-subtitle oscd-references" class:invisible={references === null}>{references}</span>
   </div>
@@ -66,14 +66,14 @@
     border-radius: 8px;
   }
 
-  .item-top {
+  .header-row {
     display: flex;
     justify-content: space-between;
     align-items: start;
     word-break: break-word;
   }
 
-  .item-bot {
+  .sub-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -81,7 +81,7 @@
     gap: 2rem;
   }
 
-  .icon-wrapper {
+  .actions {
     display: flex;
     gap: 0.1rem
   }
