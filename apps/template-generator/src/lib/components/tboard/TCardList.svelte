@@ -1,0 +1,121 @@
+<script lang="ts">
+  import { createEventDispatcher} from 'svelte';
+  import { TItem } from './types';
+  import TCard from './TCard.svelte';
+  import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
+  import { isDragTarget, isDroppable } from './utils';
+
+  const dispatch = createEventDispatcher();
+
+  export let selectable: boolean = false;
+  export let itemsDraggable: boolean;
+
+  export let items: TItem[] = [];
+  export let workItems: TItem[] = items;
+
+  export let dropCandidate: TItem | null = null;
+
+  $: workItems = [...items]
+
+  let isOverId: string | null = null;
+
+  function forwardEvent(eventType: string, item: TItem) {
+    dispatch(eventType, { itemId: item.id, item: item });
+  }
+
+  function dispatchOnDragEvent(draggedItem: TItem) {
+    dispatch("itemDragChange", { itemId: draggedItem?.id ?? null, item: draggedItem ?? null});
+  }
+
+  // ===== D&D Handlers =====
+  function handleListConsider(e) {
+    const { detail } = e;
+    const { trigger, id } = detail.info;
+
+    if (trigger === TRIGGERS.DRAG_STARTED) {
+      const idx = workItems.findIndex(i => i.id === id);
+      const newId = `${id}_copy`;
+      e.detail.items = e.detail.items.filter(item => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+      e.detail.items.splice(idx, 0, { ...workItems[idx], id: newId });
+      workItems = e.detail.items;
+      dispatchOnDragEvent(items[idx]);
+    } else {
+      workItems = [...workItems];
+    }
+  }
+
+  function handleListFinalize(e) {
+    workItems = [...items];
+    dispatchOnDragEvent(null);
+  }
+
+  function handleDropConsider(e, itemId) {
+    const { detail } = e;
+    const { trigger } = detail.info;
+    if (trigger === TRIGGERS.DRAGGED_ENTERED) {
+      isOverId = itemId;
+    }
+
+    if (trigger === TRIGGERS.DRAGGED_LEFT) {
+      isOverId = null;
+    }
+  }
+
+  function handleDropFinalize(e, itemId) {
+    const item = items.find(i => i.id === itemId);
+    dispatch('itemDrop', {targetItem: item})
+    dispatchOnDragEvent(null);
+    isOverId = null;
+  }
+</script>
+
+<div
+  class="oscd-card-list"
+  use:dndzone={{
+    items: workItems,
+    dragDisabled: !itemsDraggable,
+    dropAnimationDisabled: true,
+    dropTargetStyle: {}
+
+  }}
+  on:consider={e => handleListConsider(e)}
+  on:finalize={e => handleListFinalize(e)}
+>
+  {#each workItems as item (item.id)}
+    <div class="card-wrapper"
+         use:dndzone={{
+               items: [item],
+               dragDisabled: true,
+               dropAnimationDisabled: true,
+                dropTargetStyle: {}
+             }}
+         on:consider={e => handleDropConsider(e, item.id)}
+         on:finalize={e => handleDropFinalize(e, item.id)}>
+    <TCard
+      title={item.title}
+      subtitle={item.subtitle}
+      references={item.references}
+      canEdit={item.canEdit}
+      canMark={item.canMark}
+      canSelect={selectable && item.canSelect}
+      isDragTarget={isDragTarget(item, dropCandidate)}
+      canDrop={isDroppable(item, dropCandidate)}
+      isOver={isOverId === item.id}
+      bind:marked={item.marked}
+      bind:selected={item.selected}
+      on:marked={() => forwardEvent('itemMarkChange', item)}
+      on:click={() => forwardEvent('itemClick', item)}
+      on:edit={() => forwardEvent('itemEdit', item)}
+    />
+    </div>
+  {/each}
+</div>
+
+
+<style>
+  .oscd-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+</style>
