@@ -1,19 +1,9 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { createEventDispatcher } from "svelte";
-
+  import {onMount} from "svelte";
+  import {Process, Plugin} from '@oscd-transnet-plugins/shared'
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
   export let host: HTMLElement;
-
-  type Plugin = { id: string; name: string };
-  type Process = {
-    id: string;
-    version: string;
-    name: string;
-    description: string;
-    plugins: Plugin[];
-  };
 
   let processes: Process[] = [];
   let errorMsg = "";
@@ -41,12 +31,15 @@
 
   async function loadXml() {
     loading = true;
-    const src = "/processes.xml";
+    const src = new URL('./assets/processes.xml', import.meta.url).href;
     try {
       const res = await fetch(src, { cache: "no-cache" });
+      console.log("res", res);
       const responseText = await res.text();
+      console.log("responseText", responseText);
       const parser = new DOMParser();
       const xml = parser.parseFromString(responseText, "application/xml");
+      console.log("xml", xml);
 
       const parseErr = xml.querySelector("parsererror");
       if(parseErr) throw new Error("Invalid XML file format.");
@@ -62,34 +55,105 @@
   onMount(loadXml);
 </script>
 
-<h4>Engineering Processes</h4>
+<div class="page-content">
+  <p class="heading">Engineering Processes</p>
 
-{#if loading}
-  <p>Loading…</p>
-{:else if errorMsg}
-  <p>{errorMsg}</p>
-{:else if processes.length === 0}
-  <p>No processes found.</p>
-{:else}
-  {#each processes as p}
-    <div>
-      <div><b>ID:</b> {p.id}</div>
-      <div><b>Version:</b> {p.version}</div>
-      <div><b>Description:</b> {p.description}</div>
-      <div><b>Plugins:</b>
-        {#if p.plugins.length === 0}
-          <span>No Plugins defined</span>
-        {:else}
-          <ul>
-            {#each p.plugins as pl}
-              <p>{pl.name} (id: {pl.id})</p>
-            {/each}
-          </ul>
-        {/if}
-      </div>
+  {#if loading}
+    <p>Loading…</p>
+  {:else if errorMsg}
+    <p>{errorMsg}</p>
+  {:else if processes.length === 0}
+    <p>No processes found.</p>
+  {:else}
+    <div class="processes-list">
+      {#each processes as p}
+        <div class="processes-list__process">
+          <div class="process__info">
+            <p class="process__name">{p.id}</p>
+            <p class="process__description">{p.description}</p>
+          </div>
+          <div class="process__actions">
+            <button>
+              START PROCESS
+            </button>
+            <button>
+              VIEW PROCESS
+            </button>
+          </div>
+<!--          <div><b>Plugins:</b>-->
+<!--            {#if p.plugins.length === 0}-->
+<!--              <span>No Plugins defined</span>-->
+<!--            {:else}-->
+<!--              <ul>-->
+<!--                {#each p.plugins as pl}-->
+<!--                  <p>{pl.name} (id: {pl.id})</p>-->
+<!--                {/each}-->
+<!--              </ul>-->
+<!--            {/if}-->
+<!--          </div>-->
+        </div>
+      {/each}
     </div>
-  {/each}
-{/if}
+  {/if}
+</div>
 
 <style>
+  * {
+    font-family: Roboto, sans-serif;
+    font-weight: 500;
+  }
+
+  .page-content {
+    margin: 2rem;
+  }
+
+  .heading {
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+
+  .processes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .processes-list__process {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+  }
+
+  .process__info {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .process__name {
+    font-weight: 700;
+    color: #004552;
+  }
+
+  .process__description {
+    color: #555;
+  }
+
+  .process__actions {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+    gap: 1rem;
+
+  }
+
+  .process__actions > button {
+    cursor: pointer;
+    color: #FFFFFF;
+    background-color: #1a3e4a;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    padding: 5px;
+  }
 </style>
