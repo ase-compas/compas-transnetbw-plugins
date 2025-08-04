@@ -10,7 +10,8 @@ export default class NewOSCDPlugin extends HTMLElement {
       target: this.shadowRoot!,
       props: {
         doc: this._doc,
-        editCount: -1
+        editCount: -1,
+        host: this
       },
     });
 

@@ -1,14 +1,30 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import {OscdCheckIcon} from "../../../libs/oscd-icons/src";
+  import {
+    OscdCancelIcon,
+    OscdCheckIcon,
+    OscdEditIcon,
+    OscdErrorIcon,
+    OscdWarningIcon
+  } from "../../../libs/oscd-icons/src";
   import {OscdTooltip} from "../../../libs/oscd-component/src";
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
+  export let host: HTMLElement;
 
   let tagName: string | null = null;
   let editorTabsVisible = false;
   let visited: string[] = [];
+
+  const statuses: ('check' | 'warning' | 'error')[] = ['check', 'warning', 'error'];
+
+  let pluginStatus: Record<string, 'check' | 'error' | 'warning'> = {};
+
+  function randomStatus(): 'check' | 'error' | 'warning' {
+    const values = ['check', 'error', 'warning'] as const;
+    return values[Math.floor(Math.random() * values.length)];
+  }
 
   const dispatch = createEventDispatcher<{
     'toggle-editor-tabs': { visible?: boolean };
@@ -57,6 +73,11 @@
 
     if (!visited.includes(plugin.tag)) {
       visited = [...visited, plugin.tag];
+      const idx = plugins.findIndex(p => p.tag === plugin.tag);
+      pluginStatus = {
+        ...pluginStatus,
+        [plugin.tag]: statuses[idx]
+      };
     }
   }
 
@@ -79,15 +100,31 @@
     Object.assign(node, props);
     return { update: (p: any) => Object.assign(node, p) };
   }
+
+  $: tooltipText = plugins.reduce<Record<string, string>>((map, p) => {
+    const status = pluginStatus[p.tag];
+    map[p.tag] =
+      status === 'error'
+        ? `Resolve errors in ${p.label}`
+        : status === 'warning'
+          ? `Check warnings for ${p.label}`
+          : `Load the ${p.label} editor`;
+    return map;
+  }, {});
 </script>
 
 <div class="stepper">
-  <p class="plugin-flow-title">Plugin Flow</p>
-
+  <div style="display: flex; align-items: center; gap: 0.5rem;">
+    <button class="back-button" on:click={() => setEditorTabsVisibility(true)}>
+      exit
+    </button>
+    <p class="plugin-flow-title">Plugin Flow</p>
+  </div>
   <div class="plugin-steps">
     {#each plugins as plugin, i}
       <div class="plugin-step">
-        <OscdTooltip text="Load the {plugin.label} editor" position="bottom">
+        <!-- use the helper here -->
+        <OscdTooltip text={tooltipText[plugin.tag]} position="bottom">
           <button
             on:click={() => loadPlugin(plugin)}
             class:not-visited={!visited.includes(plugin.tag)}
@@ -95,7 +132,13 @@
             class:visited={visited.includes(plugin.tag) && plugin.tag !== tagName}
           >
             {#if visited.includes(plugin.tag) && plugin.tag !== tagName}
-              <OscdCheckIcon />
+              {#if pluginStatus[plugin.tag] === 'check'}
+                <OscdCheckIcon />
+              {:else if pluginStatus[plugin.tag] === 'error'}
+                <OscdErrorIcon />
+              {:else}
+                <OscdWarningIcon />
+              {/if}
             {:else}
               {i + 1}
             {/if}
@@ -103,12 +146,12 @@
         </OscdTooltip>
         <p>{plugin.label}</p>
       </div>
+
       {#if i < plugins.length - 1}
         <div class="plugin-step-line"></div>
       {/if}
     {/each}
   </div>
-
   <div class="stepper-navigation">
     <button on:click={previousPlugin} class="back-button">Back</button>
     <button on:click={nextPlugin} class="next-button">Next</button>
