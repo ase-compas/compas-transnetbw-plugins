@@ -40,7 +40,7 @@
   }
 
   $: data = {
-    refs: buildDAItems(dataAttributes, markedItem),
+    refs: buildDAItems(dataAttributes, markedItem, { canSelect: isEditMode }),
     dotypes: buildDOTypeItems(referencedDataTypes?.dataObjectTypes),
     datypes: buildDATypeItems(referencedDataTypes?.dataAttributeTypes),
     enumtypes: buildEnumTypeItems(referencedDataTypes?.enumTypes)

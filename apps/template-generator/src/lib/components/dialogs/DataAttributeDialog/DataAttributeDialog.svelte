@@ -41,9 +41,9 @@
   }
 
   $: data = {
-    refs: buildDBAItems(basicDataAttributes, markedItem, false),
-    datypes: buildDATypeItems(referencedDataTypes?.dataAttributeTypes, false),
-    enumtypes: buildEnumTypeItems(referencedDataTypes?.enumTypes, false)
+    refs: buildDBAItems(basicDataAttributes, markedItem, { canSelect: isEditMode }),
+    datypes: buildDATypeItems(referencedDataTypes?.dataAttributeTypes),
+    enumtypes: buildEnumTypeItems(referencedDataTypes?.enumTypes)
   };
 
   function handleOnMark({ itemId }) {

@@ -52,7 +52,7 @@
 
   let data: TData = {};
   $: data = {
-    refs: buildDOItems(dataObjects, markedItemIds),
+    refs: buildDOItems(dataObjects, markedItemIds, {canSelect: isEditMode}),
     dotypes: buildDOTypeItems(referenceDataTypes?.dataObjectTypes, { canEdit: true }),
     datypes: buildDATypeItems(referenceDataTypes?.dataAttributeTypes, { canEdit: true }),
     enumtypes: buildEnumTypeItems(referenceDataTypes?.enumTypes, { canEdit: true })
