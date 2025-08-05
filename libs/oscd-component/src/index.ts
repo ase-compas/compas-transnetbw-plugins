@@ -10,13 +10,8 @@ export { default as OscdExpansionPanel } from './oscd-expansion-panel/OscdExpans
 export { default as OscdTooltip } from './oscd-tooltip/OscdTooltip.svelte';
 export { default as OscdBreadcrumbs } from './oscd-breadcrumbs/OscdBreadcrumbs.svelte';
 export { default as OscdSwitch } from './oscd-switch/OscdSwitch.svelte';
-export { default as OscdCardList } from './oscd-card-list/OscdCardList.svelte';
 export { default as OscdIconActionButton } from './oscd-icon-action-button/OscdIconActionButton.svelte';
-export { default as OscdListBoard } from './oscd-list-board/OscdListBoard.svelte';
-export { default as OscdFilterListBoard } from './oscd-list-board/OscdFilterListBoard.svelte';
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
-
-export type { FilterListSettings, ListSettings, ItemState } from './oscd-list-board/types';
 
 export * from './oscd-data-table';
