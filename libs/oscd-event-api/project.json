@@ -21,6 +21,17 @@
       "options": {
         "reportsDirectory": "../../coverage/libs/oscd-event-api"
       }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/oscd-event-api",
+        "tsConfig": "libs/oscd-event-api/tsconfig.lib.json",
+        "packageJson": "libs/oscd-event-api/package.json",
+        "main": "libs/oscd-event-api/src/index.ts",
+        "assets": ["libs/oscd-event-api/*.md"]
+      }
     }
   }
 }
