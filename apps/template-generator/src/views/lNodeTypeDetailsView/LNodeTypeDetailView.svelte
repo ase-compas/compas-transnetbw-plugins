@@ -3,21 +3,14 @@
   import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
   import { LNodeType, ReferencedTypes } from '../../lib/domain';
-  import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog.svelte';
-  import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog.svelte';
+  import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
+  import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
   import TBoard from '../../lib/components/tboard/TBoard.svelte';
   import { getLNodeTypeService } from '../../lib/services';
-  import {
-    buildDATypeItems,
-    buildDOTypeItems,
-    buildEnumTypeItems,
-    buildRefItems,
-    createBreadcrumbs,
-    createNewLNodeType
-  } from './utils';
+  import { createBreadcrumbs, createNewLNodeType } from './utils';
   import { getColumns } from './columns.config';
   import { TColumnConfig, TData } from '../../lib/components/tboard/types';
-  import { initialize } from 'esbuild';
+  import { buildDATypeItems, buildDOItems, buildDOTypeItems, buildEnumTypeItems } from '../../lib/utils/itemBuilder';
 
   enum DialogType {
     DataObjectType,
@@ -53,16 +46,16 @@
     }
   }
 
-  $: if(doc) init();
+  $: if (doc) init();
 
   $: dataObjects = logicalNodeType?.dataObjects ?? [];
 
-  let data: TData = {}
+  let data: TData = {};
   $: data = {
-    refs: buildRefItems(dataObjects, markedItemIds, isEditMode),
-    dotypes: buildDOTypeItems(referenceDataTypes?.dataObjectTypes, isEditMode),
-    datypes: buildDATypeItems(referenceDataTypes?.dataAttributeTypes, isEditMode),
-    enumtypes: buildEnumTypeItems(referenceDataTypes?.enumTypes, isEditMode),
+    refs: buildDOItems(dataObjects, markedItemIds),
+    dotypes: buildDOTypeItems(referenceDataTypes?.dataObjectTypes, { canEdit: true }),
+    datypes: buildDATypeItems(referenceDataTypes?.dataAttributeTypes, { canEdit: true }),
+    enumtypes: buildEnumTypeItems(referenceDataTypes?.enumTypes, { canEdit: true })
   };
 
   let columns: TColumnConfig[] = [];
@@ -71,7 +64,7 @@
 
   function handleToggleMark(itemId: string, marked: boolean) {
     marked ? markedItemIds.add(itemId) : markedItemIds.delete(itemId);
-    const children = Array.from(markedItemIds)
+    const children = Array.from(markedItemIds);
     referenceDataTypes = service.findReferencedTypesById(lNodeTypeId, children);
   }
 
@@ -82,13 +75,13 @@
 
   function handleActionClick({ columnId }) {
     if (columnId === 'dotypes') {
-      alert("New DO Type")
+      alert('New DO Type');
       dialogEditId = null; // Reset dialog ID for new creation
     } else if (columnId === 'datypes') {
-      alert("New DA Type")
+      alert('New DA Type');
       dialogEditId = null; // Reset dialog ID for new creation
     } else if (columnId === 'enumtypes') {
-      alert("New ENUM TYPE")
+      alert('New ENUM TYPE');
     }
   }
 

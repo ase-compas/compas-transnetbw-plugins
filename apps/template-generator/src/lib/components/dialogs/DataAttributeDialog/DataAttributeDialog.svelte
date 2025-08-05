@@ -1,0 +1,84 @@
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import BaseDialog from '../BaseDialog.svelte';
+  import { Content } from '@smui/dialog';
+  import { DataAttributeTypeService, getDataAttributeTypeService } from '../../../services';
+  import { BDA, DAType, ReferencedTypes } from '../../../domain';
+  import { getColumns } from './columns.config';
+  import TBoard from '../../tboard/TBoard.svelte';
+  import { buildDATypeItems, buildDBAItems, buildEnumTypeItems } from '../../../utils/itemBuilder';
+
+  const dataAttributeService: DataAttributeTypeService = getDataAttributeTypeService();
+
+  const dispatch = createEventDispatcher();
+
+  // ===== Props =====
+  export let open = false;
+  export let isEditMode: boolean = false;
+  export let typeId: string;
+
+  let dataAttributeType: DAType | null = null;
+  let basicDataAttributes: BDA[] = [];
+
+  let markedItem: Set<string> = new Set<string>();
+  let referencedDataTypes: ReferencedTypes | null;
+
+  function loadData() {
+    dataAttributeType = dataAttributeService.findById(typeId);
+    basicDataAttributes = dataAttributeType.basicDataAttributes;
+
+    referencedDataTypes = dataAttributeService.findReferencedTypesById(typeId, Array.from(markedItem));
+  }
+
+  $: columns = getColumns(isEditMode);
+
+  $: if (open) {
+    loadData();
+  }
+
+  $: if (!open) {
+    markedItem.clear();
+  }
+
+  $: data = {
+    refs: buildDBAItems(basicDataAttributes, markedItem, false),
+    datypes: buildDATypeItems(referencedDataTypes?.dataAttributeTypes, false),
+    enumtypes: buildEnumTypeItems(referencedDataTypes?.enumTypes, false)
+  };
+
+  function handleOnMark({ itemId }) {
+    if (markedItem.has(itemId)) {
+      markedItem.delete(itemId);
+    } else {
+      markedItem.add(itemId);
+    }
+    markedItem = new Set<string>(markedItem);
+    loadData();
+  }
+
+  function handleConfirm() {
+    dispatch('confirm');
+  }
+
+  function handleCancel() {
+    dispatch('cancel');
+  }
+</script>
+
+<BaseDialog
+  bind:open
+  title={`Data Attribute Type: ${dataAttributeType?.id ?? '------'}`}
+  confirmActionText="Save"
+  cancelActionText="Cancel"
+  maxWidth="calc(100vw - 2rem)"
+  width="2024px"
+  on:confirm={() => handleConfirm()}
+  on:cancel={() => handleCancel()}>
+  <Content slot="content">
+    <TBoard
+      {columns}
+      {data}
+      on:itemMarkChange={e => handleOnMark(e.detail)}
+    />
+  </Content>
+</BaseDialog>
