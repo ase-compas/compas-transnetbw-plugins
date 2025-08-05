@@ -40,6 +40,7 @@
       </plugin>
     </plugins-sequence>
   </process>
+
   <process>
     <id>standard-process-3</id>
     <version>0.0.1</version>

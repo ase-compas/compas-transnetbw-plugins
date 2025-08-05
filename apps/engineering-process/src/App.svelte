@@ -80,17 +80,6 @@
               VIEW PROCESS
             </button>
           </div>
-<!--          <div><b>Plugins:</b>-->
-<!--            {#if p.plugins.length === 0}-->
-<!--              <span>No Plugins defined</span>-->
-<!--            {:else}-->
-<!--              <ul>-->
-<!--                {#each p.plugins as pl}-->
-<!--                  <p>{pl.name} (id: {pl.id})</p>-->
-<!--                {/each}-->
-<!--              </ul>-->
-<!--            {/if}-->
-<!--          </div>-->
         </div>
       {/each}
     </div>
