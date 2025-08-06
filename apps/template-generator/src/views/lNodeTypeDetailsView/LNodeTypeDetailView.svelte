@@ -11,12 +11,8 @@
   import { getColumns } from './columns.config';
   import { TColumnConfig, TData } from '../../lib/components/tboard/types';
   import { buildDATypeItems, buildDOItems, buildDOTypeItems, buildEnumTypeItems } from '../../lib/utils/itemBuilder';
-
-  enum DialogType {
-    DataObjectType,
-    DataAttributeType,
-    EnumType
-  }
+  import NewDataObjectType from "../../lib/components/dialogs/NewDataObjectType.svelte";
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   export let doc: XMLDocument;
 
@@ -30,8 +26,6 @@
   let referenceDataTypes: ReferencedTypes;
   let markedItemIds = new Set<string>();
 
-  let openDialogType: number | null = null;
-  let dialogEditId: string | null = null;
   let isEditMode = false;
   let isDirty = false;
 
@@ -69,17 +63,15 @@
   }
 
   function handleSaveChanges() {
-    console.info('TODO: Save logic here');
+    //TODO: Implement save logic
     isDirty = false;
   }
 
   function handleActionClick({ columnId }) {
     if (columnId === 'dotypes') {
-      alert('New DO Type');
-      dialogEditId = null; // Reset dialog ID for new creation
+      openCreateDOTypeDialog()
     } else if (columnId === 'datypes') {
       alert('New DA Type');
-      dialogEditId = null; // Reset dialog ID for new creation
     } else if (columnId === 'enumtypes') {
       alert('New ENUM TYPE');
     }
@@ -87,54 +79,44 @@
 
   function handleOnEdit({ columnId, itemId }) {
     if (columnId === 'dotypes') {
-      openDialogType = DialogType.DataObjectType;
+      openEditDOTypeDialog(itemId, isEditMode ? 'edit' : 'view');
     } else if (columnId === 'datypes') {
-      openDialogType = DialogType.DataAttributeType;
+      openEditDATypeDialog(itemId)
     } else if (columnId === 'enumtypes') {
-      openDialogType = DialogType.EnumType;
     }
-    dialogEditId = itemId;
   }
 
   function handleBreadcrumbClick(event) {
     const { index } = event.detail;
     if (index === 0) route.set({ path: ['overview'] });
   }
+
+  // ===== Dialog Handlers =====
+
+  function openCreateDOTypeDialog() {
+    openDialog(NewDataObjectType).then(result => {
+      if (result.type === 'confirm') {
+        openEditDOTypeDialog(result.data.id, 'create')
+      }
+    });
+  }
+
+  function openEditDOTypeDialog(typeId, mode) {
+    openDialog(DataTypeDialog, {
+      typeId: typeId,
+      mode
+    })
+  }
+
+  function openEditDATypeDialog(typeId) {
+    openDialog(DataAttributeDialog, {
+      typeId: typeId,
+      isEditMode: isEditMode,
+    });
+  }
 </script>
 
 <div class="oscd-details">
-
-  <DataTypeDialog
-    open={openDialogType === DialogType.DataObjectType}
-    typeId={dialogEditId}
-    isEditMode={isEditMode}
-    on:confirm={(e) => {
-      console.info('Data Object Type Dialog Confirmed:', e.detail);
-      openDialogType = null; // Close dialog
-      isDirty = true; // Mark as dirty
-    }}
-    on:cancel={(e) => {
-      console.info('Data Object Type Dialog Cancelled');
-      openDialogType = null; // Close dialog
-    }}
-  />
-
-  <DataAttributeDialog
-    open={openDialogType === DialogType.DataAttributeType}
-    typeId={dialogEditId}
-    isEditMode={isEditMode}
-    on:confirm={(e) => {
-      console.info('Data Object Type Dialog Confirmed:', e.detail);
-      openDialogType = null; // Close dialog
-      isDirty = true; // Mark as dirty
-    }}
-    on:cancel={(e) => {
-      console.info('Data Object Type Dialog Cancelled');
-      openDialogType = null; // Close dialog
-    }}
-  />
-
-
   <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
     <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={handleBreadcrumbClick} />

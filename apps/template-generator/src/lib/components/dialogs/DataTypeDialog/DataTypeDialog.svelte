@@ -7,6 +7,7 @@
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import { buildDAItems, buildDATypeItems, buildDOTypeItems, buildEnumTypeItems } from '../../../utils/itemBuilder';
+  import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const dataObjectTypeService: DataObjectTypeService = getDataObjectTypeService();
 
@@ -14,7 +15,7 @@
 
   // ===== Props =====
   export let open = false;
-  export let isEditMode: boolean = false;
+  export let mode: 'view' | 'edit' | 'create' = 'view';
   export let typeId: string;
   let referencedDataTypes: ReferencedTypes | null = null;
   let dataObjectType: DOType | null = null;
@@ -23,7 +24,11 @@
   let markedItem: Set<string> = new Set<string>();
 
 
+  let isEditMode: boolean = false;
+  $: isEditMode = mode === 'edit' || mode === 'create';
+
   function loadData() {
+    if (mode === 'create') return;
     dataObjectType = dataObjectTypeService.findById(typeId);
     dataAttributes = dataObjectType.dataAttributes;
     referencedDataTypes = dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItem));
@@ -58,11 +63,11 @@
   }
 
   function handleConfirm() {
-    dispatch('confirm');
+    closeDialog('confirm');
   }
 
   function handleCancel() {
-    dispatch('cancel');
+    closeDialog('cancel');
   }
 </script>
 

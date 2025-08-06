@@ -8,8 +8,9 @@
   import LogicalNodeTypeRow from '../../lib/components/tables/LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
   import { getLNodeTypeService } from '../../lib/services';
-  import { type Route, route, host } from "../../lib/stores";
+  import { type Route, route } from "../../lib/stores";
   import { LNodeType } from '../../lib/domain';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   export let doc: XMLDocument;
 
@@ -23,7 +24,6 @@
   let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
   let items: LNodeType[] = [];
   let isLoading = false;
-  let showDialog = false;
 
   $: if(doc) {
     items = lNodeTypeService.findAll();
@@ -60,15 +60,15 @@
     } as Route);
   };
 
-  function openDialog() {
-    showDialog = true;
+  function openCreateDialog() {
+    openDialog(NewLNodeTypeDialog).then(result => {
+      if (result.type === 'confirm') {
+        handleDialogCreate(result.data);
+      }
+    });
   }
 
-  function handleDialogCreate(event: CustomEvent) {
-    console.log("here")
-    showDialog = false;
-    const { id, lnClass } = event.detail;
-    console.log('Confirmed with:', id, lnClass);
+  function handleDialogCreate({id, lnClass}) {
     route.set({
       path: ['new'],
       meta: {
@@ -77,20 +77,9 @@
       }
     } as Route)
   }
-
-  function handleDialogCancel() {
-    showDialog = false;
-  }
-
 </script>
 
 <div class="logical-nodes-overview">
-
-  <NewLNodeTypeDialog
-    bind:open={showDialog}
-    on:abort={handleDialogCancel}
-    on:success={handleDialogCreate}
-  />
 
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">
@@ -102,7 +91,7 @@
         bind:value={nodeSearchTerm}
       />
     </div>
-    <OscdButton variant="unelevated" callback={openDialog}>
+    <OscdButton variant="unelevated" callback={openCreateDialog}>
       ADD NEW LNODE TYPE
     </OscdButton>
   </div>

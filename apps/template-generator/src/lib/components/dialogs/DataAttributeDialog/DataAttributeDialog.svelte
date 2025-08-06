@@ -7,6 +7,7 @@
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import { buildDATypeItems, buildDBAItems, buildEnumTypeItems } from '../../../utils/itemBuilder';
+  import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const dataAttributeService: DataAttributeTypeService = getDataAttributeTypeService();
 
@@ -57,11 +58,11 @@
   }
 
   function handleConfirm() {
-    dispatch('confirm');
+    closeDialog('confirm');
   }
 
   function handleCancel() {
-    dispatch('cancel');
+    closeDialog('cancel');
   }
 </script>
 

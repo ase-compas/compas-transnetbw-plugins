@@ -11,10 +11,7 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
@@ -28,34 +25,32 @@
       "@oscd-transnet-plugins/oscd-component": [
         "libs/oscd-component/src/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-event-api": [
+        "libs/oscd-event-api/src/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-history-api-client": [
         "libs/oscd-history-api-client/src/index.ts"
       ],
       "@oscd-transnet-plugins/oscd-history-viewer": [
         "libs/oscd-history-viewer/src/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-icons": ["libs/oscd-icons/src/index.ts"],
       "@oscd-transnet-plugins/oscd-location-manager": [
         "libs/oscd-location-manager/src/index.ts"
-      ],
-      "@oscd-transnet-plugins/oscd-template-generator": [
-        "libs/oscd-template-generator/src/index.ts"
       ],
       "@oscd-transnet-plugins/oscd-location-viewer": [
         "libs/oscd-location-viewer/src/index.ts"
       ],
-      "@oscd-transnet-plugins/oscd-icons": [
-        "libs/oscd-icons/src/index.ts"
+      "@oscd-transnet-plugins/oscd-services/dialog": [
+        "libs/oscd-services/src/dialog/index.ts"
       ],
-      "@oscd-transnet-plugins/oscd-event-api": [
-        "libs/oscd-event-api/src/index.ts"
+      "@oscd-transnet-plugins/oscd-template-generator": [
+        "libs/oscd-template-generator/src/index.ts"
       ],
       "@oscd-transnet-plugins/oscd-xml-utils": [
         "libs/oscd-xml-utils/src/index.ts"
       ]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }

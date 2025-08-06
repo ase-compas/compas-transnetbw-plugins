@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { initServices } from './lib/services';
   import TestView from './views/TestView.svelte';
+  import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -56,6 +57,7 @@
     </div>
   {/if}
 </div>
+<DialogHost/>
 
 <style>
   @import "/global.css";
