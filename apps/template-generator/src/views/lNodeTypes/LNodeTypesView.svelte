@@ -1,7 +1,7 @@
 <script lang="ts">
   // ===== Imports =====
   import { OscdInput, OscdButton } from '@oscd-transnet-plugins/oscd-component';
-  import NewLNodeTypeDialog from '../../lib/components/dialogs/NewLNodeTypeDialog.svelte';
+  import NewLNodeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewLNodeTypeDialog.svelte';
   import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';

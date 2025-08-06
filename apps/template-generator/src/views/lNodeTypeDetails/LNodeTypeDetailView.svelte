@@ -11,7 +11,7 @@
   import { getColumns } from './columns.config';
   import { TColumnConfig, TData } from '../../lib/components/tboard/types';
   import { buildDATypeItems, buildDOItems, buildDOTypeItems, buildEnumTypeItems } from '../../lib/utils/itemBuilder';
-  import NewDataObjectType from "../../lib/components/dialogs/NewDataObjectType.svelte";
+  import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   export let doc: XMLDocument;

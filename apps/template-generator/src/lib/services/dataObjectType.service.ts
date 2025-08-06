@@ -12,6 +12,10 @@ export class DataObjectTypeService {
     return this.repo.findById(id);
   }
 
+  isIdTaken(id: string): boolean {
+    return this.findById(id) !== null;
+  }
+
   public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
     return this.repo.findReferencedTypesById(id, childNameFilter);
   }
