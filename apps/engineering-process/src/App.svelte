@@ -1,13 +1,12 @@
 <script lang="ts">
-  import {onMount} from "svelte";
-  import {Process, Plugin} from '@oscd-transnet-plugins/shared'
-  export let doc: XMLDocument | undefined;
-  export let editCount = -1;
-  export let host: HTMLElement;
+  import type { Process, Plugin } from '@oscd-transnet-plugins/shared';
+  import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
+  import EngineeringProcessDetail from './views/engineering-process-detail.view.svelte';
 
   let processes: Process[] = [];
-  let errorMsg = "";
+  let selected: Process | null = null;
   let loading = true;
+  let errorMsg = "";
 
   const txt = (el: Element | null) => (el?.textContent ?? "").trim();
 
@@ -34,115 +33,41 @@
     const src = new URL('./assets/processes.xml', import.meta.url).href;
     try {
       const res = await fetch(src, { cache: "no-cache" });
-      console.log("res", res);
       const responseText = await res.text();
-      console.log("responseText", responseText);
       const parser = new DOMParser();
       const xml = parser.parseFromString(responseText, "application/xml");
-      console.log("xml", xml);
 
       const parseErr = xml.querySelector("parsererror");
-      if(parseErr) throw new Error("Invalid XML file format.");
+      if (parseErr) throw new Error("Invalid XML file format.");
 
       processes = parseProcessesFromXml(xml);
-    } catch (error) {
-      errorMsg = (error as Error).message;
+    } catch (e) {
+      errorMsg = (e as Error).message ?? "Failed to load processes.";
     } finally {
       loading = false;
     }
   }
 
-  onMount(loadXml);
+  loadXml();
+
+  function startProcess(proc: Process) {
+    //TODO: Implement process start logic
+    console.log("Start process:", proc);
+  }
 </script>
 
-<div class="page-content">
-  <p class="heading">Engineering Processes</p>
-
-  {#if loading}
-    <p>Loading…</p>
-  {:else if errorMsg}
-    <p>{errorMsg}</p>
-  {:else if processes.length === 0}
-    <p>No processes found.</p>
-  {:else}
-    <div class="processes-list">
-      {#each processes as p}
-        <div class="processes-list__process">
-          <div class="process__info">
-            <p class="process__name">{p.id}</p>
-            <p class="process__description">{p.description}</p>
-          </div>
-          <div class="process__actions">
-            <button>
-              START PROCESS
-            </button>
-            <button>
-              VIEW PROCESS
-            </button>
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
-</div>
-
-<style>
-  * {
-    font-family: Roboto, sans-serif;
-    font-weight: 500;
-  }
-
-  .page-content {
-    margin: 2rem;
-  }
-
-  .heading {
-    font-weight: 700;
-    font-size: 1.5rem;
-  }
-
-  .processes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .processes-list__process {
-    display: flex;
-    flex-direction: row;
-    border: 1px solid #ccc;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    background-color: #f9f9f9;
-  }
-
-  .process__info {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .process__name {
-    font-weight: 700;
-    color: #004552;
-  }
-
-  .process__description {
-    color: #555;
-  }
-
-  .process__actions {
-    display: flex;
-    flex-direction: row;
-    margin-left: auto;
-    gap: 1rem;
-
-  }
-
-  .process__actions > button {
-    cursor: pointer;
-    color: #FFFFFF;
-    background-color: #1a3e4a;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    padding: 5px;
-  }
-</style>
+{#if selected}
+  <EngineeringProcessDetail
+    proc={selected}
+    on:back={() => (selected = null)}
+    on:start={(e) => startProcess(e.detail)}
+  />
+{:else}
+  <EngineeringProcessesList
+    processes={processes}
+    loading={loading}
+    errorMsg={errorMsg}
+    on:view={(e) => (selected = e.detail)}
+    on:start={(e) => startProcess(e.detail)}
+  />
+{/if}
