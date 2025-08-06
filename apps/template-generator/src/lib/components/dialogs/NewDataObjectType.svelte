@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
-  import BaseDialog from './BaseDialog.svelte';
+  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
 
@@ -51,7 +51,7 @@
 
 
 <div class="oscd-new-lnode-type-dialog">
-  <BaseDialog
+  <OscdBaseDialog
     title="Create New Data Object Type"
   confirmActionText="Next"
     maxWidth="800px"
@@ -95,7 +95,7 @@
       </svelte:fragment>
     </Autocomplete>
     </div>
-  </BaseDialog>
+  </OscdBaseDialog>
 </div>
 
 

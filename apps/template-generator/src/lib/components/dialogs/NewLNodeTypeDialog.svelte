@@ -4,7 +4,7 @@
   import Autocomplete from '@smui-extra/autocomplete';
   import {lnClassDescriptions} from '../../../data/lnClassDescriptions.ts'
   import { getLNodeTypeService, LNodeTypeService } from '../../services';
-  import BaseDialog from './BaseDialog.svelte';
+  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
@@ -60,7 +60,7 @@
 
 
 <div class="oscd-new-lnode-type-dialog">
-  <BaseDialog
+  <OscdBaseDialog
     title="Create Logical Node Type"
     confirmActionText="Create"
     maxWidth="800px"
@@ -106,7 +106,7 @@
       </svelte:fragment>
     </Autocomplete>
     </div>
-  </BaseDialog>
+  </OscdBaseDialog>
 </div>
 
 

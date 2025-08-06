@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import BaseDialog from '../BaseDialog.svelte';
+  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { Content } from '@smui/dialog';
   import { DataAttributeTypeService, getDataAttributeTypeService } from '../../../services';
   import { BDA, DAType, ReferencedTypes } from '../../../domain';
@@ -66,7 +66,7 @@
   }
 </script>
 
-<BaseDialog
+<OscdBaseDialog
   bind:open
   title={`Data Attribute Type: ${dataAttributeType?.id ?? '------'}`}
   confirmActionText="Save"
@@ -82,4 +82,4 @@
       on:itemMarkChange={e => handleOnMark(e.detail)}
     />
   </Content>
-</BaseDialog>
+</OscdBaseDialog>
