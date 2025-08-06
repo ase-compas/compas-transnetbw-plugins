@@ -4,7 +4,6 @@
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
   import { initServices } from './lib/services';
-  import TestView from './views/TestView.svelte';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   export let doc: XMLDocument | null = null;
@@ -49,8 +48,6 @@
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
         <LNodeTypesView {doc}/>
-      {:else if $route.path[0] === 'test'}
-        <TestView/>
       {:else}
         <LNodeTypeDetailView {doc}/>
       {/if}
