@@ -1,6 +1,6 @@
 <script lang="ts">
-  import LNodeTypesView from "./views/lNodeTypesView/LNodeTypesView.svelte";
-  import LNodeTypeDetailView from "./views/lNodeTypeDetailsView/LNodeTypeDetailView.svelte";
+  import LNodeTypesView from "./views/lNodeTypes/LNodeTypesView.svelte";
+  import LNodeTypeDetailView from "./views/lNodeTypeDetails/LNodeTypeDetailView.svelte";
   import { route, host as storeHost } from "./lib/stores";
   import { onMount } from 'svelte';
   import { initServices } from './lib/services';
