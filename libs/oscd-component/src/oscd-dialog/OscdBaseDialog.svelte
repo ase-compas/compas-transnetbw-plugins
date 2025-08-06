@@ -7,7 +7,7 @@
   export let title: string = '';
   export let confirmActionText: string = 'Confirm';
   export let cancelActionText: string = 'Cancel';
-  export let width: string = '2160px';
+  export let width: string = '80vw';
   export let maxWidth: string = '85vw';
   export let height: string = '85vh';
   export let maxHeight: string = '85vh';
@@ -29,21 +29,20 @@
   on:SMUIDialog:closed={(e) => handleClose(e)}
   surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight};`}
 >
-  <div class="dialog-title">
+  <div class="dialog__title">
     <h4>{title}</h4>
   </div>
 
-  <Content id="large-scroll-content">
+  <Content id="dialog__content">
     <slot name="content" />
   </Content>
 
-  <div class="actions">
-    <Actions>
-      <Button action="cancel" style="margin: 0 0.5rem 0 0">{cancelActionText}</Button>
+  <div class="dialog__actions">
+    <Actions class="oscd-dialog__actions">
+      <Button action="cancel">{cancelActionText}</Button>
       <Button
         action="confirm"
         variant="raised"
-        style="margin: 0"
         disabled={confirmDisabled}
       >{confirmActionText}</Button>
     </Actions>
@@ -51,7 +50,18 @@
 </Dialog>
 
 <style lang="css">
-  .dialog-title {
+  :global(.oscd-dialog__actions) {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  :global(.oscd-dialog__actions > button) {
+    margin: 0;
+  }
+
+  .dialog__title {
     font-size: 20px;
     font-weight: 500;
     border-bottom: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
@@ -61,7 +71,7 @@
     background-color: var(--mdc-theme-primary, #ff3e00);
   }
 
-  .actions {
+  .dialog__actions {
     background-color: white;
     border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
   }
