@@ -1,264 +1,80 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import {
-    OscdCancelIcon,
-    OscdCheckIcon,
-    OscdEditIcon,
-    OscdErrorIcon,
-    OscdWarningIcon
-  } from "../../../libs/oscd-icons/src";
-  import {OscdTooltip} from "../../../libs/oscd-component/src";
+  import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
+  import EngineeringProcessDetail from './views/engineering-process-detail.view.svelte';
+  import EngineeringWorkflow from './views/engineering-workflow.view.svelte';
+  import type { Process, Plugin } from '@oscd-transnet-plugins/shared';
+  import { onMount } from 'svelte';
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
   export let host: HTMLElement;
 
-  let tagName: string | null = null;
-  let editorTabsVisible = false;
-  let visited: string[] = [];
+  let processes: Process[] = [];
+  let selected: Process | null = null;
+  let running: Process | null = null;
+  let loading = true;
+  let errorMsg = '';
 
-  const statuses: ('check' | 'warning' | 'error')[] = ['check', 'warning', 'error'];
+  const SRC = new URL('./assets/processes.xml', import.meta.url).href;
+  const txt = (el: Element | null | undefined) => el?.textContent?.trim() ?? '';
 
-  let pluginStatus: Record<string, 'check' | 'error' | 'warning'> = {};
+  const parseProcessesFromXml = (xml: XMLDocument): Process[] =>
+    Array.from(xml.getElementsByTagName('process')).map((p) => {
+      const plugins: Plugin[] = Array.from(p.getElementsByTagName('plugin')).map((pl) => ({
+        id: txt(pl.querySelector('id')),
+        name: txt(pl.querySelector('name'))
+      }));
 
-  function randomStatus(): 'check' | 'error' | 'warning' {
-    const values = ['check', 'error', 'warning'] as const;
-    return values[Math.floor(Math.random() * values.length)];
-  }
-
-  const dispatch = createEventDispatcher<{
-    'toggle-editor-tabs': { visible?: boolean };
-  }>();
-
-  function getLayoutContainer(): HTMLElement | null {
-    const openScd = document.querySelector('open-scd');
-    return openScd?.shadowRoot?.querySelector('compas-layout') ?? null;
-  }
-
-  function setEditorTabsVisibility(visible: boolean) {
-    editorTabsVisible = visible;
-    getLayoutContainer()?.dispatchEvent(
-      new CustomEvent('toggle-editor-tabs', {
-        detail: { visible },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
-  const plugins = [
-    {
-      tag: 'engineering-wizard',
-      src: 'https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/substation.js',
-      label: 'Substation',
-    },
-    {
-      tag: 'substation-explorer',
-      src: 'https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/ied.js',
-      label: 'IED',
-    },
-    {
-      tag: 'communication-editor',
-      src: 'https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/communication.js',
-      label: 'Communication',
-    },
-  ];
-
-  async function loadPlugin(plugin: { tag: string; src: string }) {
-    const mod = await import(plugin.src);
-    if (!customElements.get(plugin.tag))
-      customElements.define(plugin.tag, mod.default);
-
-    tagName = plugin.tag;
-
-    if (!visited.includes(plugin.tag)) {
-      visited = [...visited, plugin.tag];
-      const idx = plugins.findIndex(p => p.tag === plugin.tag);
-      pluginStatus = {
-        ...pluginStatus,
-        [plugin.tag]: statuses[idx]
+      return {
+        id: txt(p.querySelector(':scope > id')),
+        version: txt(p.querySelector(':scope > version')),
+        name: txt(p.querySelector(':scope > name')),
+        description: txt(p.querySelector(':scope > description')),
+        plugins
       };
+    });
+
+  async function loadXml() {
+    loading = true;
+    errorMsg = '';
+    try {
+      const res = await fetch(SRC, { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
+      if (xml.querySelector('parsererror')) throw new Error('Invalid XML file format.');
+      processes = parseProcessesFromXml(xml);
+    } catch (e) {
+      processes = [];
+      errorMsg = (e as Error).message || 'Failed to load processes.';
+    } finally {
+      loading = false;
     }
   }
 
-  onMount(() => {
-    loadPlugin(plugins[0]);
-    setEditorTabsVisibility(false);
-  });
+  onMount(loadXml);
 
-  function nextPlugin() {
-    const idx = plugins.findIndex(p => p.tag === tagName);
-    loadPlugin(plugins[(idx + 1) % plugins.length]);
+  function startProcess(proc: Process) {
+    running = proc;
+    selected = null;
   }
 
-  function previousPlugin() {
-    const idx = plugins.findIndex(p => p.tag === tagName);
-    loadPlugin(plugins[(idx - 1 + plugins.length) % plugins.length]);
+  function onView(e: CustomEvent<Process>) {
+    selected = e.detail;
   }
 
-  function setProps(node: HTMLElement, props: any) {
-    Object.assign(node, props);
-    return { update: (p: any) => Object.assign(node, p) };
+  function onStart(e: CustomEvent<Process>) {
+    startProcess(e.detail);
   }
 
-  $: tooltipText = plugins.reduce<Record<string, string>>((map, p) => {
-    const status = pluginStatus[p.tag];
-    map[p.tag] =
-      status === 'error'
-        ? `Resolve errors in ${p.label}`
-        : status === 'warning'
-          ? `Check warnings for ${p.label}`
-          : `Load the ${p.label} editor`;
-    return map;
-  }, {});
+  function goBack() {
+    selected = null;
+  }
 </script>
 
-<div class="stepper">
-  <div style="display: flex; align-items: center; gap: 0.5rem;">
-    <button class="back-button" on:click={() => setEditorTabsVisibility(true)}>
-      exit
-    </button>
-    <p class="plugin-flow-title">Plugin Flow</p>
-  </div>
-  <div class="plugin-steps">
-    {#each plugins as plugin, i}
-      <div class="plugin-step">
-        <!-- use the helper here -->
-        <OscdTooltip text={tooltipText[plugin.tag]} position="bottom">
-          <button
-            on:click={() => loadPlugin(plugin)}
-            class:not-visited={!visited.includes(plugin.tag)}
-            class:current={plugin.tag === tagName}
-            class:visited={visited.includes(plugin.tag) && plugin.tag !== tagName}
-          >
-            {#if visited.includes(plugin.tag) && plugin.tag !== tagName}
-              {#if pluginStatus[plugin.tag] === 'check'}
-                <OscdCheckIcon />
-              {:else if pluginStatus[plugin.tag] === 'error'}
-                <OscdErrorIcon />
-              {:else}
-                <OscdWarningIcon />
-              {/if}
-            {:else}
-              {i + 1}
-            {/if}
-          </button>
-        </OscdTooltip>
-        <p>{plugin.label}</p>
-      </div>
-
-      {#if i < plugins.length - 1}
-        <div class="plugin-step-line"></div>
-      {/if}
-    {/each}
-  </div>
-  <div class="stepper-navigation">
-    <button on:click={previousPlugin} class="back-button">Back</button>
-    <button on:click={nextPlugin} class="next-button">Next</button>
-  </div>
-</div>
-
-{#if tagName}
-  <svelte:element this={tagName} use:setProps={{ doc, editCount }} />
+{#if running}
+  <EngineeringWorkflow {doc} {editCount} {host} />
+{:else if selected}
+  <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={onStart} />
+{:else}
+  <EngineeringProcessesList {processes} {loading} {errorMsg} on:view={onView} on:start={onStart} />
 {/if}
-
-<style>
-  * {
-    font-family: Roboto, sans-serif;
-    font-weight: 500;
-  }
-
-  .stepper {
-    height: 4rem;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    background-color: #004552;
-  }
-
-  .plugin-steps {
-    display: flex;
-    gap: 0.5rem;
-    justify-self: center;
-    align-items: center;
-  }
-
-  .plugin-flow-title {
-    font-weight: 500;
-    color: #ffffff;
-  }
-
-  .stepper-navigation {
-    display: flex;
-    gap: 0.8rem;
-    justify-self: end;
-  }
-
-  .back-button,
-  .next-button {
-    height: 36px;
-    width: 70px;
-    text-transform: uppercase;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .back-button {
-    color: white;
-    background-color: #6B9197;
-  }
-
-  .next-button {
-    background-color: white;
-    color: #004552;
-  }
-
-  .plugin-step {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    color: white;
-    gap: 0.8rem;
-    text-transform: uppercase;
-    cursor: pointer;
-
-    & button {
-      display:  flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-  }
-
-  .plugin-step-line {
-    width: 56px;
-    height: 1px;
-    background-color: #6B9197;
-  }
-
-  .plugin-step button {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid transparent;
-    border-radius: 50%;
-    font-weight: 600;
-    transition: background-color 0.2s ease;
-  }
-
-  .plugin-step button.not-visited {
-    background-color: #6B9197;
-    color: #ffffff;
-  }
-
-  .plugin-step button.current {
-    background-color: #D9D800;
-    color: #004552;
-  }
-
-  .plugin-step button.visited {
-    background-color: #ffffff;
-    color: #004552;
-  }
-</style>
