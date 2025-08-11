@@ -23,6 +23,7 @@ export type TColumnConfig = {
   hasSearch?: boolean;
   hasAction?: boolean;
   showApplyDefaults?: boolean;
+  highlighted?: boolean;
 
   itemsDraggable?: boolean; // If items in this column can be dragged
 }

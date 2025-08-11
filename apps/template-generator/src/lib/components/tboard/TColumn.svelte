@@ -16,6 +16,7 @@
   export let hasAction: boolean = false;
 
   export let showApplyDefaults: boolean = false;
+  export let highlighted: boolean = false; // If true, visually highlights the column background
 
   export let itemsDraggable: boolean = false;
   export let dropCandidate: TItem | null = null;
@@ -46,7 +47,7 @@
   }
 </script>
 
-<div class="oscd-tcolumn" class:apply-defaults={showApplyDefaults}>
+<div class="oscd-tcolumn" class:apply-defaults={highlighted}>
   {#if !showApplyDefaults}
   <TColumnSearchHeader
     title={title}

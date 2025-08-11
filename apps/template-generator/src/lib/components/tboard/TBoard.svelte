@@ -80,6 +80,7 @@
     <TColumn
       title={column.title}
       subtitle={column.subtitle}
+      highlighted={column.highlighted}
       actionLabel={column.actionLabel}
       hasSearch={column.hasSearch}
       hasAction={column.hasAction}

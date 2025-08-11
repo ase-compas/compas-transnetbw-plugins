@@ -7,6 +7,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       title: 'Data Object Structure',
       hasSearch: false,
       showApplyDefaults: isEditMode,
+      highlighted: true,
       itemsDraggable: false,
     },
     {
