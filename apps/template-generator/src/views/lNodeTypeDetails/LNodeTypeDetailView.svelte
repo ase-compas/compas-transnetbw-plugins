@@ -14,11 +14,13 @@
   import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import {initDataLoaders, loadCompatibleTypesById, loadLogicalNodeType, loadReferencedTypesById} from "./dataLoader";
+  import {OscdDefaultTypeService} from "../../lib/services/oscdDefaultType.service";
 
   export let doc: XMLDocument;
 
   const lNodeTypeService = getLNodeTypeService();
   const dataObjectService = getDataObjectTypeService();
+  const oscdDefaultTypeService = new OscdDefaultTypeService();
 
   const isCreateMode = $route.path[0] === 'new';
 
@@ -30,7 +32,7 @@
   $: dataTypes
   let markedItemIds = new Set<string>();
 
-  let isEditMode = false;
+  $: isEditMode = false;
   let isDirty = false;
 
   // ===== Lifecycle =====
@@ -39,9 +41,12 @@
   function init() {
     initDataLoaders();
 
-    logicalNodeType = isCreateMode
-    ? createNewLNodeType(lNodeTypeId, lnClass)
-    : loadLogicalNodeType(lNodeTypeId);
+    if(isCreateMode) {
+      logicalNodeType = createNewLNodeType(lNodeTypeId, lnClass, oscdDefaultTypeService.getDefaultLogicalNodeType(lnClass));
+      isEditMode = true;
+    } else {
+      logicalNodeType = loadLogicalNodeType(lNodeTypeId);
+    }
 
     refreshDataTypes();
   }
@@ -103,13 +108,24 @@
     if (!source || !target) return;
 
     if (source.columnId === 'dotypes' && target.columnId === 'refs') {
-        lNodeTypeService.addDataObjectTypeReference(logicalNodeType.id, target.itemId, source.itemId)
-        isDirty = true;
+      setDataObjectTypeReference(target.itemId, source.itemId)
     }
   }
 
+  function setDataObjectTypeReference(dataObjectName: string, typeId: string) {
+    if (!logicalNodeType) return;
+
+    logicalNodeType = {
+      ...logicalNodeType,
+      dataObjects: logicalNodeType.dataObjects.map(doItem =>
+        doItem.name === dataObjectName ? { ...doItem, type: typeId } : doItem
+      )
+    };
+    isDirty = true;
+  }
+
   function handleSaveChanges() {
-    //TODO: Implement save logic
+    lNodeTypeService.createOrUpdate(logicalNodeType)
     isDirty = false;
   }
 
@@ -176,9 +192,8 @@
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
-
       <OscdButton
-        disabled={!isDirty} on:click={handleSaveChanges} variant="unelevated">
+        disabled={!isDirty} callback={handleSaveChanges} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
     </div>

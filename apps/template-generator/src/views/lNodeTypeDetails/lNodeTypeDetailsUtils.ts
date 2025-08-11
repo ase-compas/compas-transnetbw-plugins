@@ -1,8 +1,8 @@
-import type { LNodeType } from '../../lib/domain';
+import type { DO, LNodeType } from '../../lib/domain';
 import type { Route } from '../../lib/stores';
 
-export function createNewLNodeType(id: string, lnClass: string): LNodeType {
-  return { id, lnClass, desc: '', dataObjects: [] };
+export function createNewLNodeType(id: string, lnClass: string, baseDataObjects: DO[]): LNodeType {
+  return { id, lnClass, desc: '', dataObjects: baseDataObjects };
 }
 
 export function createBreadcrumbs(route: Route, lNodeType: LNodeType) {

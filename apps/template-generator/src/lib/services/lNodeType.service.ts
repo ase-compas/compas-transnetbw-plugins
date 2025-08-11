@@ -44,6 +44,18 @@ export class LNodeTypeService {
     this.repo.insert(node);
   }
 
+  createOrUpdate(node: LNodeType): void {
+    const existing = this.repo.findById(node.id);
+
+    if (existing) {
+      // Merge to preserve existing fields
+      const merged = { ...existing, ...node };
+      this.repo.update(merged);
+    } else {
+      this.repo.insert(node);
+    }
+  }
+
   update(id: string, updated: Partial<LNodeType>): void {
     const existing = this.repo.findById(id);
     if (!existing) throw new Error(`LNodeType with id ${id} not found`);
