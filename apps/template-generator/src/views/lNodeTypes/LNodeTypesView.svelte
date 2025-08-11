@@ -1,6 +1,6 @@
 <script lang="ts">
   // ===== Imports =====
-  import { OscdInput, OscdButton } from '@oscd-transnet-plugins/oscd-component';
+  import {OscdInput, OscdButton, OscdConfirmDialog} from '@oscd-transnet-plugins/oscd-component';
   import NewLNodeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewLNodeTypeDialog.svelte';
   import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
@@ -48,7 +48,20 @@
   };
 
   const handleDelete = (lNodeTypeId: string) => {
-    lNodeTypeService.delete(lNodeTypeId);
+    openDialog(
+      OscdConfirmDialog,
+      {
+        title: 'Confirm Delete Logical Node Type',
+        message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
+        confirmActionText: 'Delete',
+        cancelActionText: 'Cancel',
+        color: 'red'
+      })
+      .then(result => {
+      if (result.type === 'confirm') {
+        lNodeTypeService.delete(lNodeTypeId);
+      }
+    })
   };
 
   const handleNodeClick = (lNodeTypeId: string) => {
