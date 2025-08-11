@@ -1,6 +1,6 @@
 <script lang="ts">
   import { route } from '../../lib/stores';
-  import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import {OscdBreadcrumbs, OscdButton, OscdConfirmDialog, OscdSwitch} from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
   import {DO, LNodeType, DataTypes} from '../../lib/domain';
   import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
@@ -22,7 +22,7 @@
   const dataObjectService = getDataObjectTypeService();
   const oscdDefaultTypeService = new OscdDefaultTypeService();
 
-  const isCreateMode = $route.path[0] === 'new';
+  $: isCreateMode = $route.path[0] === 'new';
 
   const lNodeTypeId = $route.meta.lNodeTypeId;
   const lnClass = $route.meta.lnClass;
@@ -40,15 +40,16 @@
 
   function init() {
     initDataLoaders();
+    refreshLogicalNodeType();
+  }
 
+  function refreshLogicalNodeType() {
     if(isCreateMode) {
       logicalNodeType = createNewLNodeType(lNodeTypeId, lnClass, oscdDefaultTypeService.getDefaultLogicalNodeType(lnClass));
       isEditMode = true;
     } else {
       logicalNodeType = loadLogicalNodeType(lNodeTypeId);
     }
-
-    refreshDataTypes();
   }
 
   function refreshDataTypes() {
@@ -62,6 +63,9 @@
   $: if (doc) init();
   $: isEditMode, refreshDataTypes();
   $: dataObjects = logicalNodeType?.dataObjects ?? [];
+  $: if(!isEditMode) {
+    handleUnsavedChanges();
+  }
 
   let data: TData = {};
   $: data = {
@@ -98,7 +102,6 @@
     return dataObjectService.canReferenceToType(lnClassValue, name, targetDataObjectType.cdc)
   }
 
-
   function handleToggleMark(itemId: string, marked: boolean) {
     marked ? markedItemIds.add(itemId) : markedItemIds.delete(itemId);
     refreshDataTypes();
@@ -127,6 +130,27 @@
   function handleSaveChanges() {
     lNodeTypeService.createOrUpdate(logicalNodeType)
     isDirty = false;
+    isCreateMode = false;
+  }
+
+  function handleUnsavedChanges() {
+    if (isDirty) {
+      openDialog(OscdConfirmDialog, {
+        title: 'Unsaved Changes',
+        message: 'You have unsaved changes. Do you want to save them?',
+        confirmActionText: 'Save',
+        cancelActionText: 'Discard',
+      }).then(result => {
+        if (result.type === 'confirm') {
+          handleSaveChanges();
+        } else {
+          // Reset dirty state without saving
+          refreshLogicalNodeType();
+          refreshDataTypes();
+          isDirty = false;
+        }
+      });
+    }
   }
 
   function handleActionClick({ columnId }) {
