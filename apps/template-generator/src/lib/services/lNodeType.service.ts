@@ -1,4 +1,4 @@
-import type { LNodeType, ReferencedTypes } from '../domain';
+import type { LNodeType, DataTypes } from '../domain';
 import type { LNodeTypeRepository } from '../repositories';
 
 export class LNodeTypeService {
@@ -12,8 +12,14 @@ export class LNodeTypeService {
     return this.repo.findById(id);
   }
 
-  findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes {
+  findReferencedTypesById(id: string, childNameFilter: string[] = []): DataTypes {
     return this.repo.findReferencedTypesById(id, childNameFilter);
+  }
+
+  addDataObjectTypeReference(id: string, dataObjectName: string, targetTypeId: string) {
+    const existing = this.repo.findById(id);
+    if (!existing) throw new Error(`LNodeType with id ${id} not found`);
+    this.repo.addDataObjectTypeReference(id, dataObjectName, targetTypeId);
   }
 
   isIdTaken(id: string): boolean {

@@ -3,7 +3,7 @@
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { Content } from '@smui/dialog';
   import { DataObjectTypeService, getDataObjectTypeService } from '../../../services';
-  import { DA, DOType, type ReferencedTypes } from '../../../domain';
+  import { DA, DOType, type DataTypes } from '../../../domain';
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import { buildDAItems, buildDATypeItems, buildDOTypeItems, buildEnumTypeItems } from '../../../utils/itemBuilder';
@@ -17,7 +17,7 @@
   export let open = false;
   export let mode: 'view' | 'edit' | 'create' = 'view';
   export let typeId: string;
-  let referencedDataTypes: ReferencedTypes | null = null;
+  let referencedDataTypes: DataTypes | null = null;
   let dataObjectType: DOType | null = null;
   let dataAttributes: DA[] = [];
 

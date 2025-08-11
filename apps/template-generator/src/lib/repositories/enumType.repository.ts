@@ -7,6 +7,6 @@ export class EnumTypeRepository extends GenericCrudTypeRepository<EnumType> {
     doc: XMLDocument,
     hostElement: HTMLElement // e.g., the root container of LNodeTypes
   ) {
-    super(doc, hostElement, 'DOType', EnumTypeMapper);
+    super(doc, hostElement, 'EnumType', EnumTypeMapper);
   }
 }

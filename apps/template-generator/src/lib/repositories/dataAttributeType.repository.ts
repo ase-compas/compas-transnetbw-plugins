@@ -1,4 +1,4 @@
-import type { DAType, ReferencedTypes } from '../domain';
+import type { DAType, DataTypes } from '../domain';
 import { DATypeMapper } from '../mappers';
 import { GenericCrudTypeRepository } from './genericType.repository';
 import { TypeResolver } from '../utils/typeResolver';
@@ -14,7 +14,7 @@ export class DataAttributeTypeRepository extends GenericCrudTypeRepository<DATyp
     this.resolver = new TypeResolver(doc)
   }
 
-  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): DataTypes | null {
     const dataObjectType: Element = this.doc.querySelector(`${this.tagName}[id="${id}"]`);
     if (!dataObjectType) return null; // Not found
 

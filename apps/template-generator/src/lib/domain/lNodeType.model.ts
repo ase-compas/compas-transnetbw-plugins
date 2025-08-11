@@ -14,7 +14,7 @@ export interface LNodeType {
   dataObjects: DO[];
 }
 
-export type ReferencedTypes = {
+export type DataTypes = {
   dataObjectTypes: DOType[];
   dataAttributeTypes: DAType[];
   enumTypes: EnumType[];

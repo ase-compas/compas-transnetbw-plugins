@@ -2,64 +2,110 @@
   import { route } from '../../lib/stores';
   import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
-  import { LNodeType, ReferencedTypes } from '../../lib/domain';
+  import {DO, LNodeType, DataTypes} from '../../lib/domain';
   import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
   import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
   import TBoard from '../../lib/components/tboard/TBoard.svelte';
-  import { getLNodeTypeService } from '../../lib/services';
-  import { createBreadcrumbs, createNewLNodeType } from './utils';
+  import {getDataObjectTypeService, getLNodeTypeService} from '../../lib/services';
+  import { createBreadcrumbs, createNewLNodeType } from './lNodeTypeDetailsUtils';
   import { getColumns } from './columns.config';
-  import { TColumnConfig, TData } from '../../lib/components/tboard/types';
+  import {TBoardItemContext, TColumnConfig, TData, TItem} from '../../lib/components/tboard/types';
   import { buildDATypeItems, buildDOItems, buildDOTypeItems, buildEnumTypeItems } from '../../lib/utils/itemBuilder';
   import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import {initDataLoaders, loadCompatibleTypesById, loadLogicalNodeType, loadReferencedTypesById} from "./dataLoader";
 
   export let doc: XMLDocument;
 
-  const service = getLNodeTypeService();
+  const lNodeTypeService = getLNodeTypeService();
+  const dataObjectService = getDataObjectTypeService();
+
   const isCreateMode = $route.path[0] === 'new';
 
   const lNodeTypeId = $route.meta.lNodeTypeId;
   const lnClass = $route.meta.lnClass;
 
   let logicalNodeType: LNodeType | null;
-  let referenceDataTypes: ReferencedTypes;
+  let dataTypes: DataTypes;
+  $: dataTypes
   let markedItemIds = new Set<string>();
 
   let isEditMode = false;
   let isDirty = false;
 
+  // ===== Lifecycle =====
   onMount(init);
 
   function init() {
-    if (isCreateMode) {
-      logicalNodeType = createNewLNodeType(lNodeTypeId, lnClass);
-    } else {
-      logicalNodeType = service.findById(lNodeTypeId);
-      referenceDataTypes = service.findReferencedTypesById(lNodeTypeId);
-    }
+    initDataLoaders();
+
+    logicalNodeType = isCreateMode
+    ? createNewLNodeType(lNodeTypeId, lnClass)
+    : loadLogicalNodeType(lNodeTypeId);
+
+    refreshDataTypes();
+  }
+
+  function refreshDataTypes() {
+    if (!logicalNodeType) return;
+
+    dataTypes = isEditMode
+    ? loadCompatibleTypesById(logicalNodeType, markedItemIds)
+    : loadReferencedTypesById(logicalNodeType.id, markedItemIds);
   }
 
   $: if (doc) init();
-
+  $: isEditMode, refreshDataTypes();
   $: dataObjects = logicalNodeType?.dataObjects ?? [];
 
   let data: TData = {};
   $: data = {
-    refs: buildDOItems(dataObjects, markedItemIds, {canSelect: isEditMode}),
-    dotypes: buildDOTypeItems(referenceDataTypes?.dataObjectTypes, { canEdit: true }),
-    datypes: buildDATypeItems(referenceDataTypes?.dataAttributeTypes, { canEdit: true }),
-    enumtypes: buildEnumTypeItems(referenceDataTypes?.enumTypes, { canEdit: true })
+    refs: isEditMode ? dataObjects.map(mapDOItem) : buildDOItems(dataObjects, markedItemIds, {canSelect: isEditMode}),
+    dotypes: buildDOTypeItems(dataTypes?.dataObjectTypes, { canEdit: true }),
+    datypes: buildDATypeItems(dataTypes?.dataAttributeTypes, { canEdit: true }),
+    enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })
   };
 
   let columns: TColumnConfig[] = [];
   $: columns = getColumns(isEditMode);
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
 
+  // ===== UI Helpers =====
+  function mapDOItem(dataObject: DO): TItem {
+    return {
+      id: dataObject.name,
+      title: dataObject.name,
+      subtitle: dataObject.type,
+
+      marked: markedItemIds.has(dataObject.name),
+      selected: false,
+      canEdit: false,
+      canMark: true,
+      canSelect: isEditMode,
+
+      acceptDrop: (target: TItem) => acceptDrop(dataObject.name, target)
+    };
+  }
+
+  function acceptDrop(name, target: TItem): boolean {
+    const lnClassValue = logicalNodeType.lnClass;
+    const targetDataObjectType = dataObjectService.findById(target.id);
+    return dataObjectService.canReferenceToType(lnClassValue, name, targetDataObjectType.cdc)
+  }
+
+
   function handleToggleMark(itemId: string, marked: boolean) {
     marked ? markedItemIds.add(itemId) : markedItemIds.delete(itemId);
-    const children = Array.from(markedItemIds);
-    referenceDataTypes = service.findReferencedTypesById(lNodeTypeId, children);
+    refreshDataTypes();
+  }
+
+  function handleItemDrop({ source, target }: { source: TBoardItemContext; target: TBoardItemContext }) {
+    if (!source || !target) return;
+
+    if (source.columnId === 'dotypes' && target.columnId === 'refs') {
+        lNodeTypeService.addDataObjectTypeReference(logicalNodeType.id, target.itemId, source.itemId)
+        isDirty = true;
+    }
   }
 
   function handleSaveChanges() {
@@ -139,7 +185,6 @@
   </div>
   <!-- END: Toolbar -->
 
-
   <div class="oscd-details-board">
     <TBoard
       {columns}
@@ -147,6 +192,7 @@
       on:columnActionClick={e => handleActionClick(e.detail)}
       on:itemEdit={e => handleOnEdit(e.detail)}
       on:itemMarkChange={({detail: {itemId, marked}}) => handleToggleMark(itemId, marked)}
+      on:itemDrop={e => handleItemDrop(e.detail)}
     />
   </div>
 </div>

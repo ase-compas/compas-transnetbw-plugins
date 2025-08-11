@@ -56,14 +56,26 @@ export abstract class GenericCrudTypeRepository<T> {
 
   update(updated: T & { id: string }): void {
     const oldEl = this.doc.querySelector(`${this.tagName}[id="${updated.id}"]`);
-    if (oldEl) {
-      const newEl = this.mapper.toElement(this.doc, updated);
-      this.hostElement.replaceChild(newEl, oldEl);
+    if (!oldEl) {
+      console.error(`Update failed. Could not find ${this.tagName} with id:`, updated.id);
+      return;
     }
-    // TODO: implement
-    console.warn(
-      'Update operation not implemented yet. Please implement the update logic.'
-    );
+
+    const newEl = this.mapper.toElement(this.doc, updated);
+    const parent = oldEl.parentNode;
+    if (!parent) {
+      console.error('Update failed. Old element has no parent.');
+      return;
+    }
+
+    // Prepare remove edit
+    const removeEdit = buildRemove(oldEl);
+    // Insert new element before oldEl’s next sibling (to keep same position)
+    const insertEdit = buildInsert(parent, newEl, oldEl.nextSibling);
+
+    // Dispatch remove and insert edits sequentially
+    createAndDispatchEditEvent(this.hostElement, removeEdit);
+    createAndDispatchEditEvent(this.hostElement, insertEdit);
   }
 
   delete(id: string): void {

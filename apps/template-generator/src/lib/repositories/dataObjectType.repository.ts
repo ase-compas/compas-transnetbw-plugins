@@ -1,4 +1,4 @@
-import type { DOType, ReferencedTypes } from '../domain';
+import type { DOType, DataTypes } from '../domain';
 import { DOTypeMapper } from '../mappers';
 import { GenericCrudTypeRepository } from './genericType.repository';
 import { ReferenceTracker } from '../utils/referenceTracker';
@@ -14,7 +14,7 @@ export class DataObjectTypeRepository extends GenericCrudTypeRepository<DOType> 
     this.resolver = new TypeResolver(doc);
   }
 
-  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): DataTypes | null {
     const dataObjectType: Element = this.doc.querySelector(`${this.tagName}[id="${id}"]`);
     if (!dataObjectType) return null; // Not found
 
@@ -23,5 +23,10 @@ export class DataObjectTypeRepository extends GenericCrudTypeRepository<DOType> 
     this.resolver.resolveDOType(id, tracker, false, childNameFilter);
 
     return tracker.result;
+  }
+
+  public findAllByCdc(cdc: string): DOType[] {
+    const elements = this.doc.querySelectorAll(`${this.tagName}[cdc="${cdc}"]`);
+    return Array.from(elements).map((el) => this.mapper.fromElement(el));
   }
 }

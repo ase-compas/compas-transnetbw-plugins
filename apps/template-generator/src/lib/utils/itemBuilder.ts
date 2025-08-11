@@ -23,7 +23,6 @@ export function buildDOItems(
       ...configOverrides,
       marked: markedSet.has(obj.name),
       canMark: true,
-      acceptDrop: (item) => item.title.includes(obj.name),
     }))
   ) ?? [];
 }

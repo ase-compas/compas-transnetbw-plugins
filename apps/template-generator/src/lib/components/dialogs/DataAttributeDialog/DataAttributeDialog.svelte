@@ -3,7 +3,7 @@
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { Content } from '@smui/dialog';
   import { DataAttributeTypeService, getDataAttributeTypeService } from '../../../services';
-  import { BDA, DAType, ReferencedTypes } from '../../../domain';
+  import { BDA, DAType, DataTypes } from '../../../domain';
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import { buildDATypeItems, buildDBAItems, buildEnumTypeItems } from '../../../utils/itemBuilder';
@@ -22,7 +22,7 @@
   let basicDataAttributes: BDA[] = [];
 
   let markedItem: Set<string> = new Set<string>();
-  let referencedDataTypes: ReferencedTypes | null;
+  let referencedDataTypes: DataTypes | null;
 
   function loadData() {
     dataAttributeType = dataAttributeService.findById(typeId);

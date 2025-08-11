@@ -1,9 +1,10 @@
 import type {LNodeType } from '../domain';
 import { LNodeTypeMapper } from '../mappers';
 import { GenericCrudTypeRepository } from './genericType.repository';
-import type { ReferencedTypes } from '../domain/';
+import type { DataTypes } from '../domain/';
 import { ReferenceTracker } from '../utils/referenceTracker';
 import { TypeResolver } from '../utils/typeResolver';
+import { buildSetAttributes, createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
 
 
 export class LNodeTypeRepository extends GenericCrudTypeRepository<LNodeType> {
@@ -18,7 +19,7 @@ export class LNodeTypeRepository extends GenericCrudTypeRepository<LNodeType> {
     this.resolver = new TypeResolver(doc);
   }
 
-  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): DataTypes | null {
     const lNodeType: Element = this.doc.querySelector(`${this.tagName}[id="${id}"]`);
     if (!lNodeType) return null; // Not found
 
@@ -32,6 +33,23 @@ export class LNodeTypeRepository extends GenericCrudTypeRepository<LNodeType> {
     });
 
     return tracker.result;
+  }
+
+  addDataObjectTypeReference(id: string, dataObjectName: string, newType: string): void {const lNodeTypeEl = this.doc.querySelector(`${this.tagName}[id="${id}"]`);
+    if (!lNodeTypeEl) {
+      console.error(`addDataObjectTypeReference failed. Could not find ${this.tagName} with id:`, id);
+      return;
+    }
+
+    // Find child element with the given unique 'name' attribute
+    const childEl = lNodeTypeEl.querySelector(`DO[name="${dataObjectName}"]`);
+    if (!childEl) {
+      console.error(`addDataObjectTypeReference failed. Could not find child with name:`, dataObjectName);
+      return;
+    }
+
+    const edit = buildSetAttributes(childEl, { type: newType });
+    createAndDispatchEditEvent(this.hostElement, edit);
   }
 
 }

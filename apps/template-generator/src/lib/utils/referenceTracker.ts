@@ -1,4 +1,4 @@
-import type { ReferencedTypes } from '../domain';
+import type { DataTypes } from '../domain';
 import { DATypeMapper, DOTypeMapper, EnumTypeMapper } from '../mappers';
 
 export class ReferenceTracker {
@@ -6,7 +6,7 @@ export class ReferenceTracker {
   private daTypeIds = new Set<string>();
   private enumTypeIds = new Set<string>();
 
-  public result: ReferencedTypes = {
+  public result: DataTypes = {
     dataObjectTypes: [],
     dataAttributeTypes: [],
     enumTypes: [],

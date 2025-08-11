@@ -1,4 +1,4 @@
-import type { DAType, ReferencedTypes } from '../domain';
+import type { DAType, DataTypes } from '../domain';
 import { DataAttributeTypeRepository } from '../repositories';
 
 export class DataAttributeTypeService {
@@ -11,7 +11,7 @@ export class DataAttributeTypeService {
   findById(id: string): DAType | null {
     return this.repo.findById(id);
   }
-  public findReferencedTypesById(id: string, childNameFilter: string[] = []): ReferencedTypes | null {
+  public findReferencedTypesById(id: string, childNameFilter: string[] = []): DataTypes | null {
     return this.repo.findReferencedTypesById(id, childNameFilter);
   }
 
