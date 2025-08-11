@@ -133,23 +133,23 @@
     isCreateMode = false;
   }
 
-  function handleUnsavedChanges() {
+  async function handleUnsavedChanges() {
     if (isDirty) {
-      openDialog(OscdConfirmDialog, {
+      const result = await openDialog(OscdConfirmDialog, {
         title: 'Unsaved Changes',
         message: 'You have unsaved changes. Do you want to save them?',
         confirmActionText: 'Save',
         cancelActionText: 'Discard',
-      }).then(result => {
-        if (result.type === 'confirm') {
-          handleSaveChanges();
-        } else {
-          // Reset dirty state without saving
-          refreshLogicalNodeType();
-          refreshDataTypes();
-          isDirty = false;
-        }
       });
+
+      if (result.type === 'confirm') {
+        handleSaveChanges();
+      } else {
+        // Reset dirty state without saving
+        refreshLogicalNodeType();
+        refreshDataTypes();
+        isDirty = false;
+      }
     }
   }
 
@@ -172,8 +172,10 @@
     }
   }
 
-  function handleBreadcrumbClick(event) {
-    const { index } = event.detail;
+  async function handleBreadcrumbClick({index}) {
+    if (isDirty) {
+      await handleUnsavedChanges();
+    }
     if (index === 0) route.set({ path: ['overview'] });
   }
 
@@ -205,7 +207,7 @@
 <div class="oscd-details">
   <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
-    <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={handleBreadcrumbClick} />
+    <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={e => handleBreadcrumbClick(e.detail)} />
 
     <div class="oscd-details-toolbar-right">
 
