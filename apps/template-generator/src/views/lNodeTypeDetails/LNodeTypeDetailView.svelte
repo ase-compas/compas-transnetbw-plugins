@@ -44,7 +44,7 @@
 
   function refreshLogicalNodeType() {
     if(isCreateMode) {
-      logicalNodeType = createNewLNodeType(lNodeTypeId, lnClass, oscdDefaultTypeService.getDefaultLogicalNodeType(lnClass));
+      logicalNodeType = oscdDefaultTypeService.createLogicalNodeTypeWithDefaults(lNodeTypeId, lnClass);
       isEditMode = true;
     } else {
       logicalNodeType = loadLogicalNodeType(lNodeTypeId);

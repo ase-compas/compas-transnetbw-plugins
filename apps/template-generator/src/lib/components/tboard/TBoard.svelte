@@ -27,7 +27,7 @@
 
     const sourceItem = dropCandidate;
 
-    if (isDroppable(targetItem, sourceItem.item))
+    if (isDroppable(targetItem, sourceItem))
     dispatchItemDropOnItemEvent({
       source: {...sourceItem},
       target: { columnId, itemId: targetItem.id, item: targetItem},
