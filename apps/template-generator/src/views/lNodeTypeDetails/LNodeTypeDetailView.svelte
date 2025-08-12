@@ -6,7 +6,7 @@
   import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
   import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
   import TBoard from '../../lib/components/tboard/TBoard.svelte';
-  import {getDataObjectTypeService, getLNodeTypeService} from '../../lib/services';
+  import {getDataObjectTypeService, getLNodeTypeService, getOscdDefaultTypeService} from '../../lib/services';
   import { createBreadcrumbs, createNewLNodeType } from './lNodeTypeDetailsUtils';
   import { getColumns } from './columns.config';
   import {TBoardItemContext, TColumnConfig, TData, TItem} from '../../lib/components/tboard/types';
@@ -14,13 +14,12 @@
   import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import {initDataLoaders, loadCompatibleTypesById, loadLogicalNodeType, loadReferencedTypesById} from "./dataLoader";
-  import {OscdDefaultTypeService} from "../../lib/services/oscdDefaultType.service";
 
   export let doc: XMLDocument;
 
   const lNodeTypeService = getLNodeTypeService();
   const dataObjectService = getDataObjectTypeService();
-  const oscdDefaultTypeService = new OscdDefaultTypeService();
+  const oscdDefaultTypeService = getOscdDefaultTypeService()
 
   $: isCreateMode = $route.path[0] === 'new';
 
