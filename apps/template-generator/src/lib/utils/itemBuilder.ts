@@ -2,84 +2,58 @@ import { TItem } from '../components/tboard/types';
 import { TItemMapper, TItemMapperConfig } from '../mappers/tItem.mapper';
 import { BDA, DA, DAType, DO, DOType, EnumType } from '../domain';
 
-function buildConfig(overrides: Partial<TItemMapperConfig> = {}): TItemMapperConfig {
+type ConfigOverrideOrFn<T> =
+  | Partial<TItemMapperConfig>
+  | ((item: T) => Partial<TItemMapperConfig>);
+
+function buildConfig<T>(item: T, overrides: ConfigOverrideOrFn<T> = {}): TItemMapperConfig {
   return {
     canEdit: false,
     canMark: false,
     canSelect: false,
     marked: false,
     acceptDrop: null,
-    ...overrides,
+    ...(typeof overrides === 'function' ? overrides(item) : overrides),
   };
 }
 
-export function buildDOItems(
-  list: DO[],
-  markedSet: Set<string>,
-  configOverrides: Partial<TItemMapperConfig> = {}
+function buildItems<T>(
+  list: T[],
+  mapper: (id: string, item: T, config: TItemMapperConfig) => TItem,
+  getId: (item: T) => string,
+  markedSet?: Set<string>,
+  overrides?: ConfigOverrideOrFn<T>
 ): TItem[] {
-  return list?.map(obj =>
-    TItemMapper.fromDataObject(obj.name, obj, buildConfig({
-      ...configOverrides,
-      marked: markedSet.has(obj.name),
-      canMark: true,
-    }))
-  ) ?? [];
+  return list?.map(item => {
+    const baseOverrides: Partial<TItemMapperConfig> = markedSet
+      ? { marked: markedSet.has(getId(item)), canMark: true }
+      : {};
+
+    return mapper(
+      getId(item),
+      item,
+      buildConfig(item, { ...baseOverrides, ...(typeof overrides === 'function' ? overrides(item) : overrides) })
+    );
+  }) ?? [];
 }
 
-export function buildDAItems(
-  list: DA[],
-  markedSet: Set<string>,
-  configOverrides: Partial<TItemMapperConfig> = {}
-): TItem[] {
-  return list?.map(attr =>
-    TItemMapper.fromDataAttribute(attr.name, attr, buildConfig({
-      ...configOverrides,
-      marked: markedSet.has(attr.name),
-      canMark: true,
-      acceptDrop: () => true,
-    }))
-  ) ?? [];
-}
+export const buildDOItems = (list: DO[], markedSet: Set<string>, overrides?: ConfigOverrideOrFn<DO>) =>
+  buildItems(list, TItemMapper.fromDataObject, obj => obj.name, markedSet, overrides);
 
-export function buildDBAItems(
-  list: BDA[],
-  markedSet: Set<string>,
-  configOverrides: Partial<TItemMapperConfig> = {}
-): TItem[] {
-  return list?.map(attr =>
-    TItemMapper.fromDataBasicAttribute(attr.name, attr, buildConfig({
-      ...configOverrides,
-      marked: markedSet.has(attr.name),
-      canMark: true,
-      acceptDrop: () => true,
-    }))
-  ) ?? [];
-}
+export const buildDAItems = (list: DA[], markedSet: Set<string>, overrides?: ConfigOverrideOrFn<DA>) =>
+  buildItems(list, TItemMapper.fromDataAttribute, attr => attr.name, markedSet, overrides);
 
-export function buildDOTypeItems(
-  list: DOType[],
-  configOverrides: Partial<TItemMapperConfig> = {}
-): TItem[] {
-  return list?.map(type =>
-    TItemMapper.fromDataObjectType(type.id, type, buildConfig(configOverrides))
-  ) ?? [];
-}
+export const buildDBAItems = (list: BDA[], markedSet: Set<string>, overrides?: ConfigOverrideOrFn<BDA>) =>
+  buildItems(list, TItemMapper.fromDataBasicAttribute, attr => attr.name, markedSet, item => ({
+    acceptDrop: () => true,
+    ...(typeof overrides === 'function' ? overrides(item) : overrides),
+  }));
 
-export function buildDATypeItems(
-  list: DAType[],
-  configOverrides: Partial<TItemMapperConfig> = {}
-): TItem[] {
-  return list?.map(type =>
-    TItemMapper.fromDataAttributeType(type.id, type, buildConfig(configOverrides))
-  ) ?? [];
-}
+export const buildDOTypeItems = (list: DOType[], overrides?: ConfigOverrideOrFn<DOType>) =>
+  buildItems(list, TItemMapper.fromDataObjectType, type => type.id, undefined, overrides);
 
-export function buildEnumTypeItems(
-  list: EnumType[],
-  configOverrides: Partial<TItemMapperConfig> = {}
-): TItem[] {
-  return list?.map(type =>
-    TItemMapper.fromEnumType(type.id, type, buildConfig(configOverrides))
-  ) ?? [];
-}
+export const buildDATypeItems = (list: DAType[], overrides?: ConfigOverrideOrFn<DAType>) =>
+  buildItems(list, TItemMapper.fromDataAttributeType, type => type.id, undefined, overrides);
+
+export const buildEnumTypeItems = (list: EnumType[], overrides?: ConfigOverrideOrFn<EnumType>) =>
+  buildItems(list, TItemMapper.fromEnumType, type => type.id, undefined, overrides);

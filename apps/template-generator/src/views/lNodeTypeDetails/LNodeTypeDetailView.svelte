@@ -68,7 +68,7 @@
 
   let data: TData = {};
   $: data = {
-    refs: isEditMode ? dataObjects.map(mapDOItem) : buildDOItems(dataObjects, markedItemIds, {canSelect: isEditMode}),
+    refs: buildDOItems(dataObjects, markedItemIds, item => ({canSelect: isEditMode, acceptDrop: (target: TItem) => acceptDrop(item.name, target)})),
     dotypes: buildDOTypeItems(dataTypes?.dataObjectTypes, { canEdit: true }),
     datypes: buildDATypeItems(dataTypes?.dataAttributeTypes, { canEdit: true }),
     enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })
@@ -79,22 +79,6 @@
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
 
   // ===== UI Helpers =====
-  function mapDOItem(dataObject: DO): TItem {
-    return {
-      id: dataObject.name,
-      title: dataObject.name,
-      subtitle: dataObject.type,
-
-      marked: markedItemIds.has(dataObject.name),
-      selected: false,
-      canEdit: false,
-      canMark: true,
-      canSelect: isEditMode,
-
-      acceptDrop: (target: TItem) => acceptDrop(dataObject.name, target)
-    };
-  }
-
   function acceptDrop(name, target: TItem): boolean {
     const lnClassValue = logicalNodeType.lnClass;
     const targetDataObjectType = dataObjectService.findById(target.id);
