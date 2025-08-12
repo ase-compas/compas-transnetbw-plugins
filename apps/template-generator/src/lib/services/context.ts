@@ -9,6 +9,7 @@ import { LNodeTypeService } from './lNodeType.service';
 import { DataObjectTypeService } from './dataObjectType.service';
 import { DataAttributeTypeService } from './dataAttributeType.service';
 import { EnumTypeService } from './enumType.service';
+import { OscdDefaultTypeService } from './oscdDefaultType.service';
 
 // App-scoped state
 let xmlDoc: XMLDocument | null = null;
@@ -18,6 +19,7 @@ let lNodeTypeRepo: LNodeTypeRepository | null = null;
 let dataObjectTypeRepo: DataObjectTypeRepository | null = null;
 let dataAttributeTypeRepo: DataAttributeTypeRepository | null = null;
 let enumTypeRepo: EnumTypeRepository | null = null;
+let oscdDefaultTypeService: OscdDefaultTypeService | null = null;
 
 let lNodeTypeService: LNodeTypeService | null = null;
 let dataObjectTypeService: DataObjectTypeService | null = null;
@@ -64,13 +66,21 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
 
   lNodeTypeService = new LNodeTypeService(lNodeTypeRepo);
   dataObjectTypeService = new DataObjectTypeService(dataObjectTypeRepo);
-  dataAttributeTypeService = new DataAttributeTypeService(
-    dataAttributeTypeRepo
-  );
+  dataAttributeTypeService = new DataAttributeTypeService(dataAttributeTypeRepo);
   enumTypeService = new EnumTypeService(enumTypeRepo);
+  oscdDefaultTypeService = new OscdDefaultTypeService()
 }
 
 // === Service Getters ===
+
+export function getOscdDefaultTypeService(): OscdDefaultTypeService {
+  if (!oscdDefaultTypeService) {
+    throw new Error(
+      'OscdDefaultTypeService not initialized. Call initServices() first.'
+    );
+  }
+  return oscdDefaultTypeService;
+}
 
 export function getLNodeTypeService(): LNodeTypeService {
   if (!lNodeTypeService)

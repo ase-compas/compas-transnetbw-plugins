@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { Content } from '@smui/dialog';
-  import { DataObjectTypeService, getDataObjectTypeService } from '../../../services';
+  import {DataObjectTypeService, getDataObjectTypeService, getOscdDefaultTypeService} from '../../../services';
   import { DA, DOType, type DataTypes } from '../../../domain';
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
@@ -10,6 +10,7 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const dataObjectTypeService: DataObjectTypeService = getDataObjectTypeService();
+  const oscdDefaultTypeService = getOscdDefaultTypeService();
 
   const dispatch = createEventDispatcher();
 
@@ -17,27 +18,20 @@
   export let open = false;
   export let mode: 'view' | 'edit' | 'create' = 'view';
   export let typeId: string;
+  export let cdc: string | null = null;
   let referencedDataTypes: DataTypes | null = null;
   let dataObjectType: DOType | null = null;
   let dataAttributes: DA[] = [];
 
   let markedItem: Set<string> = new Set<string>();
 
-
   let isEditMode: boolean = false;
   $: isEditMode = mode === 'edit' || mode === 'create';
-
-  function loadData() {
-    if (mode === 'create') return;
-    dataObjectType = dataObjectTypeService.findById(typeId);
-    dataAttributes = dataObjectType.dataAttributes;
-    referencedDataTypes = dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItem));
-  }
 
   $: columns = getColumns(isEditMode);
 
   $: if (open) {
-    loadData();
+    init();
   }
 
   $: if (!open) {
@@ -51,6 +45,33 @@
     enumtypes: buildEnumTypeItems(referencedDataTypes?.enumTypes)
   };
 
+  function init() {
+    validateProps();
+    loadData();
+  }
+
+  function loadData() {
+    if (mode === 'create') {
+      if (!typeId) throw new Error('Type ID is required in create mode');
+      if (!cdc) throw new Error('CDC is required in create mode');
+
+      dataObjectType = createDataObjectType(typeId, cdc, oscdDefaultTypeService.getDefaultDataObjectType(cdc));
+      dataAttributes = [];
+      referencedDataTypes = null;
+    } else {
+      dataObjectType = dataObjectTypeService.findById(typeId);
+    }
+    dataAttributes = dataObjectType.dataAttributes;
+    referencedDataTypes = dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItem));
+  }
+
+  function createDataObjectType(typeId: string, cdc: string, dataAttributes: DA[] = []): DOType {
+    return {
+      id: typeId,
+      cdc: cdc,
+      dataAttributes: dataAttributes,
+    };
+  }
 
   function handleOnMark({ itemId }) {
     if (markedItem.has(itemId)) {
@@ -68,6 +89,14 @@
 
   function handleCancel() {
     closeDialog('cancel');
+  }
+
+  function validateProps() {
+    if (mode === 'create' && (!typeId || !cdc)) {
+      throw new Error('Type ID and CDC are required in create mode');
+    } else if ((mode === 'edit' || mode === 'view') && !typeId) {
+      throw new Error('Type ID is required');
+    }
   }
 </script>
 

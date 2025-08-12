@@ -13,7 +13,7 @@
   }));
 
   const handleConfirm = (id: string, selected) => {
-    closeDialog('confirm', { id, cdc: selected });
+    closeDialog('confirm', { id, cdc: selected.title });
   };
 
 </script>

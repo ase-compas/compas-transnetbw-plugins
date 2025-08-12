@@ -165,7 +165,7 @@
 
   function handleOnEdit({ columnId, itemId }) {
     if (columnId === 'dotypes') {
-      openEditDOTypeDialog(itemId, isEditMode ? 'edit' : 'view');
+      openEditDOTypeDialog(itemId, null, isEditMode ? 'edit' : 'view');
     } else if (columnId === 'datypes') {
       openEditDATypeDialog(itemId)
     } else if (columnId === 'enumtypes') {
@@ -184,14 +184,15 @@
   function openCreateDOTypeDialog() {
     openDialog(NewDataObjectType).then(result => {
       if (result.type === 'confirm') {
-        openEditDOTypeDialog(result.data.id, 'create')
+        openEditDOTypeDialog(result.data.id, result.data.cdc, 'create')
       }
     });
   }
 
-  function openEditDOTypeDialog(typeId, mode) {
+  function openEditDOTypeDialog(typeId: string, cdc: string | null = null, mode: 'edit' | 'view' | 'create') {
     openDialog(DataTypeDialog, {
-      typeId: typeId,
+      typeId,
+      cdc,
       mode
     })
   }
