@@ -11,7 +11,7 @@ export type TItem = {
   canMark?: boolean;
   canSelect?: boolean;
 
-  acceptDrop?: (target: TItem) => boolean; // Function to determine if the item can accept a drop
+  acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
 }
 
 export type TColumnConfig = {

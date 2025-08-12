@@ -1,41 +1,60 @@
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
-import { DA, DO } from '../domain';
+import { DA, DO, DOType, LNodeType, SDO } from '../domain';
 
 export class OscdDefaultTypeService {
 
-  getDefaultLogicalNodeType(lnClass: string): DO[] {
-    const dataObjectTemplate = lnClassData[lnClass];
-    if (!dataObjectTemplate || typeof dataObjectTemplate !== 'object') {
-      console.warn("No default data object template found for LN class:", lnClass);
-      return [];
+  public createLogicalNodeTypeWithDefaults(id: string, lnClass: string, desc: string | null = null): LNodeType {
+    const lnDefinition = this.getLogicalNodeDefinition(lnClass);
+    if (!lnDefinition) {
+      console.warn("No logical node definition found for LN class:", lnClass);
+      return { id, lnClass, desc, dataObjects: []};
+      // does desc work if its null? it should not be included?
     }
 
-    return Object.values(dataObjectTemplate || {})
+    const dataObjects: DO[] = Object.values(lnDefinition)
       .filter((obj: any) => obj && obj.tagName === 'DataObject')
       .map((obj: any) => ({
         name: obj.name || '',
         type: ''
       }));
+
+    return { id, lnClass, desc, dataObjects};
   }
 
-  getDefaultDataObjectType(cdc: string): DA[] {
-    const data = cdcData[cdc]
-    if (!data || typeof data !== 'object') {
-      console.warn("No default data found for CDC:", cdc);
-      return [];
+  public createDataObjectWithDefaults(id: string, cdc: string): DOType {
+    const dataDefinition = this.getDataObjectDefinition(cdc);
+    if (!dataDefinition) {
+      console.warn("No data object definition found for CDC:", cdc);
+      return { id, cdc, dataAttributes: [], subDataObjects: [] };
     }
 
-    return Object.values(data || {})
+    const dataAttributes: DA[] = Object.values(dataDefinition)
       .filter((obj: any) => obj && obj.tagName === 'DataAttribute')
       .map((obj: any) => ({
         name: obj.name || '',
         fc: obj.fc || '',
         bType: obj.bType || '',
-        type: obj.type || '',
+        type: '',
         qchg: obj.qchg || false,
         dupd: obj.dupd || false,
         dchg: obj.dchg || false
       }));
 
+    const subDataObjects: SDO[] = Object.values(dataDefinition)
+      .filter((obj: any) => obj && obj.tagName === 'SubDataObject')
+      .map((obj: any) => ({
+        name: obj.name || '',
+        type: '',
+      }));
+
+    return { id, cdc, dataAttributes, subDataObjects };
+  }
+
+  public getLogicalNodeDefinition(lnClass: string) {
+    return lnClassData[lnClass] || null;
+  }
+
+  public getDataObjectDefinition(cdc: string) {
+    return cdcData[cdc] || null;
   }
 }

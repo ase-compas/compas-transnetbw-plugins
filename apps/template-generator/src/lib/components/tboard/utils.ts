@@ -1,4 +1,4 @@
-import type { TItem } from './types';
+import type { TBoardItemContext, TItem } from './types';
 
 /**
  * Checks if the target item can accept a drop from the candidate item.
@@ -7,8 +7,8 @@ import type { TItem } from './types';
  * @param candidate - The item that is being dragged and considered for dropping.
  * @returns {boolean} - Returns true if the target can accept the drop, false otherwise.
  */
-export function isDragTarget(target: TItem, candidate: TItem | null): boolean {
-  return !!candidate && target.id !== candidate.id && typeof target.acceptDrop === "function";
+export function isDragTarget(target: TItem, candidate: TBoardItemContext | null): boolean {
+  return !!candidate && target.id !== candidate.itemId && typeof target.acceptDrop === "function";
 }
 
 /**
@@ -18,6 +18,6 @@ export function isDragTarget(target: TItem, candidate: TItem | null): boolean {
  * @param candidate - The item that is being dragged and considered for dropping.
  * @returns {boolean} - Returns true if the target can accept the drop, false otherwise.
  */
-export function isDroppable(target: TItem, candidate: TItem | null): boolean {
+export function isDroppable(target: TItem, candidate: TBoardItemContext | null): boolean {
   return isDragTarget(target, candidate) && target.acceptDrop(candidate);
 }

@@ -1,4 +1,4 @@
-import { TItem } from '../components/tboard/types';
+import { TBoardItemContext, TItem } from '../components/tboard/types';
 import { BDA, DA, DAType, DO, DOType, EnumType } from '../domain';
 
 export type TItemMapperConfig = {
@@ -6,7 +6,7 @@ export type TItemMapperConfig = {
   canEdit?: boolean;
   canMark?: boolean;
   canSelect?: boolean;
-  acceptDrop?: (target: TItem) => boolean;
+  acceptDrop?: (target: TBoardItemContext) => boolean;
 };
 
 function buildTItemBase(
@@ -35,6 +35,10 @@ export class TItemMapper {
     return buildTItemBase(id, name, type, undefined, config);
   }
 
+  static fromSubDataObject(id: string, { name, type }: DO, config?: TItemMapperConfig): TItem {
+    return buildTItemBase(id, name, type, undefined, config);
+  }
+
   static fromDataAttribute(id: string, { name, type }: DA, config?: TItemMapperConfig): TItem {
     return buildTItemBase(id, name, type, undefined, config);
   }
@@ -43,8 +47,8 @@ export class TItemMapper {
     return buildTItemBase(id, name, type, undefined, config);
   }
 
-  static fromDataObjectType(id: string, { id: title, cdc, dataAttributes }: DOType, config?: TItemMapperConfig): TItem {
-    return buildTItemBase(id, title, cdc, dataAttributes?.length, config);
+  static fromDataObjectType(id: string, { id: title, cdc, dataAttributes, subDataObjects }: DOType, config?: TItemMapperConfig): TItem {
+    return buildTItemBase(id, title, cdc, dataAttributes?.length + subDataObjects?.length, config);
   }
 
   static fromDataAttributeType(id: string, { id: title, basicDataAttributes }: DAType, config?: TItemMapperConfig): TItem {

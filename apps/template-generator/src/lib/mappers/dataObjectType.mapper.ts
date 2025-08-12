@@ -1,4 +1,4 @@
-import type { DA, DOType } from '../domain';
+import type { DA, DOType, SDO } from '../domain';
 
 export class DAMapper {
   static fromElement(element: Element): DA {
@@ -34,6 +34,22 @@ export class DAMapper {
   }
 }
 
+export class SDOMapper {
+  static fromElement(element: Element): SDO {
+    const type = element.getAttribute('type') ?? '';
+    const name = element.getAttribute('name') ?? '';
+
+    return { type, name };
+  }
+
+  static toElement(doc: XMLDocument, sdo: { type: string; name: string }): Element {
+    const element = doc.createElement('SDO');
+    element.setAttribute('type', sdo.type);
+    element.setAttribute('name', sdo.name);
+    return element;
+  }
+}
+
 export class DOTypeMapper {
   static fromElement(element: Element): DOType {
     const id = element.getAttribute('id') ?? '';
@@ -42,8 +58,10 @@ export class DOTypeMapper {
     // map child DA elements
     const daElements = Array.from(element.querySelectorAll('DA'));
     const dataAttributes: DA[] = daElements.map(DAMapper.fromElement);
+    const sdoElements = Array.from(element.querySelectorAll('SDO'));
+    const subDataObjects: SDO[] = sdoElements.map(SDOMapper.fromElement);
 
-    return { id, cdc, dataAttributes };
+    return { id, cdc, dataAttributes, subDataObjects };
   }
 
   static toElement(doc: XMLDocument, doType: DOType): Element {

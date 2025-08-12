@@ -8,8 +8,14 @@ export type DA = {
   dchg?: boolean;
 };
 
+export type SDO = {
+  type: string;
+  name: string;
+}
+
 export type DOType = {
   id: string;
   cdc: string;
   dataAttributes: DA[];
+  subDataObjects: SDO[];
 };

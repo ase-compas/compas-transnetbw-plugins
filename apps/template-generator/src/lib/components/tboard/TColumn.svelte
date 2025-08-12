@@ -19,7 +19,7 @@
   export let highlighted: boolean = false; // If true, visually highlights the column background
 
   export let itemsDraggable: boolean = false;
-  export let dropCandidate: TItem | null = null;
+  export let dropCandidate: TBoardItemContext | null = null;
 
   export let items: TItem[] = []
 

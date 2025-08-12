@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher} from 'svelte';
-  import { TItem } from './types';
+  import {TBoardItemContext, TItem} from './types';
   import TCard from './TCard.svelte';
   import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
   import { isDragTarget, isDroppable } from './utils';
@@ -13,7 +13,7 @@
   export let items: TItem[] = [];
   export let workItems: TItem[] = items;
 
-  export let dropCandidate: TItem | null = null;
+  export let dropCandidate: TBoardItemContext | null = null;
 
   $: workItems = [...items]
 

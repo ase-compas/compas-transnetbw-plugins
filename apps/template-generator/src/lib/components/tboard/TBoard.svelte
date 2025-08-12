@@ -87,7 +87,7 @@
       showApplyDefaults={column.showApplyDefaults}
       itemsDraggable={column.itemsDraggable}
       items={data[column.id]}
-      dropCandidate={dropCandidate?.item ?? null}
+      dropCandidate={dropCandidate}
       on:columnActionClick={e => forwardEvent('columnActionClick', column.id, e.detail)}
       on:applyDefaults={e => forwardEvent('applyDefaults', column.id, e.detail)}
       on:itemClick={e => forwardEvent('itemClick', column.id, e.detail)}

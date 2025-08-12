@@ -68,7 +68,7 @@
 
   let data: TData = {};
   $: data = {
-    refs: buildDOItems(dataObjects, markedItemIds, item => ({canSelect: isEditMode, acceptDrop: (target: TItem) => acceptDrop(item.name, target)})),
+    refs: buildDOItems(dataObjects, markedItemIds, item => ({canSelect: isEditMode, acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target)})),
     dotypes: buildDOTypeItems(dataTypes?.dataObjectTypes, { canEdit: true }),
     datypes: buildDATypeItems(dataTypes?.dataAttributeTypes, { canEdit: true }),
     enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })
@@ -79,9 +79,9 @@
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
 
   // ===== UI Helpers =====
-  function acceptDrop(name, target: TItem): boolean {
+  function acceptDrop(name, target: TBoardItemContext): boolean {
     const lnClassValue = logicalNodeType.lnClass;
-    const targetDataObjectType = dataObjectService.findById(target.id);
+    const targetDataObjectType = dataObjectService.findById(target.itemId);
     return dataObjectService.canReferenceToType(lnClassValue, name, targetDataObjectType.cdc)
   }
 
