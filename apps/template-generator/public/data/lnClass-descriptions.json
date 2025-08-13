@@ -1,0 +1,138 @@
+[
+  {
+    "lnClass": "LPHD",
+    "description": "Zustand des Physischen Geräts"
+  },
+  {
+    "lnClass": "LLN0",
+    "description": "Zustandsinformationen eines logischen Geräts"
+  },
+  {
+    "lnClass": "LCCH",
+    "description": "Zustandinformationen zu einem Kommunikationskanal"
+  },
+  {
+    "lnClass": "LGOS",
+    "description": "Zustandinformationen einer subsk. GOOSE"
+  },
+  {
+    "lnClass": "LSVS",
+    "description": "Zustandstandsinformationen zu einem subsk. SMV-Stream"
+  },
+  {
+    "lnClass": "LTIM",
+    "description": "Informationen zur lokalen Zeit eines IED"
+  },
+  {
+    "lnClass": "LTMS",
+    "description": "Informationen bezüglich der Zeitsynchronisation eines IED"
+  },
+  {
+    "lnClass": "LTRK",
+    "description": "Zustandsinformationen über einen Server in einem IED"
+  },
+  {
+    "lnClass": "ANCR",
+    "description": "Regulierungsfunktionen Für Petersenspulen"
+  },
+  {
+    "lnClass": "ARCO",
+    "description": "Regulierungsfunktionen Für Kondensatorbänke"
+  },
+  {
+    "lnClass": "ARIS",
+    "description": "Allg. Wirkleistungserhöhung mit thermischer Überwachung"
+  },
+  {
+    "lnClass": "ATCC",
+    "description": "Regulierungsfunktionen für Tranfo- Stufenschalter"
+  },
+  {
+    "lnClass": "AVCO",
+    "description": "Allg. Spannungsregelung"
+  },
+  {
+    "lnClass": "CALH",
+    "description": "Management von Gruppenwarnungen und Alarmen"
+  },
+  {
+    "lnClass": "CCGR",
+    "description": "Steuerung von Kühleinrichtungen (Lüfter, Pumpen, etc)"
+  },
+  {
+    "lnClass": "CILO",
+    "description": "Steuerung von Veriegelungsfunktionen"
+  },
+  {
+    "lnClass": "CPOW",
+    "description": "Steuerung für das Messwertbasierte Schalten einer Leitung"
+  },
+  {
+    "lnClass": "CSWI",
+    "description": "Sterung für Leistungs- und Trennschalter"
+  },
+  {
+    "lnClass": "CSYN",
+    "description": "Steurung für Synchronisierungvorgänge (Spannung, Fequenz)"
+  },
+  {
+    "lnClass": "FCNT",
+    "description": "Zählung von Pulsen die nicht aus dem el. Netz Stammen"
+  },
+  {
+    "lnClass": "FCSD",
+    "description": "Algorithmen zur darstellung von Kurvenförmigen Wertepaaren"
+  },
+  {
+    "lnClass": "FFIL",
+    "description": "Filterfunktionen für eingehende Signale"
+  },
+  {
+    "lnClass": "FLIM",
+    "description": "Funktionen zur Vorgabe von Grenzwerten für eine Variable"
+  },
+  {
+    "lnClass": "FPID",
+    "description": "Funktionen zum Handling von Differentialen und Integralen"
+  },
+  {
+    "lnClass": "FRMP",
+    "description": "Stellt Rampenfunktionen zur Verfügung"
+  },
+  {
+    "lnClass": "FSCC",
+    "description": "Stellt Funktionen für Scheduling Steuerung zur Verfügung"
+  },
+  {
+    "lnClass": "FSCH",
+    "description": "Stellt Scheduling Verfahren zur Verfügung"
+  },
+  {
+    "lnClass": "FSPT",
+    "description": "Allgemeiner Knoten für Regel- und Steueranwendungen"
+  },
+  {
+    "lnClass": "FXOT",
+    "description": "Handling von allgemeinen Maximalwerten"
+  },
+  {
+    "lnClass": "FXUT",
+    "description": "Handling von allgemeinen Minimalwerten"
+  },
+  {
+    "lnClass": "GAPC",
+    "description": "Generischer Knoten für Kontroll- und Prozessanwendungen"
+  },
+  {
+    "lnClass": "GGIO",
+    "description": "Generischer Knoten für IO- Anwendungen"
+  },
+  {
+    "lnClass": "GLOG",
+    "description": "Generischer Knoten für Aufzeichnungen und Logging"
+  },
+  {
+    "lnClass": "GSAL",
+    "description": "Generischer Knoten für Security Anwendungen"
+  }
+]
