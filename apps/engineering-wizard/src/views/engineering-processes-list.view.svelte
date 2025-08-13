@@ -25,6 +25,8 @@
   <p class="status">Loading…</p>
 {:else if errorMsg}
   <p class="status error">{errorMsg}</p>
+{:else if processes.length === 0}
+  <p class="status">No processes available.</p>
 {:else}
   <DataTable class="smui-data-table--striped">
     <table>
@@ -49,7 +51,7 @@
           <td class="mdc-data-table__cell">{p.description}</td>
           <td class="mdc-data-table__cell text-right">
             <button on:click={() => startProcess(p)}>START</button>
-            <button variant="outlined" on:click={() => viewProcess(p)}>VIEW</button>
+            <button on:click={() => viewProcess(p)}>VIEW</button>
           </td>
         </tr>
       {/each}
