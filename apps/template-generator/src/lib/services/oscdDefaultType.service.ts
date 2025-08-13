@@ -23,31 +23,56 @@ export class OscdDefaultTypeService {
 
   public createDataObjectWithDefaults(id: string, cdc: string): DOType {
     const dataDefinition = this.getDataObjectDefinition(cdc);
+
     if (!dataDefinition) {
-      console.warn("No data object definition found for CDC:", cdc);
+      console.warn(`No data object definition found for CDC: ${cdc}`);
       return { id, cdc, dataAttributes: [], subDataObjects: [] };
     }
 
-    const dataAttributes: DA[] = Object.values(dataDefinition)
-      .filter((obj: any) => obj && obj.tagName === 'DataAttribute')
-      .map((obj: any) => ({
-        name: obj.name || '',
-        fc: obj.fc || '',
-        bType: obj.bType || '',
-        type: '',
-        qchg: obj.qchg || false,
-        dupd: obj.dupd || false,
-        dchg: obj.dchg || false
-      }));
-
-    const subDataObjects: SDO[] = Object.values(dataDefinition)
-      .filter((obj: any) => obj && obj.tagName === 'SubDataObject')
-      .map((obj: any) => ({
-        name: obj.name || '',
-        type: '',
-      }));
+    const dataAttributes: DA[] = this.extractDataAttributes(dataDefinition);
+    const subDataObjects: SDO[] = this.extractSubDataObjects(dataDefinition);
 
     return { id, cdc, dataAttributes, subDataObjects };
+  }
+
+  private extractDataAttributes(dataDefinition: Record<string, any>): DA[] {
+    return Object.values(dataDefinition)
+      .filter(obj => obj?.tagName === "DataAttribute")
+      .map(obj => {
+        const bType = this.mapBType(obj.typeKind, obj.type);
+        return {
+          name: obj.name || "",
+          fc: obj.fc || "",
+          ...(obj.typeKind !== undefined && { type: '' }),
+          ...(obj.qchg !== undefined && { qchg: obj.qchg }),
+          ...(obj.dupd !== undefined && { dupd: obj.dupd }),
+          ...(obj.dchg !== undefined && { dchg: obj.dchg }),
+          ...(bType && { bType })
+        };
+      });
+  }
+
+  private extractSubDataObjects(dataDefinition: Record<string, any>): SDO[] {
+    return Object.values(dataDefinition)
+      .filter(obj => obj?.tagName === "SubDataObject")
+      .map(obj => ({
+        name: obj.name || "",
+        type: ""
+      }));
+  }
+
+  private mapBType(typeKind: string, type: string): string {
+    if(typeKind === undefined) {
+      return type;
+    }
+    switch (typeKind) {
+      case "ENUMERATED":
+        return "Enum";
+      case "CONSTRUCTED":
+        return "Struct";
+      default:
+        return "";
+    }
   }
 
   public getLogicalNodeDefinition(lnClass: string) {

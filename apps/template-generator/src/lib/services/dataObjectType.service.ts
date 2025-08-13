@@ -31,6 +31,18 @@ export class DataObjectTypeService {
     return dataObjectCDC === targetCdc;
   }
 
+  createOrUpdate(doType: DOType): void {
+    const existing = this.repo.findById(doType.id);
+
+    if (existing) {
+      // Merge to preserve existing fields
+      const merged = { ...existing, ...doType };
+      this.repo.update(merged);
+    } else {
+      this.repo.insert(doType);
+    }
+  }
+
   findById(id: string): DOType | null {
     return this.repo.findById(id);
   }

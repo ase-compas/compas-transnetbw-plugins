@@ -19,7 +19,7 @@
     buildSDOItems
   } from '../../../utils/itemBuilder';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import {TBoardItemContext, TData} from "../../tboard/types";
+  import {ItemDropOnItemEventDetail, TBoardItemContext, TData} from "../../tboard/types";
 
   // ===== Services =====
   const dataObjectTypeService: DataObjectTypeService = getDataObjectTypeService();
@@ -41,6 +41,8 @@
 
   let markedItem: Set<string> = new Set<string>();
   let data: TData | null = null;
+
+  let isDirty = false;
 
   // ===== Derived =====
   const isCreateMode = () => mode === 'create';
@@ -113,6 +115,10 @@
 
   function handleConfirm() {
     closeDialog('confirm');
+    if(isDirty) {
+      dataObjectTypeService.createOrUpdate(dataObjectType);
+      isDirty = false;
+    }
   }
 
   function handleCancel() {
@@ -126,6 +132,29 @@
       throw new Error('Type ID is required');
     }
   }
+
+  function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
+    if (!source || !target) return;
+
+    setAttributeTypeReference(target.itemId, source.itemId, source.columnId);
+
+    isDirty = true;
+  }
+
+  function setAttributeTypeReference(dataAttributeName: string, targetReference: string, sourceColumnId: string) {
+    if (!dataObjectType) return;
+
+    const key =  sourceColumnId === 'dotypes' ? 'subDataObjects' : 'dataAttributes' ;
+    dataObjectType = {
+      ...dataObjectType,
+      [key]: dataObjectType[key].map(item =>
+        item.name === dataAttributeName
+          ? { ...item, type: targetReference }
+          : item
+      )
+    };
+  }
+
 </script>
 
 
@@ -143,6 +172,7 @@
       {columns}
       {data}
       on:itemMarkChange={e => handleOnMark(e.detail)}
+      on:itemDrop={e => handleItemDrop(e.detail)}
     />
   </Content>
 </OscdBaseDialog>
