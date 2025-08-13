@@ -86,9 +86,12 @@
   }
 
   function loadData() {
-    dataObjectType = isCreateMode()
-      ? oscdDefaultTypeService.createDataObjectWithDefaults(typeId, cdc)
-      : dataObjectTypeService.findById(typeId);
+    if(isCreateMode()) {
+      dataObjectType = oscdDefaultTypeService.createDataObjectWithDefaults(typeId, cdc)
+      isDirty = true;
+    } else {
+      dataObjectType = dataObjectTypeService.findById(typeId);;
+    }
 
     referencedDataTypes = isViewMode()
       ? dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItem))
