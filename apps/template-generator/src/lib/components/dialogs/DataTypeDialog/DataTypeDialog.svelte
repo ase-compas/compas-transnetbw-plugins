@@ -69,7 +69,7 @@
       markedItems,
       (item: SDO) => ({
         canSelect: isEditMode(),
-        acceptDrop: (target: TBoardItemContext) => target.columnId === 'dotypes' && dataObjectTypeService.canSdoReferenceToType(dataObjectType.cdc, item.name, target.itemId)
+        acceptDrop: (target: TBoardItemContext) => (target.columnId === 'dotypes' && dataObjectTypeService.canSdoReferenceToType(dataObjectType.cdc, item.name, target.itemId))
       })
     );
 
@@ -119,10 +119,10 @@
 
   function getCompatibleObjectTypes(cdc: string, markedItems: Set<string>): DOType[] {
     const cdcStandard = cdcData[cdc]
-
-    if(!cdcStandard) return dataObjectTypeService.findAll();
-
     let subDataObjects: SDO[] = dataObjectType.subDataObjects;
+
+    if (subDataObjects.length === 0) return [];
+    if(!cdcStandard) return dataObjectTypeService.findAll();
     if (markedItems.size !== 0) subDataObjects = subDataObjects.filter(sdo => markedItems.has(sdo.name));
 
     const cdcs: string[] = Array.from(new Set(subDataObjects

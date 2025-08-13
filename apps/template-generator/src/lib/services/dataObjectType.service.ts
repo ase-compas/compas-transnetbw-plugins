@@ -31,12 +31,16 @@ export class DataObjectTypeService {
     return dataObjectCDC === targetCdc;
   }
 
-  canSdoReferenceToType(cdc: string, name: string, targetCdc: string) {
+  canSdoReferenceToType(cdc: string, name: string, targetDOTypeId: string) {
     const cdcObj = cdcData[cdc];
     if(!cdcObj) return false;
     const dataObject = cdcObj[name];
-    if (!dataObject || !dataObject.type || dataObject.typeKind !== 'SubDataType') return false;
-    return dataObject.type === targetCdc;
+
+    console.log(dataObject);
+    if (!dataObject || !dataObject.type || dataObject.tagName !== 'SubDataObject') return false;
+
+    const targetDOType = this.findById(targetDOTypeId);
+    return dataObject.type === targetDOType.cdc;
   }
 
   createOrUpdate(doType: DOType): void {
