@@ -1,0 +1,64 @@
+<processes>
+  <process>
+    <id>standard-process-1</id>
+    <version>0.0.1</version>
+    <name>Standard Process 1</name>
+    <description>This is a standardized process used for testing purposes only</description>
+    <plugins-sequence>
+      <plugin>
+        <id>substation</id>
+        <name>Substation</name>
+      </plugin>
+      <plugin>
+        <id>ied</id>
+        <name>IED</name>
+      </plugin>
+      <plugin>
+        <id>communication-explorer</id>
+        <name>Communication Explorer</name>
+      </plugin>
+    </plugins-sequence>
+  </process>
+
+  <process>
+    <id>standard-process-2</id>
+    <version>0.0.1</version>
+    <name>Standard Process 2</name>
+    <description>This is a standardized process used for testing purposes only</description>
+    <plugins-sequence>
+      <plugin>
+        <id>substation</id>
+        <name>Substation</name>
+      </plugin>
+      <plugin>
+        <id>xyz</id>
+        <name>XYZ</name>
+      </plugin>
+      <plugin>
+        <id>network-explorer</id>
+        <name>Network Explorer</name>
+      </plugin>
+    </plugins-sequence>
+  </process>
+
+  <process>
+    <id>standard-process-3</id>
+    <version>0.0.1</version>
+    <name>Standard Process 3</name>
+    <description>This is a standardized process used for testing purposes only</description>
+    <plugins-sequence>
+      <plugin>
+        <id>substation</id>
+        <name>Substation</name>
+      </plugin>
+      <plugin>
+        <id>sitipe</id>
+        <name>Sitipe</name>
+      </plugin>
+      <plugin>
+        <id>ied</id>
+        <name>IED</name>
+      </plugin>
+    </plugins-sequence>
+  </process>
+</processes>

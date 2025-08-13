@@ -31,7 +31,7 @@
               {#if col.filterType === 'text'}
                 <input
                   type="text"
-                  placeholder={`Search ${col.headerName}`}
+                  placeholder={`${searchInputLabel} ${col.headerName}`}
                   bind:value={filters[col.field]}
                   on:input={() => filterAndSortTable()}
                 />
@@ -39,7 +39,7 @@
               {#if col.filterType === 'number'}
                 <input
                   type="number"
-                  placeholder={`Search ${col.headerName}`}
+                  placeholder={`${searchInputLabel} ${col.headerName}`}
                   bind:value={filters[col.field]}
                   on:input={() => filterAndSortTable()}
                 />
@@ -132,6 +132,7 @@
   export let rowData = [];
   export let store;
   export let rowActions: RowAction[] = [];
+  export let searchInputLabel: string = 'Search';
 
   let filters = {
     name: '',

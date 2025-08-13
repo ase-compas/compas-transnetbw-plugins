@@ -1,0 +1,17 @@
+{
+  "search": "Suche",
+  "add_location": "Standort hinzufügen",
+  "refresh": "Aktualisieren",
+  "delete_location": "Standort {name} löschen?",
+  "confirm": "Bestätigen",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "new_location": "Neuer Standort",
+  "location": "Standort: {name}",
+  "name": "Name",
+  "key": "Schlüssel",
+  "description": "Beschreibung",
+  "location_table": "Standort-Tabelle",
+  "uuid": "UUID",
+  "assigned_resources": "Zugewiesene Ressourcen"
+}

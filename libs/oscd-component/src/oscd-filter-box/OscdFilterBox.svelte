@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ActiveFilter, FilterType } from './interfaces';
-  import { OscdButton, OscdInput, OscdSelect } from '../index';
+  import {OscdButton, OscdDateTimePicker, OscdInput, OscdSelect} from '../index';
   import Paper from '@smui/paper';
   import OscdChip from '../oscd-chip/OscdChip.svelte';
   import { Set } from '@smui/chips';
@@ -12,6 +12,8 @@
   export let useOptionLabelInChipText = false;
   export let selectedOptionIndex = -1;
   export let disabled = false;
+  export let addFilterLabel = 'Add Filter';
+  export let selectFilterLabel = 'Filter Types';
 
   let inputValue = '';
   let selectedFilterType = '';
@@ -90,7 +92,7 @@
   <div class="filter-box-container">
     <div class="input-section">
       <div class="filter-input-controls">
-        <OscdSelect {disabled} label="Filter types" data={convertTypeToSelection} bind:value={selectedFilterType} />
+        <OscdSelect {disabled} label={selectFilterLabel} data={convertTypeToSelection} bind:value={selectedFilterType} />
 
         {#if getSelectedFilterType?.inputType?.type === 'string'}
           <OscdInput label="Input" bind:value={inputValue}></OscdInput>
@@ -101,13 +103,16 @@
                       bind:value={inputValue} bind:selectedOptionIndex></OscdSelect>
         {/if}
 
-        {#if getSelectedFilterType?.inputType?.type === 'timepicker'}
+        {#if getSelectedFilterType?.inputType?.type === 'datepicker'}
           <OscdDatePicker bind:value={inputValue}></OscdDatePicker>
         {/if}
 
+        {#if getSelectedFilterType?.inputType?.type === 'timepicker'}
+          <OscdDateTimePicker bind:value={inputValue}></OscdDateTimePicker>
+        {/if}
       </div>
       <div class="filter-button-controls">
-        <OscdButton callback={addFilter} disabled={addFilterDisabled}>Add Filter</OscdButton>
+        <OscdButton callback={addFilter} disabled={addFilterDisabled}>{addFilterLabel}</OscdButton>
         <slot name="filter-controls"></slot>
       </div>
     </div>

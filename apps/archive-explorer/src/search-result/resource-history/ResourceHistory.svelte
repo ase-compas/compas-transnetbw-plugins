@@ -23,7 +23,7 @@
     },
     { headerName: 'Approver', field: 'approver', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Modifed', field: 'modifiedAt', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Modifed', field: 'modifiedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     {
       headerName: 'Note',
       field: 'note',
@@ -61,6 +61,10 @@
     }
   ];
 
+  function formatDate(date: string) {
+    return new Date(date).toLocaleDateString();
+  }
+
   onMount(() => {
     if (!searchResult) {
       return;
@@ -77,7 +81,13 @@
   });
 
   function downloadByUUIDAndVersion(row: ArchiveSearchResult) {
-    archiveExplorerService.findByUUIDAndVersion(row.uuid, row.type, row.version)
+    let resourceGuid: string;
+
+    if(row.fields && row.fields.length) {
+      resourceGuid = row.fields.find(field => field.key === 'SOURCE_RESOURCE_ID')?.value;
+    }
+
+    archiveExplorerService.findByUUIDAndVersion(resourceGuid, row.type, row.version)
       .pipe(
         take(1),
         tap((data: Blob) => {

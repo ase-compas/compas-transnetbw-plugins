@@ -2,7 +2,10 @@
   bind:open
   aria-labelledby="large-scroll-title"
   aria-describedby="large-scroll-content"
-  on:SMUIDialog:closed={(e) => (open = false)}
+  on:SMUIDialog:closed={(e) => {
+    (open = false);
+    dispatch('close');
+  }}
   surface$style="width: 1080px; max-width: calc(100vw - 32px);"
 >
   <div class="dialog-title">
@@ -20,8 +23,13 @@
 
 <script lang="ts">
   import Dialog, { Title, Content, Actions } from '@smui/dialog';
+  import {createEventDispatcher} from "svelte";
 
   export let open = false;
+
+  const dispatch = createEventDispatcher();
+
+  $: console.log('Dialog open status changed:', open);
 </script>
 
 <style lang="css">

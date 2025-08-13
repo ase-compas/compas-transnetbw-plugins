@@ -11,7 +11,10 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
@@ -34,7 +37,12 @@
       "@oscd-transnet-plugins/oscd-history-viewer": [
         "libs/oscd-history-viewer/src/index.ts"
       ],
-      "@oscd-transnet-plugins/oscd-icons": ["libs/oscd-icons/src/index.ts"],
+      "@oscd-transnet-plugins/oscd-icons": [
+        "libs/oscd-icons/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/oscd-localization": [
+        "libs/oscd-localization/src/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-location-manager": [
         "libs/oscd-location-manager/src/index.ts"
       ],
@@ -49,6 +57,12 @@
       ],
       "@oscd-transnet-plugins/oscd-xml-utils": [
         "libs/oscd-xml-utils/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/shared": [
+        "libs/shared/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/tsld": [
+        "apps/tsld/src/index.ts"
       ]
     }
   },

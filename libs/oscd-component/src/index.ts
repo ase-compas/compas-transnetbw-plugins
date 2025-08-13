@@ -8,6 +8,7 @@ export { default as OscdBaseDialog } from './oscd-dialog/OscdBaseDialog.svelte';
 export { default as OscdFilterBox } from './oscd-filter-box/OscdFilterBox.svelte';
 export { default as OscdLoadingSpinner } from './oscd-loading-spinner/OscdLoadingSpinner.svelte';
 export { default as OscdDatePicker } from './oscd-datepicker/OscdDatePicker.svelte';
+export { default as OscdDateTimePicker } from './oscd-datetime-picker/OscdDateTimePicker.svelte';
 export { default as OscdExpansionPanel } from './oscd-expansion-panel/OscdExpansionPanel.svelte';
 export { default as OscdTooltip } from './oscd-tooltip/OscdTooltip.svelte';
 export { default as OscdBreadcrumbs } from './oscd-breadcrumbs/OscdBreadcrumbs.svelte';

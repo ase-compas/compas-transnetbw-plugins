@@ -78,7 +78,17 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/io-center-e2e/**/*"]
+      "exclude": ["apps/io-center-e2e/**/*", "apps/tsld-e2e/**/*"]
+    },
+    {
+      "plugin": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "vite:build",
+        "testTargetName": "vite:test",
+        "serveTargetName": "vite:serve",
+        "previewTargetName": "vite:preview",
+        "serveStaticTargetName": "serve-static"
+      }
     }
   ]
 }

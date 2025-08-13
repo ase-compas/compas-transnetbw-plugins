@@ -22,11 +22,6 @@ export default defineConfig({
 
   plugins: [svelte(), nxViteTsPaths()],
 
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
-
   build: {
     outDir: '../../dist/apps/location-viewer',
     reportCompressedSize: true,

@@ -1,36 +1,78 @@
-<script lang="ts">
+<script context="module">
+  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
+  import de from './i18n/de.json';
+  import en from './i18n/en.json';
 
-  import {LocationViewerService, ResourceStore, SclResourceModel, SearchParams} from "@oscd-transnet-plugins/oscd-location-viewer";
+  setupTranslation({
+    en,
+    de,
+  });
+</script>
+<script lang="ts">
+  import {
+    LocationViewerService,
+    ResourceStore,
+    SclResourceModel,
+    SearchParams
+  } from "@oscd-transnet-plugins/oscd-location-viewer";
   import {onMount} from "svelte";
   import {
-    ActiveFilter, FilterType,
+    ActiveFilter,
+    FilterType,
     OscdButton,
     OscdDataTable, OscdExpansionPanel,
-    OscdFilterBox,
+    OscdFilterBox, OscdLoadingSpinner,
     OscdSelect
   } from "@oscd-transnet-plugins/oscd-component";
   import Card from "@smui/card";
-  import {Icon, Label} from "@smui/button";
+  import {Label} from "@smui/button";
   import {finalize, take, tap} from "rxjs/operators";
   import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
+  import {_, locale} from "svelte-i18n";
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = [];
-  let selectedLocation;
-  let loadingDone = false;
+  let selectedLocationUUID: string;
   let searchOpen = false;
+
+  //loading quickfix for css to load
+  let loading = true;
+
+  onMount(() => {
+    setTimeout(() => {
+      loading = false;
+    }, 1000)
+  });
+
+  onMount(() => {
+    locationViewerService.getLocations().subscribe({
+      next: (data) => {
+        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
+      }
+    })
+  })
 
   export let locationResourceStore = new ResourceStore();
   export let searchResourceStore = new ResourceStore();
 
-  const columnDefs = [
-    { headerName: 'UUID', field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: 'Name', field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Author', field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'location', field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Version', field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: 'Changed At', field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+  $: searchColumnDefs = [
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('location'), field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatLocation },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
+  ];
+
+  $: locationColumnDefs = [
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ];
 
@@ -38,16 +80,25 @@
     return new Date(date).toLocaleDateString();
   }
 
+  function formatLocation(uuid: string) {
+    if(!locations || !uuid) {
+      return uuid || '';
+    }
+    const foundLocation = locations.find((location) => location.value === uuid);
+    console.log("foundlocation", { foundLocation, bool: foundLocation?.label !== undefined });
+    return foundLocation?.label ? foundLocation.label : uuid;
+  }
+
   const filterTypes: FilterType[] = [
     {
       id: 1,
-      label: 'UUID',
+      label: $_('uuid'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['='],
     },
     {
       id: 2,
-      label: 'Type',
+      label: $_('type'),
       inputType: {
         id: 2, type: 'select', validatorFn: () => true, options: [
           { value: 'SSD', label: 'SSD' },
@@ -64,32 +115,32 @@
     },
     {
       id: 3,
-      label: 'Name',
+      label: $_('name'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 4,
-      label: 'Location',
+      label: $_('location'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 5,
-      label: 'Author',
+      label: $_('author'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 6,
-      label: 'from',
-      inputType: { id: 1, type: 'timepicker', validatorFn: () => true, options: [] },
+      label: $_('from'),
+      inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 7,
-      label: 'to',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
+      label: $_('to'),
+      inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
   ];
@@ -105,17 +156,16 @@
   let filtersToSearch: ActiveFilter[] = [];
 
   function assign(row: SclResourceModel) {
-    locationViewerService.assignResourceToLocation(selectedLocation, row.uuid).subscribe({
+    locationViewerService.assignResourceToLocation(selectedLocationUUID, row.uuid).subscribe({
       next: () => {
         searchResourceStore.remove(row.uuid);
-        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
-        locationResourceStore.add({...row, location: tempLocation.label});
+        locationResourceStore.add({...row, location: selectedLocationUUID});
       },
     });
   }
 
   function unassign(row: SclResourceModel) {
-    locationViewerService.unassignResourceFromLocation(selectedLocation, row.uuid).subscribe({
+    locationViewerService.unassignResourceFromLocation(selectedLocationUUID, row.uuid).subscribe({
       next: () => {
         locationResourceStore.remove(row.uuid);
       },
@@ -124,16 +174,11 @@
 
   function search() {
     const searchParams = convertFilterToSearchParams(filtersToSearch);
-    loadingDone = false;
     locationViewerService.searchResources(searchParams).pipe(
       take(1),
       tap((data: SclResourceModel[]) => {
-        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
-        searchResourceStore.set(data.filter((item) => item.location !== tempLocation.label));
+        searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
       }),
-      finalize(() => {
-        loadingDone = true;
-      })
     ).subscribe();
   }
 
@@ -163,68 +208,70 @@
     searchOpen = !searchOpen;
   }
 
-  onMount(() => {
-    locationViewerService.getLocations().subscribe({
-      next: (data) => {
-        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
-      }
-    })
-  })
-
-  $: if (selectedLocation) {
-    loadingDone = false; // Optional: Set a loading state
+  $: if (selectedLocationUUID) {
     locationViewerService.searchResources({}).subscribe({
       next: (data) => {
-        console.log({data, selectedLocation});
-        let tempLocation = selectedLocation ? locations.find((item) => item.value === selectedLocation) : locations[0];
-        locationResourceStore.set(data.filter((item) => item.location === tempLocation.label));
-      },
-      complete: () => {
-        loadingDone = true;
+        console.log({data, selectedLocation: selectedLocationUUID});
+        locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
       },
       error: (err) => {
         console.error('Error loading resources:', err);
-        loadingDone = true;
       }
     });
   }
 </script>
 
-<div class="location-viewer-container">
-  <OscdSelect
-    bind:data={locations}
-    bind:value={selectedLocation}
-    label="Location"
-  />
-  <OscdExpansionPanel title="Search" bind:open={searchOpen} on:click={toggleSearchPanel}>
-    <div slot="content">
+{#if loading}
+  <OscdLoadingSpinner loadingDone={!loading} />
+{:else}
+  <div class="location-viewer-container">
+    <OscdSelect
+      bind:data={locations}
+      bind:value={selectedLocationUUID}
+      label={$_('location')}
+    />
       <div class="search-filter">
-        <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch}>
-          <OscdButton slot="filter-controls" variant="raised" callback={search}>
-            <OscdSearchIcon />
-            <Label>Search</Label>
-          </OscdButton>
-        </OscdFilterBox>
-      </div>
-      <div class="table-container">
-        <Card style="padding: 1rem; width: 100%; height: 100%;">
-          <h3 style="margin-bottom: 1rem;">Search Result</h3>
-          <OscdDataTable {columnDefs} store={searchResourceStore} {loadingDone} rowActions={searchRowActions} />
-        </Card>
-      </div>
+      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
+        <div slot="content">
+          <div class="filter-box">
+            <OscdFilterBox {filterTypes}
+                           addFilterLabel={$_('add_filter')}
+                           selectFilterLabel={$_('filter_types')}
+                           bind:activeFilters={filtersToSearch}
+            >
+              <OscdButton slot="filter-controls" variant="raised" callback={search}>
+                <OscdSearchIcon />
+                <Label>{$_('search')}</Label>
+              </OscdButton>
+            </OscdFilterBox>
+          </div>
+          <div class="table-container">
+            <Card style="padding: 1rem; width: 100%; height: 100%;">
+              <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
+              <OscdDataTable columnDefs="{searchColumnDefs}"
+                             store={searchResourceStore}
+                             rowActions={searchRowActions}
+                             searchInputLabel={$_('search')}/>
+            </Card>
+          </div>
+        </div>
+      </OscdExpansionPanel>
     </div>
-  </OscdExpansionPanel>
-  <div class="table-container">
-    <Card style="padding: 1rem; width: 100%; height: 100%;">
-      <h3 style="margin-bottom: 1rem;">
-        {selectedLocation
-          ? `Location: ${locations.find((item) => item.value === selectedLocation)?.label}`
-          : 'Select Location'}
-      </h3>
-      <OscdDataTable {columnDefs} store={locationResourceStore} {loadingDone} rowActions={locationRowActions}  />
-    </Card>
+    <div class="table-container">
+      <Card style="padding: 1rem; width: 100%; height: 100%;">
+        <h3 style="margin-bottom: 1rem;">
+          {selectedLocationUUID
+            ? `${$_('location')}: ${locations.find((item) => item.value === selectedLocationUUID)?.label}`
+            : $_('select_location')}
+        </h3>
+        <OscdDataTable columnDefs="{locationColumnDefs}"
+                       store={locationResourceStore}
+                       rowActions={locationRowActions}
+                       searchInputLabel={$_('search')} />
+      </Card>
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   @import "/global.css";
@@ -233,6 +280,10 @@
 
   .search-filter {
     margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-box {
     margin-bottom: 1rem;
   }
 </style>
