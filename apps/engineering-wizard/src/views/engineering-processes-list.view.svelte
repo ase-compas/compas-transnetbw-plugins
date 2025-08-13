@@ -1,73 +1,44 @@
 <script lang="ts">
-  import DataTable from '@smui/data-table';
-  import { Button } from '@smui/button';
   import { createEventDispatcher } from 'svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
+  import { OscdBasicDataTable, OscdIconButton } from '../../../../libs/oscd-component/src';
 
   export let processes: Process[] = [];
   export let loading = false;
   export let errorMsg = '';
 
-  const dispatch = createEventDispatcher<{
-    view: Process;
-    start: Process;
-  }>();
+  const dispatch = createEventDispatcher<{ view: Process; start: Process }>();
+  const startProcess = (p: Process) => dispatch('start', p);
+  const viewProcess  = (p: Process) => dispatch('view', p);
 
-  function startProcess(p: Process) {
-    dispatch('start', p);
-  }
-  function viewProcess(p: Process) {
-    dispatch('view', p);
-  }
+  $: rows = (processes ?? []).map((p) => ({
+    ...p,
+    displayName: p.name || p.id,
+  }));
+
+  const columns = [
+    { key: 'displayName', header: 'Name' },
+    { key: 'description', header: 'Description' },
+  ];
 </script>
 
-{#if loading}
-  <p class="status">Loading…</p>
-{:else if errorMsg}
-  <p class="status error">{errorMsg}</p>
-{:else if processes.length === 0}
-  <p class="status">No processes available.</p>
-{:else}
-  <DataTable class="smui-data-table--striped">
-    <table>
-      <thead>
-      <tr class="mdc-data-table__header-row">
-        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">
-          Name
-        </th>
-        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">
-          Description
-        </th>
-        <th class="mdc-data-table__header-cell text-right" role="columnheader" scope="col">
-          Actions
-        </th>
-      </tr>
-      </thead>
-
-      <tbody class="mdc-data-table__content">
-      {#each processes as p (p.id)}
-        <tr class="mdc-data-table__row">
-          <td class="mdc-data-table__cell">{p.name || p.id}</td>
-          <td class="mdc-data-table__cell">{p.description}</td>
-          <td class="mdc-data-table__cell text-right">
-            <button on:click={() => startProcess(p)}>START</button>
-            <button on:click={() => viewProcess(p)}>VIEW</button>
-          </td>
-        </tr>
-      {/each}
-      </tbody>
-    </table>
-  </DataTable>
-{/if}
+<OscdBasicDataTable
+  items={rows}
+  {columns}
+  {loading}
+  errorMsg={errorMsg}
+  emptyText="No processes available."
+  hasActions
+  headerBg="#DAE3E6"
+  rowBg="#ffffff"
+>
+  <svelte:fragment slot="actions" let:item>
+    <OscdIconButton icon="visibility" callback={() => viewProcess(item)} outlined />
+    <OscdIconButton icon="play_circle" callback={() => startProcess(item)} outlined />
+  </svelte:fragment>
+</OscdBasicDataTable>
 
 <style>
-  .status {
-    font-family: Roboto, sans-serif;
-  }
-  .error {
-    color: red;
-  }
-  .text-right {
-    text-align: right;
-  }
+  @import "/material-icon.css";
+  @import "/smui.css";
 </style>
