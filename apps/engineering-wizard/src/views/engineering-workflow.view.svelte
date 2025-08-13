@@ -2,34 +2,27 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { OscdTooltip } from '../../../../libs/oscd-component/src';
   import { OscdCheckIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../libs/oscd-icons/src';
+  import type { Plugin } from '@oscd-transnet-plugins/shared';
 
-  export let doc: XMLDocument | undefined;
-  export let editCount = -1;
-  export let host: HTMLElement;
-
+  export let doc:        XMLDocument | undefined;
+  export let editCount  = -1;
+  export let host:  HTMLElement;
+  export let plugins: Plugin[] = [];
 
   let tagName: string | null = null;
   let editorTabsVisible = false;
   let visited: string[] = [];
 
   const statuses: ('check' | 'warning' | 'error')[] = ['check', 'warning', 'error'];
-
-  let pluginStatus: Record<string, 'check' | 'error' | 'warning'> = {};
-
-  function randomStatus(): 'check' | 'error' | 'warning' {
-    const values = ['check', 'error', 'warning'] as const;
-    return values[Math.floor(Math.random() * values.length)];
-  }
+  let pluginStatus: Record<string, 'check' | 'warning' | 'error'> = {};
 
   const dispatch = createEventDispatcher<{
     'toggle-editor-tabs': { visible?: boolean };
   }>();
-
   function getLayoutContainer(): HTMLElement | null {
     const openScd = document.querySelector('open-scd');
     return openScd?.shadowRoot?.querySelector('compas-layout') ?? null;
   }
-
   function setEditorTabsVisibility(visible: boolean) {
     editorTabsVisible = visible;
     getLayoutContainer()?.dispatchEvent(
@@ -37,100 +30,82 @@
         detail: { visible },
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 
-  const plugins = [
-    {
-      tag: 'engineering-wizard',
-      src: 'https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/substation.js',
-      label: 'Substation',
-    },
-    {
-      tag: 'substation-explorer',
-      src: 'https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/ied.js',
-      label: 'IED',
-    },
-    {
-      tag: 'communication-editor',
-      src: 'https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/communication.js',
-      label: 'Communication',
-    },
-  ];
 
-  async function loadPlugin(plugin: { tag: string; src: string }) {
+  async function loadPlugin(plugin: Plugin) {
+
     const mod = await import(plugin.src);
-    if (!customElements.get(plugin.tag))
-      customElements.define(plugin.tag, mod.default);
+    if (!customElements.get(plugin.id))
+      customElements.define(plugin.id, mod.default);
 
-    tagName = plugin.tag;
+    tagName = plugin.id;
 
-    if (!visited.includes(plugin.tag)) {
-      visited = [...visited, plugin.tag];
-      const idx = plugins.findIndex(p => p.tag === plugin.tag);
+    if (!visited.includes(plugin.id)) {
+      visited = [...visited, plugin.id];
+      const idx = plugins.findIndex(p => p.id === plugin.id);
       pluginStatus = {
         ...pluginStatus,
-        [plugin.tag]: statuses[idx]
+        [plugin.id]: statuses[idx % statuses.length],
       };
     }
   }
 
-  onMount(() => {
-    loadPlugin(plugins[0]);
-    setEditorTabsVisibility(false);
-  });
 
-  function nextPlugin() {
-    const idx = plugins.findIndex(p => p.tag === tagName);
-    loadPlugin(plugins[(idx + 1) % plugins.length]);
+  function nextPlugin()     { advance(+1); }
+  function previousPlugin() { advance(-1); }
+  function advance(step: number) {
+    const idx = plugins.findIndex(p => p.id === tagName);
+    loadPlugin(plugins[(idx + step + plugins.length) % plugins.length]);
   }
 
-  function previousPlugin() {
-    const idx = plugins.findIndex(p => p.tag === tagName);
-    loadPlugin(plugins[(idx - 1 + plugins.length) % plugins.length]);
-  }
 
   function setProps(node: HTMLElement, props: any) {
     Object.assign(node, props);
     return { update: (p: any) => Object.assign(node, p) };
   }
 
-  $: tooltipText = plugins.reduce<Record<string, string>>((map, p) => {
-    const status = pluginStatus[p.tag];
-    map[p.tag] =
+  $: tooltipText = plugins.reduce<Record<string,string>>((map, p) => {
+    const status = pluginStatus[p.id];
+    map[p.id] =
       status === 'error'
-        ? `Resolve errors in ${p.label}`
+        ? `Resolve errors in ${p.name}`
         : status === 'warning'
-          ? `Check warnings for ${p.label}`
-          : `Load the ${p.label} editor`;
+          ? `Check warnings for ${p.name}`
+          : `Load the ${p.name} editor`;
     return map;
   }, {});
+
+  onMount(() => {
+    if (plugins.length) loadPlugin(plugins[0]);
+    setEditorTabsVisibility(false);
+  });
 </script>
 
-
 <div class="stepper">
-  <div style="display: flex; align-items: center; gap: 0.5rem;">
+  <div style="display:flex;align-items:center;gap:0.5rem;">
     <button class="back-button" on:click={() => setEditorTabsVisibility(true)}>
       exit
     </button>
     <p class="plugin-flow-title">Plugin Flow</p>
   </div>
+
   <div class="plugin-steps">
     {#each plugins as plugin, i}
       <div class="plugin-step">
-        <!-- use the helper here -->
-        <OscdTooltip text={tooltipText[plugin.tag]} position="bottom">
+        <OscdTooltip text={tooltipText[plugin.id]} position="bottom">
           <button
             on:click={() => loadPlugin(plugin)}
-            class:not-visited={!visited.includes(plugin.tag)}
-            class:current={plugin.tag === tagName}
-            class:visited={visited.includes(plugin.tag) && plugin.tag !== tagName}
+            class:not-visited={!visited.includes(plugin.id)}
+            class:current={plugin.id === tagName}
+            class:visited={visited.includes(plugin.id) && plugin.id !== tagName}
           >
-            {#if visited.includes(plugin.tag) && plugin.tag !== tagName}
-              {#if pluginStatus[plugin.tag] === 'check'}
+            {#if visited.includes(plugin.id) && plugin.id !== tagName}
+              {#if pluginStatus[plugin.id] === 'check'}
                 <OscdCheckIcon />
-              {:else if pluginStatus[plugin.tag] === 'error'}
+              {:else if pluginStatus[plugin.id] === 'error'}
                 <OscdErrorIcon />
               {:else}
                 <OscdWarningIcon />
@@ -140,7 +115,7 @@
             {/if}
           </button>
         </OscdTooltip>
-        <p>{plugin.label}</p>
+        <p>{plugin.name}</p>
       </div>
 
       {#if i < plugins.length - 1}
@@ -150,7 +125,7 @@
   </div>
   <div class="stepper-navigation">
     <button on:click={previousPlugin} class="back-button">Back</button>
-    <button on:click={nextPlugin} class="next-button">Next</button>
+    <button on:click={nextPlugin}     class="next-button">Next</button>
   </div>
 </div>
 
