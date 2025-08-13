@@ -12,7 +12,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     },
     {
       id: 'datypes',
-      title: 'Data Attribute Types',
+      title: 'Data Attribute Types (BDA)',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,

@@ -12,7 +12,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     },
     {
       id: 'dotypes',
-      title: 'Data Object Types',
+      title: 'Data Object Types (SDO)',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
