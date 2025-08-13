@@ -20,23 +20,26 @@
 
   const parseProcessesFromXml = (xml: XMLDocument): Process[] =>
     Array.from(xml.getElementsByTagName('process')).map((p) => {
-      const plugins: Plugin[] = Array.from(p.getElementsByTagName('plugin')).map((pl) => ({
-        id: txt(pl.querySelector('id')),
-        name: txt(pl.querySelector('name'))
+      const plugins: Plugin[] = Array.from(
+        p.querySelectorAll('plugins-sequence > plugin')
+      ).map((pl) => ({
+        id:   txt(pl.querySelector('id')),
+        name: txt(pl.querySelector('name')),
+        src:  txt(pl.querySelector('src')),
       }));
 
       return {
-        id: txt(p.querySelector(':scope > id')),
-        version: txt(p.querySelector(':scope > version')),
-        name: txt(p.querySelector(':scope > name')),
+        id:          txt(p.querySelector(':scope > id')),
+        version:     txt(p.querySelector(':scope > version')),
+        name:        txt(p.querySelector(':scope > name')),
         description: txt(p.querySelector(':scope > description')),
-        plugins
+        plugins,
       };
     });
 
   async function loadXml() {
-    loading = true;
-    errorMsg = '';
+    loading   = true;
+    errorMsg  = '';
     try {
       const res = await fetch(SRC, { cache: 'no-cache' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -45,7 +48,7 @@
       processes = parseProcessesFromXml(xml);
     } catch (e) {
       processes = [];
-      errorMsg = (e as Error).message || 'Failed to load processes.';
+      errorMsg  = (e as Error).message || 'Failed to load processes.';
     } finally {
       loading = false;
     }
@@ -54,11 +57,11 @@
   onMount(loadXml);
 
   function startProcess(proc: Process) {
-    running = proc;
+    running  = proc;
     selected = null;
   }
 
-  function onView(e: CustomEvent<Process>) {
+  function onView(e: CustomEvent<Process>)  {
     selected = e.detail;
   }
 
@@ -72,9 +75,20 @@
 </script>
 
 {#if running}
-  <EngineeringWorkflow {doc} {editCount} {host} />
+  <EngineeringWorkflow
+    {doc}
+    {editCount}
+    {host}
+    plugins={running.plugins}
+  />
 {:else if selected}
   <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={onStart} />
 {:else}
-  <EngineeringProcessesList {processes} {loading} {errorMsg} on:view={onView} on:start={onStart} />
+  <EngineeringProcessesList
+    {processes}
+    {loading}
+    {errorMsg}
+    on:view={onView}
+    on:start={onStart}
+  />
 {/if}

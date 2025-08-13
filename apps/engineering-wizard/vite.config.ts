@@ -39,7 +39,4 @@ export default defineConfig({
       fileName: 'index',
     },
   },
-  optimizeDeps: {
-    exclude: ['@smui/select'],
-  },
 });
