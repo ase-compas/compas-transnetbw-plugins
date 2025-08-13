@@ -20,6 +20,7 @@
   } from '../../../utils/itemBuilder';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import {ItemDropOnItemEventDetail, TBoardItemContext, TData} from "../../tboard/types";
+  import { cdcData } from '../../../../data/nsdToJson/testNsdJson';
 
   // ===== Services =====
   const dataObjectTypeService: DataObjectTypeService = getDataObjectTypeService();
@@ -39,7 +40,7 @@
   let referencedDataTypes: DataTypes | null = null;
   let dataObjectType: DOType | null = null;
 
-  let markedItem: Set<string> = new Set<string>();
+  let markedItems: Set<string> = new Set<string>();
   let data: TData | null = null;
 
   let isDirty = false;
@@ -51,12 +52,12 @@
 
   $: columns = getColumns(isEditMode());
   $: if (open) init();
-  $: if (!open) markedItem.clear();
+  $: if (!open) markedItems.clear();
 
   $: {
     const daItems = buildDAItems(
       dataObjectType?.dataAttributes ?? [],
-      markedItem,
+      markedItems,
       (item: DA) => ({
         canSelect: isEditMode(),
         acceptDrop: (target: TBoardItemContext) => (item.bType === 'Enum' && target.columnId === 'enumtypes') || (item.bType === 'Struct' && target.columnId === 'datypes')
@@ -65,10 +66,10 @@
 
     const sdoItems = buildSDOItems(
       dataObjectType?.subDataObjects ?? [],
-      markedItem,
-      (_) => ({
+      markedItems,
+      (item: SDO) => ({
         canSelect: isEditMode(),
-        acceptDrop: (target: TBoardItemContext) => target.columnId === 'dotypes'
+        acceptDrop: (target: TBoardItemContext) => target.columnId === 'dotypes' && dataObjectTypeService.canSdoReferenceToType(dataObjectType.cdc, item.name, target.itemId)
       })
     );
 
@@ -90,30 +91,44 @@
       dataObjectType = oscdDefaultTypeService.createDataObjectWithDefaults(typeId, cdc)
       isDirty = true;
     } else {
-      dataObjectType = dataObjectTypeService.findById(typeId);;
+      dataObjectType = dataObjectTypeService.findById(typeId);
     }
 
     referencedDataTypes = isViewMode()
-      ? dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItem))
-      : getAllDataTypes();
+      ? dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItems))
+      : getCompatibleDataTypes(cdc, markedItems);
   }
 
   function handleOnMark({ itemId }) {
-    if (markedItem.has(itemId)) {
-      markedItem.delete(itemId);
+    if (markedItems.has(itemId)) {
+      markedItems.delete(itemId);
     } else {
-      markedItem.add(itemId);
+      markedItems.add(itemId);
     }
-    markedItem = new Set<string>(markedItem);
+    markedItems = new Set<string>(markedItems);
     loadData();
   }
 
-  function getAllDataTypes(): DataTypes {
+  function getCompatibleDataTypes(cdc, markedItems): DataTypes {
     return {
-      dataObjectTypes: dataObjectTypeService.findAll(),
+      dataObjectTypes: getCompatibleObjectTypes(dataObjectType.cdc, markedItems),
       dataAttributeTypes: dataAttributeService.findAll(),
       enumTypes: enumTypeService.findAll()
     }
+  }
+
+  function getCompatibleObjectTypes(cdc: string, markedItems: Set<string>): DOType[] {
+    const cdcStandard = cdcData[cdc]
+
+    if(!cdcStandard) return dataObjectTypeService.findAll();
+
+    let subDataObjects: SDO[] = dataObjectType.subDataObjects;
+    if (markedItems.size !== 0) subDataObjects = subDataObjects.filter(sdo => markedItems.has(sdo.name));
+
+    const cdcs: string[] = Array.from(new Set(subDataObjects
+      .map(sdo => cdcStandard[sdo.name].type)));
+
+    return dataObjectTypeService.findAllByCdc(cdcs);
   }
 
   function handleConfirm() {

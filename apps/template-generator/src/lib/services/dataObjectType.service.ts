@@ -1,4 +1,4 @@
-import { lnClassData } from '../../data/nsdToJson/testNsdJson';
+import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
 import type { DOType, DataTypes } from '../domain';
 import { DataObjectTypeRepository } from '../repositories';
 
@@ -29,6 +29,14 @@ export class DataObjectTypeService {
 
     const dataObjectCDC = dataObject.type;
     return dataObjectCDC === targetCdc;
+  }
+
+  canSdoReferenceToType(cdc: string, name: string, targetCdc: string) {
+    const cdcObj = cdcData[cdc];
+    if(!cdcObj) return false;
+    const dataObject = cdcObj[name];
+    if (!dataObject || !dataObject.type || dataObject.typeKind !== 'SubDataType') return false;
+    return dataObject.type === targetCdc;
   }
 
   createOrUpdate(doType: DOType): void {
