@@ -3,7 +3,9 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { OscdBasicDataTable, OscdIconButton } from '../../../../libs/oscd-component/src';
   import Textfield from '@smui/textfield';
+  import IconButton from '@smui/icon-button';
   import Button from '@smui/button';
+  import { OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
 
   export let processes: Process[] = [];
   export let loading = false;
@@ -79,8 +81,12 @@
     rowBg="#ffffff"
   >
     <svelte:fragment slot="actions" let:item>
-      <OscdIconButton icon="visibility" callback={() => handleView(item)} outlined />
-      <OscdIconButton icon="play_circle" callback={() => handleStart(item)} outlined />
+      <button class="icon" on:click={() => handleView(item)}>
+        <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+      </button>
+      <button class="icon" on:click={() => handleStart(item)}>
+        <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+      </button>
     </svelte:fragment>
   </OscdBasicDataTable>
 </div>
@@ -116,5 +122,19 @@
   .process-banner span {
     font-family: 'Roboto', sans-serif;
     color: #ffffff;
+  }
+
+  .icon {
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+  }
+
+  .icon:last-child {
+    margin-right: 0;
   }
 </style>

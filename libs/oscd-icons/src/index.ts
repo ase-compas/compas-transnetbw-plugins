@@ -14,3 +14,4 @@ export { default as OscdControlPointDuplicateIcon } from './oscd-control-point-d
 export { default as OscdCheckIcon} from './oscd-check-icon/OscdCheckIcon.svelte';
 export { default as OscdErrorIcon } from './oscd-error-icon/OscdErrorIcon.svelte';
 export { default as OscdWarningIcon } from './oscd-warning-icon/OscdWarningIcon.svelte';
+export { default as OscdPlayCircleIcon } from './oscd-play-circle-icon/OscdPlayCircleIcon.svelte';
