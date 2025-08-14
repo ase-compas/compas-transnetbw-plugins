@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { Content } from '@smui/dialog';
   import {
@@ -8,7 +7,7 @@
     getDataObjectTypeService, getEnumTypeService,
     getOscdDefaultTypeService
   } from '../../../services';
-  import {DA, DOType, type DataTypes, SDO} from '../../../domain';
+  import { DA, DOType, type DataTypes, SDO } from '../../../domain';
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import {
@@ -20,15 +19,19 @@
   } from '../../../utils/itemBuilder';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import {ItemDropOnItemEventDetail, TBoardItemContext, TData} from "../../tboard/types";
-  import { cdcData } from '../../../../data/nsdToJson/testNsdJson';
+  import { ReferenceAssignmentService } from '../../../services/referenceAssignment.service';
 
   // ===== Services =====
   const dataObjectTypeService: DataObjectTypeService = getDataObjectTypeService();
   const dataAttributeService: DataAttributeTypeService = getDataAttributeTypeService()
   const enumTypeService: EnumTypeService = getEnumTypeService();
   const oscdDefaultTypeService = getOscdDefaultTypeService();
-
-  const dispatch = createEventDispatcher();
+  const refAssignmentService = new ReferenceAssignmentService(
+    dataObjectTypeService,
+    dataAttributeService,
+    enumTypeService,
+    oscdDefaultTypeService
+  )
 
   // ===== Props =====
   export let open = false;
@@ -60,7 +63,7 @@
       markedItems,
       (item: DA) => ({
         canSelect: isEditMode(),
-        acceptDrop: (target: TBoardItemContext) => (item.bType === 'Enum' && target.columnId === 'enumtypes') || (item.bType === 'Struct' && target.columnId === 'datypes')
+        acceptDrop: (source: TBoardItemContext) => acceptDropDaItems(source, item)
       })
     );
 
@@ -69,7 +72,7 @@
       markedItems,
       (item: SDO) => ({
         canSelect: isEditMode(),
-        acceptDrop: (target: TBoardItemContext) => (target.columnId === 'dotypes' && dataObjectTypeService.canSdoReferenceToType(dataObjectType.cdc, item.name, target.itemId))
+        acceptDrop: (source: TBoardItemContext) => acceptDropSDOItems(source, item)
       })
     );
 
@@ -96,7 +99,35 @@
 
     referencedDataTypes = isViewMode()
       ? dataObjectTypeService.findReferencedTypesById(typeId, Array.from(markedItems))
-      : getCompatibleDataTypes(cdc, markedItems);
+      : getCompatibleDataTypes(dataObjectType.cdc, markedItems);
+  }
+
+  function getCompatibleDataTypes(cdc, markedItems): DataTypes {
+    const filteredSDOs = dataObjectType.subDataObjects.filter(sdo => markedItems.size === 0 || markedItems.has(sdo.name));
+    const filteredDAs = dataObjectType.dataAttributes.filter(da => markedItems.size === 0 || markedItems.has(da.name));
+    return refAssignmentService.getAssignableTypesForDOType(filteredSDOs, filteredDAs, cdc)
+  }
+
+  function acceptDropDaItems(source: TBoardItemContext, target: DA) {
+    const cdc = dataObjectType.cdc
+    if(source.columnId === 'enumtypes' && target.bType === 'Enum') {
+      const enumType = enumTypeService.findById(source.itemId);
+      return refAssignmentService.canAssignEnumTypeToDAReference(target, enumType, cdc);
+    } else if (source.columnId === 'datypes' && target.bType === 'Struct') {
+      const daType = dataAttributeService.findById(source.itemId)
+      return refAssignmentService.canAssignDATypeToDAReference(target, daType, cdc);
+    } else {
+      return false;
+    }
+  }
+
+  function acceptDropSDOItems(source: TBoardItemContext, target: SDO) {
+    if (source.columnId === 'dotypes') {
+      const doType = dataObjectTypeService.findById(source.itemId);
+      return refAssignmentService.canAssignDOTypeToSDOReference(target, doType, dataObjectType.cdc)
+    } else {
+      return false;
+    }
   }
 
   function handleOnMark({ itemId }) {
@@ -107,28 +138,6 @@
     }
     markedItems = new Set<string>(markedItems);
     loadData();
-  }
-
-  function getCompatibleDataTypes(cdc, markedItems): DataTypes {
-    return {
-      dataObjectTypes: getCompatibleObjectTypes(dataObjectType.cdc, markedItems),
-      dataAttributeTypes: dataAttributeService.findAll(),
-      enumTypes: enumTypeService.findAll()
-    }
-  }
-
-  function getCompatibleObjectTypes(cdc: string, markedItems: Set<string>): DOType[] {
-    const cdcStandard = cdcData[cdc]
-    let subDataObjects: SDO[] = dataObjectType.subDataObjects;
-
-    if (subDataObjects.length === 0) return [];
-    if(!cdcStandard) return dataObjectTypeService.findAll();
-    if (markedItems.size !== 0) subDataObjects = subDataObjects.filter(sdo => markedItems.has(sdo.name));
-
-    const cdcs: string[] = Array.from(new Set(subDataObjects
-      .map(sdo => cdcStandard[sdo.name].type)));
-
-    return dataObjectTypeService.findAllByCdc(cdcs);
   }
 
   function handleConfirm() {
@@ -153,9 +162,7 @@
 
   function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
     if (!source || !target) return;
-
     setAttributeTypeReference(target.itemId, source.itemId, source.columnId);
-
     isDirty = true;
   }
 
@@ -172,9 +179,7 @@
       )
     };
   }
-
 </script>
-
 
 <OscdBaseDialog
   bind:open

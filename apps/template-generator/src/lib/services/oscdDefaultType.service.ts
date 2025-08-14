@@ -1,5 +1,5 @@
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
-import { DA, DO, DOType, LNodeType, SDO } from '../domain';
+import { DA, DO, DOType, EnumType, LNodeType, SDO } from '../domain';
 
 export class OscdDefaultTypeService {
 
@@ -19,6 +19,27 @@ export class OscdDefaultTypeService {
       }));
 
     return { id, lnClass, desc, dataObjects};
+  }
+
+  public enumTypeMatchesStandard(enumTemplate, enumType: EnumType): boolean {
+    if (!enumTemplate || !enumType) return false;
+    if(!enumTemplate?.typeKind || enumTemplate?.typeKind !== "ENUMERATED") return false;
+
+    const templateChildren = enumTemplate.children;
+    const templateKeys = Object.keys(templateChildren);
+
+    // Check if every child in template exists in enumType
+    if (templateKeys.length !== enumType.values.length) return false;
+
+    for (const key of templateKeys) {
+      const templateChild = templateChildren[key];
+      const matchingEnumVal = enumType.values.find(
+        ev => ev.ord.toString() === templateChild.literalVal && ev.value === templateChild.name
+      );
+      if (!matchingEnumVal) return false; // no matching enum value
+    }
+
+    return true;
   }
 
   public createDataObjectWithDefaults(id: string, cdc: string): DOType {
