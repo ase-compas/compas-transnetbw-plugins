@@ -1,73 +1,152 @@
 <script lang="ts">
-  import DataTable from '@smui/data-table';
-  import { Button } from '@smui/button';
   import { createEventDispatcher } from 'svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
+  import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
+  import Textfield from '@smui/textfield';
+  import Button from '@smui/button';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
 
   export let processes: Process[] = [];
   export let loading = false;
   export let errorMsg = '';
 
-  const dispatch = createEventDispatcher<{
-    view: Process;
-    start: Process;
-  }>();
+  const dispatch = createEventDispatcher<{ view: Process; start: Process }>();
+  const handleStart = (p: Process) => dispatch('start', p);
+  const handleView = (p: Process) => dispatch('view', p);
 
-  function startProcess(p: Process) {
-    dispatch('start', p);
-  }
-  function viewProcess(p: Process) {
-    dispatch('view', p);
-  }
+  let searchQuery = '';
+
+  $: searchLower = searchQuery.trim().toLowerCase();
+  $: rows = (processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id }));
+  $: filteredRows = searchLower
+    ? rows.filter((p) => (p.displayName ?? '').toLowerCase().includes(searchLower))
+    : rows;
+
+  const columns: { key: string; header: string }[] = [
+    { key: 'displayName', header: 'Name' },
+    { key: 'description', header: 'Description' },
+  ];
+
+  const handleAddNew = () => {
+    console.log('Add new process clicked');
+  };
 </script>
 
-{#if loading}
-  <p class="status">Loading…</p>
-{:else if errorMsg}
-  <p class="status error">{errorMsg}</p>
-{:else if processes.length === 0}
-  <p class="status">No processes available.</p>
-{:else}
-  <DataTable class="smui-data-table--striped">
-    <table>
-      <thead>
-      <tr class="mdc-data-table__header-row">
-        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">
-          Name
-        </th>
-        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">
-          Description
-        </th>
-        <th class="mdc-data-table__header-cell text-right" role="columnheader" scope="col">
-          Actions
-        </th>
-      </tr>
-      </thead>
+<div class="processes">
+  <div class="process-banner">
+    <div class="process-banner__info">
+      <OscdInfoIcon />
+      <span>
+        A process “Process Name C” has already been started for the ---.scd.
+        Would you like to continue where you left off?
+      </span>
+    </div>
+    <Button
+      variant="raised"
+      style="--mdc-theme-primary: #ffffff; --mdc-theme-on-primary: #004552"
+      on:click={() => console.log('Continue Process')}
+    >
+      CONTINUE
+    </Button>
+  </div>
 
-      <tbody class="mdc-data-table__content">
-      {#each processes as p (p.id)}
-        <tr class="mdc-data-table__row">
-          <td class="mdc-data-table__cell">{p.name || p.id}</td>
-          <td class="mdc-data-table__cell">{p.description}</td>
-          <td class="mdc-data-table__cell text-right">
-            <button on:click={() => startProcess(p)}>START</button>
-            <button on:click={() => viewProcess(p)}>VIEW</button>
-          </td>
-        </tr>
-      {/each}
-      </tbody>
-    </table>
-  </DataTable>
-{/if}
+  <div class="process-toolbar">
+    <Textfield
+      bind:value={searchQuery}
+      variant="outlined"
+      label="Search Processes"
+    />
+    <Button
+      variant="raised"
+      style="--mdc-theme-primary: #004552; --mdc-theme-on-primary: #ffffff"
+      on:click={handleAddNew}
+    >
+      ADD NEW PROCESS
+    </Button>
+  </div>
+
+  <OscdBasicDataTable
+    items={filteredRows}
+    {columns}
+    {loading}
+    errorMsg={errorMsg}
+    emptyText="No processes available."
+    hasActions
+    headerBg="#DAE3E6"
+    rowBg="#ffffff"
+  >
+    <svelte:fragment slot="actions" let:item>
+      <button
+        type="button"
+        class="icon"
+        aria-label="View process"
+        on:click={() => handleView(item)}
+      >
+        <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+      </button>
+      <button
+        type="button"
+        class="icon"
+        aria-label="Start process"
+        on:click={() => handleStart(item)}
+      >
+        <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+      </button>
+    </svelte:fragment>
+  </OscdBasicDataTable>
+</div>
 
 <style>
-  .status {
-    font-family: Roboto, sans-serif;
+  @import "/material-icon.css";
+  @import "/smui.css";
+
+  .processes {
+    margin-top: 16px;
+    padding: 0 24px;
   }
-  .error {
-    color: red;
+
+  .process-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
   }
-  .text-right {
-    text-align: right;
+
+  .process-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    padding: 0 24px;
+    margin-bottom: 24px;
+    border-radius: 4px;
+    background-color: #004552;
+  }
+
+  .process-banner__info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .process-banner span {
+    font-family: 'Roboto', sans-serif;
+    color: #ffffff;
+    font-weight: 500;
+  }
+
+  .icon {
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+  }
+
+  .icon:last-child {
+    margin-right: 0;
   }
 </style>
