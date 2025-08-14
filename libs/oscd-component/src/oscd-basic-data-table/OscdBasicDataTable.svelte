@@ -17,6 +17,7 @@
 
   export let headerBg: string | null = null;
   export let rowBg: string | null = null;
+  let hoveredRow: string | number | null = null;
 
   const slots: any = $$slots;
   export let hasActions = false;
@@ -52,12 +53,19 @@
 
     <Body>
     {#each items as item, i (getRowId(item, i))}
-      <Row style={rowBg ? `background-color:${rowBg}` : undefined}>
+      <Row
+        on:mouseenter={() => (hoveredRow = getRowId(item, i))}
+        on:mouseleave={() => (hoveredRow = null)}
+        style={[
+        rowBg ? `background-color:${rowBg}` : '',
+        hoveredRow === getRowId(item, i) ? 'background-color:#D9D800' : ''
+      ].filter(Boolean).join(';')}
+      >
         {#each columns as col}
           <Cell>{item?.[col.key] ?? ''}</Cell>
         {/each}
         {#if slotHasActions}
-          <Cell><slot name="actions" {item} /></Cell>
+          <Cell numeric><slot name="actions" {item} /></Cell>
         {/if}
       </Row>
     {/each}

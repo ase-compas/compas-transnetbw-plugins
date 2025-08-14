@@ -114,6 +114,7 @@
   }
 
   .process-banner span {
+    font-family: 'Roboto', sans-serif;
     color: #ffffff;
   }
 </style>
