@@ -34,7 +34,6 @@
     );
   }
 
-
   async function loadPlugin(plugin: Plugin) {
 
     const mod = await import(plugin.src);
