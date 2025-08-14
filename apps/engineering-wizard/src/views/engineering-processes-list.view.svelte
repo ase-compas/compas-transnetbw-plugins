@@ -1,11 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
-  import { OscdBasicDataTable, OscdIconButton } from '../../../../libs/oscd-component/src';
+  import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
   import Textfield from '@smui/textfield';
-  import IconButton from '@smui/icon-button';
   import Button from '@smui/button';
-  import { OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
 
   export let processes: Process[] = [];
   export let loading = false;
@@ -15,24 +14,18 @@
   const handleStart = (p: Process) => dispatch('start', p);
   const handleView = (p: Process) => dispatch('view', p);
 
-  let searchQuery: string = '';
+  let searchQuery = '';
 
   $: searchLower = searchQuery.trim().toLowerCase();
-  $: filteredRows = (processes ?? [])
-    .filter((p) => (p.name ?? '').toLowerCase().includes(searchLower))
-    .map((p) => ({
-      ...p,
-      displayName: p.name || p.id,
-    }));
+  $: rows = (processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id }));
+  $: filteredRows = searchLower
+    ? rows.filter((p) => (p.displayName ?? '').toLowerCase().includes(searchLower))
+    : rows;
 
-  const columns = [
+  const columns: { key: string; header: string }[] = [
     { key: 'displayName', header: 'Name' },
     { key: 'description', header: 'Description' },
   ];
-
-  const handleSearch = () => {
-    console.log('Searching for:', searchQuery);
-  };
 
   const handleAddNew = () => {
     console.log('Add new process clicked');
@@ -41,10 +34,13 @@
 
 <div class="processes">
   <div class="process-banner">
-    <span>
-      A process “Process Name C” has already been started for the ---.scd.
-      Would you like to continue where you left off?
-    </span>
+    <div class="process-banner__info">
+      <OscdInfoIcon />
+      <span>
+        A process “Process Name C” has already been started for the ---.scd.
+        Would you like to continue where you left off?
+      </span>
+    </div>
     <Button
       variant="raised"
       style="--mdc-theme-primary: #ffffff; --mdc-theme-on-primary: #004552"
@@ -59,7 +55,6 @@
       bind:value={searchQuery}
       variant="outlined"
       label="Search Processes"
-      on:keyup={(e) => e.key === 'Enter' && handleSearch()}
     />
     <Button
       variant="raised"
@@ -81,10 +76,20 @@
     rowBg="#ffffff"
   >
     <svelte:fragment slot="actions" let:item>
-      <button class="icon" on:click={() => handleView(item)}>
+      <button
+        type="button"
+        class="icon"
+        aria-label="View process"
+        on:click={() => handleView(item)}
+      >
         <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
       </button>
-      <button class="icon" on:click={() => handleStart(item)}>
+      <button
+        type="button"
+        class="icon"
+        aria-label="Start process"
+        on:click={() => handleStart(item)}
+      >
         <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
       </button>
     </svelte:fragment>
@@ -113,15 +118,22 @@
     align-items: center;
     justify-content: space-between;
     height: 68px;
-    padding: 0 16px;
+    padding: 0 24px;
     margin-bottom: 24px;
     border-radius: 4px;
     background-color: #004552;
   }
 
+  .process-banner__info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .process-banner span {
     font-family: 'Roboto', sans-serif;
     color: #ffffff;
+    font-weight: 500;
   }
 
   .icon {
