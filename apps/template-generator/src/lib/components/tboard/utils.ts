@@ -8,7 +8,7 @@ import type { TBoardItemContext, TItem } from './types';
  * @returns {boolean} - Returns true if the target can accept the drop, false otherwise.
  */
 export function isDragTarget(target: TItem, candidate: TBoardItemContext | null): boolean {
-  return !!candidate && target.id !== candidate.itemId && typeof target.acceptDrop === "function";
+  return !!candidate && typeof target.acceptDrop === "function";
 }
 
 /**

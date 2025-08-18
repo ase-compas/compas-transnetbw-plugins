@@ -1,5 +1,5 @@
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
-import { DA, DO, DOType, LNodeType, SDO } from '../domain';
+import { BDA, DA, DAType, DO, DOType, EnumType, LNodeType, SDO } from '../domain';
 
 export class OscdDefaultTypeService {
 
@@ -19,6 +19,71 @@ export class OscdDefaultTypeService {
       }));
 
     return { id, lnClass, desc, dataObjects};
+  }
+
+  public enumTypeMatchesStandard(enumTemplate, enumType: EnumType): boolean {
+    if (!enumTemplate || !enumType) return false;
+    if(!enumTemplate?.typeKind || enumTemplate?.typeKind !== "ENUMERATED") return false;
+
+    const templateChildren = enumTemplate.children;
+    const templateKeys = Object.keys(templateChildren);
+
+    // Check if every child in template exists in enumType
+    if (templateKeys.length !== enumType.values.length) return false;
+
+    for (const key of templateKeys) {
+      const templateChild = templateChildren[key];
+      const matchingEnumVal = enumType.values.find(
+        ev => ev.ord.toString() === templateChild.literalVal && ev.value === templateChild.name
+      );
+      if (!matchingEnumVal) return false; // no matching enum value
+    }
+
+    return true;
+  }
+
+  public dataAttributeTypeMatchesStandard(dataAttributeTemplate, dataAttribute: DAType): boolean {
+    if (!dataAttributeTemplate || !dataAttribute) return false;
+    if (!dataAttributeTemplate?.typeKind || dataAttributeTemplate?.typeKind !== "CONSTRUCTED") return false;
+
+    const templateChildren = dataAttributeTemplate.children;
+    const templateKeys = Object.keys(templateChildren);
+
+    const attributesToCheck = new Map<string, BDA>();
+    dataAttribute.basicDataAttributes.forEach(attr => attributesToCheck.set(attr.name, attr))
+
+    // check if DA has mandatory attributes
+    const mandatoryAttributes = templateKeys.filter(key => templateChildren[key].mandatory);
+    for (const attr of mandatoryAttributes) {
+      if (!attributesToCheck.has(attr)) {
+        return false;
+      } else {
+        const isDAValid = this.dataAttributeMatchesStandard(templateChildren[attr], attributesToCheck.get(attr));
+        if(!isDAValid) return false;
+      }
+      attributesToCheck.delete(attr);
+    }
+
+    // check if standard defines the optional attributes
+    for (const attr of attributesToCheck.keys()) {
+      const templateAttr = templateChildren[attr];
+      if (templateAttr) {
+        const isDAValid = this.dataAttributeMatchesStandard(templateAttr, attributesToCheck.get(attr));
+        if (!isDAValid) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  public dataAttributeMatchesStandard(dataAttributeTemplate, dataAttribute: BDA): boolean {
+    if (!dataAttributeTemplate || !dataAttribute) return false;
+    if( !dataAttributeTemplate?.typeKind) return dataAttributeTemplate.name === dataAttribute.name && dataAttributeTemplate.type === dataAttribute.bType;
+    else if (dataAttributeTemplate?.typeKind === "ENUMERATED") return dataAttribute.bType === "Enum";
+    else if (dataAttributeTemplate?.typeKind === "CONSTRUCTED") return dataAttribute.bType === "Struct";
+    return false;
   }
 
   public createDataObjectWithDefaults(id: string, cdc: string): DOType {
