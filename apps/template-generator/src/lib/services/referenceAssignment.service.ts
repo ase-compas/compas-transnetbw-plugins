@@ -63,7 +63,15 @@ export class ReferenceAssignmentService {
   }
 
   private getCompatibleDATypesForDARefs(daRefs: DA[], cdc?: string): DAType[] {
-    return this.dataAttributeTypeService.findAll();
+    const structDARefs = daRefs.filter(da => da.bType === 'Struct');
+    if (!structDARefs || structDARefs.length === 0) return [];
+
+    if( !cdc || !cdcData[cdc]) return this.dataAttributeTypeService.findAll();
+
+
+    return this.dataAttributeTypeService.findAll().filter(daType => {
+      return structDARefs.some(da =>this.defaultTypeService.dataAttributeTypeMatchesStandard(cdc ? cdcData[cdc]?.[da.name] : undefined, daType));
+    });
   }
 
   private getCompatibleEnumTypesForDARefs(daRefs: DA[], cdc?: string): EnumType[] {
