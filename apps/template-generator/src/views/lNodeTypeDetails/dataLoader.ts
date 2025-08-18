@@ -59,10 +59,12 @@ export function loadCompatibleTypesById(
     new Set(selectedNames.map((name) => classData[name]?.type).filter(Boolean))
   );
 
+  const references = loadReferencedTypesById(logicalNodeType.id, new Set(selectedNames));
+
   return {
     dataObjectTypes: dataObjectService.findAllByCdc(cdcs),
-    dataAttributeTypes: dataAttributeService.findAll(),
-    enumTypes: enumTypeService.findAll(),
+    dataAttributeTypes: references.dataAttributeTypes,
+    enumTypes: references.enumTypes,
   };
 }
 
