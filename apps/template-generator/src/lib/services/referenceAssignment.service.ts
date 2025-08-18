@@ -1,5 +1,5 @@
 import { DataObjectTypeService, DataAttributeTypeService, EnumTypeService } from './';
-import { DA, DataTypes, DAType, DO, DOType, EnumType, SDO } from '../domain';
+import { BDA, DA, DataTypes, DAType, DO, DOType, EnumType, SDO } from '../domain';
 import { cdcData } from '../../data/nsdToJson/testNsdJson';
 import { OscdDefaultTypeService } from './oscdDefaultType.service';
 
@@ -27,6 +27,14 @@ export class ReferenceAssignmentService {
     };
   }
 
+
+  public getAssignableTypesForDAType(bdaRefs: BDA[]) {
+    return {
+      dataAttributeTypes: this.dataAttributeTypeService.findAll(),
+      enumTypes: this.enumTypeService.findAll()
+    };
+  }
+
   canAssignDOTypeToSDOReference(reference: SDO, doType: DOType, cdc?: string): boolean {
     if (!reference || !doType) return false;
 
@@ -37,12 +45,12 @@ export class ReferenceAssignmentService {
     return referenceCdc && doTypeCdc && referenceCdc === doTypeCdc;
   }
 
-  canAssignDATypeToDAReference(reference: DA, daType: DAType, cdc?: string): boolean {
+  canAssignDATypeToDAReference(reference: DA|BDA, daType: DAType, cdc?: string): boolean {
     if (!reference || !daType) return false;
     return true;
   }
 
-  canAssignEnumTypeToDAReference(reference: DA, enumType: EnumType, cdc?: string): boolean {
+  canAssignEnumTypeToDAReference(reference: DA|BDA, enumType: EnumType, cdc?: string): boolean {
     if (!reference || !enumType) return false;
 
     const referenceCdc = cdcData[cdc]?.[reference.name];
@@ -62,7 +70,7 @@ export class ReferenceAssignmentService {
     return this.dataObjectTypeService.findAllByCdc(cdcs);
   }
 
-  private getCompatibleDATypesForDARefs(daRefs: DA[], cdc?: string): DAType[] {
+  private getCompatibleDATypesForDARefs(daRefs: DA[]|BDA[], cdc?: string): DAType[] {
     const structDARefs = daRefs.filter(da => da.bType === 'Struct');
     if (!structDARefs || structDARefs.length === 0) return [];
 
@@ -74,7 +82,7 @@ export class ReferenceAssignmentService {
     });
   }
 
-  private getCompatibleEnumTypesForDARefs(daRefs: DA[], cdc?: string): EnumType[] {
+  private getCompatibleEnumTypesForDARefs(daRefs: DA[]|BDA[], cdc?: string): EnumType[] {
     if (!daRefs || daRefs.length === 0) return this.enumTypeService.findAll();
 
     if( !cdc || !cdcData[cdc]) return this.enumTypeService.findAll();
