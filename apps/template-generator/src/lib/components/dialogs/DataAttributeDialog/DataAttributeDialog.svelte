@@ -87,40 +87,26 @@
   }
 
 
-  function getCompatibleDataTypes(markedItems: Set<string>): DataTypes {
-    const filteredBDAs = markedItems.size === 0
+  function getCompatibleDataTypes(marked: Set<string>) {
+    const attrs = marked.size === 0
       ? refDataAttributeType.basicDataAttributes
-      : refDataAttributeType.basicDataAttributes.filter(bda => markedItems.has(bda.name));
-
-   return refAssignmentService.getAssignableTypesForDAType(filteredBDAs);
+      : refDataAttributeType.basicDataAttributes.filter(bda => marked.has(bda.name));
+    return refAssignmentService.getAssignableTypesForDAType(attrs);
   }
 
   function acceptDropDaItems(source: TBoardItemContext, target: BDA) {
-    if(source.columnId === 'enumtypes' && target.bType === 'Enum') {
-      return true;
-    } else if (source.columnId === 'datypes' && target.bType === 'Struct') {
-      return true;
-    } else {
-      return false;
-    }
+    return (source.columnId === 'enumtypes' && target.bType === 'Enum') ||
+      (source.columnId === 'datypes' && target.bType === 'Struct');
   }
 
   function handleOnMark({ itemId }) {
-    if (markedItems.has(itemId)) {
-      markedItems.delete(itemId);
-    } else {
-      markedItems.add(itemId);
-    }
-    markedItems = new Set<string>(markedItems);
+    markedItems.has(itemId) ? markedItems.delete(itemId) : markedItems.add(itemId);
+    markedItems = new Set(markedItems);
     loadData();
   }
 
   function validateProps() {
-    if (mode === 'create' && (!typeId)) {
-      throw new Error('Type ID is required in create mode');
-    } else if ((mode === 'edit' || mode === 'view') && !typeId) {
-      throw new Error('Type ID is required');
-    }
+    if (!typeId) throw new Error('Type ID is required');
   }
 
   function handleConfirm() {
