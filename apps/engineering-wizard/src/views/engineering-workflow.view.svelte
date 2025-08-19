@@ -4,7 +4,7 @@
   import { OscdCheckIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../libs/oscd-icons/src';
   import type { Plugin } from '@oscd-transnet-plugins/shared';
 
-  export let doc:        XMLDocument | undefined;
+  export let doc: XMLDocument | undefined;
   export let editCount  = -1;
   export let host:  HTMLElement;
   export let plugins: Plugin[] = [];
