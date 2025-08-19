@@ -150,7 +150,7 @@
     if (columnId === 'dotypes') {
       openEditDOTypeDialog(itemId, null, isEditMode ? 'edit' : 'view');
     } else if (columnId === 'datypes') {
-      openEditDATypeDialog(itemId)
+      openEditDATypeDialog(itemId, isEditMode ? 'edit' : 'view');
     } else if (columnId === 'enumtypes') {
     }
   }
@@ -180,10 +180,10 @@
     })
   }
 
-  function openEditDATypeDialog(typeId) {
+  function openEditDATypeDialog(typeId: string, mode: 'edit' | 'view' | 'create') {
     openDialog(DataAttributeDialog, {
       typeId: typeId,
-      isEditMode: isEditMode,
+      mode: mode,
     });
   }
 </script>

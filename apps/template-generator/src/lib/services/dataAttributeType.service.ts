@@ -8,6 +8,18 @@ export class DataAttributeTypeService {
     return this.repo.findAll();
   }
 
+  createOrUpdate(daType: DAType): void {
+    const existing = this.repo.findById(daType.id);
+
+    if (existing) {
+      // Merge to preserve existing fields
+      const merged = { ...existing, ...daType };
+      this.repo.update(merged);
+    } else {
+      this.repo.insert(daType);
+    }
+  }
+
   findById(id: string): DAType | null {
     return this.repo.findById(id);
   }

@@ -2,73 +2,149 @@
   import { createEventDispatcher } from 'svelte';
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component'
   import { Content } from '@smui/dialog';
-  import { DataAttributeTypeService, getDataAttributeTypeService } from '../../../services';
-  import { BDA, DAType, DataTypes } from '../../../domain';
+  import {
+    DataAttributeTypeService,
+    EnumTypeService,
+    getDataAttributeTypeService, getEnumTypeService,
+    getOscdDefaultTypeService
+  } from '../../../services';
+  import { BDA, DAType, EnumType } from '../../../domain';
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import { buildDATypeItems, buildDBAItems, buildEnumTypeItems } from '../../../utils/itemBuilder';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { OscdDefaultTypeService } from '../../../services/oscdDefaultType.service';
+  import { ReferenceAssignmentService } from '../../../services/referenceAssignment.service';
+  import { ItemDropOnItemEventDetail, TBoardItemContext } from '../../tboard/types';
 
   const dataAttributeService: DataAttributeTypeService = getDataAttributeTypeService();
+  const defaultTypeService: OscdDefaultTypeService = getOscdDefaultTypeService();
+  const enumTypeService: EnumTypeService = getEnumTypeService();
+  const refAssignmentService = new ReferenceAssignmentService(
+    null,
+    dataAttributeService,
+    enumTypeService,
+    defaultTypeService,
+  )
+
+  type DataTypes = {
+    dataAttributeTypes: DAType[];
+    enumTypes: EnumType[];
+  };
 
   const dispatch = createEventDispatcher();
 
   // ===== Props =====
   export let open = false;
-  export let isEditMode: boolean = false;
+  export let mode: 'view' | 'edit' | 'create' = 'view';
   export let typeId: string;
 
-  let dataAttributeType: DAType | null = null;
-  let basicDataAttributes: BDA[] = [];
+  // ===== State =====
+  let refDataAttributeType: DAType | null = null;
+  let dataTypes: DataTypes | null = null;
 
-  let markedItem: Set<string> = new Set<string>();
-  let referencedDataTypes: DataTypes | null;
+  let markedItems: Set<string> = new Set<string>();
+  let data = null;
 
-  function loadData() {
-    dataAttributeType = dataAttributeService.findById(typeId);
-    basicDataAttributes = dataAttributeType.basicDataAttributes;
+  let isDirty = false;
 
-    referencedDataTypes = dataAttributeService.findReferencedTypesById(typeId, Array.from(markedItem));
-  }
+  // ===== Derived =====
+  const isCreateMode = () => mode === 'create';
+  const isViewMode = () => mode === 'view';
+  const isEditMode = () => mode === 'edit' || isCreateMode();
 
-  $: columns = getColumns(isEditMode);
-
-  $: if (open) {
-    loadData();
-  }
-
-  $: if (!open) {
-    markedItem.clear();
-  }
+  $: columns = getColumns(isEditMode());
+  $: if (open) init();
+  $: if (!open) markedItems.clear();
 
   $: data = {
-    refs: buildDBAItems(basicDataAttributes, markedItem, { canSelect: isEditMode }),
-    datypes: buildDATypeItems(referencedDataTypes?.dataAttributeTypes),
-    enumtypes: buildEnumTypeItems(referencedDataTypes?.enumTypes)
+    refs: buildDBAItems(
+      refDataAttributeType.basicDataAttributes,
+      markedItems,
+      (item: BDA) => ({ canSelect: isEditMode(), acceptDrop: (source: TBoardItemContext) => acceptDropDaItems(source, item) })
+    ),
+    datypes: buildDATypeItems(dataTypes.dataAttributeTypes),
+    enumtypes: buildEnumTypeItems(dataTypes.enumTypes),
   };
 
-  function handleOnMark({ itemId }) {
-    if (markedItem.has(itemId)) {
-      markedItem.delete(itemId);
-    } else {
-      markedItem.add(itemId);
-    }
-    markedItem = new Set<string>(markedItem);
+  function init() {
+    validateProps();
     loadData();
+  }
+
+  function loadData() {
+    if(isCreateMode()) {
+      //refDataAttributeType = defaultTypeService.createDataAttributeWithDefaults(typeId, cdc)
+      // TODO: Implement creation logic for new Data Attribute Type
+      isDirty = true;
+    } else {
+      refDataAttributeType = dataAttributeService.findById(typeId);
+    }
+
+    dataTypes = isViewMode()
+    ? dataAttributeService.findReferencedTypesById(typeId, Array.from(markedItems))
+    : getCompatibleDataTypes(markedItems);
+  }
+
+
+  function getCompatibleDataTypes(marked: Set<string>) {
+    const attrs = marked.size === 0
+      ? refDataAttributeType.basicDataAttributes
+      : refDataAttributeType.basicDataAttributes.filter(bda => marked.has(bda.name));
+    return refAssignmentService.getAssignableTypesForDAType(attrs);
+  }
+
+  function acceptDropDaItems(source: TBoardItemContext, target: BDA) {
+    return (source.columnId === 'enumtypes' && target.bType === 'Enum') ||
+      (source.columnId === 'datypes' && target.bType === 'Struct');
+  }
+
+  function handleOnMark({ itemId }) {
+    markedItems.has(itemId) ? markedItems.delete(itemId) : markedItems.add(itemId);
+    markedItems = new Set(markedItems);
+    loadData();
+  }
+
+  function validateProps() {
+    if (!typeId) throw new Error('Type ID is required');
   }
 
   function handleConfirm() {
+    if(isDirty) {
+      dataAttributeService.createOrUpdate(refDataAttributeType);
+      isDirty = false;
+    }
     closeDialog('confirm');
   }
 
   function handleCancel() {
     closeDialog('cancel');
   }
+
+
+  function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
+    if (!source || !target) return;
+    setAttributeTypeReference(target.itemId, source.itemId, source.columnId);
+    isDirty = true;
+  }
+
+  function setAttributeTypeReference(dataAttributeName: string, targetReference: string, sourceColumnId: string) {
+    if (!refDataAttributeType) return;
+
+    refDataAttributeType = {
+      ...refDataAttributeType,
+      basicDataAttributes: refDataAttributeType.basicDataAttributes.map(item =>
+        item.name === dataAttributeName
+          ? { ...item, type: targetReference }
+          : item
+      )
+    };
+  }
 </script>
 
 <OscdBaseDialog
   bind:open
-  title={`Data Attribute Type: ${dataAttributeType?.id ?? '------'}`}
+  title={`Data Attribute Type: ${refDataAttributeType?.id ?? '------'}`}
   confirmActionText="Save"
   cancelActionText="Cancel"
   maxWidth="calc(100vw - 2rem)"
@@ -80,6 +156,7 @@
       {columns}
       {data}
       on:itemMarkChange={e => handleOnMark(e.detail)}
+      on:itemDrop={e => handleItemDrop(e.detail)}
     />
   </Content>
 </OscdBaseDialog>
