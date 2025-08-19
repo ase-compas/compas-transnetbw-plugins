@@ -1,108 +1,133 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { Process } from '@oscd-transnet-plugins/shared';
+  import type { Process } from "@oscd-transnet-plugins/shared";
+  import { OscdBreadcrumbs } from "../../../../libs/oscd-component/src";
+  import Button from "@smui/button";
 
   export let proc: Process | null = null;
 
-  const dispatch = createEventDispatcher<{
-    back: void;
-    start: Process;
-  }>();
+  const dispatch = createEventDispatcher<{ back: void; start: Process }>();
+
+  const onCrumbClick = (e: CustomEvent<{ index: number }>) => {
+    if (e.detail.index === 0) dispatch("back");
+  };
+
+  const start = () => {
+    if (proc) dispatch("start", proc);
+  };
+
+  $: breadcrumbs = [
+    { label: "Engineering-Wizard", enabled: true },
+    { label: proc?.name ?? "—", enabled: false },
+  ];
+
+  $: plugins = proc?.plugins ?? [];
 </script>
 
-<div class="container">
-  {#if !proc}
-    <div class="empty-state">
-      <p>No process selected.</p>
-      <button class="btn" on:click={() => dispatch('back')}>Back to list</button>
-    </div>
-  {:else}
-    <h1 class="title">Process Details</h1>
+<div class="page-content">
+  <div class="header">
+    <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
 
-    <div class="card">
-      <div class="row"><span class="label">ID</span><span class="value">{proc.id}</span></div>
-      <div class="row"><span class="label">Name</span><span class="value">{proc.name}</span></div>
-      <div class="row"><span class="label">Version</span><span class="value">{proc.version}</span></div>
-      <div class="row"><span class="label">Description</span><span class="value">{proc.description}</span></div>
+    <Button
+      variant="raised"
+      style="--mdc-theme-primary: #004552; --mdc-theme-on-primary: #ffffff"
+      on:click={start}
+      disabled={!proc}
+      aria-label="Start process"
+    >
+      START PROCESS
+    </Button>
+  </div>
+
+  <div class="plugins-list">
+    <div class="plugins-list__header">
+      <p>Process</p>
+      <Button
+        variant="raised"
+        style="--mdc-theme-primary: #ffffff; --mdc-theme-on-primary: #004552"
+        aria-label="Edit process"
+      >
+        EDIT
+      </Button>
     </div>
 
-    <h2 class="subtitle">Plugins</h2>
-    {#if !proc.plugins || proc.plugins.length === 0}
-      <p class="muted">No plugins defined for this process.</p>
-    {:else}
-      <ol class="plugins-list">
-        {#each proc.plugins as pl, i (pl.id)}
-          <li class="plugin-card">
-            <div class="plugin-header">
-              <span class="order">{i + 1}.</span>
-              <div>
-                <p class="plugin-name">{pl.name || pl.id}</p>
-                {#if pl.type}
-                  <p class="plugin-type">{pl.type}</p>
-                {/if}
-              </div>
-            </div>
-            {#if pl.description}
-              <p class="description">{pl.description}</p>
-            {/if}
-          </li>
-        {/each}
-      </ol>
-    {/if}
-
-    <div class="actions">
-      <button class="btn" on:click={() => dispatch('back')}>Back</button>
-      <button class="btn primary" on:click={() => dispatch('start', proc)}>START PROCESS</button>
-    </div>
-  {/if}
+    {#each plugins as plugin, i}
+      <div class="plugin">
+        <span class="plugin__index">{i + 1}.</span>
+        <div class="plugin-item">
+          <span class="plugin-item__name">{plugin.name}</span>
+        </div>
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
-  * { font-family: Roboto, sans-serif; }
+  .page-content {
+    --brand: #004552;
+    --on-brand: #ffffff;
 
-  .container { max-width: 800px; margin: 2rem auto; padding: 1rem; }
-  .empty-state { text-align: center; }
-  .title { font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; }
-  .subtitle { font-size: 1.4rem; font-weight: 600; margin: 1rem 0; }
-  .muted { color: #666; }
-
-  .card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .row {
-    display: grid;
-    grid-template-columns: 150px 1fr;
-    margin: 0.4rem 0;
-  }
-  .label { font-weight: 600; color: #004552; }
-  .value { color: #333; }
-
-  .plugins-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
-  .plugin-card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-  }
-  .plugin-header {
+    font-family: 'Roboto', sans-serif;
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
+    flex-direction: column;
+    margin-top: 16px;
+    padding: 0 24px;
+    gap: 24px;
   }
-  .order { font-weight: 700; color: #004552; }
-  .plugin-name { font-weight: 600; }
-  .plugin-type { font-size: 0.85rem; color: #777; }
-  .description { margin-top: 0.5rem; font-size: 0.9rem; color: #555; }
 
-  .btn {
-    cursor: pointer; background: #1a3e4a; color: #fff;
-    padding: 6px 14px; border: none; border-radius: 0.4rem;
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
   }
-  .btn.primary { background: #0e2931; }
-  .actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+  .plugins-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 33vw;
+    max-width: 640px;
+    border-radius: 4px;
+    padding: 24px;
+    background-color: var(--brand);
+  }
+
+  .plugins-list__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .plugins-list__header p {
+    font-weight: 500;
+    color: var(--on-brand);
+    font-size: 24px;
+  }
+
+  .plugin {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .plugin__index,
+  .plugins-list p {
+    font-weight: 500;
+    color: var(--on-brand);
+  }
+
+  .plugin-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px;
+    background-color: #ffffff;
+    border-radius: 4px;
+  }
+
+  .plugin-item__name {
+    font-weight: 500;
+    color: var(--brand);
+  }
 </style>
