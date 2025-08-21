@@ -40,11 +40,13 @@
 
   <div class="dialog__actions">
     <Actions class="oscd-dialog__actions">
-      <Button
-        action="cancel"
-        color="secondary">
-        {cancelActionText}
-      </Button>
+      {#if cancelActionText}
+        <Button
+          action="cancel"
+          color="secondary">
+          {cancelActionText}
+        </Button>
+      {/if}
       <Button
         color="primary"
         action="confirm"
