@@ -14,6 +14,7 @@
   import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import {initDataLoaders, loadCompatibleTypesById, loadLogicalNodeType, loadReferencedTypesById} from "./dataLoader";
+  import EnumTypeDialog from '../../lib/components/dialogs/EnumTypeDialog/EnumTypeDialog.svelte';
 
   export let doc: XMLDocument;
 
@@ -152,6 +153,7 @@
     } else if (columnId === 'datypes') {
       openEditDATypeDialog(itemId, isEditMode ? 'edit' : 'view');
     } else if (columnId === 'enumtypes') {
+      openEditEnumTypeDialog(itemId);
     }
   }
 
@@ -184,6 +186,12 @@
     openDialog(DataAttributeDialog, {
       typeId: typeId,
       mode: mode,
+    });
+  }
+
+  function openEditEnumTypeDialog(typeId: string) {
+    openDialog(EnumTypeDialog, {
+      typeId: typeId
     });
   }
 </script>
