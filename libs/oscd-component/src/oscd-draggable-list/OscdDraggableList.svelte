@@ -49,13 +49,14 @@
               </svg>
             </div>
           {/if}
-          <span class="item-content">{item.label}</span>
+            <div class="item-content">
+              <span class="item-id">{item.id}</span>
+              <span class="item-label">{item.label}</span>
+            </div>
           </div>
         </li>
       {/each}
     </ol>
-  {:else}
-    <p>No items available.</p>
   {/if}
 </div>
 
@@ -70,44 +71,35 @@
   ol > li {
     counter-increment: item;
     position: relative;
-    padding-left: 3rem; /* space for number */
     margin-bottom: 0.5rem;
   }
 
-  ol > li::before {
-    content: counter(item);
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2rem;
-    height: 2rem;
-    line-height: 2rem;
-    border-radius: 50%;
-    background-color: var(--mdc-theme-primary, #ff3e00);
-    color: white;
-    font-weight: 700;
-    font-size: 1rem;
-    text-align: center;
-    user-select: none;
-  }
-
-
   .draggable-item{
-    padding: 0.6rem;
+    padding: 0.7rem;
     background-color: white;
     border-radius: 8px;
     display: flex;
-    gap: 1.5rem;
     align-items: center;
-    border: 1px solid gray;
   }
 
-  .item-content{
+  .item-content {
+    display: flex;
+    align-items: baseline;
     font-size: 1.1rem;
-    font-weight: 600;
     color: var(--mdc-theme-primary);
     line-height: 1.2;
+  }
+
+  .item-id {
+    display: inline-block;
+    text-align: right;
+    min-width: 2rem;
+    font-weight: 200;
+    margin-right: 1.2rem;
+  }
+
+  .item-label {
+    font-weight: 500;
   }
 
   .drag-handle {
