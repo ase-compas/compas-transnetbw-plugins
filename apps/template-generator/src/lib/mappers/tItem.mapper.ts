@@ -1,5 +1,5 @@
 import { TBoardItemContext, TItem } from '../components/tboard/types';
-import { BDA, DA, DAType, DO, DOType, EnumType } from '../domain';
+import { BDA, DA, DAType, DO, DODetails, DOType, EnumType } from '../domain';
 
 export type TItemMapperConfig = {
   marked?: boolean;

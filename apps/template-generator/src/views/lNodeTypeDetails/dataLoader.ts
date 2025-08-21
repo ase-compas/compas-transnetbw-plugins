@@ -1,77 +1,48 @@
-import { DataTypes, LNodeType } from '../../lib/domain';
-import { lnClassData } from '../../data/nsdToJson/testNsdJson';
-import {
-  DataAttributeTypeService,
-  DataObjectTypeService,
-  EnumTypeService,
-  getDataAttributeTypeService,
-  getDataObjectTypeService,
-  getEnumTypeService,
-  getLNodeTypeService,
-  LNodeTypeService,
-} from '../../lib/services';
+import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
+import { DataTypes, LNodeTypeDetails } from '../../lib/domain';
 
-let service: LNodeTypeService;
-let dataObjectService: DataObjectTypeService;
-let dataAttributeService: DataAttributeTypeService;
-let enumTypeService: EnumTypeService;
+let lNodeTypeService: ILNodeTypeService;
 
-export function initDataLoaders() {
-  service = getLNodeTypeService();
-  dataObjectService = getDataObjectTypeService();
-  dataAttributeService = getDataAttributeTypeService();
-  enumTypeService = getEnumTypeService();
-}
-
-export function loadLogicalNodeType(lNodeTypeId: string): LNodeType | null {
-  return service.findById(lNodeTypeId);
-}
-
-export function loadReferencedTypesById(
-  lNodeTypeId: string,
-  markedLNodeTypeIds?: Set<string>
-): DataTypes {
-  return service.findReferencedTypesById(
-    lNodeTypeId,
-    Array.from(markedLNodeTypeIds)
-  );
-}
-
-export function loadCompatibleTypesById(
-  logicalNodeType: LNodeType,
-  markedLNodeTypeIds?: Set<string>
-): DataTypes {
-  const classData = lnClassData[logicalNodeType.lnClass];
-  if (!classData) {
-    console.warn(
-      `Compatible types could not be loaded: LN class '${logicalNodeType.lnClass}' not found in lnClassData. Returning all types instead.`
-    );
-    return getAllDataTypes();
+export function loadLNodeType(mode: 'create' | 'edit' | 'view', lNodeTypeId: string, lnClass?: string): LNodeTypeDetails {
+  if (!lNodeTypeService) {
+    lNodeTypeService = getLNodeTypeService();
   }
 
-  // If no marked LNodeType IDs are provided, use all names from the logical node type
-  const names = logicalNodeType.dataObjects.map((d) => d.name);
-  const selectedNames =
-    markedLNodeTypeIds.size > 0 ? [...markedLNodeTypeIds] : names;
-
-  // Get cdcs of DO by their names using the standard
-  const cdcs = Array.from(
-    new Set(selectedNames.map((name) => classData[name]?.type).filter(Boolean))
-  );
-
-  const references = loadReferencedTypesById(logicalNodeType.id, new Set(selectedNames));
-
-  return {
-    dataObjectTypes: dataObjectService.findAllByCdc(cdcs),
-    dataAttributeTypes: references.dataAttributeTypes,
-    enumTypes: references.enumTypes,
-  };
+  // --- Get node ---
+  if (mode === 'create') {
+    const draftNode = lNodeTypeService.createDraftLNodeType(lnClass);
+    draftNode.id = lNodeTypeId;
+    return draftNode;
+  } else {
+    return lNodeTypeService.getLNodeType(lNodeTypeId, { isConfigured: mode === 'view' });
+  }
 }
 
-function getAllDataTypes(): DataTypes {
-  return {
-    dataObjectTypes: dataObjectService.findAll(),
-    dataAttributeTypes: dataAttributeService.findAll(),
-    enumTypes: enumTypeService.findAll(),
+export function loadTypes(mode: 'create' | 'edit' | 'view', lNodeTypeId: string, lnClass: string, includeChildren: string[] = []): DataTypes {
+  const types: DataTypes = {
+    dataObjectTypes: [],
+    dataAttributeTypes: [],
+    enumTypes: []
   };
+
+  // --- Get types ---
+  if (mode === 'create') {
+    // Only assignable DO types for create mode
+    types.dataObjectTypes = lNodeTypeService.getAssignableDOTypes(lnClass, includeChildren);
+  } else {
+    // Edit or view mode: always fetch referenced types
+    const referencedTypes = lNodeTypeService.getReferencedTypes(lNodeTypeId, includeChildren);
+    types.dataAttributeTypes = referencedTypes.dataAttributeTypes;
+    types.enumTypes = referencedTypes.enumTypes;
+
+    if (mode === 'edit') {
+      // Edit mode: DO types are assignable
+      types.dataObjectTypes = lNodeTypeService.getAssignableDOTypes(lnClass, includeChildren);
+    } else {
+      // View mode: DO types are referenced
+      types.dataObjectTypes = referencedTypes.dataObjectTypes;
+    }
+  }
+
+  return types;
 }

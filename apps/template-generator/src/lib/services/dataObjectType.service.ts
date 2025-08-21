@@ -36,7 +36,6 @@ export class DataObjectTypeService {
     if(!cdcObj) return false;
     const dataObject = cdcObj[name];
 
-    console.log(dataObject);
     if (!dataObject || !dataObject.type || dataObject.tagName !== 'SubDataObject') return false;
 
     const targetDOType = this.findById(targetDOTypeId);

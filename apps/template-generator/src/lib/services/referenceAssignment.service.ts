@@ -1,6 +1,6 @@
 import { DataObjectTypeService, DataAttributeTypeService, EnumTypeService } from './';
 import { BDA, DA, DataTypes, DAType, DO, DOType, EnumType, SDO } from '../domain';
-import { cdcData } from '../../data/nsdToJson/testNsdJson';
+import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
 import { OscdDefaultTypeService } from './oscdDefaultType.service';
 
 export class ReferenceAssignmentService {

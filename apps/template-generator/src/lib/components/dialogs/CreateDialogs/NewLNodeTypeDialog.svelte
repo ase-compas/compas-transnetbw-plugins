@@ -27,6 +27,6 @@
   idLabel="Logical Node ID"
   autocompleteLabel="Logical Node Class"
   {options}
-  checkIdTaken={id => service.isIdTaken(id)}
+  checkIdTaken={id => service.isLNodeIdTaken(id)}
   onConfirm={handleConfirm}
 />

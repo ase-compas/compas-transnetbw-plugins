@@ -44,7 +44,7 @@
 
   // ===== Handlers =====
   const handleDuplicate = (lNodeTypeId: string) => {
-    lNodeTypeService.duplicate(lNodeTypeId);
+    lNodeTypeService.duplicateLNodeType(lNodeTypeId);
   };
 
   const handleDelete = (lNodeTypeId: string) => {
@@ -59,7 +59,7 @@
       })
       .then(result => {
       if (result.type === 'confirm') {
-        lNodeTypeService.delete(lNodeTypeId);
+        lNodeTypeService.deleteLNodeType(lNodeTypeId);
       }
     })
   };
