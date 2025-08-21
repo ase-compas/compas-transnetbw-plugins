@@ -2,6 +2,7 @@
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '@smui/checkbox';
+  import { OscdWarningIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   const dispatch = createEventDispatcher();
 
@@ -20,6 +21,9 @@
   export let isDragTarget: boolean = false; // Indicates if the card is a valid drop target
   export let canDrop: boolean = false; // Indicates if the card can accept a drop of the dragged card
   export let isOver: boolean = false; // Indicates if the card is currently being hovered over by a dragged card
+
+  export let error: boolean = false;
+  export let errorMessage: string | null = null;
 
   $: stateClass = getStateClass(isDragTarget, canDrop, marked, selected);
 
@@ -63,6 +67,7 @@
 <div
   class="oscd-card-item {stateClass}"
   class:is-over={isOver}
+  class:error={error && !isDragTarget}
   role={canClick ? 'button' : 'undefined'}
   on:click={handleOnClick}
 >
@@ -108,6 +113,12 @@
       <span class="oscd-card-subtitle" class:invisible={!subtitle}>{subtitle}</span>
       <span class="oscd-card-subtitle oscd-references" class:invisible={!references}>{references}</span>
     </div>
+
+    {#if error && errorMessage}
+      <div class="oscd-card-item__error-message">
+        <OscdWarningIcon size="18px" fill="red"/><span>{errorMessage}</span>
+      </div>
+    {/if}
 
   </div>
 </div>
@@ -205,6 +216,18 @@
   .clickable:hover {
     background: rgba(0, 0, 0, 0.1);
     cursor: pointer;
+  }
+
+  .oscd-card-item.error {
+    border: 2px solid red;
+  }
+
+  .oscd-card-item__error-message {
+    display: flex;
+    align-items: center;
+    color: red;
+    font-weight: 500;
+    font-size: 0.8rem;
   }
 </style>
 
