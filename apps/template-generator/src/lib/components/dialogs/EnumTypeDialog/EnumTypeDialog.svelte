@@ -49,7 +49,7 @@ function validateProps() {
   title={`Enum Type: ${enumType?.id ?? '------'}`}
   confirmActionText="Close"
   cancelActionText=""
-  maxWidth="30vw"
+  maxWidth="35vw"
   on:confirm={() => handleConfirm()}
   on:cancel={() => handleCancel()}>
   <Content slot="content">
@@ -60,11 +60,35 @@ function validateProps() {
       label="Search..."
       variant="outlined"/>
 
-
+    {#if listItems && listItems.length > 0}
     <OscdDraggableList
       canDrag={false}
       items={listItems}
     />
+    {:else}
+      <div class="no-results">
+        {#if searchQuery}
+          <p>No results for "{searchQuery}".</p>
+        {:else}
+          <p>No values available.</p>
+        {/if}
+      </div>
+    {/if}
 
   </Content>
 </OscdBaseDialog>
+
+
+<style lang="css">
+  .no-results {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 2rem;
+  }
+d
+  .no-results p {
+    margin: 0;
+  }
+</style>

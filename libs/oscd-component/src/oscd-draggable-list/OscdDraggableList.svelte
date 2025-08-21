@@ -57,8 +57,6 @@
         </li>
       {/each}
     </ol>
-  {:else}
-    <p>No items available.</p>
   {/if}
 </div>
 
