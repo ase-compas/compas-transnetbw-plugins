@@ -189,7 +189,8 @@
 
   .actions {
     display: flex;
-    gap: 0.1rem
+    gap: 0.1rem;
+    align-items: center;
   }
 
   .invisible {
