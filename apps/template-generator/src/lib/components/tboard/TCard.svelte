@@ -236,7 +236,6 @@
     display: inline-flex;
     align-items: center;
     height: 1.5rem;
-    min-width: 2.2rem;
     font-size: 0.85rem;
     padding: 0 0.5rem;
     border-radius: 8px;
