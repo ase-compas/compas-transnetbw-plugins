@@ -9,6 +9,7 @@
   export let title: string;
   export let subtitle: string | null = null;
   export let references: number | null = null;
+  export let badgeText: string | null = null;
 
   export let canEdit: boolean = false;
   export let canMark: boolean = false;
@@ -90,6 +91,7 @@
 
       <!-- Actions: Start -->
       <div class="actions">
+        <span class="oscd-card-subtitle oscd-references" class:invisible={!references}>{references}</span>
         {#if canMark}
           <OscdIconActionButton
             type="visibility"
@@ -111,7 +113,7 @@
 
     <div class="sub-row">
       <span class="oscd-card-subtitle" class:invisible={!subtitle}>{subtitle}</span>
-      <span class="oscd-card-subtitle oscd-references" class:invisible={!references}>{references}</span>
+      {#if badgeText}<span class="oscd-card-chip">{badgeText}</span>{/if}
     </div>
 
     {#if error && errorMessage}
@@ -229,6 +231,17 @@
     font-weight: 500;
     font-size: 0.8rem;
   }
+
+  .oscd-card-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 1.5rem;
+    min-width: 2.2rem;
+    font-size: 0.85rem;
+    padding: 0 0.5rem;
+    border-radius: 8px;
+    background: #DAE3E6;
+    color: var(--mdc-theme-primary);;
+    font-weight: 500;
+  }
 </style>
-
-
