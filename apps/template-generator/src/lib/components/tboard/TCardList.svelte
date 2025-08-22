@@ -102,6 +102,8 @@
       canDrop={isDroppable(item, dropCandidate)}
       isOver={isOverId === item.id}
       marked={item.marked}
+      error={item.error}
+      errorMessage={item.errorMessage}
       bind:selected={item.selected}
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
       on:click={() => forwardEvent('itemClick', item)}

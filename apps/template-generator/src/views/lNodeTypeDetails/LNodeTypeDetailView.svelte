@@ -57,7 +57,13 @@
   $: columns = getColumns(isEditMode);
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
   $: data = {
-    refs: buildDOItems(dataObjects, markedItemIds, item => ({ canSelect: isEditMode, acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target) })),
+    refs: buildDOItems(dataObjects, markedItemIds, item =>
+      ({
+        canSelect: isEditMode,
+        acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target),
+        error: (item.metadata.isConfigured || item.metadata.isMandatory) && !item.type,
+        errorMessage: 'Data object must reference a type',
+      })),
     dotypes: buildDOTypeItems(dataTypes?.dataObjectTypes, { canEdit: true }),
     datypes: buildDATypeItems(dataTypes?.dataAttributeTypes, { canEdit: true }),
     enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })

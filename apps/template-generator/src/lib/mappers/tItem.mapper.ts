@@ -7,6 +7,8 @@ export type TItemMapperConfig = {
   canMark?: boolean;
   canSelect?: boolean;
   acceptDrop?: (target: TBoardItemContext) => boolean;
+  error?: boolean;
+  errorMessage?: string;
 };
 
 function buildTItemBase(
@@ -27,11 +29,13 @@ function buildTItemBase(
     canMark: config.canMark ?? false,
     canSelect: config.canSelect ?? false,
     acceptDrop: config.acceptDrop ?? null,
+    error: config.error ?? false,
+    errorMessage: config.errorMessage ?? null,
   };
 }
 
 export class TItemMapper {
-  static fromDataObject(id: string, { name, type }: DO, config?: TItemMapperConfig): TItem {
+  static fromDataObject(id: string, { name, type }: DODetails, config?: TItemMapperConfig): TItem {
     return buildTItemBase(id, name, type, undefined, config);
   }
 

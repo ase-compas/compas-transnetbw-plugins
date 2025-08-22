@@ -1,6 +1,6 @@
 import { TItem } from '../components/tboard/types';
 import { TItemMapper, TItemMapperConfig } from '../mappers/tItem.mapper';
-import { BDA, DA, DAType, DO, DOType, EnumType, SDO } from '../domain';
+import { BDA, DA, DAType, DO, DODetails, DOType, EnumType, SDO } from '../domain';
 
 type ConfigOverrideOrFn<T> =
   | Partial<TItemMapperConfig>
@@ -37,7 +37,7 @@ function buildItems<T>(
   }) ?? [];
 }
 
-export const buildDOItems = (list: DO[], markedSet: Set<string>, overrides?: ConfigOverrideOrFn<DO>) =>
+export const buildDOItems = (list: DODetails[], markedSet: Set<string>, overrides?: ConfigOverrideOrFn<DODetails>) =>
   buildItems(list, TItemMapper.fromDataObject, obj => obj.name, markedSet, overrides);
 
 export const buildDAItems = (list: DA[], markedSet: Set<string>, overrides?: ConfigOverrideOrFn<DA>) =>
