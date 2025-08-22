@@ -3,6 +3,7 @@ export type TItem = {
   title: string;
   subtitle?: string;
   references?: number;
+  badgeText?: string;
 
   marked: boolean;
   selected: boolean

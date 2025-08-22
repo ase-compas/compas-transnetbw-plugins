@@ -35,8 +35,10 @@ function buildTItemBase(
 }
 
 export class TItemMapper {
-  static fromDataObject(id: string, { name, type }: DODetails, config?: TItemMapperConfig): TItem {
-    return buildTItemBase(id, name, type, undefined, config);
+  static fromDataObject(id: string, { name, type, cdc }: DODetails, config?: TItemMapperConfig): TItem {
+    const item = buildTItemBase(id, name, type, undefined, config);
+    item.badgeText = cdc;
+    return item;
   }
 
   static fromSubDataObject(id: string, { name, type }: DO, config?: TItemMapperConfig): TItem {

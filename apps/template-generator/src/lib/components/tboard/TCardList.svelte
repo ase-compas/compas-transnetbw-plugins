@@ -95,6 +95,7 @@
       title={item.title}
       subtitle={item.subtitle}
       references={item.references}
+      badgeText={item.badgeText}
       canEdit={item.canEdit}
       canMark={item.canMark}
       canSelect={selectable && item.canSelect}
