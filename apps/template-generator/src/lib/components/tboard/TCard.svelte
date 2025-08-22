@@ -91,7 +91,7 @@
 
       <!-- Actions: Start -->
       <div class="actions">
-        <span class="oscd-card-subtitle oscd-references" class:invisible={!references}>{references}</span>
+        <span class="oscd-references" class:invisible={!references}>{references}</span>
         {#if canMark}
           <OscdIconActionButton
             type="visibility"
@@ -177,6 +177,7 @@
     justify-content: space-between;
     align-items: start;
     word-break: break-word;
+    gap: 0.5rem;
   }
 
   .sub-row {
@@ -214,6 +215,7 @@
 
   .oscd-references {
     padding-right: 4px;
+    white-space: nowrap;
   }
 
   .clickable:hover {
@@ -243,5 +245,6 @@
     background: #DAE3E6;
     color: var(--mdc-theme-primary);;
     font-weight: 500;
+    white-space: nowrap;
   }
 </style>
