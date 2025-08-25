@@ -1,1 +1,2 @@
-export type Plugin = { id: string; name: string };
+export type Plugin = { id: string; name: string; src?: string };
+

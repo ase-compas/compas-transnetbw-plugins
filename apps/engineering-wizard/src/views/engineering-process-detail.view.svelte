@@ -1,12 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { Process } from "@oscd-transnet-plugins/shared";
+  import type { Process, PluginGroup } from "@oscd-transnet-plugins/shared";
   import { OscdBreadcrumbs } from "../../../../libs/oscd-component/src";
   import Button from "@smui/button";
 
   export let proc: Process | null = null;
 
-  const dispatch = createEventDispatcher<{ back: void; start: Process }>();
+  const dispatch = createEventDispatcher();
 
   const onCrumbClick = (e: CustomEvent<{ index: number }>) => {
     if (e.detail.index === 0) dispatch("back");
@@ -21,7 +21,10 @@
     { label: proc?.name ?? "—", enabled: false },
   ];
 
-  $: plugins = proc?.plugins ?? [];
+  let pluginGroups: PluginGroup[] = [];
+  $: pluginGroups = proc?.pluginGroups?.length
+    ? (proc!.pluginGroups as PluginGroup[])
+    : [{ title: "Process", plugins: proc?.plugins ?? [] }];
 </script>
 
 <div class="page-content">
@@ -51,11 +54,19 @@
       </Button>
     </div>
 
-    {#each plugins as plugin, i}
+    {#each pluginGroups as group, gi}
       <div class="plugin">
-        <span class="plugin__index">{i + 1}.</span>
-        <div class="plugin-item">
-          <span class="plugin-item__name">{plugin.name}</span>
+        <div class="plugin__group-title">
+          <span class="plugin__index">{gi + 1}.</span>
+          <span class="plugin__title">{group.title}</span>
+        </div>
+
+        <div class="plugin__items">
+          {#each group.plugins as plugin}
+            <div class="plugin-item">
+              <span class="plugin-item__name">{plugin.name}</span>
+            </div>
+          {/each}
         </div>
       </div>
     {/each}
@@ -85,7 +96,7 @@
   .plugins-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 32px;
     width: 33vw;
     max-width: 640px;
     border-radius: 4px;
@@ -103,6 +114,7 @@
     font-weight: 500;
     color: var(--on-brand);
     font-size: 24px;
+    margin: 0;
   }
 
   .plugin {
@@ -111,10 +123,28 @@
     gap: 8px;
   }
 
+  .plugin__group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .plugin__index,
   .plugins-list p {
     font-weight: 500;
     color: var(--on-brand);
+  }
+
+  .plugin__title {
+    font-weight: 500;
+    color: var(--on-brand);
+    text-transform: uppercase;
+  }
+
+  .plugin__items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .plugin-item {

@@ -2,7 +2,7 @@
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail.view.svelte';
   import EngineeringWorkflow from './views/engineering-workflow.view.svelte';
-  import type { Process, Plugin } from '@oscd-transnet-plugins/shared';
+  import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
 
   export let doc: XMLDocument | undefined;
@@ -20,20 +20,42 @@
 
   const parseProcessesFromXml = (xml: XMLDocument): Process[] =>
     Array.from(xml.getElementsByTagName('process')).map((p) => {
-      const plugins: Plugin[] = Array.from(
-        p.querySelectorAll('plugins-sequence > plugin')
-      ).map((pl) => ({
-        id:   txt(pl.querySelector('id')),
-        name: txt(pl.querySelector('name')),
-        src:  txt(pl.querySelector('src')),
-      }));
+      const groupEls = Array.from(p.querySelectorAll('plugins-sequence > group'));
+
+      let pluginGroups: PluginGroup[] | undefined;
+      let flatPlugins: Plugin[] = [];
+
+      if (groupEls.length) {
+        pluginGroups = groupEls.map((g) => {
+          const title = txt(g.querySelector(':scope > title'));
+          const plugins: Plugin[] = Array.from(
+            g.querySelectorAll(':scope > plugin')
+          ).map((pl) => ({
+            id:   txt(pl.querySelector('id')),
+            name: txt(pl.querySelector('name')),
+            src:  txt(pl.querySelector('src')),
+          }));
+          return { title, plugins };
+        });
+
+        flatPlugins = pluginGroups.flatMap((g) => g.plugins);
+      } else {
+        flatPlugins = Array.from(
+          p.querySelectorAll('plugins-sequence > plugin')
+        ).map((pl) => ({
+          id:   txt(pl.querySelector('id')),
+          name: txt(pl.querySelector('name')),
+          src:  txt(pl.querySelector('src')),
+        }));
+      }
 
       return {
         id:          txt(p.querySelector(':scope > id')),
         version:     txt(p.querySelector(':scope > version')),
         name:        txt(p.querySelector(':scope > name')),
         description: txt(p.querySelector(':scope > description')),
-        plugins,
+        plugins: flatPlugins,
+        pluginGroups,
       };
     });
 
