@@ -19,6 +19,7 @@
   export let highlighted: boolean = false; // If true, visually highlights the column background
   export let dragAndDropBorder: boolean = false; // If true, shows a dashed border around the column to indicate a valid drop target
   export let canSelectItems: boolean = false;
+  export let showSelectionIndicator: boolean = false;
 
   export let itemsDraggable: boolean = false;
   export let dropCandidate: TBoardItemContext | null = null;
@@ -76,19 +77,23 @@
   {/if}
 
 
+  <div class="oscd-tcolumn__list">
   <TCardList
     items={filteredItems}
     selectable={canSelectItems}
     itemsDraggable={itemsDraggable}
     dropCandidate={dropCandidate}
+    showSelectionIndicator={showSelectionIndicator}
     on:itemClick={(e) => forwardEvent('itemClick', e.detail)}
     on:itemEdit={(e) => forwardEvent('itemEdit', e.detail)}
     on:itemApplyDefaults={(e) => forwardEvent('itemApplyDefaults', e.detail)}
     on:itemUnlink={(e) => forwardEvent('itemUnlink', e.detail)}
     on:itemMarkChange={(e) => forwardEvent('itemMarkChange', e.detail)}
+    on:itemSelectChange={(e) => forwardEvent('itemSelectChange', e.detail)}
     on:itemDragChange={(e) => forwardEvent('itemDragChange', e.detail)}
     on:itemDrop={(e) => forwardEvent('itemDrop', e.detail)}
   />
+  </div>
 </div>
 
 
@@ -97,10 +102,18 @@
     padding: 0.5rem;
     border-radius: 8px;
     width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
+
+  .oscd-tcolumn__list {
+    flex: 1;
+    overflow: auto;
+    padding-right: 0.2rem;
+  }
+
   .oscd-tcolumn.apply-defaults {
     background-color: color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 13%, transparent);
   }

@@ -69,7 +69,7 @@
         canSelect: isEditMode,
         canApplyDefaults: isEditMode,
         canUnlink: isEditMode && !item.metadata.isMandatory && item.type !== null && item.type !== '',
-    acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target),
+        acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target),
         error: (item.metadata.isConfigured || item.metadata.isMandatory) && !item.type,
         errorMessage: 'Data object must reference a type',
       })),
@@ -250,5 +250,6 @@
   .oscd-details-board {
     display: flex;
     gap: 2rem;
+    height: calc(100vh - 200px);
   }
 </style>

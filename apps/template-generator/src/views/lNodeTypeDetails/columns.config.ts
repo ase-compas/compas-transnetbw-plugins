@@ -8,7 +8,8 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       hasSearch: true,
       highlighted: true,
       dragAndDropBorder: isEditMode,
-      canSelectItems: isEditMode,
+      canSelectItems: true,
+      showSelectionIndicator: isEditMode,
       itemsDraggable: false,
     },
     {

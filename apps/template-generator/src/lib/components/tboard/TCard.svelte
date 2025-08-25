@@ -2,7 +2,7 @@
   import { OscdIconActionButton, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '@smui/checkbox';
-  import { OscdWarningIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdWarningIcon, OscdLockIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   const dispatch = createEventDispatcher();
 
@@ -13,86 +13,70 @@
 
   export let canEdit: boolean = false;
   export let canMark: boolean = false;
-  export let canSelect: boolean = false;
   export let canApplyDefaults: boolean = false;
   export let canClick: boolean = false;
   export let canUnlink: boolean = true;
 
-  export let marked: boolean = false;
+  export let selectionEnabled: boolean = false;
   export let selected: boolean = false;
+  export let isMandatory: boolean = false;
+  export let showSelectionIndicator: boolean
+
+  export let marked: boolean = false;
 
   export let isDragTarget: boolean = false; // Indicates if the card is a valid drop target
   export let canDrop: boolean = false; // Indicates if the card can accept a drop of the dragged card
   export let isOver: boolean = false; // Indicates if the card is currently being hovered over by a dragged card
+  export let canDrag: boolean = false; // Indicates if the card can be dragged
+
 
   export let error: boolean = false;
   export let errorMessage: string | null = null;
 
-  $: stateClass = getStateClass(isDragTarget, canDrop, marked, selected);
+  $: cardState= getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected);
 
-  function getStateClass(
-    isDragTarget: boolean,
-    canDrop: boolean,
-    marked: boolean,
-    selected: boolean
-  ): string {
-    if (isDragTarget) {
-      return canDrop ? 'drag-can-drop' : 'drag-cannot-drop';
+  function getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected): 'drag-can-drop' | 'drag-cannot-drop' | 'mandatory' | 'selected' | 'unselected' | 'default' {
+    if (isDragTarget) return canDrop ? 'drag-can-drop' : 'drag-cannot-drop';
+    if(selectionEnabled) {
+      if(isMandatory) return 'mandatory';
+      return selected ? 'selected' : 'unselected';
     }
-
-    if (marked && selected) return 'marked selected';
-    if (marked) return 'marked';
-    if (selected) return 'selected';
-
-    return '';
+    return 'default'
   }
 
-  function handleOnClick() {
-    if (canClick) {
-      dispatch('click');
-    }
-  }
 
-  function toggleMark() {
-    if(canMark) {
-      dispatch('marked', !marked);
-    }
-  }
 
-  function handleOnEdit() {
-    if (canEdit) {
-      dispatch('edit');
-    }
-  }
-
-  function handleOnApplyDefaults() {
-    if (canApplyDefaults) {
-      dispatch('applyDefaults');
-    }
-  }
-
-  function handleOnUnlink() {
-    if (canUnlink) {
-      dispatch('unlink');
-    }
-  }
+  // ==== Event Handlers ====
+  function handleOnClick() { if (canClick) dispatch('click'); }
+  function toggleMark() { if(canMark) dispatch('marked', !marked); }
+  function handleOnEdit() { if (canEdit) dispatch('edit'); }
+  function handleOnApplyDefaults() { if (canApplyDefaults) dispatch('applyDefaults'); }
+  function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
 
 </script>
 
 <div
-  class="oscd-card-item {stateClass}"
+  class="oscd-card-item {cardState}"
+  class:marked={marked}
   class:is-over={isOver}
   class:error={error && !isDragTarget}
+  class:draggable={canDrag}
   role={canClick ? 'button' : 'undefined'}
   on:click={handleOnClick}
 >
 
   <!-- Selection Checkbox: Start -->
-  {#if canSelect}
+  {#if selectionEnabled && showSelectionIndicator}
     <div class="selection">
-      <OscdTooltip content="Configure" hoverDelay={500}>
-        <Checkbox bind:checked={selected}/>
-      </OscdTooltip>
+      {#if isMandatory}
+        <OscdTooltip content="Mandatory Object" hoverDelay={500}>
+          <OscdLockIcon width="33px" svgStyles={selected ? 'fill: white' : 'fill: gray'}/>
+        </OscdTooltip>
+      {:else}
+        <OscdTooltip content="Configure" hoverDelay={500}>
+          <Checkbox bind:checked={selected} on:change={() => dispatch('selectChange')}/>
+        </OscdTooltip>
+      {/if}
     </div>
   {/if}
   <!-- Selection Checkbox: End -->
@@ -163,7 +147,6 @@
   div.oscd-card-item {
     all: unset;
     padding: 0.4rem;
-    background-color: white;
     border-radius: 8px;
     transition: background-color 0.2s ease;
     display: flex;
@@ -183,14 +166,40 @@
     box-shadow: 0 0 6px 2px rgba(217, 216, 0, 0.3); /* soft glow */
 
   }
-  .oscd-card-item.selected {
+  .oscd-card-item.selected, .oscd-card-item.mandatory {
     background-color: var(--mdc-theme-primary, #ff3e00);
   }
 
   .oscd-card-item.selected .oscd-card-title,
   .oscd-card-item.selected .oscd-card-subtitle,
-  .oscd-card-item.selected .oscd-references {
+  .oscd-card-item.selected .oscd-references,
+  .oscd-card-item.mandatory .oscd-card-title,
+  .oscd-card-item.mandatory .oscd-card-subtitle,
+  .oscd-card-item.mandatory .oscd-card-references {
     color: white;
+  }
+
+  .oscd-card-item.unselected {
+    background-color: #F0F4F6; /* subtle bluish-gray */
+    cursor: pointer;
+
+    border: 1px solid #E0E0E0;
+    border-left: 4px solid var(--mdc-theme-primary, #004552); /* clickable accent */
+    padding-left: 0.75rem; /* space for stripe */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .oscd-card-item.unselected.marked {
+    border: 2px solid #D9D800; /* yellow override */
+    box-shadow: 0 0 6px 2px rgba(217, 216, 0, 0.3);
+  }
+
+  .oscd-card-item.default {
+    background-color: white;
+  }
+
+  .oscd-card-item.draggable:hover {
+    background-color: rgba(0, 69, 82, 0.05);
   }
 
   /* ✅ Drop target — valid */
@@ -212,12 +221,6 @@
     opacity: 0.6;
   }
 
-
-  .selection {
-    display: flex;
-    align-items: flex-start;
-    flex-shrink: 0;
-  }
 
   .header-row {
     display: flex;
@@ -294,5 +297,17 @@
     color: var(--mdc-theme-primary);;
     font-weight: 500;
     white-space: nowrap;
+  }
+
+  .selection {
+    min-width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.3rem
+  }
+
+  :global(.oscd-card-item .selection .oscd-icon svg) {
+    all: unset;
   }
 </style>

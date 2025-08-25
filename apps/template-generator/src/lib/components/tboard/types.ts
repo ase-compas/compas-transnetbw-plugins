@@ -7,6 +7,7 @@ export type TItem = {
 
   marked: boolean;
   selected: boolean
+  isMandatory: boolean;
 
   canEdit?: boolean;
   canMark?: boolean;
@@ -32,6 +33,7 @@ export type TColumnConfig = {
   highlighted?: boolean;
   dragAndDropBorder?: boolean;
   canSelectItems?: boolean;
+  showSelectionIndicator?: boolean;
 
   itemsDraggable?: boolean; // If items in this column can be dragged
 }

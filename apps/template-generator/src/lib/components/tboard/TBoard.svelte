@@ -87,6 +87,7 @@
       hasAction={column.hasAction}
       showApplyDefaults={column.showApplyDefaults}
       canSelectItems={column.canSelectItems}
+      showSelectionIndicator={column.showSelectionIndicator}
       itemsDraggable={column.itemsDraggable}
       items={data[column.id]}
       dropCandidate={dropCandidate}
@@ -97,6 +98,7 @@
       on:itemApplyDefaults={e => forwardEvent('itemApplyDefaults', column.id, e.detail)}
       on:itemUnlink={e => forwardEvent('itemUnlink', column.id, e.detail)}
       on:itemMarkChange={e => forwardEvent('itemMarkChange', column.id, e.detail)}
+      on:itemSelectChange={e => forwardEvent('itemSelectChange', column.id, e.detail)}
       on:itemDragChange={e => handleOnItemDrag(column.id, e.detail)}
       on:itemDrop={e => handleItemDrop(column.id, e.detail)}
     />
@@ -112,8 +114,8 @@
 <style>
   .oscd-board {
     width: 100%;
+    height: 100%;
     display: flex;
-    gap: 0.5rem;
   }
 </style>
 

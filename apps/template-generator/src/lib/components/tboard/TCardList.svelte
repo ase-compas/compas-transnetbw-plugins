@@ -9,6 +9,7 @@
   const dispatch = createEventDispatcher();
 
   export let selectable: boolean = false;
+  export let showSelectionIndicator: boolean = false;
   export let itemsDraggable: boolean;
 
   export let items: TItem[] = [];
@@ -99,23 +100,23 @@
       subtitle={item.subtitle}
       references={item.references}
       badgeText={item.badgeText}
-
       canEdit={item.canEdit}
       canMark={item.canMark}
-      canSelect={selectable && item.canSelect}
+      selectionEnabled={selectable}
+      showSelectionIndicator={showSelectionIndicator}
       canApplyDefaults={item.canApplyDefaults}
       canUnlink={item.canUnlink}
-
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
+      canDrag={itemsDraggable}
       isOver={isOverId === item.id}
-
       marked={item.marked}
+      isMandatory={item.isMandatory}
       error={item.error}
       errorMessage={item.errorMessage}
-
       bind:selected={item.selected}
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
+      on:selectChange={() => dispatch('itemSelectChange', {item})}
       on:click={() => forwardEvent('itemClick', item)}
       on:edit={() => forwardEvent('itemEdit', item)}
       on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}

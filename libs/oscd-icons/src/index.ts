@@ -18,3 +18,4 @@ export { default as OscdPlayCircleIcon } from './oscd-play-circle-icon/OscdPlayC
 export { default as OscdInfoIcon } from './oscd-info-icon/OscdInfoIcon.svelte';
 export { default as OscdWandStarsIcon } from './oscd-wand-stars-icon/OscdWandStarsIcon.svelte';
 export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte'
+export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte'

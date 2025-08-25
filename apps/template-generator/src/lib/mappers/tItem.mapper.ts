@@ -3,6 +3,7 @@ import { BDA, DA, DAType, DO, DODetails, DOType, EnumType } from '../domain';
 
 export type TItemMapperConfig = {
   marked?: boolean;
+  isMandatory?: boolean;
   canEdit?: boolean;
   canMark?: boolean;
   canSelect?: boolean;
@@ -26,6 +27,7 @@ function buildTItemBase(
     subtitle,
     references,
     marked: config.marked ?? false,
+    isMandatory: config.isMandatory ?? false,
     selected: false,
     canEdit: config.canEdit ?? false,
     canApplyDefaults: config.canApplyDefaults ?? false,
@@ -39,10 +41,11 @@ function buildTItemBase(
 }
 
 export class TItemMapper {
-  static fromDataObject(id: string, { name, type, cdc, metadata: {isConfigured} }: DODetails, config?: TItemMapperConfig): TItem {
+  static fromDataObject(id: string, { name, type, cdc, metadata: {isConfigured, isMandatory} }: DODetails, config?: TItemMapperConfig): TItem {
     const item = buildTItemBase(id, name, type, undefined, config);
     item.badgeText = cdc;
     item.selected = isConfigured;
+    item.isMandatory = isMandatory;
     return item;
   }
 
