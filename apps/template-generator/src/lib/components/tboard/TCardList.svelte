@@ -99,6 +99,7 @@
       canEdit={item.canEdit}
       canMark={item.canMark}
       canSelect={selectable && item.canSelect}
+      canApplyDefaults={item.canApplyDefaults}
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
       isOver={isOverId === item.id}
@@ -109,6 +110,7 @@
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
       on:click={() => forwardEvent('itemClick', item)}
       on:edit={() => forwardEvent('itemEdit', item)}
+      on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}
     />
     </div>
   {/each}

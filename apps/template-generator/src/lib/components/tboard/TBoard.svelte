@@ -92,6 +92,7 @@
       on:applyDefaults={e => forwardEvent('applyDefaults', column.id, e.detail)}
       on:itemClick={e => forwardEvent('itemClick', column.id, e.detail)}
       on:itemEdit={e => forwardEvent('itemEdit', column.id, e.detail)}
+      on:itemApplyDefaults={e => forwardEvent('itemApplyDefaults', column.id, e.detail)}
       on:itemMarkChange={e => forwardEvent('itemMarkChange', column.id, e.detail)}
       on:itemDragChange={e => handleOnItemDrag(column.id, e.detail)}
       on:itemDrop={e => handleItemDrop(column.id, e.detail)}

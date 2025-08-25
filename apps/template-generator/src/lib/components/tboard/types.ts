@@ -11,6 +11,7 @@ export type TItem = {
   canEdit?: boolean;
   canMark?: boolean;
   canSelect?: boolean;
+  canApplyDefaults?: boolean;
 
   acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
 

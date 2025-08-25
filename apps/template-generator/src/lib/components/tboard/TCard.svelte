@@ -14,6 +14,7 @@
   export let canEdit: boolean = false;
   export let canMark: boolean = false;
   export let canSelect: boolean = false;
+  export let canApplyDefaults: boolean = false;
   export let canClick: boolean = false;
 
   export let marked: boolean = false;
@@ -63,6 +64,12 @@
     }
   }
 
+  function handleOnApplyDefaults() {
+    if (canApplyDefaults) {
+      dispatch('applyDefaults');
+    }
+  }
+
 </script>
 
 <div
@@ -92,6 +99,13 @@
       <!-- Actions: Start -->
       <div class="actions">
         <span class="oscd-references" class:invisible={!references}>{references}</span>
+        {#if canApplyDefaults}
+          <OscdIconActionButton
+            type="wand-stars"
+            tooltip="Apply Defaults"
+            onClick={handleOnApplyDefaults}
+          />
+        {/if}
         {#if canMark}
           <OscdIconActionButton
             type="visibility"

@@ -78,6 +78,7 @@
     dropCandidate={dropCandidate}
     on:itemClick={(e) => forwardEvent('itemClick', e.detail)}
     on:itemEdit={(e) => forwardEvent('itemEdit', e.detail)}
+    on:itemApplyDefaults={(e) => forwardEvent('itemApplyDefaults', e.detail)}
     on:itemMarkChange={(e) => forwardEvent('itemMarkChange', e.detail)}
     on:itemDragChange={(e) => forwardEvent('itemDragChange', e.detail)}
     on:itemDrop={(e) => forwardEvent('itemDrop', e.detail)}
