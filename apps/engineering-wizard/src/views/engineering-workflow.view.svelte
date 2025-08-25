@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { OscdTooltip } from '../../../../libs/oscd-component/src';
-  import { OscdCheckIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../libs/oscd-icons/src';
+  import { OscdCheckIcon, OscdChevronLeftIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../libs/oscd-icons/src';
   import type { Plugin as BasePlugin } from '@oscd-transnet-plugins/shared';
 
   export type ViewPlugin = BasePlugin & { src: string };
@@ -90,10 +90,11 @@
 
 <div class="stepper">
   <div style="display:flex;align-items:center;gap:0.5rem;">
-    <button class="back-button" on:click={exitWorkflow}>
-      exit
-    </button>
-    <p class="plugin-flow-title">Plugin Flow</p>
+    <div class="back-container" on:click={exitWorkflow}>
+      <OscdChevronLeftIcon></OscdChevronLeftIcon>
+      <span>Back to Overview</span>
+      <span class="back-container__title">Engineering Wizard</span>
+    </div>
   </div>
 
   <div class="plugin-steps">
@@ -141,6 +142,18 @@
   * {
     font-family: Roboto, sans-serif;
     font-weight: 500;
+  }
+
+  .back-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #DAE3E6;
+  }
+
+  .back-container__title {
+    margin-left: 1rem;
+    color: white;
   }
 
   .stepper {
