@@ -7,6 +7,7 @@ export type TItemMapperConfig = {
   canMark?: boolean;
   canSelect?: boolean;
   canApplyDefaults?: boolean;
+  canUnlink?: boolean;
   acceptDrop?: (target: TBoardItemContext) => boolean;
   error?: boolean;
   errorMessage?: string;
@@ -28,6 +29,7 @@ function buildTItemBase(
     selected: false,
     canEdit: config.canEdit ?? false,
     canApplyDefaults: config.canApplyDefaults ?? false,
+    canUnlink: config.canUnlink ?? false,
     canMark: config.canMark ?? false,
     canSelect: config.canSelect ?? false,
     acceptDrop: config.acceptDrop ?? null,

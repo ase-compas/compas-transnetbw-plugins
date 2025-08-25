@@ -17,3 +17,4 @@ export { default as OscdWarningIcon } from './oscd-warning-icon/OscdWarningIcon.
 export { default as OscdPlayCircleIcon } from './oscd-play-circle-icon/OscdPlayCircleIcon.svelte';
 export { default as OscdInfoIcon } from './oscd-info-icon/OscdInfoIcon.svelte';
 export { default as OscdWandStarsIcon } from './oscd-wand-stars-icon/OscdWandStarsIcon.svelte';
+export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte'

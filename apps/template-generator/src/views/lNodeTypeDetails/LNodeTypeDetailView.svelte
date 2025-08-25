@@ -61,7 +61,8 @@
       ({
         canSelect: isEditMode,
         canApplyDefaults: isEditMode,
-        acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target),
+        canUnlink: isEditMode && !item.metadata.isMandatory && item.type !== null && item.type !== '',
+    acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target),
         error: (item.metadata.isConfigured || item.metadata.isMandatory) && !item.type,
         errorMessage: 'Data object must reference a type',
       })),
@@ -219,6 +220,7 @@
       on:itemMarkChange={({detail: {itemId, marked}}) => handleToggleMark(itemId, marked)}
       on:itemDrop={e => handleItemDrop(e.detail)}
       on:itemApplyDefaults={e => console.log(e.detail)}
+      on:itemUnlink={e => console.log(e.detail)}
     />
   </div>
 </div>

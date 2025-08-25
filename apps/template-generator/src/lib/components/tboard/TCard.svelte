@@ -16,6 +16,7 @@
   export let canSelect: boolean = false;
   export let canApplyDefaults: boolean = false;
   export let canClick: boolean = false;
+  export let canUnlink: boolean = true;
 
   export let marked: boolean = false;
   export let selected: boolean = false;
@@ -70,6 +71,12 @@
     }
   }
 
+  function handleOnUnlink() {
+    if (canUnlink) {
+      dispatch('unlink');
+    }
+  }
+
 </script>
 
 <div
@@ -99,6 +106,13 @@
       <!-- Actions: Start -->
       <div class="actions">
         <span class="oscd-references" class:invisible={!references}>{references}</span>
+        {#if canUnlink}
+          <OscdIconActionButton
+            type="link-off"
+            tooltip="Remove Reference"
+            onClick={handleOnUnlink}
+          />
+        {/if}
         {#if canApplyDefaults}
           <OscdIconActionButton
             type="wand-stars"

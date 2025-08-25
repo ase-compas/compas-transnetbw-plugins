@@ -96,21 +96,27 @@
       subtitle={item.subtitle}
       references={item.references}
       badgeText={item.badgeText}
+
       canEdit={item.canEdit}
       canMark={item.canMark}
       canSelect={selectable && item.canSelect}
       canApplyDefaults={item.canApplyDefaults}
+      canUnlink={item.canUnlink}
+
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
       isOver={isOverId === item.id}
+
       marked={item.marked}
       error={item.error}
       errorMessage={item.errorMessage}
+
       bind:selected={item.selected}
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
       on:click={() => forwardEvent('itemClick', item)}
       on:edit={() => forwardEvent('itemEdit', item)}
       on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}
+      on:unlink={() => forwardEvent('itemUnlink', item)}
     />
     </div>
   {/each}
