@@ -93,7 +93,7 @@
              }}
          on:consider={e => handleDropConsider(e, item.id)}
          on:finalize={e => handleDropFinalize(e, item.id)}
-         animate:flip={{ duration: 250 }}
+         animate:flip={{ duration: 400 }}
     >
     <TCard
       title={item.title}
@@ -116,7 +116,7 @@
       errorMessage={item.errorMessage}
       bind:selected={item.selected}
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
-      on:selectChange={() => dispatch('itemSelectChange', {item})}
+      on:selectChange={() => dispatch('itemSelectChange', {item, itemId: item.id})}
       on:click={() => forwardEvent('itemClick', item)}
       on:edit={() => forwardEvent('itemEdit', item)}
       on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}

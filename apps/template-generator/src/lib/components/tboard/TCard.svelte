@@ -74,7 +74,7 @@
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
-          <Checkbox bind:checked={selected} on:change={() => dispatch('selectChange')}/>
+          <Checkbox checked={selected} on:change={() => dispatch('selectChange')}/>
         </OscdTooltip>
       {/if}
     </div>

@@ -53,14 +53,8 @@
   }
 
   // Derived data
-  $: dataObjects = (logicalNodeType?.dataObjects ?? []).slice().sort((a, b) => {
-    // Group: 0 = mandatory, 1 = configured, 2 = rest
-    const groupA = a.metadata.isMandatory ? 0 : (a.metadata.isConfigured ? 1 : 2);
-    const groupB = b.metadata.isMandatory ? 0 : (b.metadata.isConfigured ? 1 : 2);
-    if (groupA !== groupB) return groupA - groupB;
-    // Sort by name within group
-    return a.name.localeCompare(b.name);
-  });
+  $: dataObjects = logicalNodeType?.dataObjects ?? []
+
   $: columns = getColumns(isEditMode);
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
   $: data = {
@@ -78,6 +72,16 @@
     enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })
   };
 
+  $: sortedData = {
+    ...data,
+    refs: (data.refs ?? []).slice().sort((a, b) => {
+      const groupA = a.isMandatory ? 0 : (a.selected ? 1 : 2);
+      const groupB = b.isMandatory ? 0 : (b.selected ? 1 : 2);
+      if (groupA !== groupB) return groupA - groupB;
+      return a.title.localeCompare(b.title);
+    }),
+  };
+
   // UI Helpers
   function acceptDrop(name: string, target: TBoardItemContext): boolean {
     if (!logicalNodeType) return false;
@@ -89,6 +93,19 @@
   function handleToggleMark(itemId: string, marked: boolean) {
     marked ? markedItemIds.add(itemId) : markedItemIds.delete(itemId);
     dataTypes = loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, Array.from(markedItemIds));
+  }
+
+  function handleToggleSelect({ columnId, itemId }: { columnId: string; itemId: string }) {
+    const colItems = data[columnId];
+    if (!colItems) return;
+
+    // Update the selected property on the item
+    const idx = colItems.findIndex(i => i.id === itemId);
+    if (idx === -1) return;
+
+    colItems[idx] = { ...colItems[idx], selected: !colItems[idx].selected }; // spread to trigger reactivity
+
+    data = { ...data, [columnId]: colItems };
   }
 
   function handleItemDrop({ source, target }: { source: TBoardItemContext; target: TBoardItemContext }) {
@@ -221,10 +238,11 @@
   <div class="oscd-details-board">
     <TBoard
       {columns}
-      {data}
+      data={sortedData}
       on:columnActionClick={e => handleActionClick(e.detail)}
       on:itemEdit={e => handleOnEdit(e.detail)}
       on:itemMarkChange={({detail: {itemId, marked}}) => handleToggleMark(itemId, marked)}
+      on:itemSelectChange={e => handleToggleSelect(e.detail)}
       on:itemDrop={e => handleItemDrop(e.detail)}
       on:itemApplyDefaults={e => console.log(e.detail)}
       on:itemUnlink={e => console.log(e.detail)}
