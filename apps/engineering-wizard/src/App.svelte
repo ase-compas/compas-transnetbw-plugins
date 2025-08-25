@@ -72,6 +72,11 @@
   function goBack() {
     selected = null;
   }
+
+  function exitWorkflow() {
+    running = null;
+    selected = null;
+  }
 </script>
 
 {#if running}
@@ -80,6 +85,7 @@
     {editCount}
     {host}
     plugins={running.plugins}
+    on:exit={exitWorkflow}
   />
 {:else if selected}
   <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={onStart} />

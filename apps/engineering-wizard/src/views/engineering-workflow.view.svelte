@@ -2,12 +2,14 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { OscdTooltip } from '../../../../libs/oscd-component/src';
   import { OscdCheckIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../libs/oscd-icons/src';
-  import type { Plugin } from '@oscd-transnet-plugins/shared';
+  import type { Plugin as BasePlugin } from '@oscd-transnet-plugins/shared';
+
+  export type ViewPlugin = BasePlugin & { src: string };
 
   export let doc: XMLDocument | undefined;
   export let editCount  = -1;
   export let host:  HTMLElement;
-  export let plugins: Plugin[] = [];
+  export let plugins: ViewPlugin[] = [];
 
   let tagName: string | null = null;
   let editorTabsVisible = false;
@@ -16,9 +18,7 @@
   const statuses: ('check' | 'warning' | 'error')[] = ['check', 'warning', 'error'];
   let pluginStatus: Record<string, 'check' | 'warning' | 'error'> = {};
 
-  const dispatch = createEventDispatcher<{
-    'toggle-editor-tabs': { visible?: boolean };
-  }>();
+  const dispatch = createEventDispatcher<any>();
   function getLayoutContainer(): HTMLElement | null {
     const openScd = document.querySelector('open-scd');
     return openScd?.shadowRoot?.querySelector('compas-layout') ?? null;
@@ -34,7 +34,7 @@
     );
   }
 
-  async function loadPlugin(plugin: Plugin) {
+  async function loadPlugin(plugin: ViewPlugin) {
 
     const mod = await import(plugin.src);
     if (!customElements.get(plugin.id))
@@ -81,11 +81,16 @@
     if (plugins.length) loadPlugin(plugins[0]);
     setEditorTabsVisibility(false);
   });
+
+  function exitWorkflow() {
+    setEditorTabsVisibility(true);
+    dispatch('exit');
+  }
 </script>
 
 <div class="stepper">
   <div style="display:flex;align-items:center;gap:0.5rem;">
-    <button class="back-button" on:click={() => setEditorTabsVisibility(true)}>
+    <button class="back-button" on:click={exitWorkflow}>
       exit
     </button>
     <p class="plugin-flow-title">Plugin Flow</p>
