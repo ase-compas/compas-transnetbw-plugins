@@ -81,10 +81,12 @@
       title={column.title}
       subtitle={column.subtitle}
       highlighted={column.highlighted}
+      dragAndDropBorder={column.dragAndDropBorder}
       actionLabel={column.actionLabel}
       hasSearch={column.hasSearch}
       hasAction={column.hasAction}
       showApplyDefaults={column.showApplyDefaults}
+      canSelectItems={column.canSelectItems}
       itemsDraggable={column.itemsDraggable}
       items={data[column.id]}
       dropCandidate={dropCandidate}

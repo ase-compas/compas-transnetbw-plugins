@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdIconActionButton, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '@smui/checkbox';
   import { OscdWarningIcon } from '@oscd-transnet-plugins/oscd-icons';
@@ -40,9 +40,9 @@
       return canDrop ? 'drag-can-drop' : 'drag-cannot-drop';
     }
 
-    if (canMark && canSelect && marked && selected) return 'marked-selected';
-    if (canMark && marked) return 'marked';
-    if (canSelect && selected) return 'selected';
+    if (marked && selected) return 'marked selected';
+    if (marked) return 'marked';
+    if (selected) return 'selected';
 
     return '';
   }
@@ -90,7 +90,9 @@
   <!-- Selection Checkbox: Start -->
   {#if canSelect}
     <div class="selection">
-      <Checkbox bind:checked={selected}/>
+      <OscdTooltip content="Configure" hoverDelay={500}>
+        <Checkbox bind:checked={selected}/>
+      </OscdTooltip>
     </div>
   {/if}
   <!-- Selection Checkbox: End -->
@@ -111,6 +113,7 @@
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
+            fillColor={selected ? 'white' : 'var(--mdc-theme-primary)' }
           />
         {/if}
         {#if canApplyDefaults}
@@ -118,6 +121,7 @@
             type="wand-stars"
             tooltip="Apply Defaults"
             onClick={handleOnApplyDefaults}
+            fillColor={selected ? 'white' : 'var(--mdc-theme-primary)' }
           />
         {/if}
         {#if canMark}
@@ -125,6 +129,7 @@
             type="visibility"
             tooltip="Mark"
             onClick={toggleMark}
+            fillColor={marked ? '#D9D800': (selected ? 'white' : 'var(--mdc-theme-primary)') }
           />
         {/if}
         {#if canEdit}
@@ -132,6 +137,7 @@
             type="edit"
             tooltip="Edit"
             onClick={handleOnEdit}
+            fillColor={selected ? 'white' : 'var(--mdc-theme-primary)' }
           />
         {/if}
       </div>
@@ -161,6 +167,7 @@
     border-radius: 8px;
     transition: background-color 0.2s ease;
     display: flex;
+    align-items: center;
   }
 
   div.content {
@@ -172,13 +179,18 @@
 
   /* Marked, Selected, etc. — your existing states */
   .oscd-card-item.marked {
-    background-color: #D9D800;
+    border: 2px solid #D9D800;
+    box-shadow: 0 0 6px 2px rgba(217, 216, 0, 0.3); /* soft glow */
+
   }
   .oscd-card-item.selected {
-    background-color: #E0F7FA;
+    background-color: var(--mdc-theme-primary, #ff3e00);
   }
-  .oscd-card-item.marked-selected {
-    background-color: #B2EBF2;
+
+  .oscd-card-item.selected .oscd-card-title,
+  .oscd-card-item.selected .oscd-card-subtitle,
+  .oscd-card-item.selected .oscd-references {
+    color: white;
   }
 
   /* ✅ Drop target — valid */
@@ -198,6 +210,13 @@
     border: 2px dashed transparent;
     background-color: #F5F5F5; /* light gray */
     opacity: 0.6;
+  }
+
+
+  .selection {
+    display: flex;
+    align-items: flex-start;
+    flex-shrink: 0;
   }
 
   .header-row {
@@ -253,6 +272,7 @@
 
   .oscd-card-item.error {
     border: 2px solid red;
+    box-shadow: 0 0 6px 2px rgba(255, 0, 0, 0.3); /* red glow */
   }
 
   .oscd-card-item__error-message {

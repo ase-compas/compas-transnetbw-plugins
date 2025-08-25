@@ -7,6 +7,8 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       title: 'Referenced Data Types',
       hasSearch: true,
       highlighted: true,
+      dragAndDropBorder: isEditMode,
+      canSelectItems: isEditMode,
       itemsDraggable: false,
     },
     {
@@ -15,7 +17,8 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       actionLabel: 'Create',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: isEditMode
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     },
     {
       id: 'datypes',

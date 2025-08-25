@@ -4,6 +4,7 @@
   import TCard from './TCard.svelte';
   import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
   import { isDragTarget, isDroppable } from './utils';
+  import { flip } from 'svelte/animate';
 
   const dispatch = createEventDispatcher();
 
@@ -90,7 +91,9 @@
               dropTargetStyle: {}
              }}
          on:consider={e => handleDropConsider(e, item.id)}
-         on:finalize={e => handleDropFinalize(e, item.id)}>
+         on:finalize={e => handleDropFinalize(e, item.id)}
+         animate:flip={{ duration: 250 }}
+    >
     <TCard
       title={item.title}
       subtitle={item.subtitle}

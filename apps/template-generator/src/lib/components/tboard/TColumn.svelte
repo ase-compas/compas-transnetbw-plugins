@@ -17,6 +17,8 @@
 
   export let showApplyDefaults: boolean = false;
   export let highlighted: boolean = false; // If true, visually highlights the column background
+  export let dragAndDropBorder: boolean = false; // If true, shows a dashed border around the column to indicate a valid drop target
+  export let canSelectItems: boolean = false;
 
   export let itemsDraggable: boolean = false;
   export let dropCandidate: TBoardItemContext | null = null;
@@ -47,7 +49,10 @@
   }
 </script>
 
-<div class="oscd-tcolumn" class:apply-defaults={highlighted}>
+<div class="oscd-tcolumn"
+     class:apply-defaults={highlighted}
+     class:drag-border={dragAndDropBorder}
+>
   {#if !showApplyDefaults}
   <TColumnSearchHeader
     title={title}
@@ -73,7 +78,7 @@
 
   <TCardList
     items={filteredItems}
-    selectable={showApplyDefaults}
+    selectable={canSelectItems}
     itemsDraggable={itemsDraggable}
     dropCandidate={dropCandidate}
     on:itemClick={(e) => forwardEvent('itemClick', e.detail)}
@@ -98,5 +103,9 @@
   }
   .oscd-tcolumn.apply-defaults {
     background-color: color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 13%, transparent);
+  }
+
+  .oscd-tcolumn.drag-border {
+    border: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);;
   }
 </style>

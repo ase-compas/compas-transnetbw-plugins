@@ -39,9 +39,10 @@ function buildTItemBase(
 }
 
 export class TItemMapper {
-  static fromDataObject(id: string, { name, type, cdc }: DODetails, config?: TItemMapperConfig): TItem {
+  static fromDataObject(id: string, { name, type, cdc, metadata: {isConfigured} }: DODetails, config?: TItemMapperConfig): TItem {
     const item = buildTItemBase(id, name, type, undefined, config);
     item.badgeText = cdc;
+    item.selected = isConfigured;
     return item;
   }
 
@@ -58,7 +59,9 @@ export class TItemMapper {
   }
 
   static fromDataObjectType(id: string, { id: title, cdc, dataAttributes, subDataObjects }: DOType, config?: TItemMapperConfig): TItem {
-    return buildTItemBase(id, title, cdc, dataAttributes?.length + subDataObjects?.length, config);
+    const item =  buildTItemBase(id, title, undefined, dataAttributes?.length + subDataObjects?.length, config);
+    item.badgeText = cdc;
+    return item;
   }
 
   static fromDataAttributeType(id: string, { id: title, basicDataAttributes }: DAType, config?: TItemMapperConfig): TItem {

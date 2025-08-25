@@ -53,7 +53,14 @@
   }
 
   // Derived data
-  $: dataObjects = logicalNodeType?.dataObjects ?? [];
+  $: dataObjects = (logicalNodeType?.dataObjects ?? []).slice().sort((a, b) => {
+    // Group: 0 = mandatory, 1 = configured, 2 = rest
+    const groupA = a.metadata.isMandatory ? 0 : (a.metadata.isConfigured ? 1 : 2);
+    const groupB = b.metadata.isMandatory ? 0 : (b.metadata.isConfigured ? 1 : 2);
+    if (groupA !== groupB) return groupA - groupB;
+    // Sort by name within group
+    return a.name.localeCompare(b.name);
+  });
   $: columns = getColumns(isEditMode);
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
   $: data = {

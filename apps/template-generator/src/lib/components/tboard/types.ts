@@ -30,6 +30,8 @@ export type TColumnConfig = {
   hasAction?: boolean;
   showApplyDefaults?: boolean;
   highlighted?: boolean;
+  dragAndDropBorder?: boolean;
+  canSelectItems?: boolean;
 
   itemsDraggable?: boolean; // If items in this column can be dragged
 }
