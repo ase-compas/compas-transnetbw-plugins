@@ -5,8 +5,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     {
       id: 'refs',
       title: 'Referenced Data Types',
-      hasSearch: false,
-      showApplyDefaults: isEditMode,
+      hasSearch: true,
       highlighted: true,
       itemsDraggable: false,
     },
