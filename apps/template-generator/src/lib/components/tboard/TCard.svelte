@@ -70,7 +70,7 @@
     <div class="selection">
       {#if isMandatory}
         <OscdTooltip content="Mandatory Object" hoverDelay={500}>
-          <OscdLockIcon width="33px" svgStyles={selected ? 'fill: white' : 'fill: gray'}/>
+          <OscdLockIcon width="33px" svgStyles={selected || isMandatory ? 'fill: white' : 'fill: gray'}/>
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
@@ -97,7 +97,7 @@
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
-            fillColor={selected ? 'white' : 'var(--mdc-theme-primary)' }
+            fillColor={selected || isMandatory ? 'white' : 'var(--mdc-theme-primary)' }
           />
         {/if}
         {#if canApplyDefaults}
@@ -105,7 +105,7 @@
             type="wand-stars"
             tooltip="Apply Defaults"
             onClick={handleOnApplyDefaults}
-            fillColor={selected ? 'white' : 'var(--mdc-theme-primary)' }
+            fillColor={selected || isMandatory ? 'white' : 'var(--mdc-theme-primary)' }
           />
         {/if}
         {#if canMark}
@@ -113,7 +113,7 @@
             type="visibility"
             tooltip="Mark"
             onClick={toggleMark}
-            fillColor={marked ? '#D9D800': (selected ? 'white' : 'var(--mdc-theme-primary)') }
+            fillColor={marked ? '#D9D800': (selected  || isMandatory ? 'white' : 'var(--mdc-theme-primary)') }
           />
         {/if}
         {#if canEdit}
@@ -121,7 +121,7 @@
             type="edit"
             tooltip="Edit"
             onClick={handleOnEdit}
-            fillColor={selected ? 'white' : 'var(--mdc-theme-primary)' }
+            fillColor={selected || isMandatory ? 'white' : 'var(--mdc-theme-primary)' }
           />
         {/if}
       </div>
@@ -181,7 +181,6 @@
 
   .oscd-card-item.unselected {
     background-color: #F0F4F6; /* subtle bluish-gray */
-    cursor: pointer;
 
     border: 1px solid #E0E0E0;
     border-left: 4px solid var(--mdc-theme-primary, #004552); /* clickable accent */
