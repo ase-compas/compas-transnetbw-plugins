@@ -3,20 +3,18 @@
   import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
   import { OscdBreadcrumbs } from '../../../../libs/oscd-component/src';
   import Button from '@smui/button';
-  import { setEditorTabsVisibility } from '../services/engineering-workflow.service';
   import ProcessStepper from '../components/engineering-process-detail/ProcessStepper.svelte';
   import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
   import PluginGroups from '../components/engineering-process-detail/PluginGroups.svelte';
   import { getBreadcrumbs, getPluginGroups } from '../services/engineering-process-detail.service';
+  import { editorTabsVisible } from '../stores/editor-tabs.store';
 
   export let proc: Process | null = null;
 
   const dispatch = createEventDispatcher();
-  let editorTabsVisible = true;
 
   function onCrumbClick(e: CustomEvent<{ index: number }>) {
-    setEditorTabsVisibility(true);
-    editorTabsVisible = true;
+    editorTabsVisible.set(true);
     if (e.detail.index === 0) dispatch("back");
   }
 
@@ -30,13 +28,11 @@
   $: pluginGroups = getPluginGroups(proc);
 
   function enterEditMode() {
-    editorTabsVisible = false;
-    setEditorTabsVisibility(false);
+    editorTabsVisible.set(false);
   }
 
   function exitWorkflow() {
-    setEditorTabsVisibility(true);
-    editorTabsVisible = true;
+    editorTabsVisible.set(true);
     dispatch("back");
   }
 
@@ -45,7 +41,7 @@
 </script>
 
 <div class="page-content">
-  {#if !editorTabsVisible}
+  {#if !$editorTabsVisible}
     <div class="stepper">
       <WorkflowBack on:back={exitWorkflow} />
 

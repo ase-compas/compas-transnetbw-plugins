@@ -4,10 +4,10 @@
   import WorkflowStepper from '../components/engineering-workflow/WorkflowStepper.svelte';
   import type { ViewPlugin } from '../types/view-plugin';
   import {
-    setEditorTabsVisibility as setEditorTabsVisibilityEvent,
     ensureCustomElementDefined,
     preloadAllPlugins,
   } from '../services/engineering-workflow.service';
+  import { editorTabsVisible } from '../stores/editor-tabs.store';
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
@@ -15,18 +15,12 @@
   export let plugins: ViewPlugin[] = [];
 
   let tagName: string | null = null;
-  let editorTabsVisible = false;
   let visited: string[] = [];
 
   const statuses: ('check' | 'warning' | 'error')[] = ['check', 'warning', 'error'];
   let pluginStatus: Record<string, 'check' | 'warning' | 'error'> = {};
 
   const dispatch = createEventDispatcher<any>();
-
-  function setEditorTabsVisibility(visible: boolean) {
-    editorTabsVisible = visible;
-    setEditorTabsVisibilityEvent(visible);
-  }
 
   async function loadPlugin(plugin: ViewPlugin) {
     await ensureCustomElementDefined(plugin);
@@ -66,11 +60,11 @@
       preloadAllPlugins(plugins).catch(console.error);
       loadPlugin(plugins[0]);
     }
-    setEditorTabsVisibility(false);
+    editorTabsVisible.set(false);
   });
 
   function exitWorkflow() {
-    setEditorTabsVisibility(true);
+    editorTabsVisible.set(true);
     dispatch('exit');
   }
 </script>
