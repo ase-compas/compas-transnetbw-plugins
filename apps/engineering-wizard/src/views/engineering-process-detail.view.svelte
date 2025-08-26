@@ -136,8 +136,7 @@
 
   .plugin__title {
     font-weight: 500;
-    color: var(--on-brand);
-    text-transform: uppercase;
+    color: #DAE3E6;
   }
 
   .plugin__items {
