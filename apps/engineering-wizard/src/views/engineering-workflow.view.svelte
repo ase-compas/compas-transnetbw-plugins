@@ -36,9 +36,10 @@
 
   async function loadPlugin(plugin: ViewPlugin) {
 
-    const mod = await import(plugin.src);
-    if (!customElements.get(plugin.id))
+    if (!customElements.get(plugin.id)) {
+      const mod = await import(plugin.src);
       customElements.define(plugin.id, mod.default);
+    }
 
     tagName = plugin.id;
 
@@ -52,6 +53,20 @@
     }
   }
 
+  async function preloadAllPlugins() {
+    await Promise.all(
+      plugins.map(async p => {
+        try {
+          if (!customElements.get(p.id)) {
+            const mod = await import(p.src);
+            customElements.define(p.id, mod.default);
+          }
+        } catch (e) {
+          console.error('Failed to preload plugin', p.id, e);
+        }
+      }),
+    );
+  }
 
   function nextPlugin()     { advance(+1); }
   function previousPlugin() { advance(-1); }
@@ -68,17 +83,18 @@
 
   $: tooltipText = plugins.reduce<Record<string,string>>((map, p) => {
     const status = pluginStatus[p.id];
-    map[p.id] =
-      status === 'error'
-        ? `Resolve errors in ${p.name}`
-        : status === 'warning'
-          ? `Check warnings for ${p.name}`
-          : `Load the ${p.name} editor`;
+    // Only show the status word; if no status yet, no tooltip
+    map[p.id] = status ?? '';
     return map;
   }, {});
 
   onMount(() => {
-    if (plugins.length) loadPlugin(plugins[0]);
+    if (plugins.length) {
+      // Kick off preloading for all plugins in the background
+      preloadAllPlugins().catch(console.error);
+      // Then load the initial plugin
+      loadPlugin(plugins[0]);
+    }
     setEditorTabsVisibility(false);
   });
 
@@ -100,7 +116,7 @@
   <div class="plugin-steps">
     {#each plugins as plugin, i}
       <div class="plugin-step">
-        <OscdTooltip text={tooltipText[plugin.id]} position="bottom">
+        <OscdTooltip content={tooltipText[plugin.id]} side="bottom">
           <button
             on:click={() => loadPlugin(plugin)}
             class:not-visited={!visited.includes(plugin.id)}
@@ -170,11 +186,6 @@
     gap: 0.5rem;
     justify-self: center;
     align-items: center;
-  }
-
-  .plugin-flow-title {
-    font-weight: 500;
-    color: #ffffff;
   }
 
   .stepper-navigation {
