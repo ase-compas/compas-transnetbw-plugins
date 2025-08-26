@@ -9,13 +9,16 @@
     { id: 'validator-configuration', label: 'Validator Configuration' },
   ];
 
+  export let currentId: string | null = null;
+  export let visited: string[] = [];
+
   const onSelect = (e: CustomEvent<string>) => dispatch('select', e.detail);
 </script>
 
 <StepperRow
   items={items}
-  visited={[]}
-  currentId={null}
+  visited={visited}
+  currentId={currentId}
   status={{}}
   tooltipMap={{}}
   on:select={onSelect}

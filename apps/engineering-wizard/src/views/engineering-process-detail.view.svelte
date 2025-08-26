@@ -13,6 +13,8 @@
 
   const dispatch = createEventDispatcher();
 
+  let isEditMode = false;
+
   function onCrumbClick(e: CustomEvent<{ index: number }>) {
     editorTabsVisible.set(true);
     if (e.detail.index === 0) dispatch("back");
@@ -28,47 +30,79 @@
   $: pluginGroups = getPluginGroups(proc);
 
   function enterEditMode() {
+    isEditMode = true;
     editorTabsVisible.set(false);
+    currentStepIndex = 0;
+    visited = [];
   }
 
   function exitWorkflow() {
+    isEditMode = false;
     editorTabsVisible.set(true);
     dispatch("back");
   }
 
-  const nextStep = () => dispatch("next");
-  const previousStep = () => dispatch("previous");
+  const stepIds = ['process-definition', 'validator-configuration'];
+  let currentStepIndex = 0;
+  $: currentId = stepIds[currentStepIndex] ?? null;
+  let visited: string[] = [];
+
+  const onStepSelect = (e: CustomEvent<string>) => {
+    const idx = stepIds.indexOf(e.detail);
+    if (idx !== -1) currentStepIndex = idx;
+  };
+
+  const nextStep = () => {
+    if (currentStepIndex < stepIds.length - 1) {
+      const current = stepIds[currentStepIndex];
+      if (!visited.includes(current)) visited = [...visited, current];
+      currentStepIndex = currentStepIndex + 1;
+    }
+    dispatch("next");
+  };
+
+  const previousStep = () => {
+    if (currentStepIndex > 0) {
+      currentStepIndex = currentStepIndex - 1;
+    }
+    dispatch("previous");
+  };
 </script>
 
 <div class="page-content">
-  {#if !$editorTabsVisible}
+  {#if isEditMode}
     <div class="stepper">
       <WorkflowBack on:back={exitWorkflow} />
 
-      <ProcessStepper />
+      <ProcessStepper {currentId} {visited} on:select={onStepSelect} />
 
       <div class="stepper-navigation">
         <button type="button" on:click={previousStep} class="btn btn--back" aria-label="Previous step">Back</button>
         <button type="button" on:click={nextStep} class="btn btn--next" aria-label="Next step">Next</button>
       </div>
     </div>
+
+    {#if currentId === 'process-definition'}
+      <div class="step-content">Text a</div>
+    {:else if currentId === 'validator-configuration'}
+      <div class="step-content">Text b</div>
+    {/if}
+  {:else}
+    <div class="header">
+      <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
+
+      <Button
+        variant="raised"
+        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+        on:click={start}
+        disabled={!proc}
+        aria-label="Start process"
+      >
+        START PROCESS
+      </Button>
+    </div>
+    <PluginGroups {pluginGroups} on:edit={enterEditMode} />
   {/if}
-
-  <div class="header">
-    <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
-
-    <Button
-      variant="raised"
-      style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-      on:click={start}
-      disabled={!proc}
-      aria-label="Start process"
-    >
-      START PROCESS
-    </Button>
-  </div>
-
-  <PluginGroups {pluginGroups} on:edit={enterEditMode} />
 </div>
 
 <style>
@@ -123,5 +157,9 @@
   .btn--next {
     background-color: #ffffff;
     color: var(--brand);
+  }
+
+  .step-content {
+    padding: 1rem 2rem;
   }
 </style>
