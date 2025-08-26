@@ -119,6 +119,6 @@
   }
 
   .oscd-tcolumn.drag-border {
-    border: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);;
+    outline: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);;
   }
 </style>

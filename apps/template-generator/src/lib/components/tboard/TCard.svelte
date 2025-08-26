@@ -162,7 +162,7 @@
 
   /* Marked, Selected, etc. — your existing states */
   .oscd-card-item.marked {
-    border: 2px solid #D9D800;
+    outline: 2px solid #D9D800;
     box-shadow: 0 0 6px 2px rgba(217, 216, 0, 0.3); /* soft glow */
 
   }
@@ -182,14 +182,14 @@
   .oscd-card-item.unselected {
     background-color: #F0F4F6; /* subtle bluish-gray */
 
-    border: 1px solid #E0E0E0;
+    outline: 1px solid #E0E0E0;
     border-left: 4px solid var(--mdc-theme-primary, #004552); /* clickable accent */
     padding-left: 0.75rem; /* space for stripe */
     transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
   .oscd-card-item.unselected.marked {
-    border: 2px solid #D9D800; /* yellow override */
+    outline: 2px solid #D9D800; /* yellow override */
     box-shadow: 0 0 6px 2px rgba(217, 216, 0, 0.3);
   }
 
@@ -203,7 +203,7 @@
 
   /* ✅ Drop target — valid */
   .oscd-card-item.drag-can-drop {
-    border: 2px dashed #2196F3; /* Material Blue 500 */
+    outline: 2px dashed #2196F3; /* Material Blue 500 */
     background-color: #E3F2FD; /* Light blue */
     box-shadow: 0 0 4px 1px rgba(33, 150, 243, 0.3);
   }
@@ -215,7 +215,7 @@
 
   /* ❌ Drop target — invalid */
   .oscd-card-item.drag-cannot-drop {
-    border: 2px dashed transparent;
+    outline: 2px dashed transparent;
     background-color: #F5F5F5; /* light gray */
     opacity: 0.6;
   }
@@ -273,7 +273,7 @@
   }
 
   .oscd-card-item.error {
-    border: 2px solid red;
+    outline: 2px solid red;
     box-shadow: 0 0 6px 2px rgba(255, 0, 0, 0.3); /* red glow */
   }
 
