@@ -5,6 +5,7 @@
   import Button from '@smui/button';
   import { setEditorTabsVisibility } from '../services/engineering-workflow.service';
   import ProcessStepper from '../components/engineering-process-detail/ProcessStepper.svelte';
+  import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
   import PluginGroups from '../components/engineering-process-detail/PluginGroups.svelte';
   import { getBreadcrumbs, getPluginGroups } from '../services/engineering-process-detail.service';
 
@@ -43,7 +44,16 @@
 
 <div class="page-content">
   {#if !editorTabsVisible}
-    <ProcessStepper on:back={exitWorkflow} on:next={nextStep} on:previous={previousStep} />
+    <div class="stepper">
+      <WorkflowBack on:back={exitWorkflow} />
+
+      <ProcessStepper />
+
+      <div class="stepper-navigation">
+        <button type="button" on:click={previousStep} class="btn btn--back" aria-label="Previous step">Back</button>
+        <button type="button" on:click={nextStep} class="btn btn--next" aria-label="Next step">Next</button>
+      </div>
+    </div>
   {/if}
 
   <div class="header">
@@ -80,5 +90,40 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .stepper {
+    height: 4rem;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    background-color: #004552;
+  }
+
+  .stepper-navigation {
+    display: flex;
+    gap: 0.8rem;
+    justify-self: end;
+  }
+
+  .btn {
+    height: 36px;
+    min-width: 70px;
+    padding: 0 12px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn--back {
+    color: #ffffff;
+    background-color: #6b9197;
+  }
+
+  .btn--next {
+    background-color: #ffffff;
+    color: var(--brand);
   }
 </style>
