@@ -88,20 +88,22 @@
       <div class="step-content">Text b</div>
     {/if}
   {:else}
-    <div class="header">
-      <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
+    <div class="step-content">
+      <div class="header">
+        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
 
-      <Button
-        variant="raised"
-        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-        on:click={start}
-        disabled={!proc}
-        aria-label="Start process"
-      >
-        START PROCESS
-      </Button>
+        <Button
+          variant="raised"
+          style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+          on:click={start}
+          disabled={!proc}
+          aria-label="Start process"
+        >
+          START PROCESS
+        </Button>
+      </div>
+      <PluginGroups {pluginGroups} on:edit={enterEditMode} />
     </div>
-    <PluginGroups {pluginGroups} on:edit={enterEditMode} />
   {/if}
 </div>
 
@@ -122,6 +124,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 1rem;
   }
 
   .stepper {
