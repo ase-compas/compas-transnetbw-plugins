@@ -123,3 +123,7 @@
     on:start={handleStart}
   />
 {/if}
+
+<style>
+  @import '/material-icon.css';
+</style>
