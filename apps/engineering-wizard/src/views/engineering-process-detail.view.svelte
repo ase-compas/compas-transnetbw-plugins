@@ -15,6 +15,8 @@
   let editorTabsVisible = true;
 
   function onCrumbClick(e: CustomEvent<{ index: number }>) {
+    setEditorTabsVisibility(true);
+    editorTabsVisible = true;
     if (e.detail.index === 0) dispatch("back");
   }
 
