@@ -4,8 +4,8 @@
   import { OscdBreadcrumbs } from '../../../../libs/oscd-component/src';
   import Button from '@smui/button';
   import { setEditorTabsVisibility } from '../services/engineering-workflow.service';
-  import ProcessStepper from '../components/process-detail/ProcessStepper.svelte';
-  import PluginGroups from '../components/process-detail/PluginGroups.svelte';
+  import ProcessStepper from '../components/engineering-process-detail/ProcessStepper.svelte';
+  import PluginGroups from '../components/engineering-process-detail/PluginGroups.svelte';
   import { getBreadcrumbs, getPluginGroups } from '../services/engineering-process-detail.service';
 
   export let proc: Process | null = null;
