@@ -5,9 +5,9 @@ export type TItem = {
   references?: number;
   badgeText?: string;
 
-  marked: boolean;
-  selected: boolean
-  isMandatory: boolean;
+  marked?: boolean;
+  selected?: boolean
+  isMandatory?: boolean;
 
   canEdit?: boolean;
   canMark?: boolean;

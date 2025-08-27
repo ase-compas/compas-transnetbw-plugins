@@ -1,141 +1,142 @@
 <script lang="ts">
-  import { route } from '../../lib/stores';
+  import { createObjectReferenceStore, route } from '../../lib/stores';
   import { OscdBreadcrumbs, OscdButton, OscdConfirmDialog, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
-  import { onMount } from 'svelte';
-  import { DataTypes, LNodeTypeDetails } from '../../lib/domain';
+  import { DataTypes, DODetails, LNodeTypeDetails } from '../../lib/domain';
   import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
   import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
   import TBoard from '../../lib/components/tboard/TBoard.svelte';
-  import {
-    getDataObjectTypeService,
-    getLNodeTypeService,
-  } from '../../lib/services';
-  import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
+  import { getDataObjectTypeService, getLNodeTypeService } from '../../lib/services';
   import { getColumns } from './columns.config';
-  import { TBoardItemContext } from '../../lib/components/tboard/types';
-  import { buildDATypeItems, buildDOItems, buildDOTypeItems, buildEnumTypeItems } from '../../lib/utils/itemBuilder';
-  import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
+  import { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
+  import NewDataObjectType from '../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { loadLNodeType, loadTypes} from "./dataLoader";
-
-  export let doc: XMLDocument;
+  import { loadLNodeType, loadTypes } from './dataLoader';
+  import { onMount } from 'svelte';
+  import { mapDATypeToTItem, mapDOTypeToTItem, mapEnumTypeToTItem } from '../../lib/mappers';
+  import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
 
   // Service instances
   const lNodeTypeService = getLNodeTypeService();
   const dataObjectService = getDataObjectTypeService();
 
+  const refStore = createObjectReferenceStore(async () => {
+    return logicalNodeType.dataObjects.map(doObj => ({
+      ...doObj,
+      id: doObj.name,
+      mandatory: doObj.metadata.isMandatory,
+      selected: doObj.metadata.isConfigured,
+      marked: false
+    }));
+  });
+
+  const { markedItems, selectedItems, isDirty } = refStore;
+
   // State
   let logicalNodeType: LNodeTypeDetails | null = null;
   let dataTypes: DataTypes = { dataObjectTypes: [], dataAttributeTypes: [], enumTypes: [] };
-  let markedItemIds = new Set<string>();
-  let isDirty = false;
 
   // Mode management
+  let isEditMode = false;
   $: mode = $route.path[0] === 'new' ? 'create' : (isEditMode ? 'edit' : 'view');
-  $: isEditMode = false;
-  $: isEditMode, refreshAll()
-  $: if(!isEditMode) {
-    handleUnsavedChanges()
-  }
+  $: isDirtyState = $isDirty || mode === 'create';
 
-  // Initial load and doc change
-  $: if (doc) refreshAll();
-
-  function refreshAll() {
+  function loadData() {
     const nodeId = $route.meta.lNodeTypeId;
     const lnClass = $route.meta.lnClass;
-    if(mode === 'create') {
+    if (mode === 'create') {
       isEditMode = true;
-      isDirty = true;
     }
     logicalNodeType = loadLNodeType(mode, nodeId, lnClass);
-    dataTypes = loadTypes(mode, nodeId, logicalNodeType.lnClass, Array.from(markedItemIds));
+    refStore.reload();
+
+    dataTypes = loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, []);
   }
 
-  // Derived data
-  $: dataObjects = logicalNodeType?.dataObjects ?? []
-
-  $: columns = getColumns(isEditMode);
   $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
-  $: data = {
-    refs: buildDOItems(dataObjects, markedItemIds, item =>
-      ({
-        canSelect: isEditMode,
-        canApplyDefaults: isEditMode,
-        canUnlink: isEditMode && !item.metadata.isMandatory && item.type !== null && item.type !== '',
-        acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target),
-        error: (item.metadata.isConfigured || item.metadata.isMandatory) && !item.type,
-        errorMessage: 'Data object must reference a type',
-      })),
-    dotypes: buildDOTypeItems(dataTypes?.dataObjectTypes, { canEdit: true }),
-    datypes: buildDATypeItems(dataTypes?.dataAttributeTypes, { canEdit: true }),
-    enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })
-  };
 
-  $: sortedData = {
-    ...data,
-    refs: (data.refs ?? []).slice().sort((a, b) => {
+  // Load Data Types when marked items change
+  $: if (logicalNodeType) {
+    dataTypes = loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, $markedItems.map(i => i.id));
+  }
+
+
+  // Determine which data objects to show based on mode
+  let referenceDataObjects: TItem[] = [];
+  $: referenceDataObjects = $refStore
+    .filter(item => isEditMode || item.selected)
+    .map(item => ({
+      id: item.id,
+      title: item.id,
+      subtitle: item.type,
+      isMandatory: item.mandatory,
+      selected: item.selected || item.mandatory,
+      marked: item.marked,
+      canEdit: false,
+      canSelect: isEditMode,
+      canMark: true,
+      canDelete: true,
+      badgeText: item.cdc,
+      canUnlink: isEditMode && !item.mandatory && (item.type !== null && item.type !== ''),
+      canApplyDefaults: isEditMode,
+      errorMessage: 'Type reference is needed',
+      error: (item.selected || item.mandatory) && (item.type === null || item.type === ''),
+      acceptDrop: acceptDrop
+        ? (target: TBoardItemContext) => acceptDrop(target, item)
+        : undefined
+    }))
+    .sort((a, b) => {
       const groupA = a.isMandatory ? 0 : (a.selected ? 1 : 2);
       const groupB = b.isMandatory ? 0 : (b.selected ? 1 : 2);
       if (groupA !== groupB) return groupA - groupB;
       return a.title.localeCompare(b.title);
-    }),
-  };
+    });
 
-  // UI Helpers
-  function acceptDrop(name: string, target: TBoardItemContext): boolean {
-    if (!logicalNodeType) return false;
-    const lnClassValue = logicalNodeType.lnClass;
-    const targetDataObjectType = dataObjectService.findById(target.itemId);
-    return dataObjectService.canReferenceToType(lnClassValue, name, targetDataObjectType?.cdc);
+  $: boardData = {
+    refs: referenceDataObjects,
+    doTypes: dataTypes.dataObjectTypes.map(type => mapDOTypeToTItem(type, true)),
+    daTypes: dataTypes.dataAttributeTypes.map(type => mapDATypeToTItem(type, true)),
+    enumTypes: dataTypes.enumTypes.map(type => mapEnumTypeToTItem(type, true))
   }
 
-  function handleToggleMark(itemId: string, marked: boolean) {
-    marked ? markedItemIds.add(itemId) : markedItemIds.delete(itemId);
-    dataTypes = loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, Array.from(markedItemIds));
+// Board configuration
+  $: columns = getColumns(isEditMode);
+
+  onMount(() => {
+    loadData();
+  });
+
+  function handleToggleMark(itemId: string) {
+    refStore.toggleMarked(itemId);
   }
 
-  function handleToggleSelect({ columnId, itemId }: { columnId: string; itemId: string }) {
-    const colItems = data[columnId];
-    if (!colItems) return;
-
-    // Update the selected property on the item
-    const idx = colItems.findIndex(i => i.id === itemId);
-    if (idx === -1) return;
-
-    colItems[idx] = { ...colItems[idx], selected: !colItems[idx].selected }; // spread to trigger reactivity
-
-    data = { ...data, [columnId]: colItems };
+  function handleToggleSelect({ itemId }) {
+    refStore.toggleSelected(itemId);
   }
 
   function handleItemDrop({ source, target }: { source: TBoardItemContext; target: TBoardItemContext }) {
     if (!source || !target) return;
-    if (source.columnId === 'dotypes' && target.columnId === 'refs') {
-      setDataObjectTypeReference(target.itemId, source.itemId);
+    if (source.columnId === 'doTypes' && target.columnId === 'refs') {
+      refStore.setReferenceType(target.itemId, source.itemId);
     }
-  }
-
-  function setDataObjectTypeReference(dataObjectName: string, typeId: string) {
-    if (!logicalNodeType) return;
-    logicalNodeType = {
-      ...logicalNodeType,
-      dataObjects: logicalNodeType.dataObjects.map(doItem =>
-        doItem.name === dataObjectName ? { ...doItem, type: typeId, metadata: { ...doItem.metadata, isConfigured: true } } : doItem
-      )
-    };
-    isDirty = true;
   }
 
   function handleSaveChanges() {
     if (!logicalNodeType) return;
-    const updateLNodeType: LNodeTypeDetails = {
+
+    let newDos = $selectedItems.map(item => ({
+      name: item.id,
+      type: item.type
+    }));
+
+    lNodeTypeService.saveLNodeType({
       ...logicalNodeType,
-      dataObjects: logicalNodeType.dataObjects.filter(doItem => doItem.metadata.isConfigured || doItem.metadata.isMandatory),
-    };
-    lNodeTypeService.saveLNodeType(updateLNodeType);
-    isDirty = false;
-    if( $route.path[0] === 'new') {
-      navigateToView(logicalNodeType)
+      dataObjects: newDos
+    });
+
+    loadData();
+
+    if ($route.path[0] === 'new') {
+      navigateToView(logicalNodeType);
     }
   }
 
@@ -144,23 +145,18 @@
   }
 
   async function handleUnsavedChanges() {
-    if (isDirty) {
-      const result = await openDialog(OscdConfirmDialog, {
-        title: 'Unsaved Changes',
-        message: 'You have unsaved changes. Do you want to save them?',
-        confirmActionText: 'Save',
-        cancelActionText: 'Discard',
-      });
-      if (result.type === 'confirm') {
-        handleSaveChanges();
-      } else {
-        // Reset dirty state without saving
-        refreshAll()
-        isDirty = false;
-      }
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Unsaved Changes',
+      message: 'You have unsaved changes. Do you want to save them?',
+      confirmActionText: 'Save',
+      cancelActionText: 'Discard'
+    });
+    if (result.type === 'confirm') {
+      handleSaveChanges();
     }
   }
 
+  // Dialog handlers
   function handleActionClick({ columnId }) {
     if (columnId === 'dotypes') {
       openCreateDOTypeDialog();
@@ -180,11 +176,18 @@
     }
   }
 
-  async function handleBreadcrumbClick({index}) {
-    if (isDirty) {
+  async function handleBreadcrumbClick({ index }) {
+    if (isDirtyState) {
       await handleUnsavedChanges();
     }
     if (index === 0) route.set({ path: ['overview'] });
+  }
+
+  function onEditModeChange(e) {
+  }
+
+  function handleOnUnlink({ itemId }) {
+    refStore.removeReferenceType(itemId);
   }
 
   // ===== Dialog Handlers =====
@@ -192,24 +195,23 @@
   function openCreateDOTypeDialog() {
     openDialog(NewDataObjectType).then(result => {
       if (result.type === 'confirm') {
-        openEditDOTypeDialog(result.data.id, result.data.cdc, 'create')
+        openEditDOTypeDialog(result.data.id, result.data.cdc, 'create');
       }
     });
   }
 
   function openEditDOTypeDialog(typeId: string, cdc: string | null = null, mode: 'edit' | 'view' | 'create') {
-    openDialog(DataTypeDialog, {
-      typeId,
-      cdc,
-      mode
-    })
+    openDialog(DataTypeDialog, { typeId, cdc, mode });
   }
 
   function openEditDATypeDialog(typeId: string, mode: 'edit' | 'view' | 'create') {
-    openDialog(DataAttributeDialog, {
-      typeId: typeId,
-      mode: mode,
-    });
+    openDialog(DataAttributeDialog, { typeId, mode });
+  }
+
+  function acceptDrop(source: TBoardItemContext, target: DODetails): boolean {
+    const doType = dataObjectService.findById(source.itemId);
+    if (!doType) return false;
+    return doType.cdc === target.cdc;
   }
 </script>
 
@@ -222,13 +224,14 @@
 
       <OscdSwitch
         bind:checked={isEditMode}
+        on:change={onEditModeChange}
         id="edit-mode-switch"
         label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
       <OscdButton
-        disabled={!isDirty} callback={handleSaveChanges} variant="unelevated">
+        disabled={!isDirtyState} callback={handleSaveChanges} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
     </div>
@@ -238,14 +241,14 @@
   <div class="oscd-details-board">
     <TBoard
       {columns}
-      data={sortedData}
+      data={boardData}
       on:columnActionClick={e => handleActionClick(e.detail)}
       on:itemEdit={e => handleOnEdit(e.detail)}
       on:itemMarkChange={({detail: {itemId, marked}}) => handleToggleMark(itemId, marked)}
       on:itemSelectChange={e => handleToggleSelect(e.detail)}
       on:itemDrop={e => handleItemDrop(e.detail)}
       on:itemApplyDefaults={e => console.log(e.detail)}
-      on:itemUnlink={e => console.log(e.detail)}
+      on:itemUnlink={e => handleOnUnlink(e.detail)}
     />
   </div>
 </div>

@@ -14,7 +14,7 @@ export function loadLNodeType(mode: 'create' | 'edit' | 'view', lNodeTypeId: str
     draftNode.id = lNodeTypeId;
     return draftNode;
   } else {
-    return lNodeTypeService.getLNodeType(lNodeTypeId, { isConfigured: mode === 'view' });
+    return lNodeTypeService.getLNodeType(lNodeTypeId);
   }
 }
 
@@ -24,7 +24,6 @@ export function loadTypes(mode: 'create' | 'edit' | 'view', lNodeTypeId: string,
     dataAttributeTypes: [],
     enumTypes: []
   };
-
   // --- Get types ---
   if (mode === 'create') {
     // Only assignable DO types for create mode

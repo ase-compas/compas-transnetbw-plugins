@@ -13,7 +13,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       itemsDraggable: false,
     },
     {
-      id: 'dotypes',
+      id: 'doTypes',
       title: 'Data Object Types',
       actionLabel: 'Create',
       hasSearch: true,
@@ -22,7 +22,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       dragAndDropBorder: isEditMode,
     },
     {
-      id: 'datypes',
+      id: 'daTypes',
       title: 'Data Attribute Types',
       actionLabel: 'Create',
       hasSearch: true,
@@ -30,7 +30,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       itemsDraggable: false
     },
     {
-      id: 'enumtypes',
+      id: 'enumTypes',
       title: 'Enum Types',
       actionLabel: 'Create',
       hasSearch: true,

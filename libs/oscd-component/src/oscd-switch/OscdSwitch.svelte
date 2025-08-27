@@ -13,8 +13,8 @@
 
   const dispatch = createEventDispatcher();
 
-  function handleChange(event: Event) {
-    dispatch('change', (event.target as HTMLInputElement).checked);
+  function handleChange() {
+    dispatch('change', !checked);
   }
 </script>
 
@@ -24,7 +24,7 @@
     class={switchClass}
     bind:checked
     {icons}
-    on:change={handleChange}
+    on:click={handleChange}
   />
   {#if label}
   <label for={id} style={labelStyle} class="oscd-switch-label">
