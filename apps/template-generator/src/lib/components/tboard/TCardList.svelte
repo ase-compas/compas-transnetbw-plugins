@@ -132,5 +132,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 0.1rem;
   }
 </style>

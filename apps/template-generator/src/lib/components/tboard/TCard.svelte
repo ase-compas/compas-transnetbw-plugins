@@ -34,6 +34,7 @@
   export let errorMessage: string | null = null;
 
   $: cardState= getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected);
+  $: onPrimaryColor = ((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)';
 
   function getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected): 'drag-can-drop' | 'drag-cannot-drop' | 'mandatory' | 'selected' | 'unselected' | 'default' {
     if (isDragTarget) return canDrop ? 'drag-can-drop' : 'drag-cannot-drop';
@@ -70,7 +71,7 @@
     <div class="selection">
       {#if isMandatory}
         <OscdTooltip content="Mandatory Object" hoverDelay={500}>
-          <OscdLockIcon width="33px" svgStyles={selected || isMandatory ? 'fill: white' : 'fill: gray'}/>
+          <OscdLockIcon width="33px" svgStyles={`fill: ${onPrimaryColor}`}/>
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
@@ -97,7 +98,7 @@
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
-            fillColor={selected || isMandatory ? 'white' : 'var(--mdc-theme-primary)' }
+            fillColor={onPrimaryColor}
           />
         {/if}
         {#if canApplyDefaults}
@@ -105,7 +106,7 @@
             type="wand-stars"
             tooltip="Apply Defaults"
             onClick={handleOnApplyDefaults}
-            fillColor={selected || isMandatory ? 'white' : 'var(--mdc-theme-primary)' }
+            fillColor={onPrimaryColor}
           />
         {/if}
         {#if canMark}
@@ -113,7 +114,7 @@
             type="visibility"
             tooltip="Mark"
             onClick={toggleMark}
-            fillColor={marked ? '#D9D800': (selected  || isMandatory ? 'white' : 'var(--mdc-theme-primary)') }
+            fillColor={marked ? '#D9D800': onPrimaryColor}
           />
         {/if}
         {#if canEdit}
@@ -121,7 +122,7 @@
             type="edit"
             tooltip="Edit"
             onClick={handleOnEdit}
-            fillColor={selected || isMandatory ? 'white' : 'var(--mdc-theme-primary)' }
+            fillColor={onPrimaryColor}
           />
         {/if}
       </div>
