@@ -1,12 +1,12 @@
 <script lang="ts">
   import Button from '@smui/button';
-  import type { PluginGroup } from 'libs/shared/src';
+  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
 
   export let pluginGroups: PluginGroup[] = [];
 
   const dispatch = createEventDispatcher();
-  const edit = () => dispatch('edit');
+  const requestEdit = () => dispatch('editRequested');
 </script>
 
 <div class="plugins-list">
@@ -16,7 +16,7 @@
       variant="raised"
       style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
       aria-label="Edit process"
-      on:click={edit}
+      on:click={requestEdit}
     >
       EDIT
     </Button>
@@ -108,4 +108,3 @@
     color: var(--brand);
   }
 </style>
-

@@ -1,26 +1,18 @@
 <script lang="ts">
   import Button from '@smui/button';
-  import type { PluginGroup } from 'libs/shared/src';
+  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
 
   export let pluginGroups: PluginGroup[] = [];
 
-  const dispatch = createEventDispatcher<{
-    removeAll: void;
-    remove: {
-      groupIndex: number;
-      pluginIndex: number;
-      group: PluginGroup;
-      plugin: any;
-    };
-  }>();
+  const dispatch = createEventDispatcher();
 
-  const removeAll = () => dispatch('removeAll');
+  const clearAll = () => dispatch('clearAllRequested');
 
   const removeOne = (groupIndex: number, pluginIndex: number) => {
     const group = pluginGroups[groupIndex];
     const plugin = group.plugins[pluginIndex];
-    dispatch('remove', { groupIndex, pluginIndex, group, plugin });
+    dispatch('removePluginRequested', { groupIndex, pluginIndex, group, plugin });
   };
 </script>
 
@@ -31,7 +23,7 @@
       variant="raised"
       style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
       aria-label="Remove all plugins"
-      on:click={removeAll}
+      on:click={clearAll}
     >
       REMOVE ALL
     </Button>

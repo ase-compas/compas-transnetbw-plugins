@@ -5,10 +5,10 @@
   import Button from '@smui/button';
   import ProcessStepper from '../components/engineering-process-detail/ProcessStepper.svelte';
   import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
-  import PluginGroups from '../components/engineering-process-detail/PluginGroups.svelte';
+  import ProcessPluginGroupsView from '../components/engineering-process-detail/ProcessPluginGroupsView.svelte';
   import { getBreadcrumbs, getPluginGroups } from '../services/engineering-process-detail.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
-  import PluginGroupsEditMode from '../components/engineering-process-detail/PluginGroupsEditMode.svelte';
+  import ProcessPluginGroupsEditor from '../components/engineering-process-detail/ProcessPluginGroupsEditor.svelte';
 
   export let proc: Process | null = null;
 
@@ -85,7 +85,11 @@
 
     {#if currentId === 'process-definition'}
       <div class="step-content">
-        <PluginGroupsEditMode {pluginGroups} on:removeAll={() => console.log("test")} />
+        <ProcessPluginGroupsEditor
+          {pluginGroups}
+          on:clearAllRequested={() => console.log('clear all')}
+          on:removePluginRequested={(e) => console.log('remove', e.detail)}
+        />
       </div>
     {:else if currentId === 'validator-configuration'}
       <div class="step-content">Text b</div>
@@ -105,7 +109,7 @@
           START PROCESS
         </Button>
       </div>
-      <PluginGroups {pluginGroups} on:edit={enterEditMode} />
+      <ProcessPluginGroupsView {pluginGroups} on:editRequested={enterEditMode} />
     </div>
   {/if}
 </div>
