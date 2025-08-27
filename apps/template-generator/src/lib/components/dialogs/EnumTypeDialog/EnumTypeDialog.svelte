@@ -87,7 +87,7 @@ function validateProps() {
     text-align: center;
     margin-top: 2rem;
   }
-d
+
   .no-results p {
     margin: 0;
   }
