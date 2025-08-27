@@ -2,7 +2,7 @@
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail.view.svelte';
   import EngineeringWorkflow from './views/engineering-workflow.view.svelte';
-  import type { Process, Plugin } from '@oscd-transnet-plugins/shared';
+  import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
 
   export let doc: XMLDocument | undefined;
@@ -18,54 +18,79 @@
   const SRC = new URL('./assets/processes.xml', import.meta.url).href;
   const txt = (el: Element | null | undefined) => el?.textContent?.trim() ?? '';
 
+  const parsePlugin = (pl: Element): Plugin => ({
+    id:   txt(pl.querySelector('id')),
+    name: txt(pl.querySelector('name')),
+    src:  txt(pl.querySelector('src')),
+  });
+
   const parseProcessesFromXml = (xml: XMLDocument): Process[] =>
-    Array.from(xml.getElementsByTagName('process')).map((p) => {
-      const plugins: Plugin[] = Array.from(
-        p.querySelectorAll('plugins-sequence > plugin')
-      ).map((pl) => ({
-        id:   txt(pl.querySelector('id')),
-        name: txt(pl.querySelector('name')),
-        src:  txt(pl.querySelector('src')),
-      }));
+    Array.from(xml.querySelectorAll('process')).map((p) => {
+      const groups = Array.from(p.querySelectorAll('plugins-sequence > group'));
+
+      const pluginGroups: PluginGroup[] | undefined = groups.length
+        ? groups.map((g) => ({
+          title: txt(g.querySelector(':scope > title')),
+          plugins: Array.from(g.querySelectorAll(':scope > plugin')).map(parsePlugin),
+        }))
+        : undefined;
+
+      const flatPlugins: Plugin[] = pluginGroups
+        ? pluginGroups.flatMap((g) => g.plugins)
+        : Array.from(p.querySelectorAll('plugins-sequence > plugin')).map(parsePlugin);
 
       return {
         id:          txt(p.querySelector(':scope > id')),
         version:     txt(p.querySelector(':scope > version')),
         name:        txt(p.querySelector(':scope > name')),
         description: txt(p.querySelector(':scope > description')),
-        plugins,
+        plugins:     flatPlugins,
+        pluginGroups,
       };
     });
 
+  let controller: AbortController | null = null;
+
   async function loadXml() {
-    loading   = true;
-    errorMsg  = '';
+    loading = true;
+    errorMsg = '';
+
+    controller?.abort();
+    controller = new AbortController();
+
     try {
-      const res = await fetch(SRC, { cache: 'no-cache' });
+      const res = await fetch(SRC, { cache: 'no-cache', signal: controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
+
+      const text = await res.text();
+      const xml = new DOMParser().parseFromString(text, 'application/xml');
+
       if (xml.querySelector('parsererror')) throw new Error('Invalid XML file format.');
       processes = parseProcessesFromXml(xml);
     } catch (e) {
+      if ((e as DOMException)?.name === 'AbortError') return;
       processes = [];
-      errorMsg  = (e as Error).message || 'Failed to load processes.';
+      errorMsg = (e as Error).message || 'Failed to load processes.';
     } finally {
       loading = false;
     }
   }
 
-  onMount(loadXml);
+  onMount(() => {
+    loadXml();
+    return () => controller?.abort();
+  });
 
   function startProcess(proc: Process) {
-    running  = proc;
+    running = proc;
     selected = null;
   }
 
-  function onView(e: CustomEvent<Process>)  {
+  function handleView(e: CustomEvent<Process>) {
     selected = e.detail;
   }
 
-  function onStart(e: CustomEvent<Process>) {
+  function handleStart(e: CustomEvent<Process>) {
     startProcess(e.detail);
   }
 
@@ -88,13 +113,17 @@
     on:exit={exitWorkflow}
   />
 {:else if selected}
-  <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={onStart} />
+  <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={handleStart} />
 {:else}
   <EngineeringProcessesList
     {processes}
     {loading}
     {errorMsg}
-    on:view={onView}
-    on:start={onStart}
+    on:view={handleView}
+    on:start={handleStart}
   />
 {/if}
+
+<style>
+  @import '/material-icon.css';
+</style>
