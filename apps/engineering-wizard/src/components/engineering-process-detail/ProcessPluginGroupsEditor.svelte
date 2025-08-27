@@ -7,12 +7,12 @@
 
   const dispatch = createEventDispatcher();
 
-  const clearAll = () => dispatch('clearAllRequested');
+  const removeAllPlugins = () => dispatch('removeAllPlugins');
 
   const removeOne = (groupIndex: number, pluginIndex: number) => {
     const group = pluginGroups[groupIndex];
     const plugin = group.plugins[pluginIndex];
-    dispatch('removePluginRequested', { groupIndex, pluginIndex, group, plugin });
+    dispatch('removePlugin', { groupIndex, pluginIndex, group, plugin });
   };
 </script>
 
@@ -23,7 +23,7 @@
       variant="raised"
       style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
       aria-label="Remove all plugins"
-      on:click={clearAll}
+      on:click={removeAllPlugins}
     >
       REMOVE ALL
     </Button>
