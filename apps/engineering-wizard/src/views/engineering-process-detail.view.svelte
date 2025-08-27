@@ -8,6 +8,7 @@
   import PluginGroups from '../components/engineering-process-detail/PluginGroups.svelte';
   import { getBreadcrumbs, getPluginGroups } from '../services/engineering-process-detail.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
+  import PluginGroupsEditMode from '../components/engineering-process-detail/PluginGroupsEditMode.svelte';
 
   export let proc: Process | null = null;
 
@@ -83,7 +84,9 @@
     </div>
 
     {#if currentId === 'process-definition'}
-      <div class="step-content">Text a</div>
+      <div class="step-content">
+        <PluginGroupsEditMode {pluginGroups} on:removeAll={() => console.log("test")} />
+      </div>
     {:else if currentId === 'validator-configuration'}
       <div class="step-content">Text b</div>
     {/if}
