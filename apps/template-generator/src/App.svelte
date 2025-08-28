@@ -29,7 +29,7 @@
   }
 
   onMount(() => {
-    if(devMode) host = createMockHost(); // Create a mock host element in dev mode
+    if (devMode) host = createMockHost(); // Create a mock host element in dev mode
     storeHost.set(host);
   })
 

@@ -14,6 +14,9 @@ import { IStandardProviderService, StandardProviderService } from './standardPro
 import { DefaultGeneratorService, IDefaultGeneratorService } from './defaultGenerator.service';
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
 import { ReferenceAssignmentService } from './referenceAssignment.service';
+import { DataTypeRepository, IDataTypeRepository } from '../repositories/data-type.repository';
+import { TypeSpecificationService } from './type-specification.service';
+import { ILNodeTypeV2Service, LNodeTypeV2ServiceImpl } from './i-l-node-type-v2.service';
 
 // App-scoped state
 let xmlDoc: XMLDocument | null = null;
@@ -24,6 +27,7 @@ let dataObjectTypeRepo: DataObjectTypeRepository | null = null;
 let dataAttributeTypeRepo: DataAttributeTypeRepository | null = null;
 let enumTypeRepo: EnumTypeRepository | null = null;
 let oscdDefaultTypeService: OscdDefaultTypeService | null = null;
+let dataTypeRepo: DataTypeRepository | null = null;
 
 let lNodeTypeService: ILNodeTypeService | null = null;
 let dataObjectTypeService: DataObjectTypeService | null = null;
@@ -33,6 +37,7 @@ let enumTypeService: EnumTypeService | null = null;
 let standardProviderService: IStandardProviderService | null = null;
 let defaultGeneratorService: IDefaultGeneratorService | null = null;
 let assignmentService: ReferenceAssignmentService | null = null;
+let lNodeTypeServiceV2: ILNodeTypeV2Service | null = null;
 
 /**
  * Initializes all repositories and services with the provided XML document and host element.
@@ -72,6 +77,12 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
     enumTypeRepo = new EnumTypeRepository(xmlDoc, hostElement);
   }
 
+  if (dataTypeRepo) {
+    dataTypeRepo.setDocument(xmlDoc);
+  } else {
+    dataTypeRepo = new DataTypeRepository(xmlDoc, hostElement);
+  }
+
 
   standardProviderService = new StandardProviderService(lnClassData, cdcData);
   defaultGeneratorService = new DefaultGeneratorService(standardProviderService);
@@ -82,9 +93,18 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
   oscdDefaultTypeService = new OscdDefaultTypeService()
   assignmentService = new ReferenceAssignmentService(dataObjectTypeService, dataAttributeTypeService, enumTypeService, undefined);
   lNodeTypeService = new LNodeTypeServiceImpl(lNodeTypeRepo, standardProviderService, defaultGeneratorService, dataObjectTypeRepo);
+  const typeSpecService = new TypeSpecificationService();
+  lNodeTypeServiceV2 = new LNodeTypeV2ServiceImpl(dataTypeRepo, typeSpecService);
 }
 
 // === Service Getters ===
+
+export function getLNodeTypeServiceV2(): ILNodeTypeV2Service {
+  if (!lNodeTypeServiceV2) {
+    throw new Error('LNodeTypeV2Service not initialized. Call initServices() first.');
+  }
+  return lNodeTypeServiceV2;
+}
 
 export function getStandardProviderService(): IStandardProviderService {
   if (!standardProviderService) {
