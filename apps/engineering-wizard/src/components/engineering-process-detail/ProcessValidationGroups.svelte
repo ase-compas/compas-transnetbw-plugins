@@ -10,13 +10,11 @@
   $: currentPlugin =
     currentGroup && activePluginIdx != null ? currentGroup.plugins[activePluginIdx] : null;
 
-  // Auto-select first group/plugin if nothing selected (optional, keep/remove as you like)
   $: if (pluginGroups?.length && (selectedIdx == null || selectedIdx >= pluginGroups.length)) {
     selectedIdx = 0;
     activePluginIdx = pluginGroups[0]?.plugins?.length ? 0 : null;
   }
 
-  // --- XML loading state ---
   let xmlText = '';
   let loadingXml = false;
   let xmlError = '';
@@ -121,7 +119,7 @@
     display: flex;
     align-items: center;
     gap: 0.2rem;
-    border-radius: 6px;
+    border-radius: 4px;
     box-sizing: border-box;
     padding: 4px;
     background-color: white;
@@ -159,7 +157,7 @@
     color: var(--brand);
     padding: 6px 1rem;
     background-color: white;
-    border-radius: 6px;
+    border-radius: 2px;
     width: fit-content;
     min-width: 2rem;
     cursor: pointer;
