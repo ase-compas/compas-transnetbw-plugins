@@ -31,7 +31,6 @@
     xmlAbort = new AbortController();
 
     try {
-      // Adjust path if your assets live elsewhere
       const SRC = new URL(`../../assets/validations/${pluginId}.xml`, import.meta.url).href;
       const res = await fetch(SRC, { cache: 'no-cache', signal: xmlAbort.signal });
 
@@ -52,7 +51,6 @@
     }
   }
 
-  // Load whenever the active plugin changes
   $: currentPluginId = currentPlugin?.id ?? null;
   $: if (currentPluginId) loadXmlFor(currentPluginId);
 
@@ -113,17 +111,95 @@
 {/if}
 
 <style>
-  .validation-groups { display: flex; flex-direction: row; gap: 4px; }
-  .validation-groups__group { display: flex; align-items: center; gap: 0.2rem; border-radius: 6px; box-sizing: border-box; padding: 4px; background-color: white; }
-  .validation-groups__group.expanded { background-color: var(--brand); }
-  .validation-groups__group.expanded .validation-groups__group-title { color: var(--on-brand); }
-  .validation-groups__group-title { display: flex; justify-content: center; align-items: center; font-weight: 500; padding: 0 8px; margin: 0; color: var(--brand); cursor: pointer; user-select: none; background: transparent; border: none; font-family: Roboto, sans-serif; font-size: 16px; }
-  .validation-groups__plugin { display: flex; align-items: center; justify-content: center; font-weight: 500; color: var(--brand); padding: 6px 1rem; background-color: white; border-radius: 6px; width: fit-content; min-width: 2rem; cursor: pointer; margin: 0; border: none; font-family: Roboto, sans-serif; font-size: 16px; }
-  .validation-groups__plugin.active { background-color: #D9D800; }
+  .validation-groups {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+  }
 
-  .xml-viewer { margin-top: 0.5rem; }
-  .xml-viewer__title { margin: 0.25rem 0 0.5rem; color: var(--brand); }
-  .xml-viewer__box { background: #0f172a0d; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; overflow: auto; max-height: 50vh; }
-  .xml-viewer__box pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; line-height: 1.4; }
-  .error { color: #b00020; }
+  .validation-groups__group {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    border-radius: 6px;
+    box-sizing: border-box;
+    padding: 4px;
+    background-color: white;
+  }
+
+  .validation-groups__group.expanded {
+    background-color: var(--brand);
+  }
+
+  .validation-groups__group.expanded .validation-groups__group-title {
+    color: var(--on-brand);
+  }
+
+  .validation-groups__group-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    padding: 0 8px;
+    margin: 0;
+    color: var(--brand);
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    border: none;
+    font-family: Roboto, sans-serif;
+    font-size: 16px;
+  }
+
+  .validation-groups__plugin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: var(--brand);
+    padding: 6px 1rem;
+    background-color: white;
+    border-radius: 6px;
+    width: fit-content;
+    min-width: 2rem;
+    cursor: pointer;
+    margin: 0;
+    border: none;
+    font-family: Roboto, sans-serif;
+    font-size: 16px;
+  }
+
+  .validation-groups__plugin.active {
+    background-color: #D9D800;
+  }
+
+  .xml-viewer {
+    margin-top: 0.5rem;
+  }
+
+  .xml-viewer__title {
+    margin: 0.25rem 0 0.5rem;
+    color: var(--brand);
+  }
+
+  .xml-viewer__box {
+    background: #0f172a0d;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 8px;
+    overflow: auto;
+    max-height: 50vh;
+  }
+
+  .xml-viewer__box pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 13px; line-height: 1.4;
+  }
+
+  .error {
+    color: #b00020;
+  }
 </style>
