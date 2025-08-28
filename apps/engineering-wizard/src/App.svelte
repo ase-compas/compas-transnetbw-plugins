@@ -113,7 +113,7 @@
     on:exit={exitWorkflow}
   />
 {:else if selected}
-  <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={handleStart} />
+  <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
 {:else}
   <EngineeringProcessesList
     {processes}

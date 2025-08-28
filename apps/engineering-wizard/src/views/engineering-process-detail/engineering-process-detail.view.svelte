@@ -10,96 +10,91 @@
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
 
-  export let proc: Process | null = null;
+  export let currentProcess: Process | null = null;
 
   type StepId = 'process-definition' | 'validator-configuration';
-  const STEPS: StepId[] = ['process-definition', 'validator-configuration'];
+  const STEP_IDS: StepId[] = ['process-definition', 'validator-configuration'];
 
-  const dispatch = createEventDispatcher<{
-    back: void;
-    start: Process;
-    next: void;
-    previous: void;
-  }>();
+  const dispatch = createEventDispatcher();
 
-  let isEditMode = false;
+  let isEditing = false;
 
-  let step = 0;
-  let currentId: StepId = STEPS[0];
-  $: currentId = STEPS[step];
-  $: atFirst = step === 0;
-  $: atLast = step === STEPS.length - 1;
+  let currentStepIndex = 0;
+  let currentStepId: StepId = STEP_IDS[0];
+  $: currentStepId = STEP_IDS[currentStepIndex];
+  $: isAtFirstStep = currentStepIndex === 0;
+  $: isAtLastStep = currentStepIndex === STEP_IDS.length - 1;
 
-  $: breadcrumbs = getBreadcrumbs(proc, { edit: isEditMode });
+  $: breadcrumbs = getBreadcrumbs(currentProcess, { edit: isEditing });
 
   let pluginGroups: PluginGroup[] = [];
-  $: pluginGroups = getPluginGroups(proc);
+  $: pluginGroups = getPluginGroups(currentProcess);
 
-  let visited: StepId[] = [];
+  let visitedSteps: StepId[] = [];
 
-  function onCrumbClick(e: CustomEvent<{ index: number }>) {
+  function handleBreadcrumbClick(e: CustomEvent<{ index: number }>) {
     if (e.detail.index !== 0) return;
     editorTabsVisible.set(true);
     dispatch('back');
   }
 
-  function start() {
-    if (proc) dispatch('start', proc);
+  function startProcess() {
+    if (currentProcess) dispatch('start', currentProcess);
   }
 
-  function enterEditMode() {
-    isEditMode = true;
+  function startEditing() {
+    isEditing = true;
     editorTabsVisible.set(false);
-    step = 0;
-    visited = [];
+    currentStepIndex = 0;
+    visitedSteps = [];
   }
 
-  function exitWorkflow() {
-    isEditMode = false;
+  function exitEditing() {
+    isEditing = false;
     editorTabsVisible.set(true);
     dispatch('back');
   }
 
-  function selectStep(e: CustomEvent<StepId>) {
-    const idx = STEPS.indexOf(e.detail);
-    if (idx !== -1) step = idx;
+  function handleStepSelect(e: CustomEvent<StepId>) {
+    const idx = STEP_IDS.indexOf(e.detail);
+    if (idx !== -1) currentStepIndex = idx;
   }
 
-  function markVisited(id: StepId) {
-    if (!visited.includes(id)) visited = [...visited, id];
+  function markStepVisited(id: StepId) {
+    if (!visitedSteps.includes(id)) visitedSteps = [...visitedSteps, id];
   }
 
-  function next() {
-    if (atLast) return;
-    markVisited(currentId);
-    step += 1;
+  function goToNextStep() {
+    if (isAtLastStep) return;
+    markStepVisited(currentStepId);
+    currentStepIndex += 1;
     dispatch('next');
   }
 
-  function prev() {
-    if (atFirst) return;
-    step -= 1;
+  function goToPreviousStep() {
+    if (isAtFirstStep) return;
+    currentStepIndex -= 1;
     dispatch('previous');
   }
 
-  function addNewValidation() {
+  function handleAddValidationClick() {
     alert('Add New Validation clicked!');
   }
 </script>
 
 <div class="page-content">
-  {#if isEditMode}
+  {#if isEditing}
     <div class="stepper">
-      <WorkflowBack on:back={exitWorkflow} />
+      <WorkflowBack on:back={exitEditing} />
 
-      <ProcessStepper {currentId} {visited} on:select={selectStep} />
+      <ProcessStepper currentId={currentStepId} visited={visitedSteps} on:select={handleStepSelect} />
 
       <div class="stepper-navigation">
         <button
           type="button"
           class="btn btn--back"
-          on:click={prev}
-          disabled={atFirst}
+          on:click={goToPreviousStep}
+          disabled={isAtFirstStep}
           aria-label="Previous step"
         >
           Back
@@ -108,8 +103,8 @@
         <button
           type="button"
           class="btn btn--next"
-          on:click={next}
-          disabled={atLast}
+          on:click={goToNextStep}
+          disabled={isAtLastStep}
           aria-label="Next step"
         >
           Next
@@ -118,32 +113,32 @@
     </div>
 
     <div class="step-content">
-      {#if currentId === 'process-definition'}
+      {#if currentStepId === 'process-definition'}
         <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
         </div>
         <ProcessDefinition {pluginGroups} />
       {:else}
         <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={2} on:click={onCrumbClick} />
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={2} on:click={handleBreadcrumbClick} />
 
           <Button
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-            on:click={addNewValidation}
-            disabled={!proc}
-            aria-label="Add New Validation"
+            on:click={handleAddValidationClick}
+            disabled={!currentProcess}
+            aria-label="Add validation"
           >
             ADD NEW VALIDATION
           </Button>
         </div>
 
-        <div class="process-validation-container" role="list" aria-label="Validation groups">
+        <div class="validation-groups" role="list" aria-label="Validation groups">
           {#each pluginGroups as group}
-            <div class="process-validation-plugin-group__selected">
-              <span class="process-validation-plugin-group__title">{group.title}</span>
+            <div class="validation-groups__group">
+              <span class="validation-groups__group-title">{group.title}</span>
               {#each group.plugins as plugin, idx}
-                <div aria-current={idx === 0 ? 'true' : undefined}>
+                <div class="validation-groups__plugin" aria-current={idx === 0 ? 'true' : undefined}>
                   <span>{plugin.name}</span>
                 </div>
               {/each}
@@ -155,20 +150,20 @@
   {:else}
     <div class="step-content">
       <div class="header">
-        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
+        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
 
         <Button
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-          on:click={start}
-          disabled={!proc}
+          on:click={startProcess}
+          disabled={!currentProcess}
           aria-label="Start process"
         >
           START PROCESS
         </Button>
       </div>
 
-      <ProcessPluginGroupsView {pluginGroups} on:editRequested={enterEditMode} />
+      <ProcessPluginGroupsView {pluginGroups} on:editRequested={startEditing} />
     </div>
   {/if}
 </div>
@@ -206,13 +201,13 @@
     justify-self: end;
   }
 
-  .process-validation-container {
+  .validation-groups {
     display: flex;
     flex-direction: row;
     gap: 4px;
   }
 
-  .process-validation-plugin-group__title {
+  .validation-groups__group-title {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -221,7 +216,7 @@
     color: var(--on-brand);
   }
 
-  .process-validation-plugin-group__selected {
+  .validation-groups__group {
     display: flex;
     gap: 0.2rem;
     border-radius: 6px;
@@ -230,7 +225,7 @@
     background-color: var(--brand);
   }
 
-  .process-validation-plugin-group__selected div {
+  .validation-groups__plugin {
     display: flex;
     align-items: center;
     justify-content: center;
