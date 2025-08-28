@@ -1,5 +1,14 @@
 import { findElementByTagAndId } from '../utils/scdUtils';
-import { ChildNameFilter, DataTypeKind, DataTypeMap, DataTypes } from '../domain/core.model';
+import {
+  ChildNameFilter,
+  DataTypeKind,
+  DataTypeMap,
+  DataTypes,
+  DAType,
+  DOType,
+  EnumType,
+  LNodeType
+} from '../domain/core.model';
 import {
   buildInsert,
   buildRemove,
@@ -13,6 +22,7 @@ import {
   DATypeMapperV,
   EnumTypeMapperV, TypeMapper
 } from '../mappers';
+import { TypeTraverser } from '../utils/typeTraverser';
 
 export interface IDataTypeRepository {
   /**
@@ -97,7 +107,19 @@ export class DataTypeRepository implements IDataTypeRepository {
       enumTypes: [],
     };
 
-    //TODO: implement
+    function addReferenceDataType(kind: DataTypeKind, el: Element) {
+      const mapper = DataTypeRepository.typeMapperRegistry[kind];
+      const dataType = mapper.fromElement(el);
+      if (!dataType) return;
+
+      if (kind === DataTypeKind.LNodeType) referencedDataTypes.lNodeTypes.push(dataType as LNodeType);
+      else if (kind === DataTypeKind.DOType) referencedDataTypes.dataObjectTypes.push(dataType as DOType);
+      else if (kind === DataTypeKind.DAType) referencedDataTypes.dataAttributeTypes.push(dataType as DAType);
+      else if (kind === DataTypeKind.EnumType) referencedDataTypes.enumTypes.push(dataType as EnumType);
+    }
+
+    new TypeTraverser(this.doc)
+      .traverse(dataTypeKind, id, addReferenceDataType, false, childNameFilter);
 
     return referencedDataTypes
   }
@@ -128,7 +150,6 @@ export class DataTypeRepository implements IDataTypeRepository {
     return true;
   }
 
-  // Overloads for upsertDataType
   upsertDataType<K extends DataTypeKind>(dataTypeKind: K, data: DataTypeMap[K]): DataTypeMap[K] {
     const mapper = DataTypeRepository.typeMapperRegistry[dataTypeKind];
     if (!data.id) {

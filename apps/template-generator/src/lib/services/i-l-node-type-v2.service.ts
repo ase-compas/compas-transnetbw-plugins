@@ -59,7 +59,7 @@ export interface ILNodeTypeV2Service {
    * @param childNameFilter
    * @returns A promise resolving to the referenced DataTypes.
    */
-  getReferencedTypesById(
+  getReferencedTypes(
     id: string,
     childNameFilter?: ChildNameFilter
   ): Promise<DataTypes>;
@@ -126,9 +126,11 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
       throw new Error(`Unable to find specification types for logical node type`);
     }
 
-    const objRefDetails = this.specsToObjectReferenceDetails(typeSpecification, data.children);
 
-    const node: LNodeType = { id: data.id, lnClass: data.lnClass, children: objRefDetails };
+    const configuredObjRefDetails = this.specsToObjectReferenceDetails(typeSpecification, data.children)
+      .filter(obj => obj.meta.isConfigured);
+
+    const node: LNodeType = { id: data.id, lnClass: data.lnClass, children: configuredObjRefDetails };
     this.typeRepo.upsertDataType(DataTypeKind.LNodeType, node);
 
     return Promise.resolve(true);
@@ -155,17 +157,13 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
     );
   }
 
-  async getReferencedTypesById(id: string, childNameFilter: ChildNameFilter): Promise<DataTypes> {
-   const dataTypes: DataTypes = {
-     lNodeTypes: [] as LNodeType[],
-     dataObjectTypes: [] as DOType[],
-     dataAttributeTypes: [] as DAType[],
-     enumTypes: [] as EnumType[],
-   }
-
-   const dataType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id)
-
-   return Promise.resolve(dataTypes)
+  async getReferencedTypes(id: string, childNameFilter: ChildNameFilter): Promise<DataTypes> {
+    const existingType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id);
+    if (!existingType) {
+      throw new Error(`Unable to find logical node type with id ${id}`);
+    }
+    const referencedTypes = this.typeRepo.findReferencedTypesById(DataTypeKind.LNodeType, id, childNameFilter);
+    return Promise.resolve(referencedTypes);
   }
 
   async getAssignableTypes(lnClass: string, childNameFilter: string[] = []): Promise<DataTypes> {
@@ -182,7 +180,9 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
         .map((c) => c.requiredRefType)
         .filter(Boolean) ?? [];
 
-    const assignableDOTypes = cdcs.flatMap((cdc) =>
+    const uniqueCdcs = [...new Set(cdcs)];
+
+    const assignableDOTypes = uniqueCdcs.flatMap((cdc) =>
       this.typeRepo.findAllDataTypesByKind(DataTypeKind.DOType, cdc)
     );
 
@@ -231,8 +231,8 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
         typeRef: existingRefObj?.typeRef,
         attributes: spec.attributes,
         meta: {
-          isMandatory: spec.isMandatory,
-          isConfigured: spec.isMandatory || !!existingRefObj,
+          isMandatory: !!spec.isMandatory,
+          isConfigured: !!spec.isMandatory || !!existingRefObj,
           isReferencable: !!spec.requiredRefType,
           requiredRefType: spec.requiredRefType,
         }

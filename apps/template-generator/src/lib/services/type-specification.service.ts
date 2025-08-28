@@ -24,6 +24,7 @@ interface SclLibSpecsSchema {
   tagName: string;
   name: string;
   presCond: 'M' | 'C' | 'O';
+  mandatory?: boolean;
   type?: string;
 }
 
@@ -42,7 +43,7 @@ export class TypeSpecificationService implements ITypeSpecificationService {
     return Object.values(classData).map((child: SclLibSpecsSchema) => ({
       tagName: child.tagName,
       name: child.name,
-      isMandatory: child.presCond === 'M',
+      isMandatory: child.presCond === 'M' || child.mandatory === true,
       requiredRefType: child.type
     }))
   }

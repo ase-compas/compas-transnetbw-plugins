@@ -1,83 +1,108 @@
 import { writable, derived, type Readable } from 'svelte/store';
+import { ObjectReferenceDetails } from '../domain/core.model';
 
-export type BoardItemState = {
-  id: string;
-  selected?: boolean;
-  marked?: boolean;
-  mandatory?: boolean;
-  type?: string | null;
-};
+export interface ObjectReferenceState extends ObjectReferenceDetails {
+  isMarked: boolean
+}
+export interface ObjectReferenceStore extends Readable<ObjectReferenceState[]> {
 
-export interface BoardStore<T extends BoardItemState> extends Readable<T[]> {
+  /** Reload items from the loader function */
   reload: () => Promise<void>;
-  toggleSelected: (id: string) => void;
+
+  /** Toggle the configured state of an item */
+  toggleConfigured: (id: string) => void;
+
+  /** Toggle the marked state of an item */
   toggleMarked: (id: string) => void;
-  updateItem: (id: string, changes: Partial<T>) => void;
-  markedItems: Readable<T[]>;
-  selectedItems: Readable<T[]>;
-  setReferenceType: (id: string, type: string) => void;
-  removeReferenceType: (id: string) => void;
+
+  /** Update properties of an item */
+  updateItem: (id: string, changes: Partial<ObjectReferenceState>) => void;
+
+  /** Items that have been marked */
+  markedItems: Readable<ObjectReferenceState[]>;
+
+  /** Items that have been configured */
+  configuredItems: Readable<ObjectReferenceState[]>;
+
+  /** Add a reference type to an item */
+  setTypeReference: (id: string, typeRef: string) => void;
+
+  /** Remove a reference type from an item */
+  removeTypeReference: (id: string) => void;
+
+  /**True if the current store state differs from the originally loaded state */
   isDirty: Readable<boolean>;
+
+  /** Reset the store to its original loaded state */
+  reset: () => void;
 }
 
-export function createObjectReferenceStore<T extends BoardItemState>(
-  loader: () => Promise<T[]>
-): BoardStore<T> {
-  const store = writable<T[]>([]);
-  let original: T[] = [];
+export function createObjectReferenceStore(
+  loader: () => Promise<ObjectReferenceDetails[]>
+): ObjectReferenceStore {
+  const store = writable<ObjectReferenceState[]>([]);
+  let original: ObjectReferenceState[] = [];
   const { subscribe, set, update } = store;
 
   // Load items and ensure default states
   async function reload() {
     const items = await loader();
+    const stateItems: ObjectReferenceState[] = items.map(i => ({...i, isMarked: false }))
     original = JSON.parse(JSON.stringify(items));
-    set(items);
+    set(stateItems);
   }
 
-  function updateItem(id: string, changes: Partial<T>) {
+  function updateItem(id: string, changes: Partial<ObjectReferenceState>) {
     update(list =>
-      list.map(item => item.id === id ? { ...item, ...changes } : item)
+      list.map(item => item.name === id ? { ...item, ...changes } : item)
     );
   }
 
-  function toggleSelected(id: string) {
+  function toggleConfigured(id: string) {
     update(list =>
-      list.map(item => item.id === id ? { ...item, selected: !item.selected } : item)
+      list.map(item => item.name === id ? { ...item, meta: { ...item.meta, isConfigured: !item.meta.isConfigured } } : item
+      )
     );
   }
 
   function toggleMarked(id: string) {
     update(list =>
-      list.map(item => item.id === id ? { ...item, marked: !item.marked } : item)
+      list.map(item => item.name === id ? { ...item, isMarked: !item.isMarked } : item)
     );
   }
 
-  /** Add a reference type to an item */
-  function setReferenceType(id: string, type: string) {
+  function setTypeReference(id: string, typeRef: string) {
     update(list =>
-      list.map(item => item.id === id ? { ...item, type, selected: true } : item)
+      list.map(item => item.name === id ? { ...item, typeRef, meta: { ...item.meta, isConfigured: true }, } : item)
     );
   }
 
-  /** Remove a reference type from an item */
-  function removeReferenceType(id: string) {
+  function removeTypeReference(id: string) {
     update(list =>
-      list.map(item => item.id === id ? { ...item, type: null, selected: false } : item)
+      list.map(item => item.name === id ? { ...item, typeRef: undefined, meta: { ...item.meta, isConfigured: false }, } : item)
     );
   }
 
-  const markedItems = derived(store, $items => $items.filter(item => item.marked));
-  const selectedItems = derived(store, $items => $items.filter(item => item.selected));
+  function reset() {
+    set(JSON.parse(JSON.stringify(original)));
+  }
+
+  const markedItems = derived(store, $items => $items.filter(item => item.isMarked));
+  const configuredItems = derived(store, $items => $items.filter(item => item.meta.isConfigured || item.meta.isMandatory));
 
   const isDirty = derived(store, $items => {
     if ($items.length !== original.length) return true;
 
     return $items.some((curr, index) => {
       const orig = original[index];
-      // Only consider items that are selected/configured
-      if (!curr.selected) return false;
-      // Dirty if id or type differs
-      return curr.id !== orig.id || curr.type !== orig.type || curr.type === '' || curr.type === null;
+      // Only consider configured items
+
+      if(curr.meta.isConfigured !== orig.meta.isConfigured) return true;
+      if (!curr.meta.isConfigured) return false;
+      return (curr.name !== orig.name ||
+        curr.typeRef !== orig.typeRef ||
+        curr.typeRef === '' ||
+        curr.typeRef == null || false);
     });
   });
 
@@ -85,12 +110,13 @@ export function createObjectReferenceStore<T extends BoardItemState>(
     subscribe,
     reload,
     updateItem,
-    toggleSelected,
+    toggleConfigured,
     toggleMarked,
+    setTypeReference,
+    removeTypeReference,
     markedItems,
-    selectedItems,
-    setReferenceType: setReferenceType,
-    removeReferenceType,
+    configuredItems,
     isDirty,
+    reset
   };
 }

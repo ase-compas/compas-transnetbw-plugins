@@ -1,137 +1,141 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { createObjectReferenceStore, route } from '../../lib/stores';
   import { OscdBreadcrumbs, OscdButton, OscdConfirmDialog, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
-  import { DataTypes, DODetails, LNodeTypeDetails } from '../../lib/domain';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+
+  // Components
+  import TBoard from '../../lib/components/tboard/TBoard.svelte';
   import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
   import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
-  import TBoard from '../../lib/components/tboard/TBoard.svelte';
-  import { getDataObjectTypeService, getLNodeTypeService } from '../../lib/services';
-  import { getColumns } from './columns.config';
-  import { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
   import NewDataObjectType from '../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte';
-  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+
+  // Services & utils
+  import {
+    DataObjectTypeService,
+    getDataObjectTypeService,
+    getLNodeTypeServiceV2, ILNodeTypeV2Service
+  } from '../../lib/services';
   import { loadLNodeType, loadTypes } from './dataLoader';
-  import { onMount } from 'svelte';
-  import { mapDATypeToTItem, mapDOTypeToTItem, mapEnumTypeToTItem } from '../../lib/mappers';
+  import { mapDataTypeToItem } from '../../lib/mappers';
+  import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
+  import { getDisplayReferenceItems } from '../../lib/utils/objectReferenceUtils';
 
+  // Types
+  import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
+  import type { DataTypes, LNodeTypeDetailsV2, ObjectReferenceDetails } from '../../lib/domain/core.model';
+
+  // -----------------------------
   // Service instances
-  const lNodeTypeService = getLNodeTypeService();
-  const dataObjectService = getDataObjectTypeService();
+  // -----------------------------
+  const lNodeTypeService: ILNodeTypeV2Service = getLNodeTypeServiceV2();
+  const dataObjectService: DataObjectTypeService = getDataObjectTypeService();
 
-  const refStore = createObjectReferenceStore(async () => {
-    return logicalNodeType.dataObjects.map(doObj => ({
-      ...doObj,
-      id: doObj.name,
-      mandatory: doObj.metadata.isMandatory,
-      selected: doObj.metadata.isConfigured,
-      marked: false
-    }));
-  });
+  // -----------------------------
+  // Stores
+  // -----------------------------
+  const refStore = createObjectReferenceStore(async () => logicalNodeType.children);
+  const { markedItems, configuredItems, isDirty } = refStore;
 
-  const { markedItems, selectedItems, isDirty } = refStore;
+  // -----------------------------
+  // Component state
+  // -----------------------------
+  let logicalNodeType: LNodeTypeDetailsV2 | null = null;
+  let dataTypes: DataTypes = {
+    lNodeTypes: [],
+    dataObjectTypes: [],
+    dataAttributeTypes: [],
+    enumTypes: []
+  };
 
-  // State
-  let logicalNodeType: LNodeTypeDetails | null = null;
-  let dataTypes: DataTypes = { dataObjectTypes: [], dataAttributeTypes: [], enumTypes: [] };
-
-  // Mode management
   let isEditMode = false;
+
+  // -----------------------------
+  // Reactive statements
+  // -----------------------------
+  // Determine mode based on route and edit state
   $: mode = $route.path[0] === 'new' ? 'create' : (isEditMode ? 'edit' : 'view');
   $: isDirtyState = $isDirty || mode === 'create';
 
-  function loadData() {
+  // Breadcrumbs
+  $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
+
+  // Reference data objects (filtered, mapped, sorted)
+  let referenceDataObjects: TItem[] = [];
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode, acceptDrop);
+
+  // Board data configuration
+  $: boardData = {
+    refs: referenceDataObjects,
+    doTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true, type.cdc)),
+    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
+    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true))
+  };
+
+  $: columns = getColumns(isEditMode); // Board column configuration
+
+  // -----------------------------
+  // Loaders
+  // -----------------------------
+  async function loadData() {
     const nodeId = $route.meta.lNodeTypeId;
     const lnClass = $route.meta.lnClass;
+
     if (mode === 'create') {
       isEditMode = true;
     }
-    logicalNodeType = loadLNodeType(mode, nodeId, lnClass);
-    refStore.reload();
 
-    dataTypes = loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, []);
+    logicalNodeType = await loadLNodeType(mode, nodeId, lnClass);
+    await refStore.reload();
+
+    dataTypes = await loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, []);
   }
 
-  $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
-
-  // Load Data Types when marked items change
+  // Load data types when marked items change
   $: if (logicalNodeType) {
-    dataTypes = loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, $markedItems.map(i => i.id));
+    loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, $markedItems.map(i => i.name))
+      .then(types => dataTypes = types);
   }
 
-
-  // Determine which data objects to show based on mode
-  let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = $refStore
-    .filter(item => isEditMode || item.selected)
-    .map(item => ({
-      id: item.id,
-      title: item.id,
-      subtitle: item.type,
-      isMandatory: item.mandatory,
-      selected: item.selected || item.mandatory,
-      marked: item.marked,
-      canEdit: false,
-      canSelect: isEditMode,
-      canMark: true,
-      canDelete: true,
-      badgeText: item.cdc,
-      canUnlink: isEditMode && !item.mandatory && (item.type !== null && item.type !== ''),
-      canApplyDefaults: isEditMode,
-      errorMessage: 'Type reference is needed',
-      error: (item.selected || item.mandatory) && (item.type === null || item.type === ''),
-      acceptDrop: acceptDrop
-        ? (target: TBoardItemContext) => acceptDrop(target, item)
-        : undefined
-    }))
-    .sort((a, b) => {
-      const groupA = a.isMandatory ? 0 : (a.selected ? 1 : 2);
-      const groupB = b.isMandatory ? 0 : (b.selected ? 1 : 2);
-      if (groupA !== groupB) return groupA - groupB;
-      return a.title.localeCompare(b.title);
-    });
-
-  $: boardData = {
-    refs: referenceDataObjects,
-    doTypes: dataTypes.dataObjectTypes.map(type => mapDOTypeToTItem(type, true)),
-    daTypes: dataTypes.dataAttributeTypes.map(type => mapDATypeToTItem(type, true)),
-    enumTypes: dataTypes.enumTypes.map(type => mapEnumTypeToTItem(type, true))
-  }
-
-// Board configuration
-  $: columns = getColumns(isEditMode);
-
+  // -----------------------------
+  // Lifecycle
+  // -----------------------------
   onMount(() => {
     loadData();
   });
 
+  // -----------------------------
+  // Event Handlers
+  // -----------------------------
   function handleToggleMark(itemId: string) {
     refStore.toggleMarked(itemId);
   }
 
   function handleToggleSelect({ itemId }) {
-    refStore.toggleSelected(itemId);
+    refStore.toggleConfigured(itemId);
   }
 
   function handleItemDrop({ source, target }: { source: TBoardItemContext; target: TBoardItemContext }) {
     if (!source || !target) return;
     if (source.columnId === 'doTypes' && target.columnId === 'refs') {
-      refStore.setReferenceType(target.itemId, source.itemId);
+      refStore.setTypeReference(target.itemId, source.itemId);
     }
   }
 
   function handleSaveChanges() {
     if (!logicalNodeType) return;
 
-    let newDos = $selectedItems.map(item => ({
-      name: item.id,
-      type: item.type
+    let newDos = $configuredItems.map(item => ({
+      name: item.name,
+      typeRef: item.typeRef
     }));
 
-    lNodeTypeService.saveLNodeType({
-      ...logicalNodeType,
-      dataObjects: newDos
-    });
+    lNodeTypeService.createOrUpdateType({
+      id: logicalNodeType.id,
+      lnClass: logicalNodeType.lnClass,
+      children: newDos
+    })
 
     loadData();
 
@@ -140,11 +144,8 @@
     }
   }
 
-  function navigateToView(lNodeType: LNodeTypeDetails) {
-    route.set({ path: ['view'], meta: { lNodeTypeId: lNodeType.id, lnClass: lNodeType.lnClass } });
-  }
-
-  async function handleUnsavedChanges() {
+  /** Handle unsaved changes with optional reset */
+  async function handleUnsavedChanges(resetOnDiscard = false) {
     const result = await openDialog(OscdConfirmDialog, {
       title: 'Unsaved Changes',
       message: 'You have unsaved changes. Do you want to save them?',
@@ -153,26 +154,28 @@
     });
     if (result.type === 'confirm') {
       handleSaveChanges();
+    } else if (resetOnDiscard) {
+      refStore.reset();
     }
   }
 
   // Dialog handlers
   function handleActionClick({ columnId }) {
-    if (columnId === 'dotypes') {
+   if (columnId === 'doTypes') {
       openCreateDOTypeDialog();
-    } else if (columnId === 'datypes') {
+    } else if (columnId === 'daTypes') {
       alert('New DA Type');
-    } else if (columnId === 'enumtypes') {
+    } else if (columnId === 'enumTypes') {
       alert('New ENUM TYPE');
     }
   }
 
   function handleOnEdit({ columnId, itemId }) {
-    if (columnId === 'dotypes') {
+    if (columnId === 'doTypes') {
       openEditDOTypeDialog(itemId, null, isEditMode ? 'edit' : 'view');
-    } else if (columnId === 'datypes') {
+    } else if (columnId === 'daTypes') {
       openEditDATypeDialog(itemId, isEditMode ? 'edit' : 'view');
-    } else if (columnId === 'enumtypes') {
+    } else if (columnId === 'enumTypes') {
     }
   }
 
@@ -183,15 +186,20 @@
     if (index === 0) route.set({ path: ['overview'] });
   }
 
-  function onEditModeChange(e) {
+  /** Handle edit mode toggle with unsaved changes check */
+  async function onEditModeChange(e) {
+    if(isEditMode && isDirtyState) {
+      await handleUnsavedChanges(true);
+    }
   }
 
   function handleOnUnlink({ itemId }) {
-    refStore.removeReferenceType(itemId);
+    refStore.removeTypeReference(itemId);
   }
 
-  // ===== Dialog Handlers =====
-
+  // -----------------------------
+  // Dialog Handlers
+  // -----------------------------
   function openCreateDOTypeDialog() {
     openDialog(NewDataObjectType).then(result => {
       if (result.type === 'confirm') {
@@ -208,10 +216,17 @@
     openDialog(DataAttributeDialog, { typeId, mode });
   }
 
-  function acceptDrop(source: TBoardItemContext, target: DODetails): boolean {
+  // -----------------------------
+  // Utils
+  // -----------------------------
+  function navigateToView(lNodeType: LNodeTypeDetailsV2) {
+    route.set({ path: ['view'], meta: { lNodeTypeId: lNodeType.id, lnClass: lNodeType.lnClass } });
+  }
+
+  function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const doType = dataObjectService.findById(source.itemId);
     if (!doType) return false;
-    return doType.cdc === target.cdc;
+    return target.meta.isReferencable && doType.cdc === target.meta.requiredRefType;
   }
 </script>
 
@@ -244,7 +259,7 @@
       data={boardData}
       on:columnActionClick={e => handleActionClick(e.detail)}
       on:itemEdit={e => handleOnEdit(e.detail)}
-      on:itemMarkChange={({detail: {itemId, marked}}) => handleToggleMark(itemId, marked)}
+      on:itemMarkChange={({detail: {itemId}}) => handleToggleMark(itemId)}
       on:itemSelectChange={e => handleToggleSelect(e.detail)}
       on:itemDrop={e => handleItemDrop(e.detail)}
       on:itemApplyDefaults={e => console.log(e.detail)}

@@ -1,42 +1,63 @@
-import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
-import { DataTypes, LNodeTypeDetails } from '../../lib/domain';
+import { getLNodeTypeServiceV2, ILNodeTypeV2Service } from '../../lib/services';
+import { DataTypes, LNodeTypeDetailsV2 } from '../../lib/domain/core.model';
 
-let lNodeTypeService: ILNodeTypeService;
+let lNodeTypeService: ILNodeTypeV2Service;
 
-export function loadLNodeType(mode: 'create' | 'edit' | 'view', lNodeTypeId: string, lnClass?: string): LNodeTypeDetails {
+export async function loadLNodeType(
+  mode: 'create' | 'edit' | 'view',
+  lNodeTypeId: string,
+  lnClass?: string
+): Promise<LNodeTypeDetailsV2> {
   if (!lNodeTypeService) {
-    lNodeTypeService = getLNodeTypeService();
+    lNodeTypeService = getLNodeTypeServiceV2();
   }
 
   // --- Get node ---
   if (mode === 'create') {
-    const draftNode = lNodeTypeService.createDraftLNodeType(lnClass);
+    const draftNode = await lNodeTypeService.getDefaultType(lnClass);
     draftNode.id = lNodeTypeId;
     return draftNode;
   } else {
-    return lNodeTypeService.getLNodeType(lNodeTypeId);
+    return lNodeTypeService.getTypeById(lNodeTypeId);
   }
 }
 
-export function loadTypes(mode: 'create' | 'edit' | 'view', lNodeTypeId: string, lnClass: string, includeChildren: string[] = []): DataTypes {
+export async function loadTypes(
+  mode: 'create' | 'edit' | 'view',
+  lNodeTypeId: string,
+  lnClass: string,
+  includeChildren: string[] = []
+): Promise<DataTypes> {
   const types: DataTypes = {
+    lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
-    enumTypes: []
+    enumTypes: [],
   };
   // --- Get types ---
   if (mode === 'create') {
     // Only assignable DO types for create mode
-    types.dataObjectTypes = lNodeTypeService.getAssignableDOTypes(lnClass, includeChildren);
+    const assignableTypes = await lNodeTypeService.getAssignableTypes(
+      lnClass,
+      includeChildren
+    );
+    types.dataObjectTypes = assignableTypes.dataObjectTypes;
   } else {
     // Edit or view mode: always fetch referenced types
-    const referencedTypes = lNodeTypeService.getReferencedTypes(lNodeTypeId, includeChildren);
+    const referencedTypes = await lNodeTypeService.getReferencedTypes(
+      lNodeTypeId,
+      includeChildren
+    );
     types.dataAttributeTypes = referencedTypes.dataAttributeTypes;
     types.enumTypes = referencedTypes.enumTypes;
 
     if (mode === 'edit') {
       // Edit mode: DO types are assignable
-      types.dataObjectTypes = lNodeTypeService.getAssignableDOTypes(lnClass, includeChildren);
+      const assignableTypes = await lNodeTypeService.getAssignableTypes(
+        lnClass,
+        includeChildren
+      );
+      types.dataObjectTypes = assignableTypes.dataObjectTypes;
     } else {
       // View mode: DO types are referenced
       types.dataObjectTypes = referencedTypes.dataObjectTypes;

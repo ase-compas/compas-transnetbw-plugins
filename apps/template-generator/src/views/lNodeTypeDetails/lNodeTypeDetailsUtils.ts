@@ -1,11 +1,7 @@
-import type { DO, LNodeType } from '../../lib/domain';
 import type { Route } from '../../lib/stores';
+import { LNodeTypeDetailsV2 } from '../../lib/domain/core.model';
 
-export function createNewLNodeType(id: string, lnClass: string, baseDataObjects: DO[]): LNodeType {
-  return { id, lnClass, desc: '', dataObjects: baseDataObjects };
-}
-
-export function createBreadcrumbs(route: Route, lNodeType: LNodeType) {
+export function createBreadcrumbs(route: Route, lNodeType: LNodeTypeDetailsV2) {
   const base = { label: 'Logical Node Types', enabled: true };
   const isView = route.path[0] === 'view';
 

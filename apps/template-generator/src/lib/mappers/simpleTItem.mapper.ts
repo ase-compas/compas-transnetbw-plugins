@@ -1,53 +1,38 @@
-import { DAType, DODetails, DOType, EnumType } from '../domain';
 import { TBoardItemContext, TItem } from '../components/tboard/types';
+import { DataType } from '../domain/core.model';
+import { ObjectReferenceState } from '../stores';
 
-export function mapDODetailsToTItem(doDetails: DODetails, isEditMode: boolean, acceptDropFn?: (item: TBoardItemContext, doDetails: DODetails) => boolean): TItem {
+export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isEditMode: boolean, acceptDropFn?: (item: TBoardItemContext, objRef: ObjectReferenceState) => boolean): TItem {
   return {
-    id: doDetails.name,
-    title: doDetails.name,
-    subtitle: doDetails.type,
+    id: objRef.name,
+    title: objRef.name,
+    subtitle: objRef.typeRef,
     references: null,
-    badgeText: doDetails.cdc,
-    marked: false,
-    isMandatory: doDetails.metadata.isMandatory,
-    selected: doDetails.metadata.isConfigured || doDetails.metadata.isMandatory,
+    badgeText: objRef.meta?.requiredRefType ? objRef.meta.requiredRefType : undefined,
+    marked: objRef.isMarked,
+    isMandatory: objRef.meta.isMandatory,
+    selected: objRef.meta.isConfigured,
     canEdit: false,
     canMark: true,
     canSelect: isEditMode,
-    canUnlink: isEditMode,
-    error: (doDetails.metadata.isMandatory && !doDetails.type) || false,
-    errorMessage: doDetails.metadata.isMandatory && !doDetails.type ? 'Reference is mandatory' : undefined,
+    canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
+    error: (objRef.meta?.requiredRefType && objRef.meta.isConfigured && !objRef.typeRef) || false,
+    errorMessage: 'Reference is required',
     acceptDrop: acceptDropFn
-      ? (item: TBoardItemContext) => acceptDropFn(item, doDetails)
+      ? (item: TBoardItemContext) => acceptDropFn(item, objRef)
       : undefined,
   };
 }
 
-export function mapDOTypeToTItem(doType: DOType, canEdit = false): TItem {
+
+export function mapDataTypeToItem(type: DataType, canEdit = false, badgeText?: string): TItem {
   return {
-    id: doType.id,
-    title: doType.id,
-    references: doType.subDataObjects.length + doType.dataAttributes.length,
-    badgeText: doType.cdc,
+    id: type.id,
+    title: type.id,
+    references: 0,
+    badgeText: badgeText,
     canEdit: canEdit,
   };
 }
 
-export function mapDATypeToTItem(daType: DAType, canEdit = false): TItem {
-  return {
-    id: daType.id,
-    title: daType.id,
-    references: daType.basicDataAttributes.length,
-    canEdit: canEdit,
-  };
-}
-
-export function mapEnumTypeToTItem(enumType: EnumType, canEdit = false): TItem {
-  return {
-    id: enumType.id,
-    title: enumType.id,
-    references: enumType.values.length,
-    canEdit: canEdit,
-  };
-}
 
