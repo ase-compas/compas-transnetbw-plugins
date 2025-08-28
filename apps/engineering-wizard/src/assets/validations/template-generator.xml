@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>template-inputs-001</id>
+    <name>Required Inputs Present</name>
+    <validator>check-required-inputs</validator>
+  </validation>
+  <validation>
+    <id>tg-naming-002</id>
+    <name>Template Naming Convention</name>
+    <validator>check-template-naming</validator>
+  </validation>
+  <validation>
+    <id>tg-compat-003</id>
+    <name>Template Compatibility</name>
+    <validator>check-template-compatibility</validator>
+  </validation>
+</validations>
+

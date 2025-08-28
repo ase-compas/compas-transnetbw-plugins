@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>ied-name-001</id>
+    <name>IED Name Format</name>
+    <validator>check-ied-name-format</validator>
+  </validation>
+  <validation>
+    <id>ap-config-002</id>
+    <name>Access Point Configuration</name>
+    <validator>check-access-point-config</validator>
+  </validation>
+  <validation>
+    <id>ln-assign-003</id>
+    <name>Logical Node Assignments</name>
+    <validator>check-ln-assignments</validator>
+  </validation>
+</validations>
+

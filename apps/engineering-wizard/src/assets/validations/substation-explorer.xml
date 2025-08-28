@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>substation-structure-001</id>
+    <name>Substation Structure Integrity</name>
+    <validator>check-substation-structure</validator>
+  </validation>
+  <validation>
+    <id>voltage-level-uniqueness-002</id>
+    <name>Voltage Level Name Uniqueness</name>
+    <validator>check-vl-name-uniqueness</validator>
+  </validation>
+  <validation>
+    <id>bay-naming-003</id>
+    <name>Bay Naming Convention</name>
+    <validator>check-bay-naming</validator>
+  </validation>
+</validations>
+

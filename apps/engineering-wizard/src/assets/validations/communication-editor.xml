@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>comm-subnet-001</id>
+    <name>Subnet Address Validity</name>
+    <validator>check-subnet-address</validator>
+  </validation>
+  <validation>
+    <id>gse-config-002</id>
+    <name>GSE Control Blocks Configuration</name>
+    <validator>check-gse-config</validator>
+  </validation>
+  <validation>
+    <id>smv-config-003</id>
+    <name>SMV Control Blocks Configuration</name>
+    <validator>check-smv-config</validator>
+  </validation>
+</validations>
+
