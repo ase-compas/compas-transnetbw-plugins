@@ -42,7 +42,7 @@
       <group>
         <title>Communication</title>
         <plugin>
-          <id>communication-editor</id>
+          <id>communication-explorer</id>
           <name>Communication Explorer</name>
           <src>
             https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/communication.js
