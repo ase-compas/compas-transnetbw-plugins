@@ -81,6 +81,10 @@
     step -= 1;
     dispatch('previous');
   }
+
+  function addNewValidation() {
+    alert('Add New Validation clicked!');
+  }
 </script>
 
 <div class="page-content">
@@ -115,10 +119,37 @@
 
     <div class="step-content">
       {#if currentId === 'process-definition'}
-        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
+        <div class="header">
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={onCrumbClick} />
+        </div>
         <ProcessDefinition {pluginGroups} />
       {:else}
-        <div>Text b</div>
+        <div class="header">
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={2} on:click={onCrumbClick} />
+
+          <Button
+            variant="raised"
+            style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+            on:click={addNewValidation}
+            disabled={!proc}
+            aria-label="Add New Validation"
+          >
+            ADD NEW VALIDATION
+          </Button>
+        </div>
+
+        <div class="process-validation-container" role="list" aria-label="Validation groups">
+          {#each pluginGroups as group}
+            <div class="process-validation-plugin-group__selected">
+              <span class="process-validation-plugin-group__title">{group.title}</span>
+              {#each group.plugins as plugin, idx}
+                <div aria-current={idx === 0 ? 'true' : undefined}>
+                  <span>{plugin.name}</span>
+                </div>
+              {/each}
+            </div>
+          {/each}
+        </div>
       {/if}
     </div>
   {:else}
@@ -173,6 +204,43 @@
     display: flex;
     gap: 0.8rem;
     justify-self: end;
+  }
+
+  .process-validation-container {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .process-validation-plugin-group__title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    padding: 0 8px;
+    color: var(--on-brand);
+  }
+
+  .process-validation-plugin-group__selected {
+    display: flex;
+    gap: 0.2rem;
+    border-radius: 6px;
+    box-sizing: border-box;
+    padding: 4px;
+    background-color: var(--brand);
+  }
+
+  .process-validation-plugin-group__selected div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: var(--brand);
+    padding: 6px;
+    background-color: white;
+    border-radius: 6px;
+    width: fit-content;
+    min-width: 2rem;
   }
 
   .btn {
