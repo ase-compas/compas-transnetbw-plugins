@@ -9,6 +9,7 @@
   import { getBreadcrumbs, getPluginGroups } from '../../services/engineering-process-detail.service';
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
+  import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
 
   export let currentProcess: Process | null = null;
 
@@ -132,19 +133,14 @@
             ADD NEW VALIDATION
           </Button>
         </div>
-
-        <div class="validation-groups" role="list" aria-label="Validation groups">
-          {#each pluginGroups as group}
-            <div class="validation-groups__group">
-              <span class="validation-groups__group-title">{group.title}</span>
-              {#each group.plugins as plugin, idx}
-                <div class="validation-groups__plugin" aria-current={idx === 0 ? 'true' : undefined}>
-                  <span>{plugin.name}</span>
-                </div>
-              {/each}
-            </div>
-          {/each}
-        </div>
+        <ProcessValidationGroups
+          {pluginGroups}
+          {currentProcess}
+          {breadcrumbs}
+          activeBreadcrumbIndex={2}
+          on:addValidation={handleAddValidationClick}
+          on:breadcrumbClick={handleBreadcrumbClick}
+        />
       {/if}
     </div>
   {:else}
@@ -199,43 +195,6 @@
     display: flex;
     gap: 0.8rem;
     justify-self: end;
-  }
-
-  .validation-groups {
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-  }
-
-  .validation-groups__group-title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 500;
-    padding: 0 8px;
-    color: var(--on-brand);
-  }
-
-  .validation-groups__group {
-    display: flex;
-    gap: 0.2rem;
-    border-radius: 6px;
-    box-sizing: border-box;
-    padding: 4px;
-    background-color: var(--brand);
-  }
-
-  .validation-groups__plugin {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-    color: var(--brand);
-    padding: 6px;
-    background-color: white;
-    border-radius: 6px;
-    width: fit-content;
-    min-width: 2rem;
   }
 
   .btn {
