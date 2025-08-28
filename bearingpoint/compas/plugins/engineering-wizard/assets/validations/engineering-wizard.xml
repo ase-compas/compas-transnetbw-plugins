@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>ew-val-1</id>
+    <name>Substation Basic Check</name>
+    <validator>alpha-39f7b</validator>
+  </validation>
+  <validation>
+    <id>ew-val-2</id>
+    <name>Voltage Level Consistency</name>
+    <validator>sigma-2c4a1</validator>
+  </validation>
+  <validation>
+    <id>ew-val-3</id>
+    <name>Bay Naming Rules</name>
+    <validator>omega-90db2</validator>
+  </validation>
+</validations>
+
