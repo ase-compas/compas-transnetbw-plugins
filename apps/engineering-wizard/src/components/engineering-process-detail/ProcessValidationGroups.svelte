@@ -23,7 +23,6 @@
 
   type ValidationEntry = { name: string; description?: string; xml: string };
   let validationEntries: ValidationEntry[] = [];
-  // Track which validation entries are expanded by index
   let openSet: Set<number> = new Set();
 
   async function loadXmlFor(pluginId: string) {
@@ -31,7 +30,6 @@
     xmlError = '';
     xmlText = '';
     validationEntries = [];
-    // reset expanded state when loading new plugin
     openSet = new Set();
 
     xmlAbort?.abort();
@@ -97,7 +95,6 @@
   function toggleEntry(idx: number) {
     if (openSet.has(idx)) openSet.delete(idx);
     else openSet.add(idx);
-    // reassign to trigger reactivity
     openSet = new Set(openSet);
   }
 </script>
@@ -299,7 +296,6 @@
   .validation-xml-container__description {
     font-weight: 400;
     color: #002B37;
-    font-size: 0.9rem;
   }
 
   .toggle-btn, .delete-btn {
@@ -332,8 +328,9 @@
     margin: 0;
     white-space: pre-wrap;
     word-break: break-word;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 13px; line-height: 1.4;
+    font-family: 'Roboto', sans-serif;
+    color: #004552;
+    font-weight: 400;
   }
 
   .error {
