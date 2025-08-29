@@ -31,6 +31,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     canMark: true,
     canSelect: isEditMode,
     canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
+    canApplyDefaults: isEditMode && objRef.meta.requiresReference,
     error: objRef.meta.requiresReference && (objRef.meta.isMandatory || objRef.meta.isConfigured) && !objRef.typeRef,
     errorMessage: 'Reference is required',
     acceptDrop: acceptDropFn
