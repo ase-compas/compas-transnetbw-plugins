@@ -13433,17 +13433,20 @@ function mu(n) {
   function W(S, m) {
     return (
       /*currentStepId*/
-      S[2] === "process-definition" ? 0 : 1
+      S[2] === "process-definition" ? 0 : (
+        /*currentStepId*/
+        S[2] === "validator-configuration" ? 1 : -1
+      )
     );
   }
-  return h = W(n), p = b[h] = E[h](n), {
+  return ~(h = W(n)) && (p = b[h] = E[h](n)), {
     c() {
-      e = T("div"), j(t.$$.fragment), l = U(), j(i.$$.fragment), r = U(), s = T("div"), o = T("button"), a = ne("Back"), u = U(), c = T("button"), f = ne("Next"), d = U(), g = T("div"), p.c(), v(o, "type", "button"), v(o, "class", "btn btn--back svelte-evkqad"), o.disabled = /*isAtFirstStep*/
+      e = T("div"), j(t.$$.fragment), l = U(), j(i.$$.fragment), r = U(), s = T("div"), o = T("button"), a = ne("Back"), u = U(), c = T("button"), f = ne("Next"), d = U(), g = T("div"), p && p.c(), v(o, "type", "button"), v(o, "class", "btn btn--back svelte-evkqad"), o.disabled = /*isAtFirstStep*/
       n[5], v(o, "aria-label", "Previous step"), v(c, "type", "button"), v(c, "class", "btn btn--next svelte-evkqad"), c.disabled = /*isAtLastStep*/
       n[6], v(c, "aria-label", "Next step"), v(s, "class", "stepper-navigation svelte-evkqad"), v(e, "class", "stepper svelte-evkqad"), v(g, "class", "step-content svelte-evkqad");
     },
     m(S, m) {
-      D(S, e, m), N(t, e, null), G(e, l), N(i, e, null), G(e, r), G(e, s), G(s, o), G(o, a), G(s, u), G(s, c), G(c, f), D(S, d, m), D(S, g, m), b[h].m(g, null), _ = !0, y || (A = [
+      D(S, e, m), N(t, e, null), G(e, l), N(i, e, null), G(e, r), G(e, s), G(s, o), G(o, a), G(s, u), G(s, c), G(c, f), D(S, d, m), D(S, g, m), ~h && b[h].m(g, null), _ = !0, y || (A = [
         J(
           o,
           "click",
@@ -13470,9 +13473,9 @@ function mu(n) {
       64) && (c.disabled = /*isAtLastStep*/
       S[6]);
       let B = h;
-      h = W(S), h === B ? b[h].p(S, m) : (re(), k(b[B], 1, 1, () => {
+      h = W(S), h === B ? ~h && b[h].p(S, m) : (p && (re(), k(b[B], 1, 1, () => {
         b[B] = null;
-      }), se(), p = b[h], p ? p.p(S, m) : (p = b[h] = E[h](S), p.c()), C(p, 1), p.m(g, null));
+      }), se()), ~h ? (p = b[h], p ? p.p(S, m) : (p = b[h] = E[h](S), p.c()), C(p, 1), p.m(g, null)) : p = null);
     },
     i(S) {
       _ || (C(t.$$.fragment, S), C(i.$$.fragment, S), C(p), _ = !0);
@@ -13481,7 +13484,7 @@ function mu(n) {
       k(t.$$.fragment, S), k(i.$$.fragment, S), k(p), _ = !1;
     },
     d(S) {
-      S && (P(e), P(d), P(g)), V(t), V(i), b[h].d(), y = !1, he(A);
+      S && (P(e), P(d), P(g)), V(t), V(i), ~h && b[h].d(), y = !1, he(A);
     }
   };
 }
@@ -13507,7 +13510,7 @@ function pu(n) {
         /*breadcrumbs*/
         n[7]
       ),
-      activeIndex: 2
+      activeIndex: 1
     }
   }), t.$on(
     "click",
