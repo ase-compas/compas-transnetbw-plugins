@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { OscdArrowUpIcon, OscdDeleteIcon } from '../../../../../libs/oscd-icons/src';
+  import { OscdArrowDownIcon, OscdArrowUpIcon, OscdDeleteIcon } from '../../../../../libs/oscd-icons/src';
 
   export let pluginGroups: PluginGroup[] = [];
 
@@ -23,12 +23,16 @@
 
   type ValidationEntry = { name: string; description?: string; xml: string };
   let validationEntries: ValidationEntry[] = [];
+  // Track which validation entries are expanded by index
+  let openSet: Set<number> = new Set();
 
   async function loadXmlFor(pluginId: string) {
     loadingXml = true;
     xmlError = '';
     xmlText = '';
     validationEntries = [];
+    // reset expanded state when loading new plugin
+    openSet = new Set();
 
     xmlAbort?.abort();
     xmlAbort = new AbortController();
@@ -67,6 +71,7 @@
         const xml = serializer.serializeToString(el);
         return { name, description, xml };
       });
+      openSet = new Set();
     } catch (e) {
       if ((e as DOMException)?.name === 'AbortError') return;
       xmlError = (e as Error)?.message || 'Failed to load XML.';
@@ -87,6 +92,13 @@
   function selectPlugin(gIdx: number, pIdx: number) {
     selectedIdx = gIdx;
     activePluginIdx = pIdx;
+  }
+
+  function toggleEntry(idx: number) {
+    if (openSet.has(idx)) openSet.delete(idx);
+    else openSet.add(idx);
+    // reassign to trigger reactivity
+    openSet = new Set(openSet);
   }
 </script>
 
@@ -133,7 +145,7 @@
       </div>
     {:else}
       <div class="validation-xml-list">
-        {#each validationEntries as validationEntry}
+        {#each validationEntries as validationEntry, idx}
           <div class="validation-xml-container">
             <div class="validation-xml-container__meta">
               <span class="validation-xml-container__name">{validationEntry.name}</span>
@@ -141,15 +153,41 @@
                 <span class="validation-xml-container__description">{validationEntry.description}</span>
               {/if}
               <div class="validaton-xml-container__actions">
-                <OscdDeleteIcon svgStyles="fill: #FF203A"></OscdDeleteIcon>
-                <OscdArrowUpIcon svgStyles="fill: #004552"></OscdArrowUpIcon>
+                <button type="button" class="delete-btn" title="Remove">
+                  <OscdDeleteIcon svgStyles="fill: #FF203A" />
+                </button>
+
+                {#if openSet.has(idx)}
+                  <button
+                    type="button"
+                    class="toggle-btn"
+                    aria-expanded="true"
+                    on:click={() => toggleEntry(idx)}
+                    title="Collapse"
+                  >
+                    <OscdArrowUpIcon svgStyles="fill: #004552" />
+                  </button>
+                {:else}
+                  <button
+                    type="button"
+                    class="toggle-btn"
+                    aria-expanded="false"
+                    on:click={() => toggleEntry(idx)}
+                    title="Expand"
+                  >
+                    <OscdArrowDownIcon svgStyles="fill: #004552" />
+                  </button>
+                {/if}
               </div>
             </div>
-            <div class="xml-viewer">
-              <div class="xml-viewer__box">
-                <pre>{validationEntry.xml}</pre>
+
+            {#if openSet.has(idx)}
+              <div class="xml-viewer">
+                <div class="xml-viewer__box">
+                  <pre>{validationEntry.xml}</pre>
+                </div>
               </div>
-            </div>
+            {/if}
           </div>
         {/each}
       </div>
@@ -232,6 +270,7 @@
     display: flex;
     flex-direction: row;
     margin-left: auto;
+    gap: 6px;
   }
 
   .validation-xml-container {
@@ -247,9 +286,13 @@
     padding: 12px 0;
   }
 
+  .validation-xml-container__meta span {
+    align-self: center;
+  }
+
   .validation-xml-container__name {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     color: #002B37;
   }
 
@@ -257,6 +300,15 @@
     font-weight: 400;
     color: #002B37;
     font-size: 0.9rem;
+  }
+
+  .toggle-btn, .delete-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
   }
 
   .xml-viewer {
