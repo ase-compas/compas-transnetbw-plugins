@@ -119,9 +119,9 @@
           <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
         </div>
         <ProcessDefinition {pluginGroups} />
-      {:else}
+      {:else if currentStepId === 'validator-configuration'}
         <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={2} on:click={handleBreadcrumbClick} />
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
 
           <Button
             variant="raised"
