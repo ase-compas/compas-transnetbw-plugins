@@ -3,6 +3,7 @@
   <validation>
     <id>substation-structure-001</id>
     <name>Substation Structure Integrity</name>
+    <description>Structure Integrity Description</description>
     <validator>check-substation-structure</validator>
   </validation>
   <validation>

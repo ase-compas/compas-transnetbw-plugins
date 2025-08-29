@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
+  import { OscdArrowUpIcon, OscdDeleteIcon } from '../../../../../libs/oscd-icons/src';
 
   export let pluginGroups: PluginGroup[] = [];
 
@@ -20,10 +21,14 @@
   let xmlError = '';
   let xmlAbort: AbortController | null = null;
 
+  type ValidationEntry = { name: string; description?: string; xml: string };
+  let validationEntries: ValidationEntry[] = [];
+
   async function loadXmlFor(pluginId: string) {
     loadingXml = true;
     xmlError = '';
     xmlText = '';
+    validationEntries = [];
 
     xmlAbort?.abort();
     xmlAbort = new AbortController();
@@ -41,6 +46,27 @@
       }
 
       xmlText = await res.text();
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlText, 'application/xml');
+      const parseErr = doc.querySelector('parsererror');
+      if (parseErr) throw new Error('Invalid XML format.');
+
+      const serializer = new XMLSerializer();
+      const nodes = Array.from(doc.getElementsByTagName('validation'));
+      validationEntries = nodes.map((el, i) => {
+        const name =
+          el.getAttribute('name')?.trim() ||
+          el.getAttribute('id')?.trim() ||
+          el.querySelector('name')?.textContent?.trim() ||
+          `Validation ${i + 1}`;
+        const description =
+          el.getAttribute('description')?.trim() ||
+          el.querySelector('description')?.textContent?.trim() ||
+          undefined;
+        const xml = serializer.serializeToString(el);
+        return { name, description, xml };
+      });
     } catch (e) {
       if ((e as DOMException)?.name === 'AbortError') return;
       xmlError = (e as Error)?.message || 'Failed to load XML.';
@@ -93,19 +119,42 @@
 </div>
 
 {#if currentPlugin}
-  <div class="xml-viewer">
-    <h4 class="xml-viewer__title">XML for: {currentPlugin.name}</h4>
-
-    {#if loadingXml}
-      <p>Loading…</p>
-    {:else if xmlError}
-      <p class="error">{xmlError}</p>
+  {#if loadingXml}
+    <p>Loading…</p>
+  {:else if xmlError}
+    <p class="error">{xmlError}</p>
+  {:else}
+    {#if validationEntries.length === 0}
+      <div class="xml-viewer">
+        <h4 class="xml-viewer__title">XML for: {currentPlugin.name}</h4>
+        <div class="xml-viewer__box">
+          <pre>{xmlText}</pre>
+        </div>
+      </div>
     {:else}
-      <div class="xml-viewer__box">
-        <pre>{xmlText}</pre>
+      <div class="validation-xml-list">
+        {#each validationEntries as validationEntry}
+          <div class="validation-xml-container">
+            <div class="validation-xml-container__meta">
+              <span class="validation-xml-container__name">{validationEntry.name}</span>
+              {#if validationEntry.description}
+                <span class="validation-xml-container__description">{validationEntry.description}</span>
+              {/if}
+              <div class="validaton-xml-container__actions">
+                <OscdDeleteIcon svgStyles="fill: #FF203A"></OscdDeleteIcon>
+                <OscdArrowUpIcon svgStyles="fill: #004552"></OscdArrowUpIcon>
+              </div>
+            </div>
+            <div class="xml-viewer">
+              <div class="xml-viewer__box">
+                <pre>{validationEntry.xml}</pre>
+              </div>
+            </div>
+          </div>
+        {/each}
       </div>
     {/if}
-  </div>
+  {/if}
 {/if}
 
 <style>
@@ -113,6 +162,7 @@
     display: flex;
     flex-direction: row;
     gap: 4px;
+    margin-bottom: 2rem;
   }
 
   .validation-groups__group {
@@ -171,6 +221,44 @@
     background-color: #D9D800;
   }
 
+  .validation-xml-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .validaton-xml-container__actions {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+  }
+
+  .validation-xml-container {
+    border-radius: 4px;
+    background: #fff;
+    padding: 8px;
+  }
+
+  .validation-xml-container__meta {
+    display: flex;
+    flex-direction: row;
+    gap: 6rem;
+    padding: 12px 0;
+  }
+
+  .validation-xml-container__name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #002B37;
+  }
+
+  .validation-xml-container__description {
+    font-weight: 400;
+    color: #002B37;
+    font-size: 0.9rem;
+  }
+
   .xml-viewer {
     margin-top: 0.5rem;
   }
@@ -181,10 +269,9 @@
   }
 
   .xml-viewer__box {
-    background: #0f172a0d;
-    border: 1px solid #e5e7eb;
+    background: #EDF1F2;
     border-radius: 6px;
-    padding: 8px;
+    padding: 12px;
     overflow: auto;
     max-height: 50vh;
   }
