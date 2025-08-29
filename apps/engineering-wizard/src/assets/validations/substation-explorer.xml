@@ -9,12 +9,13 @@
   <validation>
     <id>voltage-level-uniqueness-002</id>
     <name>Voltage Level Name Uniqueness</name>
+    <description>Ensures voltage level names are unique within the substation.</description>
     <validator>check-vl-name-uniqueness</validator>
   </validation>
   <validation>
     <id>bay-naming-003</id>
     <name>Bay Naming Convention</name>
+    <description>Validates bay names follow the naming convention and are unique within their voltage level.</description>
     <validator>check-bay-naming</validator>
   </validation>
 </validations>
-
