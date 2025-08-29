@@ -3,18 +3,14 @@ import {
   ChildNameFilter,
   DataTypeKind,
   DataTypes,
-  DAType,
-  DOType,
-  EnumType,
+  DataTypeUpdate,
   LNodeType,
   LNodeTypeDetailsV2,
-  LNodeTypeUpdate,
   ObjectReferenceDetails,
-  SimpleReference,
 } from '../domain/core.model';
 import { IDataTypeRepository } from '../repositories/data-type.repository';
+import { IDataTypeService } from './data-type-service';
 import { ITypeSpecificationService } from './type-specification.service';
-import { ObjectSpecification } from '../domain/type-specification.model';
 
 export interface ILNodeTypeV2Service {
   /**
@@ -36,7 +32,7 @@ export interface ILNodeTypeV2Service {
    * @param data The update data for the logical node type.
    * @returns A promise resolving to true if successful, false otherwise.
    */
-  createOrUpdateType(data: LNodeTypeUpdate): Promise<boolean>;
+  createOrUpdateType(data: DataTypeUpdate): Promise<boolean>;
 
   /**
    * Duplicates an existing logical node type with a new ID.
@@ -92,6 +88,7 @@ export interface ILNodeTypeV2Service {
 export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
   constructor(
     public typeRepo: IDataTypeRepository,
+    public dataTypeService: IDataTypeService,
     public typeSpecificationService: ITypeSpecificationService,
   ) {}
 
@@ -99,10 +96,7 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
     const dataType: LNodeType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id) as LNodeType;
     if (!dataType) throw new Error(`Unable to find logical node type with id ${id}`);
 
-    const typeSpecification= this.typeSpecificationService.getLNodeTypeSpecification(dataType.lnClass);
-    if (!typeSpecification) throw new Error(`Unable to find specification types for logical node type with id ${id}`);
-
-    const objRefDetails: ObjectReferenceDetails[] = this.specsToObjectReferenceDetails(typeSpecification, dataType.children);
+    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.LNodeType, dataType.lnClass, dataType.children);
 
     return {
       id: dataType.id,
@@ -116,21 +110,14 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
     return Promise.resolve(!!existingType);
   }
 
-  async createOrUpdateType(data: LNodeTypeUpdate): Promise<boolean> {
+  async createOrUpdateType(data: DataTypeUpdate): Promise<boolean> {
     if (!data) throw new Error('No data provided');
     if (!data.id) throw new Error('No id provided');
-    if (!data.lnClass) throw new Error('No lnClass provided');
+    if (!data.instanceType) throw new Error('No innstance type provided');
 
-    const typeSpecification = this.typeSpecificationService.getLNodeTypeSpecification(data.lnClass);
-    if (!typeSpecification){
-      throw new Error(`Unable to find specification types for logical node type`);
-    }
+    const configuredObjRefDetails = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.LNodeType, data.instanceType, data.children)
 
-
-    const configuredObjRefDetails = this.specsToObjectReferenceDetails(typeSpecification, data.children)
-      .filter(obj => obj.meta.isConfigured);
-
-    const node: LNodeType = { id: data.id, lnClass: data.lnClass, children: configuredObjRefDetails };
+    const node: LNodeType = { id: data.id, lnClass: data.instanceType, children: configuredObjRefDetails };
     this.typeRepo.upsertDataType(DataTypeKind.LNodeType, node);
 
     return Promise.resolve(true);
@@ -158,51 +145,15 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
   }
 
   async getReferencedTypes(id: string, childNameFilter: ChildNameFilter): Promise<DataTypes> {
-    const existingType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id);
-    if (!existingType) {
-      throw new Error(`Unable to find logical node type with id ${id}`);
-    }
-    const referencedTypes = this.typeRepo.findReferencedTypesById(DataTypeKind.LNodeType, id, childNameFilter);
-    return Promise.resolve(referencedTypes);
+    return this.dataTypeService.getReferencedTypes(DataTypeKind.LNodeType, id, childNameFilter)
   }
 
   async getAssignableTypes(lnClass: string, childNameFilter: string[] = []): Promise<DataTypes> {
-    const typeSpecification = this.typeSpecificationService.getLNodeTypeSpecification(lnClass);
-    if (!typeSpecification) {
-      throw new Error(`Unable to find logical node type with id ${lnClass}`);
-    }
-
-    const cdcs = typeSpecification.filter((c) =>
-            !childNameFilter ||
-            childNameFilter.length === 0 ||
-            childNameFilter.includes(c.name)
-        )
-        .map((c) => c.requiredRefType)
-        .filter(Boolean) ?? [];
-
-    const uniqueCdcs = [...new Set(cdcs)];
-
-    const assignableDOTypes = uniqueCdcs.flatMap((cdc) =>
-      this.typeRepo.findAllDataTypesByKind(DataTypeKind.DOType, cdc)
-    );
-
-    return Promise.resolve({
-      lNodeTypes: [] as LNodeType[],
-      dataObjectTypes: assignableDOTypes as DOType[],
-      dataAttributeTypes: [] as DAType[],
-      enumTypes: [] as EnumType[],
-    });
+    return this.dataTypeService.getAssignableTypes(DataTypeKind.LNodeType, lnClass, childNameFilter);
   }
 
   async getDefaultType(lnClass: string): Promise<LNodeTypeDetailsV2> {
-    const typeSpecification =
-      this.typeSpecificationService.getLNodeTypeSpecification(lnClass);
-    if (!typeSpecification)
-      throw new Error(
-        `Unable to find specification types for logical node type`
-      );
-
-    const children: ObjectReferenceDetails[] = this.specsToObjectReferenceDetails(typeSpecification, []);
+    const children: ObjectReferenceDetails[] = await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.LNodeType, lnClass)
 
     return Promise.resolve({
       id: '',
@@ -220,24 +171,6 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
         references: t?.children.length ?? 0,
       }))
     );
-  }
-
-  private specsToObjectReferenceDetails(typeSpecification: ObjectSpecification[], references: SimpleReference[]): ObjectReferenceDetails[] {
-    return typeSpecification.map(spec => {
-      const existingRefObj = references.find(objRef => objRef.name === spec.name);
-      return {
-        name: spec.name,
-        tagName: spec.tagName,
-        typeRef: existingRefObj?.typeRef,
-        attributes: spec.attributes,
-        meta: {
-          isMandatory: !!spec.isMandatory,
-          isConfigured: !!spec.isMandatory || !!existingRefObj,
-          isReferencable: !!spec.requiredRefType,
-          requiredRefType: spec.requiredRefType,
-        }
-      } as ObjectReferenceDetails;
-    });
   }
 
   private generateUniqueId(baseId: string): string {

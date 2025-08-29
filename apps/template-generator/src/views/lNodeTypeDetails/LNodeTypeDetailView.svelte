@@ -68,9 +68,9 @@
   // Board data configuration
   $: boardData = {
     refs: referenceDataObjects,
-    doTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true, type.cdc)),
-    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
-    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true))
+    doTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true, type.cdc, type.children.length)),
+    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true, undefined, type.children.length)),
+    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true, undefined, type.values.length)),
   };
 
   $: columns = getColumns(isEditMode); // Board column configuration
@@ -133,7 +133,7 @@
 
     lNodeTypeService.createOrUpdateType({
       id: logicalNodeType.id,
-      lnClass: logicalNodeType.lnClass,
+      instanceType: logicalNodeType.lnClass,
       children: newDos
     })
 
@@ -226,7 +226,7 @@
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const doType = dataObjectService.findById(source.itemId);
     if (!doType) return false;
-    return target.meta.isReferencable && doType.cdc === target.meta.requiredRefType;
+    return target.meta.requiresReference && doType.cdc === target.meta.objectType;
   }
 </script>
 

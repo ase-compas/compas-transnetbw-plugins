@@ -21,6 +21,9 @@ export interface ObjectReferenceStore extends Readable<ObjectReferenceState[]> {
   /** Items that have been marked */
   markedItems: Readable<ObjectReferenceState[]>;
 
+  /** Items that have been marked */
+  markedItemIds: Readable<string[]>;
+
   /** Items that have been configured */
   configuredItems: Readable<ObjectReferenceState[]>;
 
@@ -88,6 +91,8 @@ export function createObjectReferenceStore(
   }
 
   const markedItems = derived(store, $items => $items.filter(item => item.isMarked));
+  const markedItemIds = derived(markedItems, $items => $items.map(item => item.name));
+
   const configuredItems = derived(store, $items => $items.filter(item => item.meta.isConfigured || item.meta.isMandatory));
 
   const isDirty = derived(store, $items => {
@@ -115,6 +120,7 @@ export function createObjectReferenceStore(
     setTypeReference,
     removeTypeReference,
     markedItems,
+    markedItemIds,
     configuredItems,
     isDirty,
     reset

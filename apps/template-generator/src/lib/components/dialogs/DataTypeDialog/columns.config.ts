@@ -5,34 +5,39 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     {
       id: 'refs',
       title: 'Data Object Structure',
-      hasSearch: false,
-      showApplyDefaults: isEditMode,
+      hasSearch: true,
       highlighted: true,
+      dragAndDropBorder: isEditMode,
+      canSelectItems: true,
+      showSelectionIndicator: isEditMode,
       itemsDraggable: false,
     },
     {
-      id: 'dotypes',
+      id: 'doTypes',
       title: 'Data Object Types (SDO)',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: isEditMode
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     },
     {
-      id: 'datypes',
+      id: 'daTypes',
       title: 'Data Attribute Types',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: isEditMode
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     },
     {
-      id: 'enumtypes',
+      id: 'enumTypes',
       title: 'Enum Types',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: isEditMode
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     }
   ];
 }

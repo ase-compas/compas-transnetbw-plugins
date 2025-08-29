@@ -36,10 +36,6 @@ export type DataTypeMap = {
   [DataTypeKind.EnumType]: EnumType;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface TypeSpecification {
-}
-
 // ----- DTO Model -----
 
 export type BasicType = {
@@ -56,10 +52,11 @@ export type SimpleReference = {
 }
 
 export interface ObjectReferenceMeta {
-  requiredRefType?: string;
   isMandatory: boolean;
   isConfigured: boolean;
-  isReferencable: boolean;
+  requiresReference: boolean;
+  objectType: string;
+  refTypeKind?: DataTypeKind;
 }
 
 export interface ObjectReferenceDetails extends ObjectReference {
@@ -70,8 +67,13 @@ export interface LNodeTypeDetailsV2 extends LNodeType {
   children: ObjectReferenceDetails[];
 }
 
-export interface LNodeTypeUpdate {
+export interface DOTypeDetailsV2 extends DOType {
+  children: ObjectReferenceDetails[];
+}
+
+export interface DataTypeUpdate {
   id: string;
-  lnClass: string;
+  instanceType: string;
   children: SimpleReference[];
 }
+

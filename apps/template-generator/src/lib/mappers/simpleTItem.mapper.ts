@@ -1,6 +1,21 @@
 import { TBoardItemContext, TItem } from '../components/tboard/types';
-import { DataType } from '../domain/core.model';
+import { DataType, DataTypeKind } from '../domain/core.model';
 import { ObjectReferenceState } from '../stores';
+
+function getTypeKindAbbreviation(typeKind: DataTypeKind) {
+  switch (typeKind) {
+    case DataTypeKind.DOType:
+      return 'DO';
+    case DataTypeKind.LNodeType:
+      return 'LN';
+    case DataTypeKind.EnumType:
+      return 'Enum';
+    case DataTypeKind.DAType:
+      return 'DA';
+    default:
+      return '';
+  }
+}
 
 export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isEditMode: boolean, acceptDropFn?: (item: TBoardItemContext, objRef: ObjectReferenceState) => boolean): TItem {
   return {
@@ -8,7 +23,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     title: objRef.name,
     subtitle: objRef.typeRef,
     references: null,
-    badgeText: objRef.meta?.requiredRefType ? objRef.meta.requiredRefType : undefined,
+    badgeText: objRef.meta.objectType + (objRef.meta?.refTypeKind ? (' (' + getTypeKindAbbreviation(objRef.meta.refTypeKind) + ')') : ''),
     marked: objRef.isMarked,
     isMandatory: objRef.meta.isMandatory,
     selected: objRef.meta.isConfigured,
@@ -16,7 +31,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     canMark: true,
     canSelect: isEditMode,
     canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
-    error: (objRef.meta?.requiredRefType && objRef.meta.isConfigured && !objRef.typeRef) || false,
+    error: objRef.meta.requiresReference && (objRef.meta.isMandatory || objRef.meta.isConfigured) && !objRef.typeRef,
     errorMessage: 'Reference is required',
     acceptDrop: acceptDropFn
       ? (item: TBoardItemContext) => acceptDropFn(item, objRef)
@@ -25,13 +40,14 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
 }
 
 
-export function mapDataTypeToItem(type: DataType, canEdit = false, badgeText?: string): TItem {
+export function mapDataTypeToItem(type: DataType, canEdit = false, badgeText?: string, referenceCount: number = undefined): TItem {
   return {
     id: type.id,
     title: type.id,
-    references: 0,
+    references: referenceCount,
     badgeText: badgeText,
     canEdit: canEdit,
+    canUnlink: false
   };
 }
 
