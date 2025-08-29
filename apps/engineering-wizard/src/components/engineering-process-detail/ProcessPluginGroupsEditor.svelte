@@ -2,6 +2,7 @@
   import Button from '@smui/button';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
+  import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
 
   export let pluginGroups: PluginGroup[] = [];
 
@@ -21,7 +22,7 @@
     <p>Process</p>
     <Button
       variant="raised"
-      style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
+      style="--mdc-theme-primary: #FF203A; --mdc-theme-on-primary: var(--on-brand)"
       aria-label="Remove all plugins"
       on:click={removeAllPlugins}
     >
@@ -39,15 +40,14 @@
       <div class="plugin__items">
         {#each group.plugins as plugin, j}
           <div class="plugin-item">
+            <span class="plugin-item__name">{plugin.name}</span>
             <button
+              type="button"
               class="plugin-item__remove"
-              aria-label={`Remove ${plugin.name}`}
-              title={`Remove ${plugin.name}`}
               on:click={() => removeOne(i, j)}
             >
-              <span aria-hidden="true" class="plugin-item__minus">−</span>
+              <OscdRemoveIcon svgStyles="fill: #FF203A"></OscdRemoveIcon>
             </button>
-            <span class="plugin-item__name">{plugin.name}</span>
           </div>
         {/each}
       </div>
@@ -112,6 +112,7 @@
   .plugin-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
     padding: 12px;
     background-color: #ffffff;
@@ -119,32 +120,11 @@
   }
 
   .plugin-item__remove {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--brand);
+    display: flex;
     background: transparent;
-    color: var(--brand);
+    border: none;
     cursor: pointer;
-    padding: 0;
-    line-height: 1;
-  }
-
-  .plugin-item__remove:hover {
-    background: #f1f4f6;
-  }
-
-  .plugin-item__remove:focus-visible {
-    outline: 2px solid var(--on-brand);
-    outline-offset: 2px;
-  }
-
-  .plugin-item__minus {
-    font-size: 16px;
-    transform: translateY(-1px);
+    margin: 0;
   }
 
   .plugin-item__name {

@@ -1,9 +1,9 @@
 .oscd-icon svg {
   width: 18px;
+  height: 18px;
   fill: white;
-  margin-left: -4px;
-  margin-right: 8px;
-  margin-top: 2px;
+  justify-self: center;
+  align-self: center;
 }
 
 button[disabled] .oscd-icon svg {
