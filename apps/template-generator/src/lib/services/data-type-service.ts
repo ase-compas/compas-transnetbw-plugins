@@ -72,12 +72,11 @@ export class DataTypeService implements IDataTypeService {
     if (!existingType) {
       throw new Error(`Unable to find data type of kind ${typeKind} with id ${typeId}`);
     }
-    const referencedTypes = this.typeRepo.findReferencedTypesById(DataTypeKind.LNodeType, typeId, childNameFilter);
+    const referencedTypes = this.typeRepo.findReferencedTypesById(typeKind, typeId, childNameFilter);
     return Promise.resolve(referencedTypes);
   }
 
   async getAssignableTypes(typeKind: DataTypeKind, instanceType: string, childNameFilter?: string[]): Promise<DataTypes> {
-    console.log(typeKind, instanceType);
     const typeSpec = this.typeSpecificationService.getTypeSpecification(typeKind, instanceType);
     if(!typeSpec) throw new Error(`No type specification found for type ${typeKind} with id ${instanceType}`);
 

@@ -71,6 +71,10 @@ export interface DOTypeDetailsV2 extends DOType {
   children: ObjectReferenceDetails[];
 }
 
+export interface DATypeDetailsV2 extends DAType {
+  children: ObjectReferenceDetails[];
+}
+
 export interface DataTypeUpdate {
   id: string;
   instanceType: string;

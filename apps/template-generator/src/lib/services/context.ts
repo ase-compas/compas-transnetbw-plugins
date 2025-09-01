@@ -14,11 +14,12 @@ import { IStandardProviderService, StandardProviderService } from './standardPro
 import { DefaultGeneratorService, IDefaultGeneratorService } from './defaultGenerator.service';
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
 import { ReferenceAssignmentService } from './referenceAssignment.service';
-import { DataTypeRepository, IDataTypeRepository } from '../repositories/data-type.repository';
+import { DataTypeRepository } from '../repositories/data-type.repository';
 import { TypeSpecificationService } from './type-specification.service';
 import { ILNodeTypeV2Service, LNodeTypeV2ServiceImpl } from './i-l-node-type-v2.service';
 import { DataTypeService } from './data-type-service';
 import { DOTypeV2Service, IDoTypeV2Service } from './do-type-v2.service';
+import { DATypeV2Service, IDATypeV2Service } from './da-type-v2.service';
 
 // App-scoped state
 let xmlDoc: XMLDocument | null = null;
@@ -38,9 +39,10 @@ let enumTypeService: EnumTypeService | null = null;
 
 let standardProviderService: IStandardProviderService | null = null;
 let defaultGeneratorService: IDefaultGeneratorService | null = null;
-let assignmentService: ReferenceAssignmentService | null = null;
+
 let lNodeTypeServiceV2: ILNodeTypeV2Service | null = null;
 let doTypeServiceV2: IDoTypeV2Service | null = null;
+let daTypeServiceV2: IDATypeV2Service | null = null;
 
 /**
  * Initializes all repositories and services with the provided XML document and host element.
@@ -94,15 +96,22 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
   dataAttributeTypeService = new DataAttributeTypeService(dataAttributeTypeRepo);
   enumTypeService = new EnumTypeService(enumTypeRepo);
   oscdDefaultTypeService = new OscdDefaultTypeService()
-  assignmentService = new ReferenceAssignmentService(dataObjectTypeService, dataAttributeTypeService, enumTypeService, undefined);
   lNodeTypeService = new LNodeTypeServiceImpl(lNodeTypeRepo, standardProviderService, defaultGeneratorService, dataObjectTypeRepo);
   const typeSpecService = new TypeSpecificationService();
   const dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService);
   lNodeTypeServiceV2 = new LNodeTypeV2ServiceImpl(dataTypeRepo, dataTypeService, typeSpecService);
   doTypeServiceV2 = new DOTypeV2Service(dataTypeRepo, dataTypeService, typeSpecService);
+  daTypeServiceV2 = new DATypeV2Service(dataTypeRepo, dataTypeService, typeSpecService);
 }
 
 // === Service Getters ===
+
+export function getDATypeV2Service(): IDATypeV2Service {
+  if (!daTypeServiceV2) {
+    throw new Error('DOTypeV2Service not initialized. Call initServices() first.');
+  }
+  return daTypeServiceV2;
+}
 
 export function getDOTypeV2Service(): IDoTypeV2Service {
   if (!doTypeServiceV2) {

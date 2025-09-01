@@ -1,23 +1,21 @@
 import {
   DataTypeKind,
-  DOType,
-  DOTypeDetailsV2,
   ObjectReferenceDetails,
   DataTypeUpdate,
   ChildNameFilter,
-  DataTypes
+  DataTypes, DATypeDetailsV2, DAType
 } from '../domain/core.model';
 import { IDataTypeRepository } from '../repositories/data-type.repository';
 import { ITypeSpecificationService } from './type-specification.service';
 import { IDataTypeService } from './data-type-service';
 
-export interface IDoTypeV2Service {
+export interface IDATypeV2Service {
   /**
    * Fetches the details of a DO type by its ID, including enriched children and meta information.
    * @param id The ID of the DO type.
    * @returns A promise resolving to the details of the DO type.
    */
-  getTypeById(id: string): Promise<DOTypeDetailsV2>;
+  getTypeById(id: string): Promise<DATypeDetailsV2>;
 
   /**
    * Checks if a DO type ID is already taken.
@@ -60,21 +58,31 @@ export interface IDoTypeV2Service {
    * @param cdc The cdc to fetch the default type for.
    * @returns A promise resolving to the default logical node type details.
    */
-  getDefaultType(cdc: string): Promise<DOTypeDetailsV2>;
+  getDefaultType(cdc: string): Promise<DATypeDetailsV2>;
 }
 
 
-export class DOTypeV2Service implements IDoTypeV2Service {
+export class DATypeV2Service implements IDATypeV2Service {
   constructor(
     public typeRepo: IDataTypeRepository,
     public dataTypeService: IDataTypeService,
     public typeSpecificationService: ITypeSpecificationService,
   ) {}
 
-  async getTypeById(id: string): Promise<DOTypeDetailsV2> {
-    const dataType: DOType = this.typeRepo.findDataTypeById(DataTypeKind.DOType, id) as DOType;
-    if (!dataType) throw new Error(`Unable to find DOType with id ${id}`);
-    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.DOType, dataType.cdc, dataType.children);
+  async getTypeById(id: string): Promise<DATypeDetailsV2> {
+    const dataType: DAType = this.typeRepo.findDataTypeById(DataTypeKind.DAType, id) as DAType;
+
+    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => ({
+      ...child,
+      meta: {
+        isConfigured: true,
+        isMandatory: false,
+        requiresReference: child.tagName === 'BDA' || child.attributes?.bType === 'Enum' || child.attributes?.bType === 'Struct',
+        objectType: 'NO SE',
+        refTypeKind: DataTypeKind.DAType,
+      },
+    }));
+
     return {
       ...dataType,
       children: objRefDetails,
@@ -82,39 +90,41 @@ export class DOTypeV2Service implements IDoTypeV2Service {
   }
 
   async isDOIdTaken(id: string): Promise<boolean> {
-    const existingType = this.typeRepo.findDataTypeById(DataTypeKind.DOType, id);
+    const existingType = this.typeRepo.findDataTypeById(DataTypeKind.DAType, id);
     return Promise.resolve(!!existingType);
   }
 
   async createOrUpdateType(data: DataTypeUpdate): Promise<boolean> {
     if (!data) throw new Error('No data provided');
     if (!data.id) throw new Error('No id provided');
-    if (!data.instanceType) throw new Error('No instanceType (cdc) provided');
-    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.DOType, data.instanceType, data.children);
-    const newType: DOType = {
+    if (!data.instanceType) throw new Error('No instanceType provided');
+    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.DAType, data.instanceType, data.children);
+    const newType: DAType = {
       id: data.id,
-      cdc: data.instanceType,
       children: objRefDetails,
     };
-    this.typeRepo.upsertDataType(DataTypeKind.DOType, newType);
+    this.typeRepo.upsertDataType(DataTypeKind.DAType, newType);
     return true;
   }
 
   async getReferencedTypes(id: string, childNameFilter?: ChildNameFilter): Promise<DataTypes> {
-    return this.dataTypeService.getReferencedTypes(DataTypeKind.DOType, id, childNameFilter);
+    const referencedTypes =  this.typeRepo.findReferencedTypesById(DataTypeKind.DAType, id, childNameFilter);
+    if (!referencedTypes) {
+      throw new Error(`Unable to find referenced types for DOType with id ${id}`);
+    }
+    return referencedTypes;
   }
 
-  async getDefaultType(cdc: string): Promise<DOTypeDetailsV2> {
-    const children: ObjectReferenceDetails[] = await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.DOType, cdc);
+  async getDefaultType(instanceType: string): Promise<DATypeDetailsV2> {
+    const children: ObjectReferenceDetails[] = await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.LNodeType, instanceType);
 
     return Promise.resolve({
       id: '',
-      cdc,
       children,
     });
   }
 
   async getAssignableTypes(cdc: string, childNameFilter?: ChildNameFilter): Promise<DataTypes> {
-    return this.dataTypeService.getAssignableTypes(DataTypeKind.DOType, cdc, childNameFilter);
+    return this.dataTypeService.getAssignableTypes(DataTypeKind.DAType, cdc, childNameFilter);
   }
 }

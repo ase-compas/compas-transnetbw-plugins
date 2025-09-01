@@ -88,8 +88,6 @@
 
     logicalNodeType = await loadLNodeType(mode, nodeId, lnClass);
     await refStore.reload();
-
-    dataTypes = await loadTypes(mode, logicalNodeType.id, logicalNodeType.lnClass, []);
   }
 
   // Load data types when marked items change

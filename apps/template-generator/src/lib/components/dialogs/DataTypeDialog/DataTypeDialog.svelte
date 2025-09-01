@@ -62,8 +62,6 @@
   async function loadData() {
       dataObjectType = await loadDOType(isCreateMode(), typeId, cdc);
       await refStore.reload();
-
-      dataTypes = await loadTypes(isEditMode(), dataObjectType.id, dataObjectType.cdc, []);
   }
 
   $: if(dataObjectType) {
@@ -113,22 +111,7 @@
   }
 
   function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
-    if (!source || !target) return;
-    setAttributeTypeReference(target.itemId, source.itemId, source.columnId);
-  }
-
-  function setAttributeTypeReference(dataAttributeName: string, targetReference: string, sourceColumnId: string) {
-    if (!dataObjectType) return;
-
-    const key =  sourceColumnId === 'dotypes' ? 'subDataObjects' : 'dataAttributes' ;
-    dataObjectType = {
-      ...dataObjectType,
-      [key]: dataObjectType[key].map(item =>
-        item.name === dataAttributeName
-          ? { ...item, type: targetReference }
-          : item
-      )
-    };
+    if (source && !target) refStore.setTypeReference(source.itemId, target.itemId)
   }
 </script>
 

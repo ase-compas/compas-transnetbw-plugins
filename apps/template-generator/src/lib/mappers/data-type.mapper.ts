@@ -42,7 +42,8 @@ export class DOTypeMapperV implements TypeMapper<DOType> {
 export class DATypeMapperV implements TypeMapper<DAType> {
   fromElement(element: Element): DAType {
     const id = element.getAttribute('id') || '';
-    const children: ObjectReference[] = Array.from(element.children).map(mapElementToObjectReference);
+    const children: ObjectReference[] = Array.from(element.children).map(mapElementToObjectReference)
+      .filter(a => a.tagName === 'BDA' || a.tagName === 'DA');
     return { id, children };
   }
 
