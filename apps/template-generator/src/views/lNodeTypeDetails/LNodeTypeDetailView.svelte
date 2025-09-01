@@ -26,6 +26,8 @@
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
   import type { DataTypes, LNodeTypeDetailsV2, ObjectReferenceDetails } from '../../lib/domain/core.model';
 
+  export let doc: XMLDocument;
+
   // -----------------------------
   // Service instances
   // -----------------------------
@@ -99,9 +101,9 @@
   // -----------------------------
   // Lifecycle
   // -----------------------------
-  onMount(() => {
+  $: if (doc && mode) {
     loadData();
-  });
+  }
 
   // -----------------------------
   // Event Handlers
@@ -134,8 +136,6 @@
       instanceType: logicalNodeType.lnClass,
       children: newDos
     })
-
-    loadData();
 
     if ($route.path[0] === 'new') {
       navigateToView(logicalNodeType);
