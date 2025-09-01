@@ -1,10 +1,10 @@
 <script lang="ts">
   import GenericCreateDialog from './GenericCreateDialog.svelte';
   import { cdcDescriptions } from '../../../../data/cdcDescriptions';
-  import { getDataObjectTypeService } from '../../../services';
+  import { getDOTypeService } from '../../../services';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
-  const service = getDataObjectTypeService();
+  const service = getDOTypeService();
   export let open = false;
 
   const options = cdcDescriptions.map(item => ({
@@ -25,6 +25,6 @@
   idLabel="ID"
   autocompleteLabel="Common Data Class (cdc)"
   {options}
-  checkIdTaken={id => service.isIdTaken(id)}
+  checkIdTaken={async (id) => await service.isDOIdTaken(id)}
   onConfirm={handleConfirm}
 />

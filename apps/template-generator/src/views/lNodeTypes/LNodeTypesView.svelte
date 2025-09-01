@@ -8,18 +8,18 @@
   import LogicalNodeTypeRow from '../../lib/components/tables/LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
   import {
-    getLNodeTypeServiceV2,
-    ILNodeTypeV2Service,
+    getLNodeTypeService,
+    LNodeTypeService,
   } from '../../lib/services';
   import { type Route, route } from "../../lib/stores";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { BasicType } from '../../lib/domain/core.model';
+  import { BasicType } from '../../lib/domain';
 
   export let doc: XMLDocument;
 
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
-  const lNodeTypeService: ILNodeTypeV2Service = getLNodeTypeServiceV2();
+  const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
 
   // ===== State =====
   let nodeSearchTerm = '';

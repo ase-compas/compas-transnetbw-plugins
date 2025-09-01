@@ -4,16 +4,16 @@
   import { getColumns } from './columns.config';
   import TBoard from '../../tboard/TBoard.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { ItemDropOnItemEventDetail, TItem } from '../../tboard/types';
-  import { DataTypes, DATypeDetailsV2 } from '../../../domain/core.model';
-  import { getDATypeV2Service } from '../../../services';
+  import { ItemDropOnItemEventDetail, type TBoardItemContext, TItem } from '../../tboard/types';
+  import { type BasicType, BasicTypes, DataTypes, DATypeDetails, type ObjectReferenceDetails } from '../../../domain';
+  import { getDATypeService } from '../../../services';
   import { createObjectReferenceStore } from '../../../stores';
-  import { getDisplayReferenceItems } from '../../../utils/objectReferenceUtils';
+  import { canAssignTypeToObjectReference, getDisplayReferenceItems } from '../../../utils/objectReferenceUtils';
   import { mapDataTypeToItem } from '../../../mappers';
-  import { IDATypeV2Service } from '../../../services/da-type-v2.service';
+  import { IDaTypeService } from '../../../services/da-type.service';
 
   // ===== Services =====
-  const daTypeService: IDATypeV2Service = getDATypeV2Service();
+  const daTypeService: IDaTypeService = getDATypeService();
 
   // ===== Props =====
   export let open = false;
@@ -22,12 +22,12 @@
   export let cdc: string | null = null;
 
   // ===== Stores ======
-  const refStore = createObjectReferenceStore(async () => dataObjectType.children);
+  const refStore = createObjectReferenceStore(async () => dataAttributeType.children);
   const { markedItemIds, configuredItems, isDirty } = refStore;
 
   // ===== State =====
-  let dataObjectType: DATypeDetailsV2 | null = null;
-  let dataTypes: DataTypes = {
+  let dataAttributeType: DATypeDetails | null = null;
+  let dataTypes: BasicTypes = {
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
@@ -40,12 +40,12 @@
   const isEditMode = () => mode === 'edit' || isCreateMode();
 
   let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode(), undefined)
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode(), acceptDrop)
 
   $: boardData = {
     refs: referenceDataObjects,
-    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true, undefined, type.children.length)),
-    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true, undefined, type.values.length))
+    dataAttributeTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
+    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true))
   }
 
   $: columns = getColumns(isEditMode());
@@ -59,14 +59,14 @@
   }
 
   async function loadData() {
-    dataObjectType = await loadDOType(isCreateMode(), typeId, cdc);
+    dataAttributeType = await loadDOType(isCreateMode(), typeId, cdc);
     await refStore.reload();
 
-    dataTypes = await loadTypes(isEditMode(), dataObjectType.id, undefined, []);
+    dataTypes = await loadTypes(isEditMode(), dataAttributeType.id, undefined, []);
   }
 
-  $: if(dataObjectType) {
-    loadTypes(isEditMode(), dataObjectType.id, undefined, $markedItemIds).then(types => dataTypes = types);
+  $: if(dataAttributeType) {
+    loadTypes(isEditMode(), dataAttributeType.id, undefined, $markedItemIds).then(types => dataTypes = types);
   }
 
   async function loadDOType(isCreateMode: boolean, typeId: string, cdc: string | null) {
@@ -90,11 +90,14 @@
     refStore.toggleConfigured(itemId);
   }
 
-
-
   function handleConfirm() {
     closeDialog('confirm');
-    if(isDirty) {
+    if($isDirty) {
+      daTypeService.createOrUpdateType({
+        id: dataAttributeType.id,
+        instanceType: '',
+        children: $configuredItems.map(item => ({ name: item.name, typeRef: item?.typeRef }))
+      })
     }
   }
 
@@ -111,14 +114,19 @@
   }
 
   function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
-    if (!source || !target) return;
-    refStore.setTypeReference(source.itemId, target.item.id)
+    if(!source || !target) return;
+    refStore.setTypeReference(target.itemId, source.item.id)
+  }
+
+  function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
+    const sourceType: BasicType = dataTypes[source.columnId].find(type => type.id === source.itemId);
+    return canAssignTypeToObjectReference(target, sourceType)
   }
 </script>
 
 <OscdBaseDialog
   bind:open
-  title={`Data Object Type: ${dataObjectType?.id ?? '------'}`}
+  title={`Data Object Type: ${dataAttributeType?.id ?? '------'}`}
   confirmActionText="Save"
   cancelActionText="Cancel"
   maxWidth="calc(100vw - 2rem)"

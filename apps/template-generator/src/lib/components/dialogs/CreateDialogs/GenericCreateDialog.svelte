@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -22,7 +21,15 @@
 
   // ===== Computed Variables =====
   $: idIsValid = /^[^\s]+$/.test(id); // No whitespace
-  $: isIdTaken = id ? checkIdTaken(id) : false;
+  let isIdTaken = false;
+  $: if (id) {
+    // Run async function to check ID
+    (async () => {
+      isIdTaken = await checkIdTaken(id);
+    })();
+  } else {
+    isIdTaken = false;
+  }
   $: isValid = idIsValid && !isIdTaken && id && selectedItem !== null;
 
   $: if (!open) resetFormValues();

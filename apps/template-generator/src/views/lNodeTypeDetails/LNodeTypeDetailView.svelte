@@ -11,28 +11,23 @@
   import NewDataObjectType from '../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte';
 
   // Services & utils
-  import {
-    DataObjectTypeService,
-    getDataObjectTypeService,
-    getLNodeTypeServiceV2, ILNodeTypeV2Service
-  } from '../../lib/services';
+  import { getLNodeTypeService, LNodeTypeService } from '../../lib/services';
   import { loadLNodeType, loadTypes } from './dataLoader';
   import { mapDataTypeToItem } from '../../lib/mappers';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
-  import { getDisplayReferenceItems } from '../../lib/utils/objectReferenceUtils';
+  import { canAssignTypeToObjectReference, getDisplayReferenceItems } from '../../lib/utils/objectReferenceUtils';
 
   // Types
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
-  import type { DataTypes, LNodeTypeDetailsV2, ObjectReferenceDetails } from '../../lib/domain/core.model';
+  import type { BasicType, BasicTypes, DataTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
 
   export let doc: XMLDocument;
 
   // -----------------------------
   // Service instances
   // -----------------------------
-  const lNodeTypeService: ILNodeTypeV2Service = getLNodeTypeServiceV2();
-  const dataObjectService: DataObjectTypeService = getDataObjectTypeService();
+  const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
 
   // -----------------------------
   // Stores
@@ -43,8 +38,8 @@
   // -----------------------------
   // Component state
   // -----------------------------
-  let logicalNodeType: LNodeTypeDetailsV2 | null = null;
-  let dataTypes: DataTypes = {
+  let logicalNodeType: LNodeTypeDetails | null = null;
+  let dataTypes: BasicTypes = {
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
@@ -65,17 +60,17 @@
 
   // Reference data objects (filtered, mapped, sorted)
   let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode, acceptDrop);
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode || mode === 'create', acceptDrop);
 
   // Board data configuration
   $: boardData = {
     refs: referenceDataObjects,
-    doTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true, type.cdc, type.children.length)),
-    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true, undefined, type.children.length)),
-    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true, undefined, type.values.length)),
+    doTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true)),
+    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
+    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true)),
   };
 
-  $: columns = getColumns(isEditMode); // Board column configuration
+  $: columns = getColumns(isEditMode || mode === 'create'); // Board column configuration
 
   // -----------------------------
   // Loaders
@@ -217,14 +212,13 @@
   // -----------------------------
   // Utils
   // -----------------------------
-  function navigateToView(lNodeType: LNodeTypeDetailsV2) {
+  function navigateToView(lNodeType: LNodeTypeDetails) {
     route.set({ path: ['view'], meta: { lNodeTypeId: lNodeType.id, lnClass: lNodeType.lnClass } });
   }
 
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
-    const doType = dataObjectService.findById(source.itemId);
-    if (!doType) return false;
-    return target.meta.requiresReference && doType.cdc === target.meta.objectType;
+    const sourceType: BasicType = dataTypes.dataObjectTypes.find(type => type.id === source.itemId);
+    return canAssignTypeToObjectReference(target, sourceType)
   }
 </script>
 

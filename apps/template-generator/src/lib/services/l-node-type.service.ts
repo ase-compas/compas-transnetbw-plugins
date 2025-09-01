@@ -1,24 +1,25 @@
 import {
-  BasicType,
+  BasicType, BasicTypes,
   ChildNameFilter,
   DataTypeKind,
   DataTypes,
   DataTypeUpdate,
   LNodeType,
-  LNodeTypeDetailsV2,
-  ObjectReferenceDetails,
-} from '../domain/core.model';
-import { IDataTypeRepository } from '../repositories/data-type.repository';
+  LNodeTypeDetails,
+  ObjectReferenceDetails
+} from '../domain';
+import { IDataTypeRepository } from '../repositories';
 import { IDataTypeService } from './data-type-service';
 import { ITypeSpecificationService } from './type-specification.service';
+import { BasicTypeMapper } from '../mappers';
 
-export interface ILNodeTypeV2Service {
+export interface LNodeTypeService {
   /**
    * Fetches the details of a logical node type by its ID, including enriched children and meta information.
    * @param id The ID of the logical node type.
    * @returns A promise resolving to the details of the logical node type.
    */
-  getTypeById(id: string): Promise<LNodeTypeDetailsV2>;
+  getTypeById(id: string): Promise<LNodeTypeDetails>;
 
   /**
    * Checks if a logical node type ID is already taken.
@@ -40,7 +41,7 @@ export interface ILNodeTypeV2Service {
    * @param newId The new ID for the duplicated logical node type. If not provided, a new ID will be generated.
    *
    */
-  duplicateType(id: string, newId?: string): Promise<LNodeTypeDetailsV2>;
+  duplicateType(id: string, newId?: string): Promise<LNodeTypeDetails>;
 
   /**
    * Deletes a logical node type by its ID.
@@ -58,7 +59,7 @@ export interface ILNodeTypeV2Service {
   getReferencedTypes(
     id: string,
     childNameFilter?: ChildNameFilter
-  ): Promise<DataTypes>;
+  ): Promise<BasicTypes>;
 
   /**
    * Fetches assignable types for a logical node type by its lnClass and optional child name filter.
@@ -69,14 +70,14 @@ export interface ILNodeTypeV2Service {
   getAssignableTypes(
     lnClass: string,
     childNameFilter?: ChildNameFilter
-  ): Promise<DataTypes>;
+  ): Promise<BasicTypes>;
 
   /**
    * Fetches the default logical node type details for a given lnClass.
    * @param lnClass The lnClass to fetch the default type for.
    * @returns A promise resolving to the default logical node type details.
    */
-  getDefaultType(lnClass: string): Promise<LNodeTypeDetailsV2>;
+  getDefaultType(lnClass: string): Promise<LNodeTypeDetails>;
 
   /**
    * Fetches all basic logical node types.
@@ -85,14 +86,14 @@ export interface ILNodeTypeV2Service {
   getAllTypes(): Promise<BasicType[]>;
 }
 
-export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
+export class LNodeTypeService implements LNodeTypeService {
   constructor(
     public typeRepo: IDataTypeRepository,
     public dataTypeService: IDataTypeService,
     public typeSpecificationService: ITypeSpecificationService,
   ) {}
 
-  async getTypeById(id: string): Promise<LNodeTypeDetailsV2> {
+  async getTypeById(id: string): Promise<LNodeTypeDetails> {
     const dataType: LNodeType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id) as LNodeType;
     if (!dataType) throw new Error(`Unable to find logical node type with id ${id}`);
 
@@ -123,7 +124,7 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
     return Promise.resolve(true);
   }
 
-  async duplicateType(id: string, newId?: string): Promise<LNodeTypeDetailsV2> {
+  async duplicateType(id: string, newId?: string): Promise<LNodeTypeDetails> {
     const existingType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id);
     if (!existingType)
       throw new Error(`Unable to find logical node type with id ${id}`);
@@ -144,15 +145,17 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
     );
   }
 
-  async getReferencedTypes(id: string, childNameFilter: ChildNameFilter): Promise<DataTypes> {
-    return this.dataTypeService.getReferencedTypes(DataTypeKind.LNodeType, id, childNameFilter)
+  async getReferencedTypes(id: string, childNameFilter: ChildNameFilter): Promise<BasicTypes> {
+    const dataType = await this.dataTypeService.getReferencedTypes(DataTypeKind.LNodeType, id, childNameFilter)
+    return BasicTypeMapper.mapDataTypesToBasicTypes(dataType);
   }
 
-  async getAssignableTypes(lnClass: string, childNameFilter: string[] = []): Promise<DataTypes> {
-    return this.dataTypeService.getAssignableTypes(DataTypeKind.LNodeType, lnClass, childNameFilter);
+  async getAssignableTypes(lnClass: string, childNameFilter: string[] = []): Promise<BasicTypes> {
+    const dataTypes = await this.dataTypeService.getAssignableTypes(DataTypeKind.LNodeType, lnClass, childNameFilter);
+    return BasicTypeMapper.mapDataTypesToBasicTypes(dataTypes)
   }
 
-  async getDefaultType(lnClass: string): Promise<LNodeTypeDetailsV2> {
+  async getDefaultType(lnClass: string): Promise<LNodeTypeDetails> {
     const children: ObjectReferenceDetails[] = await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.LNodeType, lnClass)
 
     return Promise.resolve({
@@ -164,13 +167,7 @@ export class LNodeTypeV2ServiceImpl implements ILNodeTypeV2Service {
 
   async getAllTypes(): Promise<BasicType[]> {
     const types = this.typeRepo.findAllDataTypesByKind(DataTypeKind.LNodeType) as LNodeType[];
-    return Promise.resolve(
-      types.map((t) => ({
-        id: t.id,
-        instanceType: t.lnClass,
-        references: t?.children.length ?? 0,
-      }))
-    );
+    return Promise.resolve(types.map((t) => BasicTypeMapper.mapLNodeTypeToBasicType(t)));
   }
 
   private generateUniqueId(baseId: string): string {

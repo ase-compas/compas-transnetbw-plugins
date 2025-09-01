@@ -1,15 +1,15 @@
 import {
   LNodeTypeSpecification,
   TypeSpecification,
-} from '../domain/type-specification.model';
+} from '../domain';
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
-import { DataTypeKind } from '../domain/core.model';
+import { DataTypeKind } from '../domain';
 
 export interface ITypeSpecificationService {
   /**
    * Retrieves the type specification for a given data type and ID.
-   * @param dataType The type of data to search for.
-   * @param instanceType The ID of type of the data type, e.g. cdc of DataObjec Types and lnClass for LNodeTypes.
+   * @param typeKind The type of data to search for.
+   * @param instanceType The ID of type of the data type, e.g. cdc of DataObject Types and lnClass for LNodeTypes.
    * @returns The type specification or null if not found.
    */
   getTypeSpecification(

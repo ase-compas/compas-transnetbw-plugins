@@ -13,7 +13,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       itemsDraggable: false,
     },
     {
-      id: 'doTypes',
+      id: 'dataObjectTypes',
       title: 'Data Object Types (SDO)',
       actionLabel: 'Add New',
       hasSearch: true,
@@ -22,7 +22,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       dragAndDropBorder: isEditMode,
     },
     {
-      id: 'daTypes',
+      id: 'dataAttributeTypes',
       title: 'Data Attribute Types',
       actionLabel: 'Add New',
       hasSearch: true,

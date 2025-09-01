@@ -1,15 +1,15 @@
-import { getLNodeTypeServiceV2, ILNodeTypeV2Service } from '../../lib/services';
-import { DataTypes, LNodeTypeDetailsV2 } from '../../lib/domain/core.model';
+import { getLNodeTypeService, LNodeTypeService } from '../../lib/services';
+import { BasicTypes, LNodeTypeDetails } from '../../lib/domain';
 
-let lNodeTypeService: ILNodeTypeV2Service;
+let lNodeTypeService: LNodeTypeService;
 
 export async function loadLNodeType(
   mode: 'create' | 'edit' | 'view',
   lNodeTypeId: string,
   lnClass?: string
-): Promise<LNodeTypeDetailsV2> {
+): Promise<LNodeTypeDetails> {
   if (!lNodeTypeService) {
-    lNodeTypeService = getLNodeTypeServiceV2();
+    lNodeTypeService = getLNodeTypeService();
   }
 
   // --- Get node ---
@@ -27,8 +27,8 @@ export async function loadTypes(
   lNodeTypeId: string,
   lnClass: string,
   includeChildren: string[] = []
-): Promise<DataTypes> {
-  const types: DataTypes = {
+): Promise<BasicTypes> {
+  const types: BasicTypes = {
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],

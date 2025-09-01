@@ -1,5 +1,5 @@
 import { TBoardItemContext, TItem } from '../components/tboard/types';
-import { DataType, DataTypeKind } from '../domain/core.model';
+import { BasicType, DataTypeKind } from '../domain';
 import { ObjectReferenceState } from '../stores';
 
 function getTypeKindAbbreviation(typeKind: DataTypeKind) {
@@ -41,12 +41,12 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
 }
 
 
-export function mapDataTypeToItem(type: DataType, canEdit = false, badgeText?: string, referenceCount: number = undefined): TItem {
+export function mapDataTypeToItem(type: BasicType, canEdit = false): TItem {
   return {
     id: type.id,
     title: type.id,
-    references: referenceCount,
-    badgeText: badgeText,
+    references: type.references,
+    badgeText: type.instanceType,
     canEdit: canEdit,
     canUnlink: false
   };

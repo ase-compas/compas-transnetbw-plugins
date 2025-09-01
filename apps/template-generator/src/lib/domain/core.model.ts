@@ -40,8 +40,16 @@ export type DataTypeMap = {
 
 export type BasicType = {
   id: string;
+  typeKind: DataTypeKind;
   instanceType?: string;
   references: number;
+}
+
+export type BasicTypes = {
+  lNodeTypes: BasicType[];
+  dataObjectTypes: BasicType[];
+  dataAttributeTypes: BasicType[];
+  enumTypes: BasicType[];
 }
 
 export type ChildNameFilter = string[];
@@ -63,15 +71,15 @@ export interface ObjectReferenceDetails extends ObjectReference {
   meta: ObjectReferenceMeta;
 }
 
-export interface LNodeTypeDetailsV2 extends LNodeType {
+export interface LNodeTypeDetails extends LNodeType {
   children: ObjectReferenceDetails[];
 }
 
-export interface DOTypeDetailsV2 extends DOType {
+export interface DOTypeDetails extends DOType {
   children: ObjectReferenceDetails[];
 }
 
-export interface DATypeDetailsV2 extends DAType {
+export interface DATypeDetails extends DAType {
   children: ObjectReferenceDetails[];
 }
 
@@ -80,4 +88,5 @@ export interface DataTypeUpdate {
   instanceType: string;
   children: SimpleReference[];
 }
+
 

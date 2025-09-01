@@ -1,5 +1,5 @@
 import { writable, derived, type Readable } from 'svelte/store';
-import { ObjectReferenceDetails } from '../domain/core.model';
+import { ObjectReferenceDetails } from '../domain';
 
 export interface ObjectReferenceState extends ObjectReferenceDetails {
   isMarked: boolean
