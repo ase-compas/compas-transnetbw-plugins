@@ -1,6 +1,6 @@
 import { DataTypeRepository } from '../repositories';
 import { TypeSpecificationService } from './type-specification.service';
-import { LNodeTypeService } from './l-node-type.service';
+import { ILNodeTypeService, LNodeTypeService } from './l-node-type.service';
 import { DataTypeService } from './data-type-service';
 import { DoTypeService, IDoTypeService } from './do-type.service';
 import { DaTypeService, IDaTypeService } from './da-type.service';
@@ -11,7 +11,7 @@ let hostElement: HTMLElement | null = null;
 
 let dataTypeRepo: DataTypeRepository | null = null;
 
-let lNodeTypeService: LNodeTypeService | null = null;
+let lNodeTypeService: ILNodeTypeService | null = null;
 let doTypeService: IDoTypeService | null = null;
 let daTypeService: IDaTypeService | null = null;
 
@@ -56,7 +56,7 @@ export function getDOTypeService(): IDoTypeService {
   return doTypeService;
 }
 
-export function getLNodeTypeService(): LNodeTypeService {
+export function getLNodeTypeService(): ILNodeTypeService {
   if (!lNodeTypeService) {
     throw new Error('LNodeTypeV2Service not initialized. Call initServices() first.');
   }

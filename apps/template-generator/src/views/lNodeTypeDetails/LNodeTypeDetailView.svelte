@@ -11,7 +11,7 @@
   import NewDataObjectType from '../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte';
 
   // Services & utils
-  import { getLNodeTypeService, LNodeTypeService } from '../../lib/services';
+  import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
   import { loadLNodeType, loadTypes } from './dataLoader';
   import { mapDataTypeToItem } from '../../lib/mappers';
   import { getColumns } from './columns.config';
@@ -27,7 +27,7 @@
   // -----------------------------
   // Service instances
   // -----------------------------
-  const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
+  const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
 
   // -----------------------------
   // Stores

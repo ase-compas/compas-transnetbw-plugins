@@ -9,7 +9,7 @@
   import { createEventDispatcher } from 'svelte';
   import {
     getLNodeTypeService,
-    LNodeTypeService,
+    ILNodeTypeService,
   } from '../../lib/services';
   import { type Route, route } from "../../lib/stores";
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
@@ -19,7 +19,7 @@
 
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
-  const lNodeTypeService: LNodeTypeService = getLNodeTypeService();
+  const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
 
   // ===== State =====
   let nodeSearchTerm = '';

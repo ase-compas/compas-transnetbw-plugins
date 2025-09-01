@@ -1,7 +1,7 @@
-import { getLNodeTypeService, LNodeTypeService } from '../../lib/services';
+import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
 import { BasicTypes, LNodeTypeDetails } from '../../lib/domain';
 
-let lNodeTypeService: LNodeTypeService;
+let lNodeTypeService: ILNodeTypeService;
 
 export async function loadLNodeType(
   mode: 'create' | 'edit' | 'view',

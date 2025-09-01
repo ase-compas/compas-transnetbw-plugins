@@ -13,7 +13,7 @@ import { IDataTypeService } from './data-type-service';
 import { ITypeSpecificationService } from './type-specification.service';
 import { BasicTypeMapper } from '../mappers';
 
-export interface LNodeTypeService {
+export interface ILNodeTypeService {
   /**
    * Fetches the details of a logical node type by its ID, including enriched children and meta information.
    * @param id The ID of the logical node type.
@@ -86,7 +86,7 @@ export interface LNodeTypeService {
   getAllTypes(): Promise<BasicType[]>;
 }
 
-export class LNodeTypeService implements LNodeTypeService {
+export class LNodeTypeService implements ILNodeTypeService {
   constructor(
     public typeRepo: IDataTypeRepository,
     public dataTypeService: IDataTypeService,
