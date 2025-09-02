@@ -38,6 +38,9 @@ export interface ObjectReferenceStore extends Readable<ObjectReferenceState[]> {
 
   /** Reset the store to its original loaded state */
   reset: () => void;
+
+  /** Set the current state as the new original state, so isDirty becomes false */
+  commit: () => void;
 }
 
 export function createObjectReferenceStore(
@@ -90,6 +93,13 @@ export function createObjectReferenceStore(
     set(JSON.parse(JSON.stringify(original)));
   }
 
+  function commit() {
+    store.update(current => {
+      original = JSON.parse(JSON.stringify(current));
+      return current;
+    });
+  }
+
   const markedItems = derived(store, $items => $items.filter(item => item.isMarked));
   const markedItemIds = derived(markedItems, $items => $items.map(item => item.name));
 
@@ -123,6 +133,7 @@ export function createObjectReferenceStore(
     markedItemIds,
     configuredItems,
     isDirty,
-    reset
+    reset,
+    commit
   };
 }
