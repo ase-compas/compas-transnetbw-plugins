@@ -1,16 +1,19 @@
 <script lang="ts">
   import GenericCreateDialog from './GenericCreateDialog.svelte';
-  import { cdcDescriptions } from '../../../../data/cdcDescriptions';
   import { getDOTypeService } from '../../../services';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const service = getDOTypeService();
   export let open = false;
 
-  const options = cdcDescriptions.map(item => ({
-    title: item.name,
-    subtitle: item.description,
-  }));
+  let options = [{title: '', subtitle: ''}];
+
+  service.getTypeOptions().then(data => {
+    options = data.map(item => ({
+      title: item.id,
+      subtitle: item.description
+    }));
+  })
 
   const handleConfirm = (id: string, selected) => {
     closeDialog('confirm', { id, cdc: selected.title });

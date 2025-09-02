@@ -45,6 +45,11 @@ export type BasicType = {
   references: number;
 }
 
+export type TypeOption = {
+  id: string,
+  description: string,
+}
+
 export type BasicTypes = {
   lNodeTypes: BasicType[];
   dataObjectTypes: BasicType[];

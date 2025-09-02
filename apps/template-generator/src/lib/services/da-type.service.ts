@@ -3,11 +3,13 @@ import {
   ObjectReferenceDetails,
   DataTypeUpdate,
   ChildNameFilter,
-  DataTypes, DATypeDetails, DAType, BasicTypes
+  DATypeDetails,
+  DAType,
+  BasicTypes
 } from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { ITypeSpecificationService } from './type-specification.service';
-import { IDataTypeService } from './data-type-service';
+import { IDataTypeService } from './data-type.service';
 import { BasicTypeMapper } from '../mappers';
 
 export interface IDaTypeService {

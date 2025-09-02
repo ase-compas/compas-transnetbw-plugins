@@ -1,13 +1,11 @@
-import type { Route } from '../../lib/stores';
 import { LNodeTypeDetails } from '../../lib/domain';
 
-export function createBreadcrumbs(route: Route, lNodeType: LNodeTypeDetails) {
+export function createBreadcrumbs(isCreateMode: boolean, lNodeType: LNodeTypeDetails) {
   const base = { label: 'Logical Node Types', enabled: true };
-  const isView = route.path[0] === 'view';
 
-  const detail = isView
-    ? { label: 'Current-LN', secondaryLabel: `${lNodeType?.id} ${lNodeType?.lnClass ? '(' + lNodeType.lnClass + ')' : ''}`, enabled: false }
-    : { label: 'New Logical Node Type', secondaryLabel: route.meta?.lnClass ?? '', enabled: false };
+  const detail = isCreateMode
+    ? { label: 'New Logical Node Type', secondaryLabel: `${lNodeType?.id} ${lNodeType?.lnClass ? '(' + lNodeType.lnClass + ')' : ''}`, enabled: false }
+    : { label: 'Current-LN', secondaryLabel: `${lNodeType?.id} ${lNodeType?.lnClass ? '(' + lNodeType.lnClass + ')' : ''}`, enabled: false };
 
   return [base, detail];
 }

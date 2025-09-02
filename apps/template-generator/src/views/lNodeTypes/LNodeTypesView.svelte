@@ -94,7 +94,7 @@
 
   function handleDialogCreate({id, lnClass}) {
     route.set({
-      path: ['new'],
+      path: ['create'],
       meta: {
         lNodeTypeId: id,
         lnClass: lnClass

@@ -1,7 +1,9 @@
-import { DataTypeKind, DataTypes, ObjectReferenceDetails, SimpleReference } from '../domain';
+import { DataTypeKind, DataTypes, ObjectReferenceDetails, SimpleReference, TypeOption } from '../domain';
 import { ObjectSpecification } from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { ITypeSpecificationService } from './type-specification.service';
+import { lnClassDescriptions } from '../../data/lnClassDescriptions';
+import { cdcDescriptions } from '../../data/cdcDescriptions';
 
 /**
  * Defines operations for working with data types and their specifications.
@@ -75,6 +77,13 @@ export interface IDataTypeService {
     instanceType: string,
     childNameFilter?: string[]
   ): Promise<DataTypes>;
+
+  /**
+   * Retrieves type options for a given data type kind, including if available.
+   * @param typeKind The kind of data type.
+   * @returns Promise resolving to an array of TypeOption objects.
+   */
+  getTypeOptions(typeKind: DataTypeKind): Promise<TypeOption[]>;
 }
 
 function groupObjectTypeByTypeKind(requiredSpecs: ObjectSpecification[]): Map<DataTypeKind, Set<string>> {
@@ -148,6 +157,22 @@ export class DataTypeService implements IDataTypeService {
         : []
     };
   }
+
+  getTypeOptions(typeKind: DataTypeKind): Promise<TypeOption[]> {
+   const typeSpecs = this.typeSpecificationService.getSpecificationsForType(typeKind);
+    const options: TypeOption[] = Object.keys(typeSpecs).map(typeSpec => {
+      let description = '';
+      if (typeKind === DataTypeKind.LNodeType) {
+        description = lnClassDescriptions.find(i => i.lnClass === typeSpec)?.description ?? '';
+      } else if (typeKind === DataTypeKind.DOType) {
+        description = cdcDescriptions.find(i => i.name === typeSpec)?.description ?? '';
+      }
+      return { id: typeSpec, description: description };
+    });
+
+    return Promise.resolve(options);
+  }
+
 
 
   private specsToObjectReferenceDetails(typeSpecification: ObjectSpecification[], references: SimpleReference[]): ObjectReferenceDetails[] {

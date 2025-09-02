@@ -1,4 +1,4 @@
-import { LNodeType, DOType, DAType, EnumType, ObjectReference, EnumValue } from '../domain/core.model';
+import { LNodeType, DOType, DAType, EnumType, ObjectReference, EnumValue } from '../domain';
 
 export type TypeMapper<T> = {
   fromElement(element: Element): T;

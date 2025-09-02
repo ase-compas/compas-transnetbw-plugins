@@ -2,14 +2,13 @@ import {
   BasicType, BasicTypes,
   ChildNameFilter,
   DataTypeKind,
-  DataTypes,
   DataTypeUpdate,
   LNodeType,
   LNodeTypeDetails,
-  ObjectReferenceDetails
+  ObjectReferenceDetails, TypeOption
 } from '../domain';
 import { IDataTypeRepository } from '../repositories';
-import { IDataTypeService } from './data-type-service';
+import { IDataTypeService } from './data-type.service';
 import { ITypeSpecificationService } from './type-specification.service';
 import { BasicTypeMapper } from '../mappers';
 
@@ -84,6 +83,8 @@ export interface ILNodeTypeService {
    * @returns A promise resolving to an array of basic types.
    */
   getAllTypes(): Promise<BasicType[]>;
+
+  getTypeOptions(): Promise<TypeOption[]>;
 }
 
 export class LNodeTypeService implements ILNodeTypeService {
@@ -180,5 +181,9 @@ export class LNodeTypeService implements ILNodeTypeService {
     }
 
     return newId;
+  }
+
+  getTypeOptions(): Promise<TypeOption[]> {
+    return this.dataTypeService.getTypeOptions(DataTypeKind.LNodeType);
   }
 }

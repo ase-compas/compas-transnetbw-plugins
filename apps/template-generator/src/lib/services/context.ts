@@ -1,7 +1,7 @@
 import { DataTypeRepository } from '../repositories';
-import { TypeSpecificationService } from './type-specification.service';
+import { ITypeSpecificationService, NsdSpecificationService } from './type-specification.service';
 import { ILNodeTypeService, LNodeTypeService } from './l-node-type.service';
-import { DataTypeService } from './data-type-service';
+import { DataTypeService, IDataTypeService } from './data-type.service';
 import { DoTypeService, IDoTypeService } from './do-type.service';
 import { DaTypeService, IDaTypeService } from './da-type.service';
 
@@ -14,6 +14,9 @@ let dataTypeRepo: DataTypeRepository | null = null;
 let lNodeTypeService: ILNodeTypeService | null = null;
 let doTypeService: IDoTypeService | null = null;
 let daTypeService: IDaTypeService | null = null;
+
+let typeSpecService: ITypeSpecificationService | null = null;
+let dataTypeService: IDataTypeService | null = null;
 
 /**
  * Initializes all repositories and services with the provided XML document and host element.
@@ -32,8 +35,8 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
     dataTypeRepo = new DataTypeRepository(xmlDoc, hostElement);
   }
 
-  const typeSpecService = new TypeSpecificationService();
-  const dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService);
+  if(!typeSpecService) typeSpecService = new NsdSpecificationService();
+  if(!dataTypeService) dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService);
 
   lNodeTypeService = new LNodeTypeService(dataTypeRepo, dataTypeService, typeSpecService);
   doTypeService = new DoTypeService(dataTypeRepo, dataTypeService, typeSpecService);

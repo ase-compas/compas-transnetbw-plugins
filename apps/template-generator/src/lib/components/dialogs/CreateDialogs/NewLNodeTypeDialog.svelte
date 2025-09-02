@@ -1,18 +1,19 @@
 <script lang="ts">
   import GenericCreateDialog from './GenericCreateDialog.svelte';
-  import { lnClassDescriptions } from '../../../../data/lnClassDescriptions';
+  import { onMount } from 'svelte';
   import { getLNodeTypeService } from '../../../services';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const service = getLNodeTypeService();
 
   export let open = false;
-  let isIdTaken;
 
-  const options = lnClassDescriptions.map(item => ({
-    title: item.lnClass,
-    subtitle: item.description,
-  }));
+  let options = [{title: '', subtitle: ''}];
+
+  onMount(async () => {
+    const data = await service.getTypeOptions();
+    options = data.map(item => ({ title: item.id, subtitle: item.description }));
+  });
 
   const handleConfirm = (id: string, selected) => {
     closeDialog('confirm', { id, lnClass: selected.title });

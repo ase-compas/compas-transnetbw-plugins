@@ -1,15 +1,16 @@
 import {
+  BasicTypes,
+  ChildNameFilter,
   DataTypeKind,
+  DataTypeUpdate,
   DOType,
   DOTypeDetails,
   ObjectReferenceDetails,
-  DataTypeUpdate,
-  ChildNameFilter,
-  BasicTypes
+  TypeOption,
 } from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { ITypeSpecificationService } from './type-specification.service';
-import { IDataTypeService } from './data-type-service';
+import { IDataTypeService } from './data-type.service';
 import { BasicTypeMapper } from '../mappers';
 
 export interface IDoTypeService {
@@ -62,6 +63,8 @@ export interface IDoTypeService {
    * @returns A promise resolving to the default logical node type details.
    */
   getDefaultType(cdc: string): Promise<DOTypeDetails>;
+
+  getTypeOptions(): Promise<TypeOption[]>;
 }
 
 
@@ -119,5 +122,9 @@ export class DoTypeService implements IDoTypeService {
   async getAssignableTypes(cdc: string, childNameFilter?: ChildNameFilter): Promise<BasicTypes> {
     const dataTypes = await this.dataTypeService.getAssignableTypes(DataTypeKind.DOType, cdc, childNameFilter);
     return BasicTypeMapper.mapDataTypesToBasicTypes(dataTypes);
+  }
+
+  async getTypeOptions(): Promise<TypeOption[]> {
+    return this.dataTypeService.getTypeOptions(DataTypeKind.DOType);
   }
 }
