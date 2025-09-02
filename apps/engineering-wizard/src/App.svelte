@@ -1,6 +1,6 @@
 <script lang="ts">
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
-  import EngineeringProcessDetail from './views/engineering-process-detail.view.svelte';
+  import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
   import EngineeringWorkflow from './views/engineering-workflow.view.svelte';
   import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
@@ -113,7 +113,7 @@
     on:exit={exitWorkflow}
   />
 {:else if selected}
-  <EngineeringProcessDetail proc={selected} on:back={goBack} on:start={handleStart} />
+  <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
 {:else}
   <EngineeringProcessesList
     {processes}

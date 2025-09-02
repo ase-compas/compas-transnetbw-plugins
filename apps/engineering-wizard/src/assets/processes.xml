@@ -12,7 +12,7 @@
       <group>
         <title>Data</title>
         <plugin>
-          <id>engineering-wizard</id>
+          <id>substation-explorer</id>
           <name>Substation</name>
           <src>
             https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/substation.js
@@ -23,7 +23,7 @@
       <group>
         <title>Connection</title>
         <plugin>
-          <id>substation-explorer</id>
+          <id>ied-editor</id>
           <name>IED</name>
           <src>
             https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/ied.js
@@ -42,7 +42,7 @@
       <group>
         <title>Communication</title>
         <plugin>
-          <id>communication-editor</id>
+          <id>communication-explorer</id>
           <name>Communication Explorer</name>
           <src>
             https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/communication.js

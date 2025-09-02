@@ -17,3 +17,5 @@ export { default as OscdWarningIcon } from './oscd-warning-icon/OscdWarningIcon.
 export { default as OscdPlayCircleIcon } from './oscd-play-circle-icon/OscdPlayCircleIcon.svelte';
 export { default as OscdInfoIcon } from './oscd-info-icon/OscdInfoIcon.svelte';
 export { default as OscdChevronLeftIcon } from './oscd-chevron-left-icon/OscdChevronLeftIcon.svelte';
+export { default as OscdArrowUpIcon } from './oscd-arrow-up-icon/OscdArrowUpIcon.svelte';
+export { default as OscdArrowDownIcon } from './oscd-arrow-down-icon/OscdArrowDownIcon.svelte';

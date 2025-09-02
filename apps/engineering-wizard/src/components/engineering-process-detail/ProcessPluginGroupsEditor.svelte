@@ -1,12 +1,20 @@
 <script lang="ts">
   import Button from '@smui/button';
-  import type { PluginGroup } from 'libs/shared/src';
+  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
+  import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
 
   export let pluginGroups: PluginGroup[] = [];
 
   const dispatch = createEventDispatcher();
-  const edit = () => dispatch('edit');
+
+  const removeAllPlugins = () => dispatch('removeAllPlugins');
+
+  const removeOne = (groupIndex: number, pluginIndex: number) => {
+    const group = pluginGroups[groupIndex];
+    const plugin = group.plugins[pluginIndex];
+    dispatch('removePlugin', { groupIndex, pluginIndex, group, plugin });
+  };
 </script>
 
 <div class="plugins-list">
@@ -14,11 +22,11 @@
     <p>Process</p>
     <Button
       variant="raised"
-      style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
-      aria-label="Edit process"
-      on:click={edit}
+      style="--mdc-theme-primary: #FF203A; --mdc-theme-on-primary: var(--on-brand)"
+      aria-label="Remove all plugins"
+      on:click={removeAllPlugins}
     >
-      EDIT
+      REMOVE ALL
     </Button>
   </div>
 
@@ -30,9 +38,16 @@
       </div>
 
       <div class="plugin__items">
-        {#each group.plugins as plugin}
+        {#each group.plugins as plugin, j}
           <div class="plugin-item">
             <span class="plugin-item__name">{plugin.name}</span>
+            <button
+              type="button"
+              class="plugin-item__remove"
+              on:click={() => removeOne(i, j)}
+            >
+              <OscdRemoveIcon svgStyles="fill: #FF203A"></OscdRemoveIcon>
+            </button>
           </div>
         {/each}
       </div>
@@ -97,10 +112,19 @@
   .plugin-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: space-between;
+    gap: 8px;
     padding: 12px;
     background-color: #ffffff;
     border-radius: 4px;
+  }
+
+  .plugin-item__remove {
+    display: flex;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin: 0;
   }
 
   .plugin-item__name {
@@ -108,4 +132,3 @@
     color: var(--brand);
   }
 </style>
-
