@@ -4,6 +4,11 @@ import {
 } from '../domain';
 import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
 import { DataTypeKind } from '../domain';
+import { nsd72, nsd73, nsd74, nsd7420 } from '../../data/nsdData';
+import {
+  MultiFileXMLSpecificationParser
+} from '../utils/type-specification-parser/multi-file-xml-specification-parser';
+import { TypeSpecifications } from '../utils/type-specification-parser/i-type-specification-parser';
 
 export interface ITypeSpecificationService {
   /**
@@ -26,9 +31,15 @@ export interface ITypeSpecificationService {
 
   /**
    * Retrieves the DOType specification for a given cdc.
-   * @param cdc
+   * @param cdc common data class
    */
   getDOTypeSpecification?(cdc: string): TypeSpecification | null;
+
+  /**
+   * Retrieves all specifications for a given type kind.
+   * @param typeKind The type kind.
+   */
+  getSpecificationsForType(typeKind: DataTypeKind): Record<string, TypeSpecification>;
 }
 
 interface SclLibSpecsSchema {
@@ -41,6 +52,7 @@ interface SclLibSpecsSchema {
 }
 
 export class TypeSpecificationService implements ITypeSpecificationService {
+
   getTypeSpecification(
     typeKind: DataTypeKind,
     instanceType: string
@@ -90,5 +102,46 @@ export class TypeSpecificationService implements ITypeSpecificationService {
         refTypeKind: refTypeKind,
       }
     });
+  }
+
+  getSpecificationsForType(typeKind: DataTypeKind): Record<string, TypeSpecification> {
+    return {}
+  }
+}
+
+export class NsdSpecificationService implements ITypeSpecificationService {
+
+  private readonly specs: TypeSpecifications;
+  private static typeKindToSpecKey = {
+    [DataTypeKind.LNodeType]: 'lNodeType',
+    [DataTypeKind.DOType]: 'doType',
+    [DataTypeKind.DAType]: 'daType',
+    [DataTypeKind.EnumType]: 'enumType',
+  }
+
+  constructor() {
+    const parse = new MultiFileXMLSpecificationParser([nsd74, nsd72, nsd73, nsd7420]);
+    this.specs = parse.parse();
+    console.log(this.specs)
+  }
+
+  getTypeSpecification(typeKind: DataTypeKind, instanceType: string): TypeSpecification | null {
+    const specKey = NsdSpecificationService.typeKindToSpecKey[typeKind];
+    if (!specKey) return null;
+
+    const typeSpec = this.specs[specKey][instanceType];
+    return typeSpec ? Object.values(typeSpec) : null;
+  }
+
+  getLNodeTypeSpecification(lnClass: string): LNodeTypeSpecification | null {
+    const lNodeSpecs = this.specs.lNodeType[lnClass];
+    return lNodeSpecs ? Object.values(lNodeSpecs) : null;
+  }
+
+  getSpecificationsForType(typeKind: DataTypeKind): Record<string, TypeSpecification> {
+    const specKey = NsdSpecificationService.typeKindToSpecKey[typeKind];
+    if (!specKey) return {};
+
+    return this.specs[specKey];
   }
 }
