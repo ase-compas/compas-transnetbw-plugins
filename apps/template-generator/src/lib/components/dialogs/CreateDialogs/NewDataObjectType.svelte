@@ -6,17 +6,8 @@
   const service = getDOTypeService();
   export let open = false;
 
-  let options = [{title: '', subtitle: ''}];
-
-  service.getTypeOptions().then(data => {
-    options = data.map(item => ({
-      title: item.id,
-      subtitle: item.description
-    }));
-  })
-
-  const handleConfirm = (id: string, selected) => {
-    closeDialog('confirm', { id, cdc: selected.title });
+  const handleConfirm = (id: string, optionId: string) => {
+    closeDialog('confirm', { id, cdc: optionId });
   };
 
 </script>
@@ -27,7 +18,7 @@
   confirmText="Next"
   idLabel="ID"
   autocompleteLabel="Common Data Class (cdc)"
-  {options}
-  checkIdTaken={async (id) => await service.isDOIdTaken(id)}
+  getOptions={() => service.getTypeOptions()}
+  isIdTaken={(id) => service.isDOIdTaken(id)}
   onConfirm={handleConfirm}
 />
