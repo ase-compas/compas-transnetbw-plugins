@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>template-inputs-001</id>
+    <name>Required Inputs Present</name>
+    <description>Verifies all required template input fields are provided and non-empty.</description>
+    <validator>check-required-inputs</validator>
+  </validation>
+  <validation>
+    <id>tg-naming-002</id>
+    <name>Template Naming Convention</name>
+    <description>Ensures template names follow the defined naming convention and allowed characters.</description>
+    <validator>check-template-naming</validator>
+  </validation>
+  <validation>
+    <id>tg-compat-003</id>
+    <name>Template Compatibility</name>
+    <description>Checks the generated template is compatible with the selected profiles or versions.</description>
+    <validator>check-template-compatibility</validator>
+  </validation>
+</validations>
+

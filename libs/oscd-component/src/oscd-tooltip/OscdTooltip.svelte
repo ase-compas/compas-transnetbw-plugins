@@ -1,78 +1,79 @@
 <script>
-  import { onDestroy } from 'svelte';
-
-  export let content = '';
-  export let hoverDelay = 300;
-  export let hideDelay = 500;
-
-  let timeout;
-  let hideTimeout;
-  let wrapper;
-  let tooltipEl;
-  let rect = { left: 0, top: 0, width: 0 };
-
-  function handleMouseEnter() {
-    clearTimeout(hideTimeout);
-    rect = wrapper.getBoundingClientRect();
-    timeout = setTimeout(() => {
-      createTooltip();
-    }, hoverDelay);
-  }
-
-  function handleMouseLeave() {
-    clearTimeout(timeout);
-    hideTimeout = setTimeout(() => {
-      removeTooltip();
-    }, hideDelay);
-  }
-
-  function createTooltip() {
-    removeTooltip();
-    tooltipEl = document.createElement('div');
-    tooltipEl.setAttribute('role', 'tooltip');
-    tooltipEl.textContent = content;
-    Object.assign(tooltipEl.style, {
-      position: 'fixed',
-      left: `${rect.left + rect.width / 2}px`,
-      top: `${rect.top - 8}px`,
-      transform: 'translate(-50%, -100%)',
-      zIndex: '9999',
-      background: '#222',
-      opacity: '0.9',
-      color: '#fff',
-      padding: '4px 12px',
-      borderRadius: '4px',
-      fontSize: '0.8rem',
-      fontFamily: 'Roboto, Arial, sans-serif',
-      boxShadow: '0px 3px 6px rgba(0,0,0,0.16), 0px 1.5px 3px rgba(0,0,0,0.23)',
-      pointerEvents: 'none',
-      whiteSpace: 'nowrap',
-      letterSpacing: '0.01em',
-      lineHeight: '1.4',
-      userSelect: 'none'
-    });
-    document.body.appendChild(tooltipEl);
-  }
-
-  function removeTooltip() {
-    if (tooltipEl && tooltipEl.parentNode) {
-      tooltipEl.parentNode.removeChild(tooltipEl);
-      tooltipEl = null;
-    }
-  }
-
-  onDestroy(() => {
-    clearTimeout(timeout);
-    clearTimeout(hideTimeout);
-    removeTooltip();
-  });
+  export let content = "";
+  export let side = "top";
+  const id = `tt-${Math.random().toString(36).slice(2)}`;
 </script>
 
-<span
-  bind:this={wrapper}
-  style="display: inline-block;"
-  on:mouseenter={handleMouseEnter}
-  on:mouseleave={handleMouseLeave}
->
+<span class="tt" tabindex="0" aria-describedby={content ? id : undefined}>
   <slot />
+  {#if content}
+    <span id={id} role="tooltip" class="bubble {side}">
+      {content}
+    </span>
+  {/if}
 </span>
+
+<style>
+  .tt {
+    position: relative;
+    display: inline-block;
+  }
+
+  .bubble {
+    --pad-y: 6px;
+    --pad-x: 10px;
+    --radius: 4px;
+    --offset: 8px;
+
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + var(--offset));
+    transform: translateX(-50%) translateY(-4px);
+    background: #000;
+    color: #fff;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    padding: var(--pad-y) var(--pad-x);
+    border-radius: var(--radius);
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    pointer-events: none;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .12s ease, transform .12s ease, visibility .12s;
+    z-index: 9999;
+  }
+
+  .tt:hover .bubble,
+  .tt:focus-within .bubble {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .bubble::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translateX(-50%) rotate(45deg);
+    background: #000;
+    bottom: -4px;
+  }
+
+  .bubble.bottom {
+    top: calc(100% + var(--offset));
+    bottom: auto;
+    transform: translateX(-50%) translateY(4px);
+  }
+  .tt:hover .bubble.bottom,
+  .tt:focus-within .bubble.bottom {
+    transform: translateX(-50%) translateY(0);
+  }
+  .bubble.bottom::after {
+    top: -4px;
+    bottom: auto;
+  }
+</style>

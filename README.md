@@ -1,96 +1,91 @@
-# OscdTransnetPlugins
+# CoMPAS TransnetBW Plugins
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A monorepo containing Svelte/Vite applications and supporting libraries that extend CoMPAS with TransnetBW-specific plugins and tools. The workspace is managed with Nx and contains multiple apps that can be developed, built, and previewed independently.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Apps in this workspace
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- engineering-wizard – Engineering workflow helper UI
+- template-generator – Template creation and management
+- history-viewer – View and explore historical data
+- archive-explorer – Browse and fetch archives
+- location-viewer – View locations and details
+- location-manager – Manage locations and metadata
+- tsld – Single line diagram utilities
 
-## Run tasks
+Libraries live under libs/ and provide shared UI components, API clients, and utilities.
 
-To run tasks with Nx use:
+## Prerequisites
 
-```sh
-npx nx <target> <project-name>
-```
+- Node.js 18+ and npm
 
-For example:
-
-```sh
-npx nx build myproject
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
-```
-
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+## Install
 
 ```sh
-# Genenerate an app
-npx nx g @nx/react:app demo
-
-# Generate a library
-npx nx g @nx/react:lib some-lib
+npm install
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+## Develop (Svelte dev server)
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
+Run a dev server for an app (HMR enabled):
 
 ```sh
-npx nx connect
+# Examples
+npm run run:engineering-wizard
+npm run run:template-generator
+npm run run:history-viewer
+npm run run:archive-explorer
+npm run run:location-viewer
+npm run run:location-manager
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+These commands use Nx to start Vite in dev mode for the selected app.
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Build
 
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
+Build all apps and libraries:
 
 ```sh
-npx nx g ci-workflow
+npm run build
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Build a single app:
 
-## Install Nx Console
+```sh
+# Examples
+npm run build:engineering-wizard
+npm run build:template-generator
+npm run build:history-viewer
+npm run build:archive-explorer
+npm run build:location-viewer
+npm run build:location-manager
+npm run build:tsld
+```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+Build artifacts are emitted to dist/apps/<app-name>.
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Preview (serve for CoMPAS integration)
 
-## Useful links
+Preview serves a built app on a local HTTP port. Use this when integrating the plugin into a running CoMPAS instance (point CoMPAS to the preview URL).
 
-Learn more:
+```sh
+# Examples
+nx run engineering-wizard:preview
+nx run template-generator:preview
+```
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Notes:
+- Some preview convenience scripts exist, e.g. `npm run preview:engineering-wizard`, `npm run preview:template-generator`.
+- You can pass Vite preview flags after `--`, for example to choose a port: `nx run engineering-wizard:preview -- --port 4300`.
+- The terminal will print the local URL to use inside CoMPAS.
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Useful scripts
+
+- npm run mock-server – Starts a simple local API mock (mocks/server.js)
+- npm run generate:history-api-client – Regenerates the History API client (used by apps)
+- npm run generate:archiving-api-client – Regenerates the Archiving API client (used by apps)
+
+## Notes
+
+- This is an Nx workspace; you can also use `nx run <project>:<target>` directly.
+- Vite configuration for each app lives under apps/<app-name>.
+- Libraries are consumed by apps via standard Nx TypeScript path aliases.
