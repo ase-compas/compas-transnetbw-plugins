@@ -17,8 +17,7 @@ export type TItem = {
 
   acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
 
-  error?: boolean; // Indicates if the item has an error
-  errorMessage?: string; // Error message if the item has an error
+  referencable?: boolean;
 }
 
 export type TColumnConfig = {

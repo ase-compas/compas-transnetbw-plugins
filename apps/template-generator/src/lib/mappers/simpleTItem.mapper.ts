@@ -23,7 +23,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     title: objRef.name,
     subtitle: objRef.typeRef,
     references: null,
-    badgeText: objRef.meta.objectType + (objRef.meta?.refTypeKind ? (' (' + getTypeKindAbbreviation(objRef.meta.refTypeKind) + ')') : ''),
+    badgeText: objRef.meta.objectType + (objRef.meta?.refTypeKind ? (' • ' + getTypeKindAbbreviation(objRef.meta.refTypeKind)) : ''),
     marked: objRef.isMarked,
     isMandatory: objRef.meta.isMandatory,
     selected: objRef.meta.isConfigured,
@@ -32,8 +32,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     canSelect: isEditMode,
     canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
     canApplyDefaults: isEditMode && objRef.meta.requiresReference,
-    error: objRef.meta.requiresReference && (objRef.meta.isMandatory || objRef.meta.isConfigured) && !objRef.typeRef,
-    errorMessage: 'Reference is required',
+    referencable: objRef.meta.requiresReference,
     acceptDrop: acceptDropFn
       ? (item: TBoardItemContext) => acceptDropFn(item, objRef)
       : undefined,

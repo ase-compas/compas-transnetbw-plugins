@@ -116,7 +116,6 @@
   $: if(logicalNodeType && (doc || $markedItems || mode || canEdit)) {
     clearTimeout(debounceTimeout);
     debounceTimeout = setTimeout(() => {
-      console.log("loading types");
       loadDataTypes();
     }, 50);
   }
@@ -213,6 +212,13 @@
     refStore.removeTypeReference(itemId);
   }
 
+  function handleOnReferenceClick({itemId}) {
+    const item = $refStore.find(i => i.name === itemId);
+    if(item?.typeRef) {
+      openEditDOTypeDialog(item.typeRef, null, 'view');
+    }
+  }
+
   // -----------------------------
   // Dialog Handlers
   // -----------------------------
@@ -279,6 +285,7 @@
       on:itemDrop={e => handleItemDrop(e.detail)}
       on:itemApplyDefaults={e => console.log(e.detail)}
       on:itemUnlink={e => handleOnUnlink(e.detail)}
+      on:itemReferenceClick={e => handleOnReferenceClick(e.detail)}
     />
   </div>
 </div>

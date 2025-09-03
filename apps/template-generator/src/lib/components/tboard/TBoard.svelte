@@ -101,6 +101,7 @@
       on:itemSelectChange={e => forwardEvent('itemSelectChange', column.id, e.detail)}
       on:itemDragChange={e => handleOnItemDrag(column.id, e.detail)}
       on:itemDrop={e => handleItemDrop(column.id, e.detail)}
+      on:itemReferenceClick={e => forwardEvent('itemReferenceClick', column.id, e.detail)}
     />
 
     {#if index < columns.length - 1}

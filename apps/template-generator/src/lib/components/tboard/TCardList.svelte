@@ -112,8 +112,7 @@
       isOver={isOverId === item.id}
       marked={item.marked}
       isMandatory={item.isMandatory}
-      error={item.error}
-      errorMessage={item.errorMessage}
+      referencable={item.referencable}
       bind:selected={item.selected}
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
       on:selectChange={() => dispatch('itemSelectChange', {item, itemId: item.id})}
@@ -121,6 +120,7 @@
       on:edit={() => forwardEvent('itemEdit', item)}
       on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}
       on:unlink={() => forwardEvent('itemUnlink', item)}
+      on:referenceClick={(e) => dispatch('itemReferenceClick', {item, itemId: item.id, reference: e.detail})}
     />
     </div>
   {/each}

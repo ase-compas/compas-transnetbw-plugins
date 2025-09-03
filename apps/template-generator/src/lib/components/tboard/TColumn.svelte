@@ -92,6 +92,7 @@
     on:itemSelectChange={(e) => forwardEvent('itemSelectChange', e.detail)}
     on:itemDragChange={(e) => forwardEvent('itemDragChange', e.detail)}
     on:itemDrop={(e) => forwardEvent('itemDrop', e.detail)}
+    on:itemReferenceClick={(e) => forwardEvent('itemReferenceClick', e.detail)}
   />
   </div>
 </div>

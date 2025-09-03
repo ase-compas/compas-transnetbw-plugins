@@ -2,7 +2,7 @@
   import { OscdIconActionButton, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '@smui/checkbox';
-  import { OscdWarningIcon, OscdLockIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdWarningIcon, OscdLockIcon, OscdCallMadeIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   const dispatch = createEventDispatcher();
 
@@ -16,6 +16,7 @@
   export let canApplyDefaults: boolean = false;
   export let canClick: boolean = false;
   export let canUnlink: boolean = true;
+  export let canClickReference: boolean = true;
 
   export let selectionEnabled: boolean = false;
   export let selected: boolean = false;
@@ -30,8 +31,7 @@
   export let canDrag: boolean = false; // Indicates if the card can be dragged
 
 
-  export let error: boolean = false;
-  export let errorMessage: string | null = null;
+  export let referencable: boolean = false;
 
   $: cardState= getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected);
   $: onPrimaryColor = ((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)';
@@ -53,6 +53,7 @@
   function handleOnEdit() { if (canEdit) dispatch('edit'); }
   function handleOnApplyDefaults() { if (canApplyDefaults) dispatch('applyDefaults'); }
   function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
+  function handleOnReferenceClick() { if (canClickReference) dispatch('referenceClick'); }
 
 </script>
 
@@ -60,7 +61,7 @@
   class="oscd-card-item {cardState}"
   class:marked={marked}
   class:is-over={isOver}
-  class:error={error && !isDragTarget}
+  class:error={(isMandatory || selected) && referencable && !subtitle && !isDragTarget}
   class:draggable={canDrag}
   role={canClick ? 'button' : 'undefined'}
   on:click={handleOnClick}
@@ -131,16 +132,37 @@
     <!-- Header Row: End -->
 
     <div class="sub-row">
-      <span class="oscd-card-subtitle" class:invisible={!subtitle}>{subtitle}</span>
-      {#if badgeText}<span class="oscd-card-chip">{badgeText}</span>{/if}
-    </div>
 
-    {#if error && errorMessage}
-      <div class="oscd-card-item__error-message">
-        <OscdWarningIcon size="18px" fill="red"/><span>{errorMessage}</span>
-      </div>
+  {#if referencable}
+  <span
+    class="oscd-card-subtitle"
+    class:error-state={(isMandatory ||selected) && !subtitle && referencable}
+    class:empty={!subtitle && referencable && !isMandatory && !selected}
+    class:drop={isDragTarget && canDrop}
+  >
+    {#if subtitle}
+      <OscdTooltip content="{subtitle}" hoverDelay={500}>
+        <button class="oscd-card-subtitle--with-tooltip" on:click={handleOnReferenceClick} class:pointer={canClickReference}>
+          {#if canClickReference}
+            <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />
+          {/if}
+          {subtitle.length > 25 ? subtitle.slice(0, 25) + '...' : subtitle}
+        </button>
+        </OscdTooltip>
+    {:else if (isMandatory ||selected) && !subtitle && referencable}
+      <OscdWarningIcon fill="#FF6B6B" size="15px" />
+      Add reference
+    {:else if !subtitle && referencable && !isMandatory && !selected}
+      Add reference
+    {/if}
+  </span>
+    {:else}
+    <span></span>
     {/if}
 
+
+      {#if badgeText}<span class="oscd-card-chip">{badgeText}</span>{/if}
+    </div>
   </div>
 </div>
 
@@ -159,6 +181,11 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+  }
+
+  .oscd-card-item.error {
+    outline: 2px solid #FF6B6B;
+    box-shadow: 0 0 8px 2px rgba(255, 107, 107, 0.5);
   }
 
   /* Marked, Selected, etc. — your existing states */
@@ -255,12 +282,70 @@
     line-height: 1.2;
   }
 
+  /* Base subtitle */
   .oscd-card-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     font-size: 0.9rem;
     font-weight: 400;
     color: var(--mdc-theme-primary);
     opacity: 0.8;
     line-height: 1.2;
+    border-radius: 8px;
+    padding: 0.15rem 0.4rem;
+    outline: 2px solid var(--mdc-theme-primary, #004552);
+    transition: all 0.2s ease;
+  }
+
+  /* Neutral unreferenced */
+  .oscd-card-subtitle.empty {
+    color: #6E7C7C; /* subtle gray */
+    font-style: italic;
+    opacity: 0.9;
+    outline: 1px dashed #B0BEC5;
+    background: rgba(0, 69, 82, 0.03);
+    cursor: default;
+  }
+
+  /* Error / required state */
+  .oscd-card-subtitle.error-state {
+    color: #FF6B6B;
+    font-style: italic;
+    outline: 2px dashed #FF6B6B;
+    background: rgba(255, 76, 76, 0.05);
+  }
+
+  /* ✅ Override for selected & mandatory cards */
+  .oscd-card-item.selected .oscd-card-subtitle,
+  .oscd-card-item.mandatory .oscd-card-subtitle {
+    color: white;
+    outline: 2px solid white;
+  }
+
+  .oscd-card-item.selected .oscd-card-subtitle.empty,
+  .oscd-card-item.mandatory .oscd-card-subtitle.empty {
+    color: #E0E0E0; /* softer neutral gray for contrast */
+    outline: 1px dashed #E0E0E0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .oscd-card-item.selected .oscd-card-subtitle.error-state,
+  .oscd-card-item.mandatory .oscd-card-subtitle.error-state {
+    color: #FF6B6B; /* softened red for dark bg */
+    outline: 2px dashed #FF6B6B;
+    opacity: 1;
+  }
+
+  .oscd-card-subtitle.drop {
+    outline: 2px dashed #9dcaf5;
+    color: var(--mdc-theme-primary, #004552);
+  }
+
+  .oscd-card-subtitle--with-tooltip {
+    all: unset;
+    display: flex;
+    align-items: center;
   }
 
   .oscd-references {
@@ -271,19 +356,6 @@
   .clickable:hover {
     background: rgba(0, 0, 0, 0.1);
     cursor: pointer;
-  }
-
-  .oscd-card-item.error {
-    outline: 2px solid red;
-    box-shadow: 0 0 6px 2px rgba(255, 0, 0, 0.3); /* red glow */
-  }
-
-  .oscd-card-item__error-message {
-    display: flex;
-    align-items: center;
-    color: red;
-    font-weight: 500;
-    font-size: 0.8rem;
   }
 
   .oscd-card-chip {
@@ -305,6 +377,10 @@
     align-items: center;
     justify-content: center;
     margin-right: 0.3rem
+  }
+
+  .pointer {
+    cursor: pointer;
   }
 
   :global(.oscd-card-item .selection .oscd-icon svg) {
