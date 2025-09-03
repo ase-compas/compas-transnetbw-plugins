@@ -111,7 +111,8 @@
 
   .oscd-tcolumn__list {
     flex: 1;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 0.2rem;
   }
 
