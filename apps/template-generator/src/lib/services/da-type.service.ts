@@ -75,16 +75,30 @@ export class DaTypeService implements IDaTypeService {
   async getTypeById(id: string): Promise<DATypeDetails> {
     const dataType: DAType = this.typeRepo.findDataTypeById(DataTypeKind.DAType, id) as DAType;
 
-    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => ({
+
+
+    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => {
+
+      let refTypeKind = undefined;
+      let requiresReference = true;
+       if (child.attributes?.bType === 'Enum') {
+        refTypeKind = DataTypeKind.EnumType;
+      } else if (child.attributes?.bType === 'Struct') {
+        refTypeKind = DataTypeKind.DAType;
+      } else {
+        requiresReference = false;
+      }
+
+      return {
       ...child,
       meta: {
         isConfigured: true,
         isMandatory: false,
-        requiresReference: child.tagName === 'BDA' || child.attributes?.bType === 'Enum' || child.attributes?.bType === 'Struct',
-        objectType: 'NO SE',
-        refTypeKind: DataTypeKind.DAType,
+        requiresReference: requiresReference,
+        objectType: '',
+        refTypeKind: refTypeKind,
       },
-    }));
+    }});
 
     return {
       ...dataType,
