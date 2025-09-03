@@ -31,7 +31,7 @@ export class BasicTypeMapper {
     return {
       id: enumType.id,
       typeKind: DataTypeKind.EnumType,
-      references: enumType.values ? enumType.values.length : 0,
+      references: enumType.children ? enumType.children.length : 0,
     };
   }
 

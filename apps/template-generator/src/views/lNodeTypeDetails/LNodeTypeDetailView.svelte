@@ -20,6 +20,7 @@
   // Types
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
   import type { BasicType, BasicTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
+  import EnumTypeDialog from '../../lib/components/dialogs/EnumTypeDialog/EnumTypeDialog.svelte';
 
   export let doc: XMLDocument;
 
@@ -191,6 +192,7 @@
     } else if (columnId === 'daTypes') {
       openEditDATypeDialog(itemId, canEdit ? 'edit' : 'view');
     } else if (columnId === 'enumTypes') {
+      openEditEnumTypeDialog(itemId, canEdit ? 'edit' : 'view');
     }
   }
 
@@ -236,6 +238,10 @@
 
   function openEditDATypeDialog(typeId: string, mode: 'edit' | 'view' | 'create') {
     openDialog(DataAttributeDialog, { typeId, mode });
+  }
+
+  function openEditEnumTypeDialog(typeId: string, mode: 'edit' | 'view' | 'create') {
+     openDialog(EnumTypeDialog, { typeId, mode });
   }
 
   // -----------------------------

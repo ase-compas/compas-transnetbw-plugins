@@ -1,4 +1,4 @@
-import { LNodeType, DOType, DAType, EnumType, ObjectReference, EnumValue } from '../domain';
+import { LNodeType, DOType, DAType, EnumType, ObjectReference } from '../domain';
 
 export type TypeMapper<T> = {
   fromElement(element: Element): T;
@@ -58,22 +58,27 @@ export class DATypeMapperV implements TypeMapper<DAType> {
 export class EnumTypeMapperV implements TypeMapper<EnumType> {
   fromElement(element: Element): EnumType {
     const id = element.getAttribute('id') || '';
-    const values: EnumValue[] = Array.from(element.children)
+    const children: ObjectReference[] = Array.from(element.children)
       .filter(child => child.tagName === 'EnumVal')
       .map(child => ({
-        value: child.textContent || '',
-        ord: child.getAttribute('ord') || ''
+        tagName: 'EnumVal',
+        name: child.getAttribute('name') || '',
+        typeRef: undefined,
+        attributes: {
+          ord: child.getAttribute('ord') || '',
+          label: child.textContent || '',
+        },
       }));
-    return { id, values };
+    return { id, children };
   }
 
   toElement(type: EnumType, doc: Document = document): Element {
     const el = doc.createElement('EnumType');
     el.setAttribute('id', type.id);
-    type.values.forEach(val => {
+    type.children.forEach(val => {
       const valEl = doc.createElement('EnumVal');
-      valEl.textContent = val.value;
-      valEl.setAttribute('ord', val.ord);
+      valEl.textContent = val.attributes.label;
+      valEl.setAttribute('ord', val.attributes.ord);
       el.appendChild(valEl);
     });
     return el;

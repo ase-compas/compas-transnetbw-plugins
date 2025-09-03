@@ -18,9 +18,7 @@ export interface DataType {id: string;}
 export interface LNodeType extends DataType {lnClass: string; children: ObjectReference[]}
 export interface DOType extends DataType {cdc: string; children: ObjectReference[]}
 export interface DAType extends DataType {children: ObjectReference[]}
-
-export interface EnumType extends DataType {values: EnumValue[];}
-export type EnumValue = { value: string; ord: string; }
+export interface EnumType extends DataType {children: ObjectReference[];}
 
 export type DataTypes = {
  lNodeTypes: LNodeType[],
@@ -85,6 +83,10 @@ export interface DOTypeDetails extends DOType {
 }
 
 export interface DATypeDetails extends DAType {
+  children: ObjectReferenceDetails[];
+}
+
+export interface EnumTypeDetails extends EnumType {
   children: ObjectReferenceDetails[];
 }
 

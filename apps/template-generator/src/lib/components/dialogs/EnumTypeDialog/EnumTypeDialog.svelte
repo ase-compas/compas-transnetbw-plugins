@@ -1,21 +1,22 @@
 <script lang="ts">
 import { OscdBaseDialog, OscdDraggableList, OscdInput } from '@oscd-transnet-plugins/oscd-component';
 import { Content } from '@smui/dialog';
-import { EnumType } from '../../../domain';
+import { EnumType, EnumTypeDetails } from '../../../domain';
 import { EnumTypeService, getEnumTypeService } from '../../../services';
 import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+import { IEnumTypeService } from '../../../services/enum-type.service';
 
-let enumTypeService: EnumTypeService = getEnumTypeService();
+let enumTypeService: IEnumTypeService = getEnumTypeService();
 
 export let open = false;
 export let typeId;
 
 let searchQuery = '';
-let enumType: EnumType;
-let listItems: { id: number; label: string }[] = [];
-$: listItems = enumType.values
-  .map(enumValue => ({id: enumValue.ord, label: enumValue.value}))
-  .filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase()));
+let enumType: EnumTypeDetails;
+let listItems: { id: string; label: string }[] = [];
+$: listItems = enumType?.children
+  .map(enumValue => ({id: enumValue.attributes.ord, label: enumValue.attributes.label}))
+  .filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
 
 if(open) init();
 
@@ -25,7 +26,8 @@ function init() {
 }
 
 function loadData() {
-  enumType = enumTypeService.findById(typeId)
+  enumTypeService.getTypeById(typeId)
+    .then(result => enumType = result);
 }
 
 function handleConfirm() {
