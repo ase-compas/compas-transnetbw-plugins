@@ -276,7 +276,7 @@
   }
 
   .oscd-card-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--mdc-theme-primary);
     line-height: 1.2;
@@ -287,7 +287,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 400;
     color: var(--mdc-theme-primary);
     opacity: 0.8;
@@ -362,7 +362,7 @@
     display: inline-flex;
     align-items: center;
     height: 1.5rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     padding: 0 0.5rem;
     border-radius: 8px;
     background: #DAE3E6;
