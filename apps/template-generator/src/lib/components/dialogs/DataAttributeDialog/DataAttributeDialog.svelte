@@ -62,17 +62,21 @@
     dataAttributeType = await loadDOType(isCreateMode(), typeId, cdc);
     await refStore.reload();
 
-    dataTypes = await loadTypes(isEditMode(), dataAttributeType.id, undefined, []);
+    dataTypes = await loadTypes(isEditMode(), dataAttributeType.id, cdc, []);
   }
 
   $: if(dataAttributeType) {
-    loadTypes(isEditMode(), dataAttributeType.id, undefined, $markedItemIds).then(types => dataTypes = types);
+    loadTypes(isEditMode(), dataAttributeType.id, cdc, $markedItemIds).then(types => dataTypes = types);
   }
 
   async function loadDOType(isCreateMode: boolean, typeId: string, cdc: string | null) {
-    return isCreateMode
-      ? await daTypeService.getDefaultType(cdc)
-      : await daTypeService.getTypeById(typeId);
+    if (isCreateMode) {
+      const type = await daTypeService.getDefaultType(cdc)
+      type.id = typeId;
+      return type
+    } else {
+     return await daTypeService.getTypeById(typeId);
+    }
   }
 
   async function loadTypes(isEditMode: boolean, typeId: string, cdc: string, childNameFilter: string[]) {

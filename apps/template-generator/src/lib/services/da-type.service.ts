@@ -1,11 +1,12 @@
 import {
-  DataTypeKind,
-  ObjectReferenceDetails,
-  DataTypeUpdate,
+  BasicTypes,
   ChildNameFilter,
-  DATypeDetails,
+  DataTypeKind,
+  DataTypeUpdate,
   DAType,
-  BasicTypes
+  DATypeDetails,
+  ObjectReferenceDetails,
+  TypeOption,
 } from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { ITypeSpecificationService } from './type-specification.service';
@@ -25,7 +26,7 @@ export interface IDaTypeService {
    * @param id The ID to check.
    * @returns A promise resolving to true if the ID is taken, false otherwise.
    */
-  isDOIdTaken(id: string): Promise<boolean>;
+  isDAIdTaken(id: string): Promise<boolean>;
 
   /**
    * Creates or updates a DO type with the provided data.
@@ -58,10 +59,12 @@ export interface IDaTypeService {
 
   /**
    * Fetches the default logical node type details for a given cdc.
-   * @param cdc The cdc to fetch the default type for.
+   * @param instanceType The cdc to fetch the default type for.
    * @returns A promise resolving to the default logical node type details.
    */
-  getDefaultType(cdc: string): Promise<DATypeDetails>;
+  getDefaultType(instanceType: string): Promise<DATypeDetails>;
+
+  getTypeOptions(): Promise<TypeOption[]>;
 }
 
 
@@ -106,7 +109,7 @@ export class DaTypeService implements IDaTypeService {
     };
   }
 
-  async isDOIdTaken(id: string): Promise<boolean> {
+  async isDAIdTaken(id: string): Promise<boolean> {
     const existingType = this.typeRepo.findDataTypeById(DataTypeKind.DAType, id);
     return Promise.resolve(!!existingType);
   }
@@ -141,5 +144,9 @@ export class DaTypeService implements IDaTypeService {
   async getAssignableTypes(cdc: string, childNameFilter?: ChildNameFilter): Promise<BasicTypes> {
     const dataTypes = await this.dataTypeService.getAssignableTypes(DataTypeKind.DAType, cdc, childNameFilter);
     return BasicTypeMapper.mapDataTypesToBasicTypes(dataTypes)
+  }
+
+  async getTypeOptions(): Promise<TypeOption[]> {
+    return this.dataTypeService.getTypeOptions(DataTypeKind.DAType);
   }
 }
