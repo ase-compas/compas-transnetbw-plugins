@@ -16,7 +16,7 @@
 <GenericCreateDialog
   bind:open
   dialogTitle="Create Data Attribute Type"
-  confirmText="Create"
+  confirmText="Next"
   idLabel="Data Attribute Type ID"
   autocompleteLabel="Data Attribute Instance"
   getOptions={() => service.getTypeOptions()}

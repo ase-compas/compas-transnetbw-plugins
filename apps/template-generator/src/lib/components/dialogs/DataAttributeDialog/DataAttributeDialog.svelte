@@ -5,7 +5,7 @@
   import TBoard from '../../tboard/TBoard.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { ItemDropOnItemEventDetail, type TBoardItemContext, TItem } from '../../tboard/types';
-  import { type BasicType, BasicTypes, DataTypes, DATypeDetails, type ObjectReferenceDetails } from '../../../domain';
+  import { type BasicType, BasicTypes, DATypeDetails, type ObjectReferenceDetails } from '../../../domain';
   import { getDATypeService } from '../../../services';
   import { createObjectReferenceStore } from '../../../stores';
   import { canAssignTypeToObjectReference, getDisplayReferenceItems } from '../../../utils/objectReferenceUtils';
