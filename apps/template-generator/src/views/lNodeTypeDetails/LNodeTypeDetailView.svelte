@@ -22,6 +22,7 @@
   import type { BasicType, BasicTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
   import EnumTypeDialog from '../../lib/components/dialogs/EnumTypeDialog/EnumTypeDialog.svelte';
   import NewDataAttributeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
+  import NewEnumTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
 
   export let doc: XMLDocument;
 
@@ -183,7 +184,7 @@
     } else if (columnId === 'daTypes') {
      openCreateDATypeDialog();
     } else if (columnId === 'enumTypes') {
-      alert('New ENUM TYPE');
+     openCreateEnumTypeDialog();
     }
   }
 
@@ -193,7 +194,7 @@
     } else if (columnId === 'daTypes') {
       openEditDATypeDialog(itemId, null, canEdit ? 'edit' : 'view');
     } else if (columnId === 'enumTypes') {
-      openEditEnumTypeDialog(itemId, canEdit ? 'edit' : 'view');
+      openEditEnumTypeDialog(itemId, null, canEdit ? 'edit' : 'view');
     }
   }
 
@@ -241,6 +242,14 @@
     });
   }
 
+  function openCreateEnumTypeDialog() {
+    openDialog(NewEnumTypeDialog).then(result => {
+      if (result.type === 'confirm') {
+        openEditEnumTypeDialog(result.data.id, result.data.instanceType, 'create');
+      }
+    });
+  }
+
   function openEditDOTypeDialog(typeId: string, cdc: string | null = null, mode: 'edit' | 'view' | 'create') {
     openDialog(DataTypeDialog, { typeId, cdc, mode })
   }
@@ -249,7 +258,7 @@
     openDialog(DataAttributeDialog, { typeId, cdc, mode });
   }
 
-  function openEditEnumTypeDialog(typeId: string, mode: 'edit' | 'view' | 'create') {
+  function openEditEnumTypeDialog(typeId: string, instanceType: string ,mode: 'edit' | 'view' | 'create') {
      openDialog(EnumTypeDialog, { typeId, mode });
   }
 

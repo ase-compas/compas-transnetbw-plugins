@@ -1,4 +1,10 @@
-import { DataTypeKind, EnumType, EnumTypeDetails, ObjectReferenceDetails } from '../domain';
+import {
+  DataTypeKind,
+  EnumType,
+  EnumTypeDetails,
+  ObjectReferenceDetails,
+  TypeOption,
+} from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { IDataTypeService } from './data-type.service';
 
@@ -16,6 +22,8 @@ export interface IEnumTypeService {
    * @returns A promise resolving to true if the ID is taken, false otherwise.
    */
   isEnumIdTaken(id: string): Promise<boolean>;
+
+  getTypeOptions(): Promise<TypeOption[]>;
 }
 
 
@@ -50,5 +58,9 @@ export class EnumTypeService implements IEnumTypeService {
   async isEnumIdTaken(id: string): Promise<boolean> {
     const dataType: EnumType | null = this.typeRepo.findDataTypeById(DataTypeKind.EnumType, id) as EnumType;
     return dataType !== null;
+  }
+
+  getTypeOptions(): Promise<TypeOption[]> {
+    return this.dataTypeService.getTypeOptions(DataTypeKind.EnumType);
   }
 }
