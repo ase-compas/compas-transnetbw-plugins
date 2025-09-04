@@ -9,13 +9,17 @@ import { IEnumTypeService } from '../../../services/enum-type.service';
 let enumTypeService: IEnumTypeService = getEnumTypeService();
 
 export let open = false;
+export let mode: 'view' | 'edit' | 'create' = 'view';
 export let typeId;
+export let instanceTypeId: string | null = null;
+
+let isCreateMode = () => mode === 'create';
 
 let searchQuery = '';
 let enumType: EnumTypeDetails;
 let listItems: { id: string; label: string }[] = [];
 $: listItems = enumType?.children
-  .map(enumValue => ({id: enumValue.attributes.ord, label: enumValue.attributes.label}))
+  .map(enumValue => ({id: enumValue.attributes.literalValue, label: enumValue.name}))
   .filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
 
 if(open) init();
@@ -26,11 +30,25 @@ function init() {
 }
 
 function loadData() {
-  enumTypeService.getTypeById(typeId)
-    .then(result => enumType = result);
+  if(isCreateMode()) {
+    enumTypeService.getDefaultType(instanceTypeId)
+      .then(result => {
+        result.id = typeId;
+        enumType = result
+      });
+  } else {
+    enumTypeService.getTypeById(typeId)
+      .then(result => enumType = result);
+  }
 }
 
 function handleConfirm() {
+
+  enumTypeService.createOrUpdateType({
+    ...enumType,
+    instanceType: instanceTypeId,
+    children: enumType.children
+  })
   closeDialog('confirm');
 }
 

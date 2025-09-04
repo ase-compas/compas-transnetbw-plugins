@@ -62,11 +62,10 @@ export class EnumTypeMapperV implements TypeMapper<EnumType> {
       .filter(child => child.tagName === 'EnumVal')
       .map(child => ({
         tagName: 'EnumVal',
-        name: child.getAttribute('name') || '',
+        name: child.textContent || '',
         typeRef: undefined,
         attributes: {
-          ord: child.getAttribute('ord') || '',
-          label: child.textContent || '',
+          literalValue: child.getAttribute('ord') || '',
         },
       }));
     return { id, children };
@@ -77,8 +76,8 @@ export class EnumTypeMapperV implements TypeMapper<EnumType> {
     el.setAttribute('id', type.id);
     type.children.forEach(val => {
       const valEl = doc.createElement('EnumVal');
-      valEl.textContent = val.attributes.label;
-      valEl.setAttribute('ord', val.attributes.ord);
+      valEl.textContent = val.name;
+      valEl.setAttribute('ord', val.attributes.literalValue || '');
       el.appendChild(valEl);
     });
     return el;

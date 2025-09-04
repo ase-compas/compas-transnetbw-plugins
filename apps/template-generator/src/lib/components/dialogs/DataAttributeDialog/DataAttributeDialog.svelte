@@ -99,7 +99,7 @@
     if($isDirty) {
       daTypeService.createOrUpdateType({
         id: dataAttributeType.id,
-        instanceType: '',
+        instanceType: cdc ,
         children: $configuredItems.map(item => ({ name: item.name, typeRef: item?.typeRef }))
       })
     }

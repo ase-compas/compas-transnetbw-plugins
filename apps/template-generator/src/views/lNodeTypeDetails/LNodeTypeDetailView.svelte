@@ -259,7 +259,7 @@
   }
 
   function openEditEnumTypeDialog(typeId: string, instanceType: string ,mode: 'edit' | 'view' | 'create') {
-     openDialog(EnumTypeDialog, { typeId, mode });
+     openDialog(EnumTypeDialog, { typeId, mode, instanceTypeId: instanceType });
   }
 
   // -----------------------------

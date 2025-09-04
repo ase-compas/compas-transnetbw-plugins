@@ -1,9 +1,9 @@
 import {
-  DataTypeKind,
+  DataTypeKind, DataTypeUpdate, DAType, DATypeDetails,
   EnumType,
   EnumTypeDetails,
   ObjectReferenceDetails,
-  TypeOption,
+  TypeOption
 } from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { IDataTypeService } from './data-type.service';
@@ -22,6 +22,15 @@ export interface IEnumTypeService {
    * @returns A promise resolving to true if the ID is taken, false otherwise.
    */
   isEnumIdTaken(id: string): Promise<boolean>;
+
+  /**
+   * Fetches the default enum type details for a given instanceType.
+   * @param instanceType The instanceType to fetch the default type for.
+   * @returns A promise resolving to the default logical node type details.
+   */
+  getDefaultType(instanceType: string): Promise<EnumTypeDetails>;
+
+  createOrUpdateType(data: DataTypeUpdate): Promise<boolean>;
 
   getTypeOptions(): Promise<TypeOption[]>;
 }
@@ -58,6 +67,28 @@ export class EnumTypeService implements IEnumTypeService {
   async isEnumIdTaken(id: string): Promise<boolean> {
     const dataType: EnumType | null = this.typeRepo.findDataTypeById(DataTypeKind.EnumType, id) as EnumType;
     return dataType !== null;
+  }
+
+  async createOrUpdateType(data: DataTypeUpdate): Promise<boolean> {
+    if (!data) throw new Error('No data provided');
+    if (!data.id) throw new Error('No id provided');
+    if (!data.instanceType) throw new Error('No instanceType provided');
+    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.EnumType, data.instanceType, data.children);
+    const newType: DAType = {
+      id: data.id,
+      children: objRefDetails,
+    };
+    this.typeRepo.upsertDataType(DataTypeKind.EnumType, newType);
+    return true;
+  }
+
+  async getDefaultType(instanceType: string): Promise<EnumTypeDetails> {
+    const objectReferences =  await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.EnumType, instanceType);
+    console.log(objectReferences)
+    return Promise.resolve({
+      id: '',
+      children: objectReferences
+    })
   }
 
   getTypeOptions(): Promise<TypeOption[]> {
