@@ -6,7 +6,7 @@ import {
   DAType,
   DATypeDetails,
   ObjectReferenceDetails,
-  TypeOption,
+  TypeOption
 } from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { ITypeSpecificationService } from './type-specification.service';
@@ -77,32 +77,8 @@ export class DaTypeService implements IDaTypeService {
 
   async getTypeById(id: string): Promise<DATypeDetails> {
     const dataType: DAType = this.typeRepo.findDataTypeById(DataTypeKind.DAType, id) as DAType;
-
-
-
-    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => {
-
-      let refTypeKind = undefined;
-      let requiresReference = true;
-       if (child.attributes?.bType === 'Enum') {
-        refTypeKind = DataTypeKind.EnumType;
-      } else if (child.attributes?.bType === 'Struct') {
-        refTypeKind = DataTypeKind.DAType;
-      } else {
-        requiresReference = false;
-      }
-
-      return {
-      ...child,
-      meta: {
-        isConfigured: true,
-        isMandatory: false,
-        requiresReference: requiresReference,
-        objectType: '',
-        refTypeKind: refTypeKind,
-      },
-    }});
-
+    if (!dataType) throw new Error(`Unable to find DAType with id ${id}`);
+    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.DAType, dataType.instanceType, dataType.children);
     return {
       ...dataType,
       children: objRefDetails,
@@ -121,6 +97,7 @@ export class DaTypeService implements IDaTypeService {
     const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.DAType, data.instanceType, data.children);
     const newType: DAType = {
       id: data.id,
+      instanceType: data.instanceType,
       children: objRefDetails,
     };
     this.typeRepo.upsertDataType(DataTypeKind.DAType, newType);

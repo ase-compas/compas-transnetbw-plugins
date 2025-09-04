@@ -1,4 +1,5 @@
 import { LNodeType, DOType, DAType, EnumType, ObjectReference } from '../domain';
+import { PRIVATE_INSTANCE_TYPE_NS } from '../constants';
 
 export type TypeMapper<T> = {
   fromElement(element: Element): T;
@@ -42,8 +43,13 @@ export class DOTypeMapperV implements TypeMapper<DOType> {
 export class DATypeMapperV implements TypeMapper<DAType> {
   fromElement(element: Element): DAType {
     const id = element.getAttribute('id') || '';
-    const children: ObjectReference[] = Array.from(element.children).map(mapElementToObjectReference)
+    const children: ObjectReference[] = Array.from(element.children)
+      .map(mapElementToObjectReference)
       .filter(a => a.tagName === 'BDA' || a.tagName === 'DA');
+    const instanceType = getInstanceTypeFromPrivate(element);
+    if (instanceType) {
+      return { id, instanceType, children };
+    }
     return { id, children };
   }
 
@@ -51,6 +57,7 @@ export class DATypeMapperV implements TypeMapper<DAType> {
     const el = doc.createElement('DAType');
     el.setAttribute('id', type.id);
     type.children.forEach(child => el.appendChild(mapObjectReferenceToElement(child, doc)));
+    appendPrivateWithInstanceType(doc, el, type.instanceType);
     return el;
   }
 }
@@ -68,10 +75,14 @@ export class EnumTypeMapperV implements TypeMapper<EnumType> {
           literalValue: child.getAttribute('ord') || '',
         },
       }));
+    const instanceType = getInstanceTypeFromPrivate(element);
+    if (instanceType) {
+      return { id, instanceType, children };
+    }
     return { id, children };
   }
 
-  toElement(type: EnumType, doc: Document = document): Element {
+  toElement(type: EnumType, doc: XMLDocument): Element {
     const el = doc.createElement('EnumType');
     el.setAttribute('id', type.id);
     type.children.forEach(val => {
@@ -80,6 +91,7 @@ export class EnumTypeMapperV implements TypeMapper<EnumType> {
       valEl.setAttribute('ord', val.attributes.literalValue || '');
       el.appendChild(valEl);
     });
+    appendPrivateWithInstanceType(doc, el, type.instanceType);
     return el;
   }
 }
@@ -104,3 +116,21 @@ export function mapObjectReferenceToElement(ref: ObjectReference, doc: Document 
   });
   return el;
 }
+
+
+// Helper to extract instanceType from <Private> child
+function getInstanceTypeFromPrivate(element: Element): string | undefined {
+  const privateEl = element.querySelector(`Private[type="${PRIVATE_INSTANCE_TYPE_NS}"]`);
+  return privateEl?.textContent || undefined;
+}
+
+// Helper to append <Private> with instanceType
+function appendPrivateWithInstanceType(doc: XMLDocument, parent: Element, instanceType?: string): void {
+  if (instanceType) {
+    const privateEl = doc.createElement('Private');
+    privateEl.setAttribute('type', PRIVATE_INSTANCE_TYPE_NS);
+    privateEl.textContent = instanceType;
+    parent.appendChild(privateEl);
+  }
+}
+

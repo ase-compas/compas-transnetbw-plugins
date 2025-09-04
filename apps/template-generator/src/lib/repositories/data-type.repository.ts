@@ -8,7 +8,7 @@ import {
   DOType,
   EnumType,
   LNodeType
-} from '../domain/core.model';
+} from '../domain';
 import {
   buildInsert,
   buildRemove,
@@ -23,6 +23,7 @@ import {
   EnumTypeMapperV, TypeMapper
 } from '../mappers';
 import { TypeTraverser } from '../utils/typeTraverser';
+import { PRIVATE_INSTANCE_TYPE_NS } from '../constants';
 
 export interface IDataTypeRepository {
   /**
@@ -53,6 +54,14 @@ export interface IDataTypeRepository {
   findAllDataTypesByKind<K extends DataTypeKind>(
     dataTypeKind: K,
     instanceType?: string
+  ): DataTypeMap[K][];
+
+  /**
+   * Finds data types by kind without filtering by instance type. Returns an empty array if none found.
+   * @param dataTypeKind
+   */
+  findAllDataTypesWithoutInstanceType<K extends DataTypeKind>(
+    dataTypeKind: K
   ): DataTypeMap[K][];
 
   /**
@@ -133,8 +142,16 @@ export class DataTypeRepository implements IDataTypeRepository {
 
   findAllDataTypesByKind<K extends DataTypeKind>(dataTypeKind: K, instanceType?: string): DataTypeMap[K][] {
     const attr = DataTypeRepository.instanceTypeRegistry[dataTypeKind];
-    const selector = attr && instanceType ? `${dataTypeKind}[${attr}="${instanceType}"]` : dataTypeKind;
+    const selector = attr && instanceType ? this.getTypeKindAndInstanceTypeSelector(dataTypeKind, instanceType) : dataTypeKind;
 
+    const mapper = DataTypeRepository.typeMapperRegistry[dataTypeKind];
+    return Array.from(this.doc.querySelectorAll(selector))
+      .map(el => mapper.fromElement(el))
+      .filter((dt): dt is DataTypeMap[K] => dt !== null);
+  }
+
+  findAllDataTypesWithoutInstanceType<K extends DataTypeKind>(dataTypeKind: K): DataTypeMap[K][] {
+    const selector = this.getTypeKindAndInstanceTypeSelector(dataTypeKind);
     const mapper = DataTypeRepository.typeMapperRegistry[dataTypeKind];
     return Array.from(this.doc.querySelectorAll(selector))
       .map(el => mapper.fromElement(el))
@@ -181,6 +198,30 @@ export class DataTypeRepository implements IDataTypeRepository {
   }
 
   // ===== Private Helpers =====
+
+  private getTypeKindAndInstanceTypeSelector(
+    dataTypeKind: DataTypeKind,
+    instanceType?: string
+  ): string {
+    switch (dataTypeKind) {
+      case DataTypeKind.LNodeType:
+        return instanceType
+          ? `LNodeType[lnClass="${instanceType}"]`
+          : 'LNodeType:not([lnClass])';
+      case DataTypeKind.DOType:
+        return instanceType
+          ? `DOType[cdc="${instanceType}"]`
+          : 'DOType:not([cdc])';
+      case DataTypeKind.DAType:
+      case DataTypeKind.EnumType:
+        return instanceType
+          ? `${dataTypeKind}:has(Private[type="${PRIVATE_INSTANCE_TYPE_NS}"]:contains("${instanceType}"))`
+          : `${dataTypeKind}:not(:has(Private[type="${PRIVATE_INSTANCE_TYPE_NS}"]))`;
+      default:
+        throw new Error(`Unsupported data type kind: ${dataTypeKind}`);
+    }
+  }
+
 
   /** Ensures <DataTypeTemplates> exists, creates if missing */
   private ensureRootElement(): Element {

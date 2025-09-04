@@ -1,5 +1,5 @@
 import {
-  DataTypeKind, DataTypeUpdate, DAType, DATypeDetails,
+  DataTypeKind, DataTypeUpdate, DAType,
   EnumType,
   EnumTypeDetails,
   ObjectReferenceDetails,
@@ -76,6 +76,7 @@ export class EnumTypeService implements IEnumTypeService {
     const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.EnumType, data.instanceType, data.children);
     const newType: DAType = {
       id: data.id,
+      instanceType: data.instanceType,
       children: objRefDetails,
     };
     this.typeRepo.upsertDataType(DataTypeKind.EnumType, newType);

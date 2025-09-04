@@ -1,5 +1,11 @@
-import { DataTypeKind, DataTypes, ObjectReferenceDetails, SimpleReference, TypeOption } from '../domain';
-import { ObjectSpecification } from '../domain';
+import {
+  DataTypeKind, DataTypeMap,
+  DataTypes, DAType, DOType, EnumType, LNodeType,
+  ObjectReferenceDetails,
+  ObjectSpecification,
+  SimpleReference,
+  TypeOption
+} from '../domain';
 import { IDataTypeRepository } from '../repositories';
 import { ITypeSpecificationService } from './type-specification.service';
 import { lnClassDescriptions } from '../../data/lnClassDescriptions';
@@ -142,19 +148,20 @@ export class DataTypeService implements IDataTypeService {
 
     const objectTypeByTypeKind = groupObjectTypeByTypeKind(requiredSpecs);
 
+    const getTypes = <K extends DataTypeKind>(kind: K): DataTypeMap[K][] => {
+      const specificType = Array.from(objectTypeByTypeKind.get(kind) ?? []).flatMap(type =>
+        this.typeRepo.findAllDataTypesByKind(kind, type));
+
+      const unknownType = this.typeRepo.findAllDataTypesWithoutInstanceType(kind);
+
+      return [...specificType, ...unknownType];
+    }
+
     return {
-      lNodeTypes: Array.from(objectTypeByTypeKind.get(DataTypeKind.LNodeType) ?? []).flatMap(ot =>
-        this.typeRepo.findAllDataTypesByKind(DataTypeKind.LNodeType, ot)
-      ),
-      dataObjectTypes: Array.from(objectTypeByTypeKind.get(DataTypeKind.DOType) ?? []).flatMap(ot =>
-        this.typeRepo.findAllDataTypesByKind(DataTypeKind.DOType, ot)
-      ),
-      dataAttributeTypes: objectTypeByTypeKind.has(DataTypeKind.DAType)
-        ? this.typeRepo.findAllDataTypesByKind(DataTypeKind.DAType)
-        : [],
-      enumTypes: objectTypeByTypeKind.has(DataTypeKind.EnumType)
-        ? this.typeRepo.findAllDataTypesByKind(DataTypeKind.EnumType)
-        : []
+      lNodeTypes: getTypes(DataTypeKind.LNodeType) as LNodeType[],
+      dataObjectTypes: getTypes(DataTypeKind.DOType) as DOType[],
+      dataAttributeTypes: getTypes(DataTypeKind.DAType) as DAType[],
+      enumTypes: getTypes(DataTypeKind.EnumType) as EnumType[],
     };
   }
 

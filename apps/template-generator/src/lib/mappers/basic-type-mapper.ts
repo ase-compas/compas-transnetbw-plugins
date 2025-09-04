@@ -22,6 +22,7 @@ export class BasicTypeMapper {
   static mapDATypeToBasicType(daType: DAType): BasicType {
     return {
       id: daType.id,
+      instanceType: daType?.instanceType,
       typeKind: DataTypeKind.DAType,
       references: daType.children ? daType.children.length : 0,
     };
@@ -30,6 +31,7 @@ export class BasicTypeMapper {
   static mapEnumTypeToBasicType(enumType: EnumType): BasicType {
     return {
       id: enumType.id,
+      instanceType: enumType?.instanceType,
       typeKind: DataTypeKind.EnumType,
       references: enumType.children ? enumType.children.length : 0,
     };

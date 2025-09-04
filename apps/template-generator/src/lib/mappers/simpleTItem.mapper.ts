@@ -45,7 +45,7 @@ export function mapDataTypeToItem(type: BasicType, canEdit = false): TItem {
     id: type.id,
     title: type.id,
     references: type.references,
-    badgeText: type.instanceType,
+    badgeText: type?.instanceType ?? 'Unknown Type',
     canEdit: canEdit,
     canUnlink: false
   };
