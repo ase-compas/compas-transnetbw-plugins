@@ -10,6 +10,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       itemsDraggable: false,
       dragAndDropBorder: isEditMode,
       canSelectItems: true,
+      showSelectionIndicator: isEditMode,
     },
     {
       id: 'dataAttributeTypes',
