@@ -15,7 +15,7 @@ export class LNodeTypeMapperV implements TypeMapper<LNodeType> {
   }
 
   toElement(type: LNodeType, doc: XMLDocument): Element {
-    const el = doc.createElement('LNodeType');
+    const el = doc.createElementNS(doc.documentElement.namespaceURI, 'LNodeType');
     el.setAttribute('id', type.id);
     el.setAttribute('lnClass', type.lnClass);
     type.children.forEach(child => el.appendChild(mapObjectReferenceToElement(child, doc)));
@@ -32,7 +32,7 @@ export class DOTypeMapperV implements TypeMapper<DOType> {
   }
 
   toElement(type: DOType, doc: XMLDocument): Element {
-    const el = doc.createElement('DOType');
+    const el = doc.createElementNS(doc.documentElement.namespaceURI, 'DOType');
     el.setAttribute('id', type.id);
     el.setAttribute('cdc', type.cdc);
     type.children.forEach(child => el.appendChild(mapObjectReferenceToElement(child, doc)));
@@ -54,7 +54,7 @@ export class DATypeMapperV implements TypeMapper<DAType> {
   }
 
   toElement(type: DAType, doc: XMLDocument): Element {
-    const el = doc.createElement('DAType');
+    const el = doc.createElementNS(doc.documentElement.namespaceURI,'DAType');
     el.setAttribute('id', type.id);
     type.children.forEach(child => el.appendChild(mapObjectReferenceToElement(child, doc)));
     appendPrivateWithInstanceType(doc, el, type.instanceType);
@@ -83,10 +83,10 @@ export class EnumTypeMapperV implements TypeMapper<EnumType> {
   }
 
   toElement(type: EnumType, doc: XMLDocument): Element {
-    const el = doc.createElement('EnumType');
+    const el = doc.createElementNS(doc.documentElement.namespaceURI,'EnumType');
     el.setAttribute('id', type.id);
     type.children.forEach(val => {
-      const valEl = doc.createElement('EnumVal');
+      const valEl = doc.createElementNS(doc.documentElement.namespaceURI, 'EnumVal');
       valEl.textContent = val.name;
       valEl.setAttribute('ord', val.attributes.literalValue || '');
       el.appendChild(valEl);
@@ -105,8 +105,8 @@ export function mapElementToObjectReference(element: Element): ObjectReference {
   };
 }
 
-export function mapObjectReferenceToElement(ref: ObjectReference, doc: Document = document): Element {
-  const el = doc.createElement(ref.tagName);
+export function mapObjectReferenceToElement(ref: ObjectReference, doc: XMLDocument): Element {
+  const el = doc.createElementNS(doc.documentElement.namespaceURI, ref.tagName);
   el.setAttribute('name', ref.name);
   if (ref.typeRef) el.setAttribute('type', ref.typeRef);
   if(!ref.attributes) return el;
@@ -127,7 +127,7 @@ function getInstanceTypeFromPrivate(element: Element): string | undefined {
 // Helper to append <Private> with instanceType
 function appendPrivateWithInstanceType(doc: XMLDocument, parent: Element, instanceType?: string): void {
   if (instanceType) {
-    const privateEl = doc.createElement('Private');
+    const privateEl = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
     privateEl.setAttribute('type', PRIVATE_INSTANCE_TYPE_NS);
     privateEl.textContent = instanceType;
     parent.appendChild(privateEl);

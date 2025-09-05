@@ -8,7 +8,11 @@
   import { type BasicType, BasicTypes, DATypeDetails, type ObjectReferenceDetails } from '../../../domain';
   import { getDATypeService } from '../../../services';
   import { createObjectReferenceStore } from '../../../stores';
-  import { canAssignTypeToObjectReference, getDisplayReferenceItems } from '../../../utils/objectReferenceUtils';
+  import {
+    canAssignTypeToObjectReference,
+    getDisplayDataTypeItems,
+    getDisplayReferenceItems
+  } from '../../../utils/typeBoardUtils';
   import { mapDataTypeToItem } from '../../../mappers';
   import { IDaTypeService } from '../../../services/da-type.service';
 
@@ -44,8 +48,8 @@
 
   $: boardData = {
     refs: referenceDataObjects,
-    dataAttributeTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
-    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true))
+    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true)
   }
 
   $: columns = getColumns(isEditMode());

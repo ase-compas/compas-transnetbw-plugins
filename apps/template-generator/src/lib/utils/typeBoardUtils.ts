@@ -1,7 +1,34 @@
 import { ObjectReferenceState } from '../stores';
 import { TItem } from '../components/tboard/types';
-import { mapObjectReferenceStateToTItem } from '../mappers';
+import { mapDataTypeToItem, mapObjectReferenceStateToTItem } from '../mappers';
 import { BasicType, ObjectReferenceDetails } from '../domain';
+
+/**
+ * Converts an array of BasicType objects into TItem objects for display.
+ * The resulting array is sorted first by `instanceType` (if present) and then by `id`.
+ *
+ * @param {BasicType[]} types - The array of BasicType objects to convert.
+ * @param {boolean} canEdit - Flag indicating if the resulting items should be editable.
+ * @returns {TItem[]} An array of TItem objects mapped from the input types, sorted for display.
+ */
+export function getDisplayDataTypeItems(types: BasicType[], canEdit: boolean): TItem[] {
+  return types
+    .sort((a, b) => {
+      // Compare instanceType, treating undefined as greater (so it comes last)
+      if (a.instanceType && b.instanceType) {
+        const instanceCompare = a.instanceType.localeCompare(b.instanceType);
+        if (instanceCompare !== 0) return instanceCompare;
+      } else if (a.instanceType) {
+        return -1; // a comes before b
+      } else if (b.instanceType) {
+        return 1; // b comes before a
+      }
+
+      // If instanceType is equal or both undefined, sort by id
+      return a.id.localeCompare(b.id);
+    })
+    .map(type => mapDataTypeToItem(type, canEdit));
+}
 
 export function getDisplayReferenceItems(
   items: ObjectReferenceState[],

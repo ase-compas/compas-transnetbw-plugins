@@ -15,7 +15,11 @@
   import { mapDataTypeToItem } from '../../lib/mappers';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
-  import { canAssignTypeToObjectReference, getDisplayReferenceItems } from '../../lib/utils/objectReferenceUtils';
+  import {
+    canAssignTypeToObjectReference,
+    getDisplayDataTypeItems,
+    getDisplayReferenceItems
+  } from '../../lib/utils/typeBoardUtils';
 
   // Types
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
@@ -84,9 +88,9 @@
   // Board data configuration
   $: boardData = {
     refs: referenceDataObjects,
-    doTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true)),
-    daTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
-    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true)),
+    doTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, canEdit),
+    daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, canEdit),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, canEdit),
   };
 
   $: columns = getColumns(canEdit); // Board column configuration

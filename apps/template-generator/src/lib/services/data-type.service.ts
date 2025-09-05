@@ -152,9 +152,9 @@ export class DataTypeService implements IDataTypeService {
       const specificType = Array.from(objectTypeByTypeKind.get(kind) ?? []).flatMap(type =>
         this.typeRepo.findAllDataTypesByKind(kind, type));
 
-      const unknownType = this.typeRepo.findAllDataTypesWithoutInstanceType(kind);
+      const unknownTypes = objectTypeByTypeKind.has(kind) ? this.typeRepo.findAllDataTypesWithoutInstanceType(kind) : [];
 
-      return [...specificType, ...unknownType];
+      return [...specificType, ...unknownTypes];
     }
 
     return {

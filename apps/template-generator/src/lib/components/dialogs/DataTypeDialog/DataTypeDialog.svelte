@@ -9,7 +9,11 @@
   import { IDoTypeService } from '../../../services/do-type.service';
   import { getDOTypeService } from '../../../services';
   import { createObjectReferenceStore } from '../../../stores';
-  import { canAssignTypeToObjectReference, getDisplayReferenceItems } from '../../../utils/objectReferenceUtils';
+  import {
+    canAssignTypeToObjectReference,
+    getDisplayDataTypeItems,
+    getDisplayReferenceItems
+  } from '../../../utils/typeBoardUtils';
   import { mapDataTypeToItem } from '../../../mappers';
 
   // ===== Services =====
@@ -44,9 +48,9 @@
 
   $: boardData = {
     refs: referenceDataObjects,
-    dataObjectTypes: dataTypes.dataObjectTypes.map(type => mapDataTypeToItem(type, true)),
-    dataAttributeTypes: dataTypes.dataAttributeTypes.map(type => mapDataTypeToItem(type, true)),
-    enumTypes: dataTypes.enumTypes.map(type => mapDataTypeToItem(type, true))
+    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
+    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   }
 
   $: columns = getColumns(isEditMode());

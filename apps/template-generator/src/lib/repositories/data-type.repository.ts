@@ -23,7 +23,7 @@ import {
   EnumTypeMapperV, TypeMapper
 } from '../mappers';
 import { TypeTraverser } from '../utils/typeTraverser';
-import { PRIVATE_INSTANCE_TYPE_NS } from '../constants';
+import { PRIVATE_INSTANCE_TYPE_NS, SCL_NAMESPACE_PREFIX } from '../constants';
 
 export interface IDataTypeRepository {
   /**
@@ -141,19 +141,18 @@ export class DataTypeRepository implements IDataTypeRepository {
   }
 
   findAllDataTypesByKind<K extends DataTypeKind>(dataTypeKind: K, instanceType?: string): DataTypeMap[K][] {
-    const attr = DataTypeRepository.instanceTypeRegistry[dataTypeKind];
-    const selector = attr && instanceType ? this.getTypeKindAndInstanceTypeSelector(dataTypeKind, instanceType) : dataTypeKind;
+    const selector = instanceType ? this.getTypeKindAndInstanceTypeXPath(dataTypeKind, instanceType) : `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:${dataTypeKind}`;
 
     const mapper = DataTypeRepository.typeMapperRegistry[dataTypeKind];
-    return Array.from(this.doc.querySelectorAll(selector))
+    return this.evaluateXPath(selector)
       .map(el => mapper.fromElement(el))
       .filter((dt): dt is DataTypeMap[K] => dt !== null);
   }
 
   findAllDataTypesWithoutInstanceType<K extends DataTypeKind>(dataTypeKind: K): DataTypeMap[K][] {
-    const selector = this.getTypeKindAndInstanceTypeSelector(dataTypeKind);
+    const selector = this.getTypeKindAndInstanceTypeXPath(dataTypeKind);
     const mapper = DataTypeRepository.typeMapperRegistry[dataTypeKind];
-    return Array.from(this.doc.querySelectorAll(selector))
+    return this.evaluateXPath(selector)
       .map(el => mapper.fromElement(el))
       .filter((dt): dt is DataTypeMap[K] => dt !== null);
   }
@@ -199,27 +198,57 @@ export class DataTypeRepository implements IDataTypeRepository {
 
   // ===== Private Helpers =====
 
-  private getTypeKindAndInstanceTypeSelector(
+  private getTypeKindAndInstanceTypeXPath(
     dataTypeKind: DataTypeKind,
     instanceType?: string
   ): string {
     switch (dataTypeKind) {
       case DataTypeKind.LNodeType:
         return instanceType
-          ? `LNodeType[lnClass="${instanceType}"]`
-          : 'LNodeType:not([lnClass])';
+          ? `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:LNodeType[@lnClass="${instanceType}"]`
+          : `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:LNodeType[not(@lnClass)]`;
+
       case DataTypeKind.DOType:
         return instanceType
-          ? `DOType[cdc="${instanceType}"]`
-          : 'DOType:not([cdc])';
+          ? `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:DOType[@cdc="${instanceType}"]`
+          : `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:DOType[not(@cdc)]`;
+
       case DataTypeKind.DAType:
       case DataTypeKind.EnumType:
         return instanceType
-          ? `${dataTypeKind}:has(Private[type="${PRIVATE_INSTANCE_TYPE_NS}"]:contains("${instanceType}"))`
-          : `${dataTypeKind}:not(:has(Private[type="${PRIVATE_INSTANCE_TYPE_NS}"]))`;
+          ? `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:${dataTypeKind}[${SCL_NAMESPACE_PREFIX}:Private[@type="${PRIVATE_INSTANCE_TYPE_NS}" and normalize-space(.)="${instanceType}"]]`
+          : `//${SCL_NAMESPACE_PREFIX}:DataTypeTemplates/${SCL_NAMESPACE_PREFIX}:${dataTypeKind}[not(${SCL_NAMESPACE_PREFIX}:Private[@type="${PRIVATE_INSTANCE_TYPE_NS}"])]`;
+
       default:
         throw new Error(`Unsupported data type kind: ${dataTypeKind}`);
     }
+  }
+
+
+  private nsResolver = (prefix?: string | null) => {
+    if (prefix === SCL_NAMESPACE_PREFIX || prefix == null) return this.doc.documentElement.namespaceURI;
+    return null;
+  };
+
+  private evaluateXPath(xpath: string): Element[] {
+    const result: Element[] = [];
+    const iterator = this.doc.evaluate(
+      xpath,
+      this.doc,
+      this.nsResolver,
+      XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+      null
+    );
+
+    let node = iterator.iterateNext();
+    while (node) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        result.push(node as Element);
+      }
+      node = iterator.iterateNext();
+    }
+
+    return result;
   }
 
 
@@ -227,7 +256,7 @@ export class DataTypeRepository implements IDataTypeRepository {
   private ensureRootElement(): Element {
     let root: Element = this.doc.querySelector(DataTypeRepository.rootElementTagName);
     if (!root) {
-      root = this.doc.createElement(DataTypeRepository.rootElementTagName);
+      root = this.doc.createElementNS(this.doc.documentElement.namespaceURI, DataTypeRepository.rootElementTagName);
       this.doc.documentElement.appendChild(root);
     }
     return root;
