@@ -64,6 +64,7 @@
 
   async function loadData() {
     dataAttributeType = await loadDOType(isCreateMode(), typeId, cdc);
+    cdc = dataAttributeType.instanceType;
     await refStore.reload();
 
     dataTypes = await loadTypes(isEditMode(), dataAttributeType.id, cdc, []);

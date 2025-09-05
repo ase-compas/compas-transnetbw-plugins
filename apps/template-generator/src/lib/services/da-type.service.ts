@@ -114,6 +114,7 @@ export class DaTypeService implements IDaTypeService {
 
     return Promise.resolve({
       id: '',
+      instanceType: instanceType,
       children,
     });
   }
