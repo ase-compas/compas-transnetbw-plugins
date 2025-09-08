@@ -85,7 +85,6 @@ export class EnumTypeService implements IEnumTypeService {
 
   async getDefaultType(instanceType: string): Promise<EnumTypeDetails> {
     const objectReferences =  await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.EnumType, instanceType);
-    console.log(objectReferences)
     return Promise.resolve({
       id: '',
       children: objectReferences

@@ -1,10 +1,12 @@
 <script lang="ts">
-import { OscdBaseDialog, OscdDraggableList, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+import { OscdBaseDialog, OscdInput } from '@oscd-transnet-plugins/oscd-component';
 import { Content } from '@smui/dialog';
-import { EnumType, EnumTypeDetails } from '../../../domain';
+import { EnumTypeDetails } from '../../../domain';
 import { EnumTypeService, getEnumTypeService } from '../../../services';
 import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import { IEnumTypeService } from '../../../services/enum-type.service';
+import EnumListItem from './EnumListItem.svelte';
+import { flip } from 'svelte/animate'
 
 let enumTypeService: IEnumTypeService = getEnumTypeService();
 
@@ -17,10 +19,8 @@ let isCreateMode = () => mode === 'create';
 
 let searchQuery = '';
 let enumType: EnumTypeDetails;
-let listItems: { id: string; label: string }[] = [];
-$: listItems = enumType?.children
-  .map(enumValue => ({id: enumValue.attributes.literalValue, label: enumValue.name}))
-  .filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
+let listItems: { id: string; label: string, selected: boolean }[] = [];
+$: filteredList = listItems.filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
 
 if(open) init();
 
@@ -34,20 +34,28 @@ function loadData() {
     enumTypeService.getDefaultType(instanceTypeId)
       .then(result => {
         result.id = typeId;
-        enumType = result
+        enumType = result;
+        listItems = enumType.children.map(enumValue => ({id: enumValue.attributes.literalValue, label: enumValue.name, selected: true}))
       });
   } else {
     enumTypeService.getTypeById(typeId)
-      .then(result => enumType = result);
+      .then(result => {
+        enumType = result
+        listItems = enumType.children.map(enumValue => ({id: enumValue.attributes.literalValue, label: enumValue.name, selected: enumValue.meta.isConfigured}))
+      });
   }
 }
 
 function handleConfirm() {
+  const configuredChildren = listItems
+    .filter(item => item.selected)
+    .map(item => enumType.children.find(child => child.attributes.literalValue === item.id))
+    .filter(item => item !== undefined);
 
   enumTypeService.createOrUpdateType({
     ...enumType,
     instanceType: instanceTypeId,
-    children: enumType.children
+    children: configuredChildren,
   })
   closeDialog('confirm');
 }
@@ -67,8 +75,8 @@ function validateProps() {
 <OscdBaseDialog
   bind:open
   title={`Enum Type: ${enumType?.id ?? '------'}`}
-  confirmActionText="Close"
-  cancelActionText=""
+  confirmActionText="Save"
+  cancelActionText="Cancel"
   maxWidth="35vw"
   on:confirm={() => handleConfirm()}
   on:cancel={() => handleCancel()}>
@@ -81,10 +89,19 @@ function validateProps() {
       variant="outlined"/>
 
     {#if listItems && listItems.length > 0}
-    <OscdDraggableList
-      canDrag={false}
-      items={listItems}
-    />
+      <ul class="enum-list">
+        {#each filteredList as item (item.id)}
+          <li animate:flip={{duration: 200}}>
+            <EnumListItem
+              id={item.id}
+              label={item.label}
+              selected={item.selected}
+              showCheckbox={true}
+              on:toggle={(e) => item.selected = e.detail.selected}
+            />
+          </li>
+        {/each}
+      </ul>
     {:else}
       <div class="no-results">
         {#if searchQuery}
@@ -100,6 +117,20 @@ function validateProps() {
 
 
 <style lang="css">
+  ul, li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .enum-list {
+    overflow-y: auto;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .no-results {
     display: flex;
     align-items: center;
