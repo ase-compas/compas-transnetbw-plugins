@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { initServices } from './lib/services';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import DrawerStack from './lib/components/drawer-stack/DrawerStack.svelte';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -54,6 +55,7 @@
   {/if}
 </div>
 <DialogHost/>
+<DrawerStack/>
 
 <style>
   @import "/global.css";
