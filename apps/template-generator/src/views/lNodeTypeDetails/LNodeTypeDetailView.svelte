@@ -5,14 +5,10 @@
 
   // Components
   import TBoard from '../../lib/components/tboard/TBoard.svelte';
-  import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
-  import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
-  import NewDataObjectType from '../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte';
 
   // Services & utils
   import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
   import { loadLNodeType, loadTypes } from './dataLoader';
-  import { mapDataTypeToItem } from '../../lib/mappers';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import {
@@ -24,13 +20,12 @@
   // Types
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
   import type { BasicType, BasicTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
-  import EnumTypeDialog from '../../lib/components/dialogs/EnumTypeDialog/EnumTypeDialog.svelte';
-  import NewDataAttributeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
-  import NewEnumTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
-  import { openDrawer } from '../../lib/stores/drawerStackStore';
-  import EnumTypeDetailsDrawer from '../../lib/components/drawers/EnumTypeDetailsDrawer.svelte';
-  import DoTypeDrawer from '../../lib/components/drawers/doTypeDrawer/DoTypeDrawer.svelte';
-  import DaTypeDrawer from '../../lib/components/drawers/daTypeDrawer/DaTypeDrawer.svelte';
+  import {
+    openCreateDataAttributeTypeDialog, openCreateDataObjectTypeDialog, openCreateEnumTypeDialog,
+    openDataAttributeTypeDrawer, openDataEnumTypeDrawer,
+    openDataObjectTypeDrawer,
+    openReferencedTypeDrawer
+  } from '../../lib/utils/typeViewUtils';
 
   export let doc: XMLDocument;
 
@@ -187,9 +182,9 @@
   // Dialog handlers
   function handleActionClick({ columnId }) {
    if (columnId === 'doTypes') {
-      openCreateDOTypeDialog();
+     openCreateDataObjectTypeDialog();
     } else if (columnId === 'daTypes') {
-     openCreateDATypeDialog();
+     openCreateDataAttributeTypeDialog();
     } else if (columnId === 'enumTypes') {
      openCreateEnumTypeDialog();
     }
@@ -197,11 +192,11 @@
 
   function handleOnEdit(itemId: string, columnId: string) {
     if (columnId === 'doTypes') {
-      openEditDOTypeDialog(itemId, null, canEdit ? 'edit' : 'view');
+      openDataObjectTypeDrawer('edit', itemId);
     } else if (columnId === 'daTypes') {
-      openEditDATypeDialog(itemId, null, canEdit ? 'edit' : 'view');
+      openDataAttributeTypeDrawer('edit', itemId);
     } else if (columnId === 'enumTypes') {
-      openEditEnumTypeDialog(itemId, null, canEdit ? 'edit' : 'view');
+      openDataEnumTypeDrawer('edit', itemId)
     }
   }
 
@@ -224,52 +219,10 @@
   }
 
   function handleOnReferenceClick({itemId}) {
-    const item = $refStore.find(i => i.name === itemId);
-    if(item?.typeRef) {
-      openEditDOTypeDialog(item.typeRef, null, 'view');
-    }
+    const ref = $refStore.find(i => i.name === itemId);
+    openReferencedTypeDrawer(ref, 'edit')
   }
 
-  // -----------------------------
-  // Dialog Handlers
-  // -----------------------------
-  function openCreateDOTypeDialog() {
-    openDialog(NewDataObjectType).then(result => {
-      if (result.type === 'confirm') {
-        openEditDOTypeDialog(result.data.id, result.data.cdc, 'create');
-      }
-    });
-  }
-
-  function openCreateDATypeDialog() {
-    openDialog(NewDataAttributeTypeDialog).then(result => {
-      if (result.type === 'confirm') {
-        openEditDATypeDialog(result.data.id, result.data.instanceType, 'create');
-      }
-    });
-  }
-
-  function openCreateEnumTypeDialog() {
-    openDialog(NewEnumTypeDialog).then(result => {
-      if (result.type === 'confirm') {
-        openEditEnumTypeDialog(result.data.id, result.data.instanceType, 'create');
-      }
-    });
-  }
-
-  function openEditDOTypeDialog(typeId: string, cdc: string | null = null, mode: 'edit' | 'view' | 'create') {
-    openDrawer({component: DoTypeDrawer, title: 'Data Object Type Details', props: { typeId, cdc, mode }})
-    //openDialog(DataTypeDialog, { typeId, cdc, mode })
-  }
-
-  function openEditDATypeDialog(typeId: string, cdc: string, mode: 'edit' | 'view' | 'create') {
-    openDrawer({component: DaTypeDrawer, title: 'Data Attribute Type Details', props: { typeId, cdc, mode }})
-  }
-
-  function openEditEnumTypeDialog(typeId: string, instanceType: string ,mode: 'edit' | 'view' | 'create') {
-     //openDialog(EnumTypeDialog, { typeId, mode, instanceTypeId: instanceType });
-    openDrawer({component: EnumTypeDetailsDrawer, title: 'Enum Type Details', props: { mode: 'edit', typeId: typeId }})
-  }
 
   // -----------------------------
   // Utils

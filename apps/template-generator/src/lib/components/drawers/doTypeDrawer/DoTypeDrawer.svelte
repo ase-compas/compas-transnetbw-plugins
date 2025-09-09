@@ -19,10 +19,15 @@
     getDisplayReferenceItems
   } from '../../../utils/typeBoardUtils';
   import { onMount } from 'svelte';
-  import { openDrawer } from '../../../stores/drawerStackStore';
-  import EnumTypeDetailsDrawer from '../EnumTypeDetailsDrawer.svelte';
-  import DoTypeDrawer from './DoTypeDrawer.svelte';
-  import DaTypeDrawer from '../daTypeDrawer/DaTypeDrawer.svelte';
+  import { CloseReason } from '../../../stores/drawerStackStore';
+  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    openCreateDataAttributeTypeDialog, openCreateDataObjectTypeDialog, openCreateEnumTypeDialog,
+    openDataAttributeTypeDrawer,
+    openDataEnumTypeDrawer,
+    openDataObjectTypeDrawer,
+    openReferencedTypeDrawer
+  } from '../../../utils/typeViewUtils';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -31,6 +36,30 @@
   export let mode: 'view' | 'edit' | 'create' = 'view';
   export let typeId: string;
   export let cdc: string | null = null;
+
+  export const canClose = async (reason: CloseReason): Promise<boolean> => {
+    if($isDirty && (reason !== 'save')) {
+      await handleUnsavedChanges()
+    } else if (reason === 'save') {
+      await handleConfirm();
+    }
+   return true;
+  }
+
+  async function handleUnsavedChanges(resetOnDiscard = false) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Unsaved Changes',
+      message: 'You have unsaved changes. Do you want to save them?',
+      confirmActionText: 'Save',
+      cancelActionText: 'Discard'
+    });
+    if (result.type === 'confirm') {
+      handleConfirm();
+    } else if (resetOnDiscard) {
+      refStore.reset();
+    }
+  }
+
 
   // ===== Stores ======
   const refStore = createObjectReferenceStore(async () => dataObjectType.children);
@@ -135,31 +164,26 @@
 
   function handleOnEdit(itemId: string, columnId: string) {
     if (columnId === 'dataObjectTypes') {
-      openDrawer({component: DoTypeDrawer, title: "DO Type Details", props: { typeId: itemId, mode: 'edit'}})
+      openDataObjectTypeDrawer('edit', itemId);
     } else if (columnId === 'dataAttributeTypes') {
-      openDrawer({component: DaTypeDrawer, title: "DA Type Details", props: { typeId: itemId, mode: 'edit'}})
+      openDataAttributeTypeDrawer('edit', itemId);
     } else if (columnId === 'enumTypes') {
-      openDrawer({component: EnumTypeDetailsDrawer, title: "Enum Type Details", props: { typeId: itemId, mode: 'edit'}})
+      openDataEnumTypeDrawer('edit', itemId);
     }
   }
 
   function handleOnReferenceClick(itemId: string) {
-    const ref = dataObjectType.children.find(child => child.name === itemId);
-    console.log(ref);
-    if (ref?.typeRef) {
-      const typeRef = ref.typeRef;
-      if (ref.meta.refTypeKind === DataTypeKind.EnumType) {
-        openDrawer({
-          component: EnumTypeDetailsDrawer,
-          title: "Enum Type Details",
-          props: { typeId: typeRef, mode: 'view' }
-        })
-      } else if (ref.meta.refTypeKind === DataTypeKind.DOType) {
-        openDrawer({ component: DoTypeDrawer, title: "DO Type Details", props: { typeId: typeRef, mode: 'edit' } })
-      } else if (ref.meta.refTypeKind === DataTypeKind.DAType) {
-        openDrawer({component: DaTypeDrawer, title: "DA Type Details", props: { typeId: typeRef, mode: 'edit'}})
-      }
+    const ref = $refStore.find(child => child.name === itemId);
+    openReferencedTypeDrawer(ref, 'edit');
+  }
 
+  function handleActionClick({ columnId }) {
+    if (columnId === 'dataObjectTypes') {
+      openCreateDataObjectTypeDialog();
+    } else if (columnId === 'dataAttributeTypes') {
+      openCreateDataAttributeTypeDialog();
+    } else if (columnId === 'enumTypes') {
+      openCreateEnumTypeDialog();
     }
   }
 
@@ -178,4 +202,5 @@
   on:itemDrop={e => handleItemDrop(e.detail)}
   on:itemEdit={({detail: {itemId, columnId}}) => handleOnEdit(itemId, columnId)}
   on:itemReferenceClick={({detail: {itemId}}) => handleOnReferenceClick(itemId)}
+  on:columnActionClick={({detail: {columnId}}) => handleActionClick({columnId})}
 />

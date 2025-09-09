@@ -96,4 +96,5 @@ export interface DataTypeUpdate {
   children: SimpleReference[];
 }
 
+export type Mode = 'create' | 'edit' | 'view';
 

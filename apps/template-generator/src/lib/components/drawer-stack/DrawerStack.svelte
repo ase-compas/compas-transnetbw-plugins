@@ -4,6 +4,7 @@
   import type { Drawer } from '../../stores/drawerStackStore';
   import { onMount, onDestroy } from 'svelte';
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
+  import Button from '@smui/button';
 
   let drawerList: Drawer[] = [];
   const widthStep = 45;
@@ -83,18 +84,20 @@
     flex-direction: column;
     pointer-events: auto;
     overflow: hidden;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
   }
 
   .drawer-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: var(--mdc-theme-primary, #ff3e00);
+    padding: 1rem 1.3rem;
     border-bottom: 1px solid #ddd;
     font-weight: 500;
     font-size: 1.5rem;
-    color: white;
+    color: #dae3e6;
+    background: var(--mdc-theme-primary, #ff3e00);
   }
 
   .drawer-body {
@@ -103,12 +106,45 @@
     padding: 1rem;
   }
 
-  .drawer-actions {
-    background-color: white;
-    border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
+  .drawer-header__actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .drawer-header__breadcrumbs {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.75);
+    gap: 0.25rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .breadcrumb-back {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 0.5rem;
+  }
+
+  .breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .breadcrumb-segment {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .breadcrumb-current {
+    color: #fff;
+    font-weight: 500;
   }
 </style>
 
@@ -133,12 +169,39 @@
         width: {baseWidth - index * widthStep}px;
         z-index: {zBase + index * 2 + 1};
       "
-      in:fly={{ x: baseWidth + 200, duration: 300 }}
-      out:fly={{ x: baseWidth + 200, duration: 300 }}
+      in:fly={{ x: baseWidth + 200, duration: 200 }}
+      out:fly={{ x: baseWidth + 200, duration: 200 }}
     >
       <div class="drawer-header">
-        <div>{drawer.title}</div>
-        <OscdIconActionButton type="close" fillColor="white" onClick={() => closeDrawer("button")}/>
+        <div class="drawer-header__actions">
+          <Button
+            variant="unelevated"
+            color="primary"
+            style="background: #dae3e6;
+            color: var(--mdc-theme-primary, #ff3e00)"
+            on:click={() => closeDrawer('save')}
+          >Save & Close</Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            style="border-color: #dae3e6; color: #dae3e6;"
+            on:click={() => closeDrawer('cancel')}
+          >Cancel</Button>
+        </div>
+
+
+        <div class="drawer-header__breadcrumbs">
+          {#each drawerList.slice(0, index) as d}
+            <span class="breadcrumb-segment">{d.title}</span>
+            <span class="breadcrumb-separator">›</span>
+          {/each}
+
+          <span class="breadcrumb-current">{drawer.title}</span>
+        </div>
+
+
+
+        <OscdIconActionButton type="close" fillColor="#dae3e6" onClick={() => closeDrawer("button")}/>
       </div>
       <div class="drawer-body">
         <svelte:component
@@ -150,4 +213,3 @@
     </div>
   {/each}
 </div>
-

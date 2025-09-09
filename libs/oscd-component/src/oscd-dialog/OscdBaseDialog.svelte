@@ -58,6 +58,9 @@
 </Dialog>
 
 <style lang="css">
+  :global(.mdc-dialog) {
+    z-index: 5000 !important;
+  }
   :global(.oscd-dialog__actions) {
     display: flex;
     justify-content: flex-end;

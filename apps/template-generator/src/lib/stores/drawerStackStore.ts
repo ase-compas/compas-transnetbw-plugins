@@ -1,7 +1,7 @@
 import { SvelteComponent } from 'svelte';
 import { get, Readable, writable } from 'svelte/store';
 
-export type CloseReason = 'esc' | 'backdrop' | 'button';
+export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
 
 export interface Drawer<T = any> {
   title: string;

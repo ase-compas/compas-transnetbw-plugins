@@ -56,9 +56,7 @@
   function handleDropConsider(e, itemId) {
     const { detail } = e;
     const { trigger } = detail.info;
-    console.log(detail, itemId);
     if (trigger === TRIGGERS.DRAGGED_ENTERED) {
-      console.log(itemId, detail)
       isOverId = itemId;
     }
 
