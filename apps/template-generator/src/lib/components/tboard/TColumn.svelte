@@ -23,6 +23,7 @@
 
   export let itemsDraggable: boolean = false;
   export let dropCandidate: TBoardItemContext | null = null;
+  export let dragAndDropType: string;
 
   export let items: TItem[] = []
 
@@ -84,6 +85,7 @@
     itemsDraggable={itemsDraggable}
     dropCandidate={dropCandidate}
     showSelectionIndicator={showSelectionIndicator}
+    dragAndDropType={dragAndDropType}
     on:itemClick={(e) => forwardEvent('itemClick', e.detail)}
     on:itemEdit={(e) => forwardEvent('itemEdit', e.detail)}
     on:itemApplyDefaults={(e) => forwardEvent('itemApplyDefaults', e.detail)}
