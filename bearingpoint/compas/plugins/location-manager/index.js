@@ -13374,7 +13374,7 @@ class Td extends de {
 function wd(t) {
   let e, n, i;
   function r(o) {
-    t[6](o);
+    t[7](o);
   }
   let a = {
     label: (
@@ -13428,7 +13428,7 @@ function wd(t) {
 function Rd(t) {
   let e, n, i;
   function r(o) {
-    t[5](o);
+    t[6](o);
   }
   let a = {
     label: (
@@ -13439,7 +13439,8 @@ function Rd(t) {
       /*placeholder*/
       t[1]
     ),
-    style: "width: 100%",
+    style: `width: 100%; ${/*styles*/
+    t[5]}`,
     variant: (
       /*variant*/
       t[4]
@@ -13463,10 +13464,12 @@ function Rd(t) {
         4 && (s.label = /*label*/
         o[2]), l & /*placeholder*/
         2 && (s.placeholder = /*placeholder*/
-        o[1]), l & /*variant*/
+        o[1]), l & /*styles*/
+        32 && (s.style = `width: 100%; ${/*styles*/
+        o[5]}`), l & /*variant*/
         16 && (s.variant = /*variant*/
         o[4]), l & /*$$scope, icon*/
-        136 && (s.$$scope = { dirty: l, ctx: o }), !n && l & /*value*/
+        264 && (s.$$scope = { dirty: l, ctx: o }), !n && l & /*value*/
         1 && (n = !0, s.value = /*value*/
         o[0], et(() => n = !1)), e.$set(s);
       },
@@ -13526,7 +13529,7 @@ function kd(t) {
     p(i, r) {
       const a = {};
       r & /*$$scope, icon*/
-      136 && (a.$$scope = { dirty: r, ctx: i }), e.$set(a);
+      264 && (a.$$scope = { dirty: r, ctx: i }), e.$set(a);
     },
     i(i) {
       n || (S(e.$$.fragment, i), n = !0);
@@ -13573,15 +13576,15 @@ function Dd(t) {
   };
 }
 function Md(t, e, n) {
-  let { placeholder: i = "" } = e, { label: r = "" } = e, { icon: a = "" } = e, { value: o = "" } = e, { variant: l = "standard" } = e;
-  function s(f) {
-    o = f, n(0, o);
+  let { placeholder: i = "" } = e, { label: r = "" } = e, { icon: a = "" } = e, { value: o = "" } = e, { variant: l = "standard" } = e, { styles: s = "" } = e;
+  function u(c) {
+    o = c, n(0, o);
   }
-  function u(f) {
-    o = f, n(0, o);
+  function f(c) {
+    o = c, n(0, o);
   }
-  return t.$$set = (f) => {
-    "placeholder" in f && n(1, i = f.placeholder), "label" in f && n(2, r = f.label), "icon" in f && n(3, a = f.icon), "value" in f && n(0, o = f.value), "variant" in f && n(4, l = f.variant);
+  return t.$$set = (c) => {
+    "placeholder" in c && n(1, i = c.placeholder), "label" in c && n(2, r = c.label), "icon" in c && n(3, a = c.icon), "value" in c && n(0, o = c.value), "variant" in c && n(4, l = c.variant), "styles" in c && n(5, s = c.styles);
   }, [
     o,
     i,
@@ -13589,7 +13592,8 @@ function Md(t, e, n) {
     a,
     l,
     s,
-    u
+    u,
+    f
   ];
 }
 class li extends de {
@@ -13599,7 +13603,8 @@ class li extends de {
       label: 2,
       icon: 3,
       value: 0,
-      variant: 4
+      variant: 4,
+      styles: 5
     });
   }
 }

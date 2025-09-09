@@ -14931,7 +14931,7 @@ class gp extends Le {
 function _p(t) {
   let e, n, i;
   function r(a) {
-    t[6](a);
+    t[7](a);
   }
   let s = {
     label: (
@@ -14985,7 +14985,7 @@ function _p(t) {
 function bp(t) {
   let e, n, i;
   function r(a) {
-    t[5](a);
+    t[6](a);
   }
   let s = {
     label: (
@@ -14996,7 +14996,8 @@ function bp(t) {
       /*placeholder*/
       t[1]
     ),
-    style: "width: 100%",
+    style: `width: 100%; ${/*styles*/
+    t[5]}`,
     variant: (
       /*variant*/
       t[4]
@@ -15020,10 +15021,12 @@ function bp(t) {
         4 && (o.label = /*label*/
         a[2]), l & /*placeholder*/
         2 && (o.placeholder = /*placeholder*/
-        a[1]), l & /*variant*/
+        a[1]), l & /*styles*/
+        32 && (o.style = `width: 100%; ${/*styles*/
+        a[5]}`), l & /*variant*/
         16 && (o.variant = /*variant*/
         a[4]), l & /*$$scope, icon*/
-        136 && (o.$$scope = { dirty: l, ctx: a }), !n && l & /*value*/
+        264 && (o.$$scope = { dirty: l, ctx: a }), !n && l & /*value*/
         1 && (n = !0, o.value = /*value*/
         a[0], pt(() => n = !1)), e.$set(o);
       },
@@ -15083,7 +15086,7 @@ function Ip(t) {
     p(i, r) {
       const s = {};
       r & /*$$scope, icon*/
-      136 && (s.$$scope = { dirty: r, ctx: i }), e.$set(s);
+      264 && (s.$$scope = { dirty: r, ctx: i }), e.$set(s);
     },
     i(i) {
       n || (A(e.$$.fragment, i), n = !0);
@@ -15130,15 +15133,15 @@ function Ep(t) {
   };
 }
 function Ap(t, e, n) {
-  let { placeholder: i = "" } = e, { label: r = "" } = e, { icon: s = "" } = e, { value: a = "" } = e, { variant: l = "standard" } = e;
-  function o(c) {
-    a = c, n(0, a);
+  let { placeholder: i = "" } = e, { label: r = "" } = e, { icon: s = "" } = e, { value: a = "" } = e, { variant: l = "standard" } = e, { styles: o = "" } = e;
+  function u(f) {
+    a = f, n(0, a);
   }
-  function u(c) {
-    a = c, n(0, a);
+  function c(f) {
+    a = f, n(0, a);
   }
-  return t.$$set = (c) => {
-    "placeholder" in c && n(1, i = c.placeholder), "label" in c && n(2, r = c.label), "icon" in c && n(3, s = c.icon), "value" in c && n(0, a = c.value), "variant" in c && n(4, l = c.variant);
+  return t.$$set = (f) => {
+    "placeholder" in f && n(1, i = f.placeholder), "label" in f && n(2, r = f.label), "icon" in f && n(3, s = f.icon), "value" in f && n(0, a = f.value), "variant" in f && n(4, l = f.variant), "styles" in f && n(5, o = f.styles);
   }, [
     a,
     i,
@@ -15146,7 +15149,8 @@ function Ap(t, e, n) {
     s,
     l,
     o,
-    u
+    u,
+    c
   ];
 }
 class yp extends Le {
@@ -15156,7 +15160,8 @@ class yp extends Le {
       label: 2,
       icon: 3,
       value: 0,
-      variant: 4
+      variant: 4,
+      styles: 5
     });
   }
 }
