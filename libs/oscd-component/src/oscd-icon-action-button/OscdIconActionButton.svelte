@@ -3,7 +3,9 @@
     OscdControlPointDuplicateIcon,
     OscdDeleteIcon,
     OscdEditIcon,
-    OscdVisibilityIcon
+    OscdVisibilityIcon,
+    OscdWandStarsIcon,
+    OscdLinkOffIcon
   } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
@@ -38,6 +40,10 @@
       <OscdEditIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
     {:else if type === 'visibility'}
       <OscdVisibilityIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+    {:else if type === 'wand-stars'}
+      <OscdWandStarsIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+    {:else if type === 'link-off'}
+      <OscdLinkOffIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
     {:else}
       Unsupported supported type: {type}
     {/if}

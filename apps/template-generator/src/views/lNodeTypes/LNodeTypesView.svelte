@@ -7,31 +7,40 @@
   import IconButton from '@smui/icon-button';
   import LogicalNodeTypeRow from '../../lib/components/tables/LogicalNodeTypeRow.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { getLNodeTypeService } from '../../lib/services';
+  import {
+    getLNodeTypeService,
+    ILNodeTypeService,
+  } from '../../lib/services';
   import { type Route, route } from "../../lib/stores";
-  import { LNodeType } from '../../lib/domain';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { BasicType } from '../../lib/domain';
 
   export let doc: XMLDocument;
 
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
-  const lNodeTypeService = getLNodeTypeService();
+  const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
 
   // ===== State =====
   let nodeSearchTerm = '';
   let sort: 'id' | 'lnClass' = 'id';
   let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
-  let items: LNodeType[] = [];
+  let items: BasicType[] = [];
   let isLoading = false;
 
   $: if(doc) {
-    items = lNodeTypeService.findAll();
+    if(lNodeTypeService) loadItems()
+  }
+
+  function loadItems() {
+    lNodeTypeService.getAllTypes().then(data => {
+      items = data;
+    })
   }
 
   // ===== Derived Values =====
 
-  let filteredAndSortedItems: LNodeType[] = [];
+  let filteredAndSortedItems: BasicType[] = [];
   $: filteredAndSortedItems = items
     .filter(node => node.id.toLowerCase().includes(nodeSearchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -44,7 +53,7 @@
 
   // ===== Handlers =====
   const handleDuplicate = (lNodeTypeId: string) => {
-    lNodeTypeService.duplicate(lNodeTypeId);
+    lNodeTypeService.duplicateType(lNodeTypeId);
   };
 
   const handleDelete = (lNodeTypeId: string) => {
@@ -59,7 +68,9 @@
       })
       .then(result => {
       if (result.type === 'confirm') {
-        lNodeTypeService.delete(lNodeTypeId);
+        lNodeTypeService.deleteTypeById(lNodeTypeId).then(() => {
+          items = items.filter(item => item.id !== lNodeTypeId);
+        });
       }
     })
   };
@@ -83,7 +94,7 @@
 
   function handleDialogCreate({id, lnClass}) {
     route.set({
-      path: ['new'],
+      path: ['create'],
       meta: {
         lNodeTypeId: id,
         lnClass: lnClass
@@ -155,7 +166,7 @@
 
       {#each filteredAndSortedItems as node (node.id)}
         <LogicalNodeTypeRow
-          node={{name: node.id, class: node.lnClass, references: node.dataObjects.length}}
+          node={{name: node.id, class: node.instanceType, references: node.references}}
           onDuplicate={() => handleDuplicate(node.id)}
           onDelete={() => handleDelete(node.id)}
           onClick={() => handleNodeClick(node.id)}

@@ -5,21 +5,24 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     {
       id: 'refs',
       title: 'Referenced Data Types',
-      hasSearch: false,
-      showApplyDefaults: isEditMode,
+      hasSearch: true,
       highlighted: true,
+      dragAndDropBorder: isEditMode,
+      canSelectItems: true,
+      showSelectionIndicator: isEditMode,
       itemsDraggable: false,
     },
     {
-      id: 'dotypes',
+      id: 'doTypes',
       title: 'Data Object Types',
       actionLabel: 'Create',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: isEditMode
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     },
     {
-      id: 'datypes',
+      id: 'daTypes',
       title: 'Data Attribute Types',
       actionLabel: 'Create',
       hasSearch: true,
@@ -27,7 +30,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       itemsDraggable: false
     },
     {
-      id: 'enumtypes',
+      id: 'enumTypes',
       title: 'Enum Types',
       actionLabel: 'Create',
       hasSearch: true,

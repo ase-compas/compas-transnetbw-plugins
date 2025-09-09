@@ -1,4 +1,2 @@
-export * from './lNodeType.model';
-export * from './dataObjectType.model';
-export * from './dataAttributeType.model';
-export * from './enumType.model';
+export * from './core.model';
+export * from './type-specification.model';

@@ -2,8 +2,9 @@
   width: 18px;
   height: 18px;
   fill: white;
-  justify-self: center;
-  align-self: center;
+  display: flex;
+  justify-content: center; /* horizontal center */
+  align-items: center;
 }
 
 button[disabled] .oscd-icon svg {

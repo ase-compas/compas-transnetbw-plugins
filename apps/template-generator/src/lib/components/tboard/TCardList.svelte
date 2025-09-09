@@ -4,10 +4,12 @@
   import TCard from './TCard.svelte';
   import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
   import { isDragTarget, isDroppable } from './utils';
+  import { flip } from 'svelte/animate';
 
   const dispatch = createEventDispatcher();
 
   export let selectable: boolean = false;
+  export let showSelectionIndicator: boolean = false;
   export let itemsDraggable: boolean;
 
   export let items: TItem[] = [];
@@ -90,22 +92,35 @@
               dropTargetStyle: {}
              }}
          on:consider={e => handleDropConsider(e, item.id)}
-         on:finalize={e => handleDropFinalize(e, item.id)}>
+         on:finalize={e => handleDropFinalize(e, item.id)}
+         animate:flip={{ duration: 400 }}
+    >
     <TCard
       title={item.title}
       subtitle={item.subtitle}
       references={item.references}
+      badgeText={item.badgeText}
       canEdit={item.canEdit}
       canMark={item.canMark}
-      canSelect={selectable && item.canSelect}
+      selectionEnabled={selectable}
+      showSelectionIndicator={showSelectionIndicator}
+      canApplyDefaults={item.canApplyDefaults}
+      canUnlink={item.canUnlink}
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
+      canDrag={itemsDraggable}
       isOver={isOverId === item.id}
       marked={item.marked}
+      isMandatory={item.isMandatory}
+      referencable={item.referencable}
       bind:selected={item.selected}
       on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
+      on:selectChange={() => dispatch('itemSelectChange', {item, itemId: item.id})}
       on:click={() => forwardEvent('itemClick', item)}
       on:edit={() => forwardEvent('itemEdit', item)}
+      on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}
+      on:unlink={() => forwardEvent('itemUnlink', item)}
+      on:referenceClick={(e) => dispatch('itemReferenceClick', {item, itemId: item.id, reference: e.detail})}
     />
     </div>
   {/each}
@@ -117,5 +132,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 0.1rem;
   }
 </style>

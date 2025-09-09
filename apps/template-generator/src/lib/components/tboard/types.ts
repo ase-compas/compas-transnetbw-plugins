@@ -3,15 +3,21 @@ export type TItem = {
   title: string;
   subtitle?: string;
   references?: number;
+  badgeText?: string;
 
-  marked: boolean;
-  selected: boolean
+  marked?: boolean;
+  selected?: boolean
+  isMandatory?: boolean;
 
   canEdit?: boolean;
   canMark?: boolean;
   canSelect?: boolean;
+  canApplyDefaults?: boolean;
+  canUnlink?: boolean
 
   acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
+
+  referencable?: boolean;
 }
 
 export type TColumnConfig = {
@@ -24,6 +30,9 @@ export type TColumnConfig = {
   hasAction?: boolean;
   showApplyDefaults?: boolean;
   highlighted?: boolean;
+  dragAndDropBorder?: boolean;
+  canSelectItems?: boolean;
+  showSelectionIndicator?: boolean;
 
   itemsDraggable?: boolean; // If items in this column can be dragged
 }

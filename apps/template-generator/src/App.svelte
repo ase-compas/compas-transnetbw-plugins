@@ -29,7 +29,7 @@
   }
 
   onMount(() => {
-    if(devMode) host = createMockHost(); // Create a mock host element in dev mode
+    if (devMode) host = createMockHost(); // Create a mock host element in dev mode
     storeHost.set(host);
   })
 
@@ -38,7 +38,6 @@
   }
 </script>
 
-{#if devMode}<h1>Dev Mode Active</h1>{/if}
 <div class="oscd-app">
   {#if !doc && devMode}
     <!-- Development mode: allow file upload -->

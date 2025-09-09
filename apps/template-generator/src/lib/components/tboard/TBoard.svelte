@@ -81,10 +81,13 @@
       title={column.title}
       subtitle={column.subtitle}
       highlighted={column.highlighted}
+      dragAndDropBorder={column.dragAndDropBorder}
       actionLabel={column.actionLabel}
       hasSearch={column.hasSearch}
       hasAction={column.hasAction}
       showApplyDefaults={column.showApplyDefaults}
+      canSelectItems={column.canSelectItems}
+      showSelectionIndicator={column.showSelectionIndicator}
       itemsDraggable={column.itemsDraggable}
       items={data[column.id]}
       dropCandidate={dropCandidate}
@@ -92,9 +95,13 @@
       on:applyDefaults={e => forwardEvent('applyDefaults', column.id, e.detail)}
       on:itemClick={e => forwardEvent('itemClick', column.id, e.detail)}
       on:itemEdit={e => forwardEvent('itemEdit', column.id, e.detail)}
+      on:itemApplyDefaults={e => forwardEvent('itemApplyDefaults', column.id, e.detail)}
+      on:itemUnlink={e => forwardEvent('itemUnlink', column.id, e.detail)}
       on:itemMarkChange={e => forwardEvent('itemMarkChange', column.id, e.detail)}
+      on:itemSelectChange={e => forwardEvent('itemSelectChange', column.id, e.detail)}
       on:itemDragChange={e => handleOnItemDrag(column.id, e.detail)}
       on:itemDrop={e => handleItemDrop(column.id, e.detail)}
+      on:itemReferenceClick={e => forwardEvent('itemReferenceClick', column.id, e.detail)}
     />
 
     {#if index < columns.length - 1}
@@ -108,8 +115,8 @@
 <style>
   .oscd-board {
     width: 100%;
+    height: 100%;
     display: flex;
-    gap: 0.5rem;
   }
 </style>
 

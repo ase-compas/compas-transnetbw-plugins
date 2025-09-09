@@ -28,6 +28,7 @@
       icon="search"
       label="Search..."
       variant="outlined"
+      styles="background: var(--oscd-base2,#fff)"
       on:input={() => dispatch('search', { value: search })}
     />
   {/if}

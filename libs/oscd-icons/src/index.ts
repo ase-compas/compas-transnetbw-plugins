@@ -19,3 +19,7 @@ export { default as OscdInfoIcon } from './oscd-info-icon/OscdInfoIcon.svelte';
 export { default as OscdChevronLeftIcon } from './oscd-chevron-left-icon/OscdChevronLeftIcon.svelte';
 export { default as OscdArrowUpIcon } from './oscd-arrow-up-icon/OscdArrowUpIcon.svelte';
 export { default as OscdArrowDownIcon } from './oscd-arrow-down-icon/OscdArrowDownIcon.svelte';
+export { default as OscdWandStarsIcon } from './oscd-wand-stars-icon/OscdWandStarsIcon.svelte';
+export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte'
+export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte'
+export {default as OscdCallMadeIcon} from './oscd-call-made-icon/OscdCallMadeIcon.svelte'

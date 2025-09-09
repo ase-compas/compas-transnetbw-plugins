@@ -1,198 +1,281 @@
 <script lang="ts">
-  import { route } from '../../lib/stores';
-  import {OscdBreadcrumbs, OscdButton, OscdConfirmDialog, OscdSwitch} from '@oscd-transnet-plugins/oscd-component';
-  import { onMount } from 'svelte';
-  import {DO, LNodeType, DataTypes} from '../../lib/domain';
+  import { createObjectReferenceStore, route } from '../../lib/stores';
+  import { OscdBreadcrumbs, OscdButton, OscdConfirmDialog, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+
+  // Components
+  import TBoard from '../../lib/components/tboard/TBoard.svelte';
   import DataTypeDialog from '../../lib/components/dialogs/DataTypeDialog/DataTypeDialog.svelte';
   import DataAttributeDialog from '../../lib/components/dialogs/DataAttributeDialog/DataAttributeDialog.svelte';
-  import TBoard from '../../lib/components/tboard/TBoard.svelte';
-  import {getDataObjectTypeService, getLNodeTypeService, getOscdDefaultTypeService} from '../../lib/services';
-  import { createBreadcrumbs, createNewLNodeType } from './lNodeTypeDetailsUtils';
+  import NewDataObjectType from '../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte';
+
+  // Services & utils
+  import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
+  import { loadLNodeType, loadTypes } from './dataLoader';
+  import { mapDataTypeToItem } from '../../lib/mappers';
   import { getColumns } from './columns.config';
-  import {TBoardItemContext, TColumnConfig, TData, TItem} from '../../lib/components/tboard/types';
-  import { buildDATypeItems, buildDOItems, buildDOTypeItems, buildEnumTypeItems } from '../../lib/utils/itemBuilder';
-  import NewDataObjectType from "../../lib/components/dialogs/CreateDialogs/NewDataObjectType.svelte";
-  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import {initDataLoaders, loadCompatibleTypesById, loadLogicalNodeType, loadReferencedTypesById} from "./dataLoader";
+  import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
+  import {
+    canAssignTypeToObjectReference,
+    getDisplayDataTypeItems,
+    getDisplayReferenceItems
+  } from '../../lib/utils/typeBoardUtils';
+
+  // Types
+  import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
+  import type { BasicType, BasicTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
   import EnumTypeDialog from '../../lib/components/dialogs/EnumTypeDialog/EnumTypeDialog.svelte';
+  import NewDataAttributeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
+  import NewEnumTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
 
   export let doc: XMLDocument;
 
-  const lNodeTypeService = getLNodeTypeService();
-  const dataObjectService = getDataObjectTypeService();
-  const oscdDefaultTypeService = getOscdDefaultTypeService()
+  // -----------------------------
+  // Service instances
+  // -----------------------------
+  const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
 
-  $: isCreateMode = $route.path[0] === 'new';
+  // -----------------------------
+  // Stores
+  // -----------------------------
+  const refStore = createObjectReferenceStore(async () => logicalNodeType.children);
+  const { markedItems, configuredItems, isDirty } = refStore;
 
-  const lNodeTypeId = $route.meta.lNodeTypeId;
-  const lnClass = $route.meta.lnClass;
-
-  let logicalNodeType: LNodeType | null;
-  let dataTypes: DataTypes;
-  $: dataTypes
-  let markedItemIds = new Set<string>();
-
-  $: isEditMode = false;
-  let isDirty = false;
-
-  // ===== Lifecycle =====
-  onMount(init);
-
-  function init() {
-    initDataLoaders();
-    refreshLogicalNodeType();
-  }
-
-  function refreshLogicalNodeType() {
-    if(isCreateMode) {
-      logicalNodeType = oscdDefaultTypeService.createLogicalNodeTypeWithDefaults(lNodeTypeId, lnClass);
-      isEditMode = true;
-    } else {
-      logicalNodeType = loadLogicalNodeType(lNodeTypeId);
-    }
-  }
-
-  function refreshDataTypes() {
-    if (!logicalNodeType) return;
-
-    dataTypes = isEditMode
-    ? loadCompatibleTypesById(logicalNodeType, markedItemIds)
-    : loadReferencedTypesById(logicalNodeType.id, markedItemIds);
-  }
-
-  $: if (doc) init();
-  $: isEditMode, refreshDataTypes();
-  $: dataObjects = logicalNodeType?.dataObjects ?? [];
-  $: if(!isEditMode) {
-    handleUnsavedChanges();
-  }
-
-  let data: TData = {};
-  $: data = {
-    refs: buildDOItems(dataObjects, markedItemIds, item => ({canSelect: isEditMode, acceptDrop: (target: TBoardItemContext) => acceptDrop(item.name, target)})),
-    dotypes: buildDOTypeItems(dataTypes?.dataObjectTypes, { canEdit: true }),
-    datypes: buildDATypeItems(dataTypes?.dataAttributeTypes, { canEdit: true }),
-    enumtypes: buildEnumTypeItems(dataTypes?.enumTypes, { canEdit: true })
+  // -----------------------------
+  // Component state
+  // -----------------------------
+  let logicalNodeType: LNodeTypeDetails | null = null;
+  let dataTypes: BasicTypes = {
+    lNodeTypes: [],
+    dataObjectTypes: [],
+    dataAttributeTypes: [],
+    enumTypes: []
   };
 
-  let columns: TColumnConfig[] = [];
-  $: columns = getColumns(isEditMode);
-  $: breadcrumbs = createBreadcrumbs($route, logicalNodeType);
+  let canEdit = false;
 
-  // ===== UI Helpers =====
-  function acceptDrop(name, target: TBoardItemContext): boolean {
-    const lnClassValue = logicalNodeType.lnClass;
-    const targetDataObjectType = dataObjectService.findById(target.itemId);
-    return dataObjectService.canReferenceToType(lnClassValue, name, targetDataObjectType.cdc)
+  // -----------------------------
+  // Reactive statements
+  // -----------------------------
+  // Determine mode based on route and edit state
+  type Mode = 'view' | 'edit' | 'create';
+  let mode: Mode = 'view';
+  const isCreateMode = () => mode === 'create';
+
+  route.subscribe(route => {
+    const path = route.path[0];
+    if (path === 'create') {
+      mode = 'create';
+      canEdit = true;
+    } else if (path === 'edit') {
+      mode = 'edit';
+      canEdit = true;
+    } else {
+      mode = 'view';
+      canEdit = false;
+    }
+  })
+
+  $: isSaveable = $isDirty || mode === 'create';
+
+  // Breadcrumbs
+  $: breadcrumbs = createBreadcrumbs(mode === 'create', logicalNodeType);
+
+  // Reference data objects (filtered, mapped, sorted)
+  let referenceDataObjects: TItem[] = [];
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, canEdit, acceptDrop);
+
+  // Board data configuration
+  $: boardData = {
+    refs: referenceDataObjects,
+    doTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, canEdit),
+    daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, canEdit),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, canEdit),
+  };
+
+  $: columns = getColumns(canEdit); // Board column configuration
+
+  // -----------------------------
+  // Loaders
+  // -----------------------------
+  async function loadLogicalNodeType() {
+    if($isDirty) return;
+    const { lNodeTypeId, lnClass } = $route.meta;
+    logicalNodeType = await loadLNodeType(mode, lNodeTypeId, lnClass);
+    await refStore.reload();
   }
 
-  function handleToggleMark(itemId: string, marked: boolean) {
-    marked ? markedItemIds.add(itemId) : markedItemIds.delete(itemId);
-    refreshDataTypes();
+  async function loadDataTypes() {
+    if (!logicalNodeType) return;
+    const loadMode: Mode = isCreateMode() ? 'create' : (canEdit ? 'edit' : 'view');
+    loadTypes(loadMode, logicalNodeType.id, logicalNodeType.lnClass, $markedItems.map(i => i.name))
+      .then(types => dataTypes = types);
+  }
+
+  // -----------------------------
+  // Lifecycle
+  // -----------------------------
+  $: if (doc && $route.meta) {
+    loadLogicalNodeType();
+  }
+
+  let debounceTimeout;
+  $: if(logicalNodeType && (doc || $markedItems || mode || canEdit)) {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      loadDataTypes();
+    }, 50);
+  }
+
+
+  // -----------------------------
+  // Event Handlers
+  // -----------------------------
+  function handleToggleMark(itemId: string) {
+    refStore.toggleMarked(itemId);
+  }
+
+  function handleToggleSelect({ itemId }) {
+    refStore.toggleConfigured(itemId);
   }
 
   function handleItemDrop({ source, target }: { source: TBoardItemContext; target: TBoardItemContext }) {
     if (!source || !target) return;
-
-    if (source.columnId === 'dotypes' && target.columnId === 'refs') {
-      setDataObjectTypeReference(target.itemId, source.itemId)
+    if (source.columnId === 'doTypes' && target.columnId === 'refs') {
+      refStore.setTypeReference(target.itemId, source.itemId);
     }
-  }
-
-  function setDataObjectTypeReference(dataObjectName: string, typeId: string) {
-    if (!logicalNodeType) return;
-
-    logicalNodeType = {
-      ...logicalNodeType,
-      dataObjects: logicalNodeType.dataObjects.map(doItem =>
-        doItem.name === dataObjectName ? { ...doItem, type: typeId } : doItem
-      )
-    };
-    isDirty = true;
   }
 
   function handleSaveChanges() {
-    lNodeTypeService.createOrUpdate(logicalNodeType)
-    isDirty = false;
-    isCreateMode = false;
-  }
+    if (!logicalNodeType) return;
 
-  async function handleUnsavedChanges() {
-    if (isDirty) {
-      const result = await openDialog(OscdConfirmDialog, {
-        title: 'Unsaved Changes',
-        message: 'You have unsaved changes. Do you want to save them?',
-        confirmActionText: 'Save',
-        cancelActionText: 'Discard',
-      });
+    let newDos = $configuredItems.map(item => ({
+      name: item.name,
+      typeRef: item.typeRef
+    }));
 
-      if (result.type === 'confirm') {
-        handleSaveChanges();
-      } else {
-        // Reset dirty state without saving
-        refreshLogicalNodeType();
-        refreshDataTypes();
-        isDirty = false;
-      }
+    lNodeTypeService.createOrUpdateType({
+      id: logicalNodeType.id,
+      instanceType: logicalNodeType.lnClass,
+      children: newDos
+    })
+    refStore.commit();
+
+    if (isCreateMode()) {
+      switchToEditMode(logicalNodeType);
     }
   }
 
+  /** Handle unsaved changes with optional reset */
+  async function handleUnsavedChanges(resetOnDiscard = false) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Unsaved Changes',
+      message: 'You have unsaved changes. Do you want to save them?',
+      confirmActionText: 'Save',
+      cancelActionText: 'Discard'
+    });
+    if (result.type === 'confirm') {
+      handleSaveChanges();
+    } else if (resetOnDiscard) {
+      refStore.reset();
+    }
+  }
+
+  // Dialog handlers
   function handleActionClick({ columnId }) {
-    if (columnId === 'dotypes') {
-      openCreateDOTypeDialog()
-    } else if (columnId === 'datypes') {
-      alert('New DA Type');
-    } else if (columnId === 'enumtypes') {
-      alert('New ENUM TYPE');
+   if (columnId === 'doTypes') {
+      openCreateDOTypeDialog();
+    } else if (columnId === 'daTypes') {
+     openCreateDATypeDialog();
+    } else if (columnId === 'enumTypes') {
+     openCreateEnumTypeDialog();
     }
   }
 
   function handleOnEdit({ columnId, itemId }) {
-    if (columnId === 'dotypes') {
-      openEditDOTypeDialog(itemId, null, isEditMode ? 'edit' : 'view');
-    } else if (columnId === 'datypes') {
-      openEditDATypeDialog(itemId, isEditMode ? 'edit' : 'view');
-    } else if (columnId === 'enumtypes') {
-      openEditEnumTypeDialog(itemId);
+    if (columnId === 'doTypes') {
+      openEditDOTypeDialog(itemId, null, canEdit ? 'edit' : 'view');
+    } else if (columnId === 'daTypes') {
+      openEditDATypeDialog(itemId, null, canEdit ? 'edit' : 'view');
+    } else if (columnId === 'enumTypes') {
+      openEditEnumTypeDialog(itemId, null, canEdit ? 'edit' : 'view');
     }
   }
 
-  async function handleBreadcrumbClick({index}) {
-    if (isDirty) {
+  async function handleBreadcrumbClick({ index }) {
+    if (isSaveable) {
       await handleUnsavedChanges();
     }
     if (index === 0) route.set({ path: ['overview'] });
   }
 
-  // ===== Dialog Handlers =====
+  /** Handle edit mode toggle with unsaved changes check */
+  async function onEditModeChange(e) {
+    if(canEdit && isSaveable) {
+      await handleUnsavedChanges(true);
+    }
+  }
 
+  function handleOnUnlink({ itemId }) {
+    refStore.removeTypeReference(itemId);
+  }
+
+  function handleOnReferenceClick({itemId}) {
+    const item = $refStore.find(i => i.name === itemId);
+    if(item?.typeRef) {
+      openEditDOTypeDialog(item.typeRef, null, 'view');
+    }
+  }
+
+  // -----------------------------
+  // Dialog Handlers
+  // -----------------------------
   function openCreateDOTypeDialog() {
     openDialog(NewDataObjectType).then(result => {
       if (result.type === 'confirm') {
-        openEditDOTypeDialog(result.data.id, result.data.cdc, 'create')
+        openEditDOTypeDialog(result.data.id, result.data.cdc, 'create');
+      }
+    });
+  }
+
+  function openCreateDATypeDialog() {
+    openDialog(NewDataAttributeTypeDialog).then(result => {
+      if (result.type === 'confirm') {
+        openEditDATypeDialog(result.data.id, result.data.instanceType, 'create');
+      }
+    });
+  }
+
+  function openCreateEnumTypeDialog() {
+    openDialog(NewEnumTypeDialog).then(result => {
+      if (result.type === 'confirm') {
+        openEditEnumTypeDialog(result.data.id, result.data.instanceType, 'create');
       }
     });
   }
 
   function openEditDOTypeDialog(typeId: string, cdc: string | null = null, mode: 'edit' | 'view' | 'create') {
-    openDialog(DataTypeDialog, {
-      typeId,
-      cdc,
-      mode
-    })
+    openDialog(DataTypeDialog, { typeId, cdc, mode })
   }
 
-  function openEditDATypeDialog(typeId: string, mode: 'edit' | 'view' | 'create') {
-    openDialog(DataAttributeDialog, {
-      typeId: typeId,
-      mode: mode,
-    });
+  function openEditDATypeDialog(typeId: string, cdc: string, mode: 'edit' | 'view' | 'create') {
+    openDialog(DataAttributeDialog, { typeId, cdc, mode });
   }
 
-  function openEditEnumTypeDialog(typeId: string) {
-    openDialog(EnumTypeDialog, {
-      typeId: typeId
-    });
+  function openEditEnumTypeDialog(typeId: string, instanceType: string ,mode: 'edit' | 'view' | 'create') {
+     openDialog(EnumTypeDialog, { typeId, mode, instanceTypeId: instanceType });
+  }
+
+  // -----------------------------
+  // Utils
+  // -----------------------------
+  function switchToEditMode(lNodeType: LNodeTypeDetails) {
+    route.set({ path: ['edit'], meta: { lNodeTypeId: lNodeType.id, lnClass: lNodeType.lnClass } });
+  }
+
+  function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
+    const sourceType: BasicType = dataTypes.dataObjectTypes.find(type => type.id === source.itemId);
+    return canAssignTypeToObjectReference(target, sourceType)
   }
 </script>
 
@@ -204,14 +287,15 @@
     <div class="oscd-details-toolbar-right">
 
       <OscdSwitch
-        bind:checked={isEditMode}
+        bind:checked={canEdit}
+        on:change={onEditModeChange}
         id="edit-mode-switch"
         label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
       <OscdButton
-        disabled={!isDirty} callback={handleSaveChanges} variant="unelevated">
+        disabled={!isSaveable} callback={handleSaveChanges} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
     </div>
@@ -221,11 +305,15 @@
   <div class="oscd-details-board">
     <TBoard
       {columns}
-      {data}
+      data={boardData}
       on:columnActionClick={e => handleActionClick(e.detail)}
       on:itemEdit={e => handleOnEdit(e.detail)}
-      on:itemMarkChange={({detail: {itemId, marked}}) => handleToggleMark(itemId, marked)}
+      on:itemMarkChange={({detail: {itemId}}) => handleToggleMark(itemId)}
+      on:itemSelectChange={e => handleToggleSelect(e.detail)}
       on:itemDrop={e => handleItemDrop(e.detail)}
+      on:itemApplyDefaults={e => console.log(e.detail)}
+      on:itemUnlink={e => handleOnUnlink(e.detail)}
+      on:itemReferenceClick={e => handleOnReferenceClick(e.detail)}
     />
   </div>
 </div>
@@ -248,5 +336,6 @@
   .oscd-details-board {
     display: flex;
     gap: 2rem;
+    height: calc(100vh - 200px);
   }
 </style>
