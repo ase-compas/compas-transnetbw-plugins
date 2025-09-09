@@ -55,6 +55,7 @@
     const { detail } = e;
     const { trigger } = detail.info;
     if (trigger === TRIGGERS.DRAGGED_ENTERED) {
+      console.log(itemId, detail)
       isOverId = itemId;
     }
 

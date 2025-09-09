@@ -29,26 +29,38 @@
     window.addEventListener('keydown', handleKeydown);
   });
 
+  // Prevent body scroll when drawer is open
+  $: {
+    if (drawerList.length > 0) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
   onDestroy(() => {
     window.removeEventListener('resize', handleResize);
     window.removeEventListener('keydown', handleKeydown);
-
+    document.body.style.overflow = '';
   });
 
 
-  $: zBase = 9999;
+  $: zBase = 1000;
 
   // Base width: almost full viewport
   $: baseWidth = Math.floor(Math.max(innerWidth - (widthStep*1.5), 300)); // minimum width 300px
 </script>
 
 <style>
+
   .drawer-stack {
     position: relative;
     top: 0;
     left: 0;
     inset: 0;
     pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
   }
 
   .drawer-backdrop {
@@ -57,7 +69,7 @@
     left: 0;
     inset: 0;
     background: rgba(0,0,0,0.5);
-    pointer-events: auto;
+    pointer-events: all;
   }
 
   .drawer {
@@ -90,6 +102,14 @@
     overflow: auto;
     padding: 1rem;
   }
+
+  .drawer-actions {
+    background-color: white;
+    border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
 </style>
 
 <div class="drawer-stack">
@@ -99,6 +119,10 @@
       class="drawer-backdrop"
       style="z-index: {zBase + (drawerList.length - 1) * 2};"
       on:click={() => closeDrawer('backdrop')}
+      on:pointerdown|stopPropagation
+      on:pointerup|stopPropagation
+      on:pointermove|stopPropagation
+      on:wheel|stopPropagation
     ></div>
   {/if}
 
@@ -126,3 +150,4 @@
     </div>
   {/each}
 </div>
+

@@ -27,6 +27,10 @@
   import EnumTypeDialog from '../../lib/components/dialogs/EnumTypeDialog/EnumTypeDialog.svelte';
   import NewDataAttributeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
   import NewEnumTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
+  import { openDrawer } from '../../lib/stores/drawerStackStore';
+  import EnumTypeDetailsDrawer from '../../lib/components/drawers/EnumTypeDetailsDrawer.svelte';
+  import DoTypeDrawer from '../../lib/components/drawers/doTypeDrawer/DoTypeDrawer.svelte';
+  import DaTypeDrawer from '../../lib/components/drawers/daTypeDrawer/DaTypeDrawer.svelte';
 
   export let doc: XMLDocument;
 
@@ -180,7 +184,6 @@
       refStore.reset();
     }
   }
-
   // Dialog handlers
   function handleActionClick({ columnId }) {
    if (columnId === 'doTypes') {
@@ -192,7 +195,7 @@
     }
   }
 
-  function handleOnEdit({ columnId, itemId }) {
+  function handleOnEdit(itemId: string, columnId: string) {
     if (columnId === 'doTypes') {
       openEditDOTypeDialog(itemId, null, canEdit ? 'edit' : 'view');
     } else if (columnId === 'daTypes') {
@@ -255,15 +258,17 @@
   }
 
   function openEditDOTypeDialog(typeId: string, cdc: string | null = null, mode: 'edit' | 'view' | 'create') {
-    openDialog(DataTypeDialog, { typeId, cdc, mode })
+    openDrawer({component: DoTypeDrawer, title: 'Data Object Type Details', props: { typeId, cdc, mode }})
+    //openDialog(DataTypeDialog, { typeId, cdc, mode })
   }
 
   function openEditDATypeDialog(typeId: string, cdc: string, mode: 'edit' | 'view' | 'create') {
-    openDialog(DataAttributeDialog, { typeId, cdc, mode });
+    openDrawer({component: DaTypeDrawer, title: 'Data Attribute Type Details', props: { typeId, cdc, mode }})
   }
 
   function openEditEnumTypeDialog(typeId: string, instanceType: string ,mode: 'edit' | 'view' | 'create') {
-     openDialog(EnumTypeDialog, { typeId, mode, instanceTypeId: instanceType });
+     //openDialog(EnumTypeDialog, { typeId, mode, instanceTypeId: instanceType });
+    openDrawer({component: EnumTypeDetailsDrawer, title: 'Enum Type Details', props: { mode: 'edit', typeId: typeId }})
   }
 
   // -----------------------------
@@ -307,7 +312,7 @@
       {columns}
       data={boardData}
       on:columnActionClick={e => handleActionClick(e.detail)}
-      on:itemEdit={e => handleOnEdit(e.detail)}
+      on:itemEdit={({detail: {itemId, columnId}}) => handleOnEdit(itemId, columnId)}
       on:itemMarkChange={({detail: {itemId}}) => handleToggleMark(itemId)}
       on:itemSelectChange={e => handleToggleSelect(e.detail)}
       on:itemDrop={e => handleItemDrop(e.detail)}
