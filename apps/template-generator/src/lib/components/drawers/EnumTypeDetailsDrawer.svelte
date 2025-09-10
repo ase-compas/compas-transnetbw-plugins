@@ -3,60 +3,79 @@
   import { getEnumTypeService } from '../../services';
   import { type EnumTypeDetails } from '../../domain';
   import { onMount } from 'svelte';
-  import EnumTypeDetailsView from '../enumType/EnumTypeDetailsView.svelte';
   import { CloseReason } from '../../stores/drawerStackStore';
   import { confirmUnsavedChanges } from '../../utils/overlayUitils';
+  import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
+  import Checkbox from '@smui/checkbox';
 
-  let enumTypeService: IEnumTypeService = getEnumTypeService();
+  // ===== Services =====
+  const enumTypeService: IEnumTypeService = getEnumTypeService();
 
+  // ===== Props =====
   export let mode: 'view' | 'edit' | 'create' = 'view';
-  export let typeId;
+  export let typeId: string;
   export let instanceTypeId: string | null = null;
 
-  let isDirty: boolean = false;
-  let isCreateMode = () => mode === 'create';
+  // ===== State =====
   let enumType: EnumTypeDetails = null;
-  let configurationState: {id: string, selected: boolean}[] = [];
+  let searchQuery = '';
+  let selected: string[] = []
+  let isLoading = false;
 
-  onMount(() => {
-    loadData();
-  })
+  // ===== Derived =====
+  const isCreateMode = () => mode === 'create';
+  $: filteredItems = enumType?.children.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
 
-  function loadData() {
-    if(isCreateMode()) {
-      enumTypeService.getDefaultType(instanceTypeId)
-        .then(result => {
-          result.id = typeId;
-          result.instanceType = instanceTypeId
-          result.children.forEach(i => i.meta.isConfigured = true)
-          enumType = result
-        });
-    } else {
-      enumTypeService.getTypeById(typeId)
-        .then(result => enumType = result);
-    }
+  // ===== Lifecycle =====
+  onMount(async () => {
+    await loadData();
+  });
+
+  // ===== Functions =====
+  /** Load enum type depending on mode */
+  async function loadData() {
+    isLoading = true;
+    enumType = isCreateMode()
+      ? await loadEnumTypeForCreate(typeId, instanceTypeId)
+      : await loadEnumTypeForEdit(typeId);
+    selected = enumType.children.filter(item => item.meta.isConfigured).map(a => a.name);
+    isLoading = false;
+  }
+
+  /** Load and initialize a new enum type (create mode) */
+  async function loadEnumTypeForCreate(typeId: string, instanceTypeId: string | null) {
+    const result = await enumTypeService.getDefaultType(instanceTypeId);
+    result.id = typeId;
+    result.instanceType = instanceTypeId;
+    setAllChildrenToConfigured(result);
+    return result;
+  }
+
+  /** Load existing enum type by ID (edit/view mode) */
+  async function loadEnumTypeForEdit(typeId: string) {
+    return await enumTypeService.getTypeById(typeId);
+  }
+
+  /** Set all children of a type to configured */
+  function setAllChildrenToConfigured(type: EnumTypeDetails) {
+    type.children.forEach(child => child.meta.isConfigured = true);
   }
 
   function saveChanges() {
-    if(isDirty || isCreateMode()) {
+    if(isDirty() || isCreateMode()) {
       enumTypeService.createOrUpdateType({
         id: enumType.id,
         instanceType: enumType.instanceType,
-        children: configurationState.filter(i => i.selected).map(i => ({
-          name: i.id
-        }))
-      })
+        children: selected.map(name => ({ name }))
+      });
     }
-  }
-
-  function handleChange(event) {
-    isDirty = event.detail.isDirty;
-    configurationState = event.detail.updatedItems;
   }
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
-    if (isDirty && reason !== 'save') {
+    if ((isDirty() || isCreateMode()) && reason !== 'save') {
       const { action } = await confirmUnsavedChanges();
       if (action === 'save') saveChanges();
       else if (action === 'cancel') return false;
@@ -65,11 +84,52 @@
     }
     return true;
   };
+
+  function isDirty() {
+    const configuredNames = enumType.children.filter(item => item.meta.isConfigured).map(a => a.name).sort();
+    const selectedSorted = selected.slice().sort();
+    return JSON.stringify(configuredNames) !== JSON.stringify(selectedSorted);
+  }
 </script>
 
-<div style="max-width: 900px; margin: auto; background: white; padding: 20px; border: 1px solid #e4e4e4; border-radius: 8px">
-  <EnumTypeDetailsView
-    {enumType}
-    isDirty={isDirty}
-    on:change={e => handleChange(e)}/>
+<div class="oscd-card oscd-container enum-type-details">
+  <div class="header">
+    <h2>ID: {enumType?.id}</h2>
+    <h4>Instance Type: {enumType?.instanceType ?? 'Unknown'}</h4>
+  </div>
+
+  <OscdInput
+    bind:value={searchQuery}
+    icon="search"
+    label="Search..."
+    variant="outlined"
+  />
+
+  {#if !isLoading}
+  <DataTable style="width: 100%; margin-top: 1rem;">
+    <Head style="font-weight: bold;">
+      <Row>
+        <Cell checkbox><Checkbox /></Cell>
+        <Cell numeric><strong>Ord</strong></Cell>
+        <Cell><strong>Label</strong></Cell>
+      </Row>
+    </Head>
+
+    <Body>
+    {#each filteredItems as item (item.name)}
+      <Row style="background: white">
+        <Cell checkbox>
+          <Checkbox
+            bind:group={selected}
+            value={item.name}
+            valueKey={item.name}
+          />
+        </Cell>
+        <Cell style="width: 80px;" numeric>{item.attributes.literalValue}</Cell>
+        <Cell><strong>{item.name}</strong></Cell>
+      </Row>
+    {/each}
+    </Body>
+  </DataTable>
+  {/if}
 </div>
