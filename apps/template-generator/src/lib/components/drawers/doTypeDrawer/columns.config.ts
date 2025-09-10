@@ -5,6 +5,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     {
       id: 'refs',
       title: 'Data Object Structure',
+      searchPlaceholder: 'Search Object Structures...',
       hasSearch: true,
       highlighted: true,
       dragAndDropBorder: isEditMode,
@@ -15,6 +16,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     {
       id: 'dataObjectTypes',
       title: 'Data Object Types (SDO)',
+      searchPlaceholder: 'Search Object Types...',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
@@ -24,6 +26,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
     {
       id: 'dataAttributeTypes',
       title: 'Data Attribute Types',
+      searchPlaceholder: 'Search Attribute Types...',
       actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
@@ -34,6 +37,7 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       id: 'enumTypes',
       title: 'Enum Types',
       actionLabel: 'Add New',
+      searchPlaceholder: 'Search Enum Types...',
       hasSearch: true,
       hasAction: true,
       itemsDraggable: isEditMode,

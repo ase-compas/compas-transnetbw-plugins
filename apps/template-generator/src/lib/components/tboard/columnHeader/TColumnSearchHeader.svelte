@@ -10,6 +10,7 @@
   export let actionLabel: string | null = null;
   export let search: string = '';
   export let hasSearch: boolean = false;
+  export let searchPlaceHolder: string = 'Search...';
   export let hasAction: boolean = false;
 
 </script>
@@ -26,7 +27,7 @@
     <OscdInput
       bind:value={search}
       icon="search"
-      label="Search..."
+      label={searchPlaceHolder}
       variant="outlined"
       styles="background: var(--oscd-base2,#fff)"
       on:input={() => dispatch('search', { value: search })}

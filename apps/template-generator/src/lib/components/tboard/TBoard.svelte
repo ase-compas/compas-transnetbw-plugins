@@ -90,6 +90,7 @@
       dragAndDropBorder={column.dragAndDropBorder}
       actionLabel={column.actionLabel}
       hasSearch={column.hasSearch}
+      searchPlaceHolder={column.searchPlaceholder}
       hasAction={column.hasAction}
       showApplyDefaults={column.showApplyDefaults}
       canSelectItems={column.canSelectItems}

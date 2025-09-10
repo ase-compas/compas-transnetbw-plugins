@@ -25,6 +25,7 @@ export type TColumnConfig = {
   title: string;
   subtitle?: string;
   actionLabel?: string,
+  searchPlaceholder?: string;
 
   hasSearch?: boolean;
   hasAction?: boolean;

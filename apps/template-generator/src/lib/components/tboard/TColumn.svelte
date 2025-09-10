@@ -13,6 +13,7 @@
   export let actionLabel: string | null = 'Action';
 
   export let hasSearch: boolean = false;
+  export let searchPlaceHolder: string = 'Search...';
   export let hasAction: boolean = false;
 
   export let showApplyDefaults: boolean = false;
@@ -59,6 +60,7 @@
   <TColumnSearchHeader
     title={title}
     subtitle={subtitle}
+    searchPlaceHolder={searchPlaceHolder}
     hasSearch={hasSearch}
     hasAction={hasAction}
     actionLabel={actionLabel}
