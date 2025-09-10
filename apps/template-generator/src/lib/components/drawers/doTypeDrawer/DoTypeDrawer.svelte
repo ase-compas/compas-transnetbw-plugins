@@ -139,7 +139,6 @@
   // ===== Save =====
   function saveChanges() {
     if ($isDirty || isCreateMode()) {
-      console.log("saving")
       doTypeService.createOrUpdateType({
         id: dataObjectType.id,
         instanceType: dataObjectType.cdc,
