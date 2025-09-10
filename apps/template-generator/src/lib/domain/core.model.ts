@@ -66,7 +66,7 @@ export interface ObjectReferenceMeta {
   isMandatory: boolean;
   isConfigured: boolean;
   requiresReference: boolean;
-  objectType: string;
+  objectType?: string;
   refTypeKind?: DataTypeKind;
 }
 
