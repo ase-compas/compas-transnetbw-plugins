@@ -21,11 +21,12 @@
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
   import type { BasicType, BasicTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
   import {
+    confirmUnsavedChanges,
     openCreateDataAttributeTypeDialog, openCreateDataObjectTypeDialog, openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer, openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
     openReferencedTypeDrawer
-  } from '../../lib/utils/typeViewUtils';
+  } from '../../lib/utils/overlayUitils';
 
   export let doc: XMLDocument;
 
@@ -167,18 +168,14 @@
 
   /** Handle unsaved changes with optional reset */
   async function handleUnsavedChanges(resetOnDiscard = false) {
-    const result = await openDialog(OscdConfirmDialog, {
-      title: 'Unsaved Changes',
-      message: 'You have unsaved changes. Do you want to save them?',
-      confirmActionText: 'Save',
-      cancelActionText: 'Discard'
-    });
-    if (result.type === 'confirm') {
+    const {action} = await confirmUnsavedChanges();
+    if (action === 'save') {
       handleSaveChanges();
-    } else if (resetOnDiscard) {
+    } else if (action === 'discard' && resetOnDiscard) {
       refStore.reset();
     }
   }
+
   // Dialog handlers
   function handleActionClick({ columnId }) {
    if (columnId === 'doTypes') {

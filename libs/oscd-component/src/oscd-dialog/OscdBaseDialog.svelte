@@ -1,7 +1,8 @@
 <script lang="ts">
-  import Dialog, { Actions, Content } from '@smui/dialog';
+  import Dialog, { Actions, Content, Header } from '@smui/dialog';
   import { createEventDispatcher } from 'svelte';
   import Button from '@smui/button';
+  import { OscdIconActionButton } from '../index';
 
   export let open: boolean = false;
   export let title: string = '';
@@ -13,13 +14,15 @@
   export let maxHeight: string = '85vh';
   export let confirmDisabled: boolean = false;
   export let color: string = 'var(--mdc-theme-primary, #ff3e00)'; //css color for primary button and dialog title bar
+  export let showCloseButton: boolean = true;
 
   const dispatch = createEventDispatcher();
 
   function handleClose(e) {
     if (e.detail.action === 'cancel') dispatch('cancel');
     else if (e.detail.action === 'confirm') dispatch('confirm');
-    else dispatch('cancel');
+    else if (e.detail.action === 'close') dispatch('close');
+    else dispatch('close');
   }
 </script>
 
@@ -30,9 +33,21 @@
   on:SMUIDialog:closed={(e) => handleClose(e)}
   surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight};`}
 >
-  <div class="dialog__title" style={`background-color: ${color};`}>
-    <h4>{title}</h4>
-  </div>
+
+  <Header>
+    <div class="dialog__title" style={`background-color: ${color};`}>
+      <h4>{title}</h4>
+      {#if showCloseButton}
+      <OscdIconActionButton
+        onClick={() => {
+          open = false;
+          dispatch('close');
+        }}
+        type="close"
+        fillColor="white"/>
+      {/if}
+    </div>
+  </Header>
 
   <Content id="dialog__content">
     <slot name="content" />
@@ -79,6 +94,9 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bottom shadow */
     color: white;
     padding: 1.2rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .dialog__actions {

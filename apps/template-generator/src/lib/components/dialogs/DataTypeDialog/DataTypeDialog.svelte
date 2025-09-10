@@ -15,7 +15,7 @@
     getDisplayReferenceItems
   } from '../../../utils/typeBoardUtils';
   import { mapDataTypeToItem } from '../../../mappers';
-  import { openCreateDataAttributeTypeDialog } from '../../../utils/typeViewUtils';
+  import { openCreateDataAttributeTypeDialog } from '../../../utils/overlayUitils';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
