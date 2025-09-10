@@ -216,5 +216,6 @@
   on:itemDrop={(e) => handleItemDrop(e.detail)}
   on:itemEdit={({ detail: { itemId, columnId } }) => handleOnEdit(itemId, columnId)}
   on:itemReferenceClick={({ detail: { itemId } }) => handleOnReferenceClick(itemId)}
+  on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
   on:columnActionClick={({ detail: { columnId } }) => handleActionClick({ columnId })}
 />

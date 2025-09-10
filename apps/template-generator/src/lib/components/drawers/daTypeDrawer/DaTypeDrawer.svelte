@@ -189,4 +189,5 @@
   on:columnActionClick={e => handleActionClick(e.detail)}
   on:itemEdit={e => handleOnEdit(e.detail.itemId, e.detail.columnId)}
   on:itemReferenceClick={e => handleOnReferenceClick(e.detail.itemId)}
+  on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
 />
