@@ -6,7 +6,7 @@
   import { getColumns } from './columns.config';
   import { getDOTypeService } from '../../../services';
   import { IDoTypeService } from '../../../services/do-type.service';
-  import { createObjectReferenceStore } from '../../../stores';
+  import { createObjectReferenceStore, doc } from '../../../stores';
   import { CloseReason } from '../../../stores/drawerStackStore';
   import {
     canAssignTypeToObjectReference,
@@ -28,8 +28,8 @@
   import {
     type BasicType,
     BasicTypes,
-    DOTypeDetails,
-    type ObjectReferenceDetails,
+    DOTypeDetails, Mode,
+    type ObjectReferenceDetails
   } from '../../../domain';
   import {
     ItemDropOnItemEventDetail,
@@ -41,7 +41,7 @@
   const doTypeService: IDoTypeService = getDOTypeService();
 
   // ===== Props =====
-  export let mode: 'view' | 'edit' | 'create' = 'view';
+  export let mode: Mode = 'view';
   export let typeId: string;
   export let cdc: string | null = null;
 
@@ -78,7 +78,20 @@
   // ===== Lifecycle =====
   onMount(() => {
     init();
+
+    // Subscribe to doc changes to reload data
+    const unsubscribe = doc.subscribe(async () => {
+      if ($isDirty) {
+        // ensure async function is awaited
+        dataTypes = await loadTypes(isEditMode(), typeId, cdc, $markedItemIds);
+      } else {
+        await loadData();
+      }
+    });
+
+    return () => unsubscribe();
   });
+
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
@@ -125,7 +138,8 @@
 
   // ===== Save =====
   function saveChanges() {
-    if ($isDirty) {
+    if ($isDirty || isCreateMode()) {
+      console.log("saving")
       doTypeService.createOrUpdateType({
         id: dataObjectType.id,
         instanceType: dataObjectType.cdc,

@@ -4,7 +4,6 @@
   import { createEventDispatcher } from 'svelte';
   import { EnumTypeDetails } from '../../domain';
   import EnumListItem from '../dialogs/EnumTypeDialog/EnumListItem.svelte';
-  import Button from '@smui/button';
 
   export let isDirty: boolean = false;
   export let enumType: EnumTypeDetails;
@@ -40,9 +39,6 @@
 <div class="header">
   <h2>ID: {enumType?.id}</h2>
   <h4>Instance Type: {enumType?.instanceType ?? 'Unknown'}</h4>
-  <div class="action">
-    <Button color="primary" variant="unelevated">Save</Button>
-  </div>
 </div>
 
 

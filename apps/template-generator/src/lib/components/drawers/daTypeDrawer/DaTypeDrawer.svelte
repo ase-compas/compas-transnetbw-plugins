@@ -6,7 +6,7 @@
 
   // ===== Services & Utils =====
   import { getColumns } from './columns.config';
-  import { createObjectReferenceStore } from '../../../stores';
+  import { createObjectReferenceStore, doc } from '../../../stores';
   import { CloseReason } from '../../../stores/drawerStackStore';
   import {
     canAssignTypeToObjectReference,
@@ -66,7 +66,21 @@
   $: columns = getColumns(isEditMode());
 
   // ===== Lifecycle =====
-  onMount(() => init());
+  onMount(() => {
+    init()
+
+    // Subscribe to doc changes to reload data
+    const unsubscribe = doc.subscribe(async () => {
+      if ($isDirty) {
+        // ensure async function is awaited
+        dataTypes = await loadTypes(isEditMode(), typeId, instanceType, $markedItemIds);
+      } else {
+        await loadData();
+      }
+    });
+
+    return () => unsubscribe();
+  });
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
@@ -122,7 +136,7 @@
   }
 
   function handleConfirm() {
-    if ($isDirty) {
+    if ($isDirty ||isCreateMode()) {
       daTypeService.createOrUpdateType({
         id: dataAttributeTypes.id,
         instanceType: dataAttributeTypes.instanceType,
