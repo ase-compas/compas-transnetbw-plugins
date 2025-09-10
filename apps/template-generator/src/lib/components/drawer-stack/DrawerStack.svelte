@@ -177,14 +177,16 @@
           <Button
             variant="unelevated"
             color="primary"
-            style="background: #dae3e6;
+            style="background: white;
             color: var(--mdc-theme-primary, #ff3e00)"
             on:click={() => closeDrawer('save')}
           >Save & Close</Button>
           <Button
-            variant="outlined"
+            variant="unelevated"
             color="secondary"
-            style="border-color: #dae3e6; color: #dae3e6;"
+            style="
+            background: #6B9197;
+            color: white"
             on:click={() => closeDrawer('cancel')}
           >Cancel</Button>
         </div>
@@ -201,7 +203,7 @@
 
 
 
-        <OscdIconActionButton type="close" fillColor="#dae3e6" onClick={() => closeDrawer("button")}/>
+        <OscdIconActionButton type="close" fillColor="white" onClick={() => closeDrawer("button")}/>
       </div>
       <div class="drawer-body">
         <svelte:component
