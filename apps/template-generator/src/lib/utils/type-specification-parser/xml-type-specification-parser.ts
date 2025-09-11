@@ -48,7 +48,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
     }
     lnElement.querySelectorAll(":scope > DataObject").forEach((dataObject) => {
       if (dataObject.getAttribute('deprecated') === 'true') return;
-      const spec = this.parseDataObject(dataObject);
+      const spec = this.parseDataObject(dataObject, 'DO');
       if (spec?.name) result[lnClassName][spec.name] = spec;
     });
   }
@@ -65,12 +65,12 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       if (!result[cdcName]) result[cdcName] = {};
       cdc.querySelectorAll(":scope > SubDataObject").forEach((dataObject) => {
         if (dataObject.getAttribute('deprecated') === 'true') return;
-        const spec = this.parseDataObject(dataObject);
+        const spec = this.parseDataObject(dataObject, 'SDO');
         if (spec?.name) result[cdcName][spec.name] = spec;
       });
       cdc.querySelectorAll(":scope > DataAttribute").forEach((dataAttribute) => {
         if (dataAttribute.getAttribute('deprecated') === 'true') return;
-        const spec = this.parseDataAttribute(dataAttribute);
+        const spec = this.parseDataAttribute(dataAttribute, 'DA');
         if (spec?.name) result[cdcName][spec.name] = spec;
       });
     });
@@ -89,7 +89,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       if (!result[attributeName]) result[attributeName] = {};
       attribute.querySelectorAll(":scope > SubDataAttribute").forEach((subDataAttribute) => {
         if (subDataAttribute.getAttribute('deprecated') === 'true') return;
-        const spec = this.parseDataAttribute(subDataAttribute);
+        const spec = this.parseDataAttribute(subDataAttribute, 'BDA');
         if (spec?.name) result[attributeName][spec.name] = spec;
       });
     });
@@ -129,8 +129,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses a DataAttribute element into an ObjectSpecification.
    * Skips if deprecated.
+   * Only parases fc, dchg, qchg and dupd attributes for DA elements.
    */
-  private parseDataAttribute(dataAttribute: Element): ObjectSpecification | null {
+  private parseDataAttribute(dataAttribute: Element, tagName: 'DA' | 'BDA'): ObjectSpecification | null {
     if (dataAttribute.getAttribute('deprecated') === 'true') return null;
 
     const name = dataAttribute.getAttribute('name');
@@ -141,7 +142,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
 
     // Collect additional attributes
     const attributes: Record<string, string> = {};
-    ['fc', 'dchg', 'qchg', 'dupd'].forEach(attr => this.addAttributeIfExists(dataAttribute, attributes, attr));
+    if(tagName === 'DA') {
+      ['fc', 'dchg', 'qchg', 'dupd'].forEach(attr => this.addAttributeIfExists(dataAttribute, attributes, attr));
+    }
 
     // Determine reference type and base type
     let refTypeKind: DataTypeKind | undefined = undefined;
@@ -160,7 +163,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
 
     return {
       name,
-      tagName: 'DA',
+      tagName: tagName,
       isMandatory: presCond === 'M',
       requiresReference,
       objectType: type,
@@ -172,7 +175,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses a DataObject element into an ObjectSpecification.
    */
-  private parseDataObject(dataObject: Element): ObjectSpecification | null {
+  private parseDataObject(dataObject: Element, tagName: 'DO' | 'SDO'): ObjectSpecification | null {
     if (dataObject.getAttribute('deprecated') === 'true') return null;
     const name = dataObject.getAttribute('name');
     const type = dataObject.getAttribute('type');
@@ -180,7 +183,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
     if (!name || !type || !presCond) return null;
     return {
       name: name,
-      tagName: 'DO',
+      tagName: tagName,
       isMandatory: presCond === 'M',
       requiresReference: true,
       objectType: type,

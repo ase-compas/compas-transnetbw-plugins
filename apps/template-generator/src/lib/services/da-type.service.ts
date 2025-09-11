@@ -101,6 +101,10 @@ export class DaTypeService implements IDaTypeService {
     if (!data.id) throw new Error('No id provided');
     if (!data.instanceType) throw new Error('No instanceType provided');
     const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.DAType, data.instanceType, data.children);
+
+    // Set tagname to BDA. DAType can only have BDA children.
+    objRefDetails.forEach(child => child.tagName = 'BDA');
+
     const newType: DAType = {
       id: data.id,
       instanceType: data.instanceType,
