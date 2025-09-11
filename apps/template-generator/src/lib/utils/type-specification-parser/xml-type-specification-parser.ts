@@ -2,7 +2,11 @@ import { DataTypeKind, ObjectSpecification } from '../../domain';
 import { ITypeSpecificationParser, TypeSpecifications, TypeSpecMap } from './i-type-specification-parser';
 
 /**
- * Parses XML type specifications for LNodeType, DOType, DAType, and EnumType.
+ * Parses a Name Space Definition (NSD) XML string of an IEC 61850 data model
+ * and extracts all type specifications.
+ *
+ * Produces a normalized structure containing LNodeType, DOType, DAType,
+ * and EnumType definitions.
  */
 export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   private doc: Document;
