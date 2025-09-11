@@ -122,7 +122,6 @@ export class NsdSpecificationService implements ITypeSpecificationService {
   constructor() {
     const parse = new MultiFileXMLSpecificationParser([nsd74, nsd72, nsd73, nsd7420]);
     this.specs = parse.parse();
-    console.log(this.specs)
   }
 
   getTypeSpecification(typeKind: DataTypeKind, instanceType: string): TypeSpecification | null {
