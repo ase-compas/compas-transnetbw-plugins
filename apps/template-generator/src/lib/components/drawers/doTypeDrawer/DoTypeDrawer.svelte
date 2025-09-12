@@ -27,7 +27,7 @@
   // ===== Types =====
   import {
     type BasicType,
-    BasicTypes,
+    BasicTypes, DataTypeKind,
     DOTypeDetails, Mode,
     type ObjectReferenceDetails
   } from '../../../domain';
@@ -36,6 +36,7 @@
     type TBoardItemContext,
     TItem,
   } from '../../tboard/types';
+  import TypeHeader from '../../../TypeHeader.svelte';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -60,11 +61,13 @@
   let referenceDataObjects: TItem[] = [];
 
   // ===== Derived =====
-  const isCreateMode = () => mode === 'create';
-  const isViewMode = () => mode === 'view';
-  const isEditMode = () => mode === 'edit' || isCreateMode();
+  let isEditMode = false;
+  $: isCreateMode = mode === 'create';
+  $: isEditMode = mode === 'edit' || mode === 'create';
+  const isCreateModeFn = () => isCreateMode;
+  const isEditModeFn = () => isEditMode;
 
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode(), acceptDrop);
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditModeFn(), acceptDrop);
 
   $: boardData = {
     refs: referenceDataObjects,
@@ -73,7 +76,7 @@
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   };
 
-  $: columns = getColumns(isEditMode());
+  $: columns = getColumns(isEditMode);
 
   // ===== Lifecycle =====
   onMount(() => {
@@ -83,7 +86,7 @@
     const unsubscribe = doc.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
-        dataTypes = await loadTypes(isEditMode(), typeId, cdc, $markedItemIds);
+        dataTypes = await loadTypes(isEditModeFn(), typeId, cdc, $markedItemIds);
       } else {
         await loadData();
       }
@@ -91,7 +94,6 @@
 
     return () => unsubscribe();
   });
-
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
@@ -112,7 +114,7 @@
   }
 
   async function loadData() {
-    dataObjectType = await loadDOType(isCreateMode(), typeId, cdc);
+    dataObjectType = await loadDOType(isCreateModeFn(), typeId, cdc);
     await refStore.reload();
   }
 
@@ -126,7 +128,7 @@
   }
 
   $: if (dataObjectType) {
-    loadTypes(isEditMode(), dataObjectType.id, dataObjectType.cdc, $markedItemIds)
+    loadTypes(isEditModeFn(), dataObjectType.id, dataObjectType.cdc, $markedItemIds)
       .then((types) => (dataTypes = types));
   }
 
@@ -205,8 +207,41 @@
     );
     return canAssignTypeToObjectReference(target, sourceType);
   }
+
+
+  async function switchToEditMode() {
+    mode = 'edit';
+    await loadData();
+  }
+
+  async function switchToViewMode() {
+    if ($isDirty || isCreateMode) {
+      const { action } = await confirmUnsavedChanges();
+      if (action === 'save') await saveChanges();
+      else if (action === 'cancel') return;
+    }
+    mode = 'view';
+    await loadData();
+  }
 </script>
 
+<TypeHeader
+  {typeId}
+  type={DataTypeKind.DOType}
+  instanceType={dataObjectType?.cdc}
+  isEditMode={mode === 'edit' || mode === 'create'}
+  on:modeChange={e => {
+    if(e.detail === 'view') switchToViewMode();
+    else if(e.detail === 'edit') switchToEditMode();
+    else throw new Error(`Unknown mode ${e.detail}`);
+  }}
+  on:instanceTypeChange={(e) => {
+    cdc = e.detail;
+    mode = 'create';
+    init();
+    }
+  }
+/>
 <TBoard
   {columns}
   data={boardData}

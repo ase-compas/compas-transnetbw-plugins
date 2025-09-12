@@ -24,9 +24,10 @@
 
   // ===== Types =====
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TItem } from '../../tboard/types';
-  import type { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails } from '../../../domain';
+  import { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, DataTypeKind } from '../../../domain';
   import type { IDaTypeService } from '../../../services/da-type.service';
   import { getDATypeService } from '../../../services';
+  import TypeHeader from '../../../TypeHeader.svelte';
 
   // ===== Services =====
   const daTypeService: IDaTypeService = getDATypeService();
@@ -50,11 +51,14 @@
   };
 
   // ===== Derived =====
-  const isCreateMode = () => mode === 'create';
-  const isEditMode = () => mode === 'edit' || isCreateMode();
+  $: isCreateMode = mode === 'create';
+  $: isEditMode = mode === 'edit' || mode === 'create';
+
+  const isEditModeFn = () => isEditMode;
+  const isCreateModeFn = () => isCreateMode;
 
   let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditMode(), acceptDrop);
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditModeFn(), acceptDrop);
 
   $: boardData = {
     refs: referenceDataObjects,
@@ -63,7 +67,7 @@
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   };
 
-  $: columns = getColumns(isEditMode());
+  $: columns = getColumns(isEditMode);
 
   // ===== Lifecycle =====
   onMount(() => {
@@ -73,7 +77,7 @@
     const unsubscribe = doc.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
-        dataTypes = await loadTypes(isEditMode(), typeId, instanceType, $markedItemIds);
+        dataTypes = await loadTypes(isEditMode, typeId, instanceType, $markedItemIds);
       } else {
         await loadData();
       }
@@ -101,12 +105,14 @@
   }
 
   async function loadData() {
-    dataAttributeTypes = await loadDAType(isCreateMode(), typeId, instanceType);
+    const result = await loadDAType(isCreateMode, typeId, instanceType);
+    if (!result?.instanceType || result.instanceType === '') mode = 'view'
+    dataAttributeTypes = result;
     await refStore.reload();
   }
 
   $: if (dataAttributeTypes) {
-    loadTypes(isEditMode(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
+    loadTypes(isEditModeFn(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
       .then(types => dataTypes = types);
   }
 
@@ -136,7 +142,7 @@
   }
 
   function handleConfirm() {
-    if ($isDirty ||isCreateMode()) {
+    if ($isDirty ||isCreateMode) {
       daTypeService.createOrUpdateType({
         id: dataAttributeTypes.id,
         instanceType: dataAttributeTypes.instanceType,
@@ -178,8 +184,40 @@
       throw new Error('Type ID is required');
     }
   }
+
+  async function switchToEditMode() {
+    mode = 'edit';
+    await loadData();
+  }
+
+  async function switchToViewMode() {
+    if ($isDirty || isCreateMode) {
+      const { action } = await confirmUnsavedChanges();
+      if (action === 'save') await handleConfirm();
+      else if (action === 'cancel') return;
+    }
+    mode = 'view';
+    await loadData();
+  }
 </script>
 
+<TypeHeader
+  {typeId}
+  type={DataTypeKind.DAType}
+  instanceType={dataAttributeTypes?.instanceType}
+  isEditMode={mode === 'edit' || mode === 'create'}
+  on:modeChange={e => {
+    if(e.detail === 'view') switchToViewMode();
+    else if(e.detail === 'edit') switchToEditMode();
+    else throw new Error(`Unknown mode ${e.detail}`);
+  }}
+  on:instanceTypeChange={(e) => {
+    instanceType = e.detail;
+    mode = 'create';
+    init();
+    }
+  }
+/>
 <TBoard
   {columns}
   data={boardData}

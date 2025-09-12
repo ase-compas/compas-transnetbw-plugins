@@ -1,13 +1,14 @@
 <script lang="ts">
   import { IEnumTypeService } from '../../services/enum-type.service';
   import { getEnumTypeService } from '../../services';
-  import { type EnumTypeDetails } from '../../domain';
+  import { DataTypeKind, type EnumTypeDetails } from '../../domain';
   import { onMount } from 'svelte';
   import { CloseReason } from '../../stores/drawerStackStore';
   import { confirmUnsavedChanges } from '../../utils/overlayUitils';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
+  import TypeHeader from '../../TypeHeader.svelte';
 
   // ===== Services =====
   const enumTypeService: IEnumTypeService = getEnumTypeService();
@@ -92,12 +93,18 @@
   }
 </script>
 
+<TypeHeader
+  {typeId}
+  type={DataTypeKind.EnumType}
+  instanceType={enumType?.instanceType}
+  on:instanceTypeChange={(e) => {
+    instanceTypeId = e.detail;
+    mode = 'create';
+    loadData();
+    }
+  }
+/>
 <div class="oscd-card oscd-container enum-type-details">
-  <div class="header">
-    <h2>ID: {enumType?.id}</h2>
-    <h4>Instance Type: {enumType?.instanceType ?? 'Unknown'}</h4>
-  </div>
-
   <OscdInput
     bind:value={searchQuery}
     icon="search"

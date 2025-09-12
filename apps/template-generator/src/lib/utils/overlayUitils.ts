@@ -8,6 +8,7 @@ import NewEnumTypeDialog from '../components/dialogs/CreateDialogs/NewEnumTypeDi
 import DaTypeDrawer from '../components/drawers/daTypeDrawer/DaTypeDrawer.svelte';
 import EnumTypeDetailsDrawer from '../components/drawers/EnumTypeDetailsDrawer.svelte';
 import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+import ChooseInstanceTypeDialog from '../components/dialogs/ChooseInstanceTypeDialog.svelte';
 
 export function openDataObjectTypeDrawer(
   mode: Mode,
@@ -112,5 +113,12 @@ export function openReferencedTypeDrawer(
     openDataAttributeTypeDrawer(mode, refId);
   } else if (objRef.meta.refTypeKind === DataTypeKind.EnumType) {
     openDataEnumTypeDrawer(mode, refId);
+  }
+}
+
+export async function openSelectInstanceTypeDialog(typeKind: DataTypeKind, text?: string): Promise<string> {
+  const result = await openDialog(ChooseInstanceTypeDialog, {type: typeKind, text: text});
+  if(result.type === 'confirm') {
+    return result.data.instanceType;
   }
 }
