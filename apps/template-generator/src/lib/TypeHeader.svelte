@@ -139,6 +139,7 @@
   .instance-badge {
     display: inline-flex;
     align-items: center;
+    width: fit-content;
     height: 1.8rem;
     padding: 0 0.5rem;
     border-radius: 10px;
@@ -156,17 +157,7 @@
 
   /* Unknown/editable instance badge */
   .instance-badge.unknown {
-    all: unset;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 1.8rem;
-    padding: 0 0.5rem;
-    border-radius: 10px;
     white-space: nowrap;
-    font-weight: 500;
-    font-size: 0.8rem;
-
     color: var(--mdc-theme-primary, #ff3e00);
     border: 1px dashed var(--mdc-theme-primary, #ff3e00);
     transition: background 0.2s, border-color 0.2s;
