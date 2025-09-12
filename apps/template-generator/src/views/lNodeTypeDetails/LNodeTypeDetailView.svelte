@@ -188,12 +188,13 @@
   }
 
   function handleOnEdit(itemId: string, columnId: string) {
+    const openMode: Mode = canEdit ? 'edit' : 'view';
     if (columnId === 'doTypes') {
-      openDataObjectTypeDrawer('edit', itemId);
+      openDataObjectTypeDrawer(openMode, itemId);
     } else if (columnId === 'daTypes') {
-      openDataAttributeTypeDrawer('edit', itemId);
+      openDataAttributeTypeDrawer(openMode, itemId);
     } else if (columnId === 'enumTypes') {
-      openDataEnumTypeDrawer('edit', itemId)
+      openDataEnumTypeDrawer(openMode, itemId)
     }
   }
 
@@ -217,7 +218,7 @@
 
   function handleOnReferenceClick({itemId}) {
     const ref = $refStore.find(i => i.name === itemId);
-    openReferencedTypeDrawer(ref, 'edit')
+    openReferencedTypeDrawer(ref, 'view')
   }
 
 
