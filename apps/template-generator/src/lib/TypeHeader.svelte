@@ -75,10 +75,7 @@
     {#if instanceType}
     <OscdSwitch
       bind:checked={isEditMode}
-      on:change={e => {
-        console.log('here', e.detail);
-        handleChange(e.detail)
-      }}
+      on:change={e => handleChange(e.detail)}
       id={`edit-mode-switch-${typeId}`}
       label="Edit Mode"
       labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
