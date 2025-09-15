@@ -112,7 +112,7 @@
   }
 
   $: if (dataAttributeTypes) {
-    loadTypes(editorStore.isEditMode(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
+    loadTypes(editorStore.getCanEdit(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
       .then(types => dataTypes = types);
   }
 
