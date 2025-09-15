@@ -46,7 +46,7 @@
     onDiscard: async () => refStore.reset(),
     initialMode: mode,
   });
-  const { canEdit } = editorStore;
+  const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
   let dataAttributeTypes: DATypeDetails | null = null;
@@ -193,7 +193,7 @@
   {typeId}
   type={DataTypeKind.DAType}
   instanceType={dataAttributeTypes?.instanceType}
-  isEditMode={$canEdit}
+  isEditMode={$isEditModeSwitchState}
   on:modeChange={e => handleModeChange(e.detail)}
   on:instanceTypeChange={(e) => {
     instanceType = e.detail;

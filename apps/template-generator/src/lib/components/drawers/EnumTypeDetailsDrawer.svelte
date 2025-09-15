@@ -22,7 +22,7 @@
 
   // ===== Stores =====
   const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view'});
-  const { canEdit } = editorStore;
+  const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
   let enumType: EnumTypeDetails = null;
@@ -103,7 +103,7 @@
   {typeId}
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
-  isEditMode={$canEdit}
+  isEditMode={$isEditModeSwitchState}
   on:modeChange={(e) => editorStore.switchMode(e.detail)}
   on:instanceTypeChange={(e) => {
     instanceTypeId = e.detail;

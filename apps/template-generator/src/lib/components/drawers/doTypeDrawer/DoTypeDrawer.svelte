@@ -52,7 +52,7 @@
   const { markedItemIds, configuredItems, isDirty } = refStore;
 
   const editorStore = createEditorStore({onSave: async () => saveChanges(), onDiscard: async () => refStore.reset(), initialMode: mode});
-  const { canEdit } = editorStore;
+  const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
   let dataObjectType: DOTypeDetails | null = null;
@@ -194,9 +194,9 @@
     }
   }
 
-  function handleModeChange(newMode: 'view' | 'edit') {
-    editorStore.switchMode(newMode);
-    loadData();
+  async function handleModeChange(newMode: 'view' | 'edit') {
+    const ok = await editorStore.switchMode(newMode);
+    if(ok) await loadData();
   }
 
   // ===== Helpers =====
@@ -213,7 +213,7 @@
   {typeId}
   type={DataTypeKind.DOType}
   instanceType={dataObjectType?.cdc}
-  isEditMode={$canEdit}
+  bind:isEditMode={$isEditModeSwitchState}
   on:modeChange={e => handleModeChange(e.detail)}
   }
 />

@@ -76,6 +76,7 @@
     <OscdSwitch
       bind:checked={isEditMode}
       on:change={e => handleChange(e.detail)}
+      preventToggleOnClick={true}
       id={`edit-mode-switch-${typeId}`}
       label="Edit Mode"
       labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"

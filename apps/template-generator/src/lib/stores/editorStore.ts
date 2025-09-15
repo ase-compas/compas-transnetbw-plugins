@@ -12,8 +12,11 @@ export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: E
 
   const mode = writable<Mode>(initialMode || 'view');
   const dirty = writable<boolean>();
+  const isEditModeSwitchState = writable<boolean>(false);
 
   const canEdit = derived(mode, ($mode) => $mode === 'edit' || $mode === 'create');
+
+  canEdit.subscribe(canEdit => isEditModeSwitchState.set(canEdit));
 
   async function save() {
     await onSave();
@@ -86,6 +89,7 @@ export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: E
     isCreateMode,
     isEditMode,
     isViewMode,
+    isEditModeSwitchState,
     save,
     makeDirty,
     makeClean,
