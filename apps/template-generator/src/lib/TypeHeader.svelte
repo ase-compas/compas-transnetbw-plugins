@@ -13,7 +13,7 @@
   export let instanceType: string | null = null;
   export let isEditMode = false;
 
-  $: dispatch('modeChange', isEditMode ? 'edit' : 'view');
+  const handleChange = (checked) => dispatch('modeChange', checked ? 'edit' : 'view');
 
   function getTypeText(type: DataTypeKind): string {
     switch (type) {
@@ -75,6 +75,10 @@
     {#if instanceType}
     <OscdSwitch
       bind:checked={isEditMode}
+      on:change={e => {
+        console.log('here', e.detail);
+        handleChange(e.detail)
+      }}
       id={`edit-mode-switch-${typeId}`}
       label="Edit Mode"
       labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"

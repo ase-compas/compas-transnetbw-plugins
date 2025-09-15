@@ -37,6 +37,7 @@
     TItem,
   } from '../../tboard/types';
   import TypeHeader from '../../../TypeHeader.svelte';
+  import { createEditorStore } from '../../../stores/editorStore';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -50,6 +51,9 @@
   const refStore = createObjectReferenceStore(async () => dataObjectType.children);
   const { markedItemIds, configuredItems, isDirty } = refStore;
 
+  const editorStore = createEditorStore({onSave: async () => saveChanges(), onDiscard: async () => refStore.reset(), initialMode: mode});
+  const { canEdit } = editorStore;
+
   // ===== State =====
   let dataObjectType: DOTypeDetails | null = null;
   let dataTypes: BasicTypes = {
@@ -60,14 +64,7 @@
   };
   let referenceDataObjects: TItem[] = [];
 
-  // ===== Derived =====
-  let isEditMode = false;
-  $: isCreateMode = mode === 'create';
-  $: isEditMode = mode === 'edit' || mode === 'create';
-  const isCreateModeFn = () => isCreateMode;
-  const isEditModeFn = () => isEditMode;
-
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditModeFn(), acceptDrop);
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, $canEdit, acceptDrop);
 
   $: boardData = {
     refs: referenceDataObjects,
@@ -76,7 +73,8 @@
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   };
 
-  $: columns = getColumns(isEditMode);
+  $: columns = getColumns($canEdit);
+  $: $isDirty ? editorStore.makeDirty() : editorStore.makeClean();
 
   // ===== Lifecycle =====
   onMount(() => {
@@ -86,7 +84,7 @@
     const unsubscribe = doc.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
-        dataTypes = await loadTypes(isEditModeFn(), typeId, cdc, $markedItemIds);
+        dataTypes = await loadTypes(editorStore.getCanEdit(), typeId, cdc, $markedItemIds);
       } else {
         await loadData();
       }
@@ -97,14 +95,12 @@
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
-    if ($isDirty && reason !== 'save') {
-      const { action } = await confirmUnsavedChanges();
-      if (action === 'save') saveChanges();
-      else if (action === 'cancel') return false;
-    } else if (reason === 'save') {
-      await saveChanges();
+    if (reason === 'save') {
+      await editorStore.save();
+      return true;
     }
-    return true;
+
+    return await editorStore.close();
   };
 
   // ===== Init & Data Loading =====
@@ -114,7 +110,7 @@
   }
 
   async function loadData() {
-    dataObjectType = await loadDOType(isCreateModeFn(), typeId, cdc);
+    dataObjectType = await loadDOType(editorStore.isCreateMode(), typeId, cdc);
     await refStore.reload();
   }
 
@@ -128,7 +124,7 @@
   }
 
   $: if (dataObjectType) {
-    loadTypes(isEditModeFn(), dataObjectType.id, dataObjectType.cdc, $markedItemIds)
+    loadTypes(editorStore.getCanEdit(), dataObjectType.id, dataObjectType.cdc, $markedItemIds)
       .then((types) => (dataTypes = types));
   }
 
@@ -140,7 +136,6 @@
 
   // ===== Save =====
   function saveChanges() {
-    if ($isDirty || isCreateMode()) {
       doTypeService.createOrUpdateType({
         id: dataObjectType.id,
         instanceType: dataObjectType.cdc,
@@ -149,7 +144,6 @@
           typeRef: item?.typeRef,
         })),
       });
-    }
   }
 
   // ===== Validation =====
@@ -200,6 +194,11 @@
     }
   }
 
+  function handleModeChange(newMode: 'view' | 'edit') {
+    editorStore.switchMode(newMode);
+    loadData();
+  }
+
   // ===== Helpers =====
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const sourceType: BasicType = dataTypes[source.columnId].find(
@@ -207,39 +206,15 @@
     );
     return canAssignTypeToObjectReference(target, sourceType);
   }
-
-
-  async function switchToEditMode() {
-    mode = 'edit';
-    await loadData();
-  }
-
-  async function switchToViewMode() {
-    if ($isDirty || isCreateMode) {
-      const { action } = await confirmUnsavedChanges();
-      if (action === 'save') await saveChanges();
-      else if (action === 'cancel') return;
-    }
-    mode = 'view';
-    await loadData();
-  }
 </script>
+
 
 <TypeHeader
   {typeId}
   type={DataTypeKind.DOType}
   instanceType={dataObjectType?.cdc}
-  isEditMode={mode === 'edit' || mode === 'create'}
-  on:modeChange={e => {
-    if(e.detail === 'view') switchToViewMode();
-    else if(e.detail === 'edit') switchToEditMode();
-    else throw new Error(`Unknown mode ${e.detail}`);
-  }}
-  on:instanceTypeChange={(e) => {
-    cdc = e.detail;
-    mode = 'create';
-    init();
-    }
+  isEditMode={$canEdit}
+  on:modeChange={e => handleModeChange(e.detail)}
   }
 />
 <TBoard

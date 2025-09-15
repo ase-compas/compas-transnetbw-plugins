@@ -14,7 +14,7 @@
   const dispatch = createEventDispatcher();
 
   function handleChange() {
-    dispatch('change', !checked);
+    dispatch('change', checked);
   }
 </script>
 
@@ -24,7 +24,7 @@
     class={switchClass}
     bind:checked
     {icons}
-    on:click={handleChange}
+    on:SMUISwitch:change={handleChange}
   />
   {#if label}
   <label for={id} style={labelStyle} class="oscd-switch-label">

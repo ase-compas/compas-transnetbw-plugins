@@ -14,7 +14,6 @@
     getDisplayReferenceItems
   } from '../../../utils/typeBoardUtils';
   import {
-    confirmUnsavedChanges,
     openCreateDataAttributeTypeDialog,
     openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer,
@@ -28,6 +27,7 @@
   import type { IDaTypeService } from '../../../services/da-type.service';
   import { getDATypeService } from '../../../services';
   import TypeHeader from '../../../TypeHeader.svelte';
+  import { createEditorStore } from '../../../stores/editorStore';
 
   // ===== Services =====
   const daTypeService: IDaTypeService = getDATypeService();
@@ -41,6 +41,13 @@
   const refStore = createObjectReferenceStore(async () => dataAttributeTypes.children);
   const { markedItemIds, configuredItems, isDirty } = refStore;
 
+  const editorStore = createEditorStore({
+    onSave: async () => saveChanges(),
+    onDiscard: async () => refStore.reset(),
+    initialMode: mode,
+  });
+  const { canEdit } = editorStore;
+
   // ===== State =====
   let dataAttributeTypes: DATypeDetails | null = null;
   let dataTypes: BasicTypes = {
@@ -50,15 +57,8 @@
     enumTypes: [],
   };
 
-  // ===== Derived =====
-  $: isCreateMode = mode === 'create';
-  $: isEditMode = mode === 'edit' || mode === 'create';
-
-  const isEditModeFn = () => isEditMode;
-  const isCreateModeFn = () => isCreateMode;
-
   let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, isEditModeFn(), acceptDrop);
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, editorStore.getCanEdit(), acceptDrop);
 
   $: boardData = {
     refs: referenceDataObjects,
@@ -67,7 +67,9 @@
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   };
 
-  $: columns = getColumns(isEditMode);
+  $: columns = getColumns($canEdit);
+  $: $isDirty ? editorStore.makeDirty() : editorStore.makeClean();
+
 
   // ===== Lifecycle =====
   onMount(() => {
@@ -77,7 +79,7 @@
     const unsubscribe = doc.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
-        dataTypes = await loadTypes(isEditMode, typeId, instanceType, $markedItemIds);
+        dataTypes = await loadTypes(editorStore.getCanEdit(), typeId, instanceType, $markedItemIds);
       } else {
         await loadData();
       }
@@ -88,14 +90,12 @@
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
-    if ($isDirty && reason !== 'save') {
-      const { action } = await confirmUnsavedChanges();
-      if (action === 'save') handleConfirm();
-      else if (action === 'cancel') return false;
-    } else if (reason === 'save') {
-      await handleConfirm();
+    if (reason === 'save') {
+      await editorStore.save();
+      return true;
     }
-    return true;
+
+    return await editorStore.close();
   };
 
   // ===== Initialization =====
@@ -105,14 +105,14 @@
   }
 
   async function loadData() {
-    const result = await loadDAType(isCreateMode, typeId, instanceType);
+    const result = await loadDAType(editorStore.isCreateMode(), typeId, instanceType);
     if (!result?.instanceType || result.instanceType === '') mode = 'view'
     dataAttributeTypes = result;
     await refStore.reload();
   }
 
   $: if (dataAttributeTypes) {
-    loadTypes(isEditModeFn(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
+    loadTypes(editorStore.isEditMode(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
       .then(types => dataTypes = types);
   }
 
@@ -141,14 +141,12 @@
     refStore.toggleConfigured(itemId);
   }
 
-  function handleConfirm() {
-    if ($isDirty ||isCreateMode) {
-      daTypeService.createOrUpdateType({
-        id: dataAttributeTypes.id,
-        instanceType: dataAttributeTypes.instanceType,
-        children: $configuredItems.map(item => ({ name: item.name, typeRef: item?.typeRef })),
-      });
-    }
+  function saveChanges() {
+    daTypeService.createOrUpdateType({
+      id: dataAttributeTypes.id,
+      instanceType: dataAttributeTypes.instanceType,
+      children: $configuredItems.map(item => ({ name: item.name, typeRef: item?.typeRef })),
+    });
   }
 
   function handleOnEdit(itemId: string, columnId: string) {
@@ -185,19 +183,9 @@
     }
   }
 
-  async function switchToEditMode() {
-    mode = 'edit';
-    await loadData();
-  }
-
-  async function switchToViewMode() {
-    if ($isDirty || isCreateMode) {
-      const { action } = await confirmUnsavedChanges();
-      if (action === 'save') await handleConfirm();
-      else if (action === 'cancel') return;
-    }
-    mode = 'view';
-    await loadData();
+  function handleModeChange(newMode: 'view' | 'edit') {
+    editorStore.switchMode(newMode);
+    loadData();
   }
 </script>
 
@@ -205,15 +193,11 @@
   {typeId}
   type={DataTypeKind.DAType}
   instanceType={dataAttributeTypes?.instanceType}
-  isEditMode={mode === 'edit' || mode === 'create'}
-  on:modeChange={e => {
-    if(e.detail === 'view') switchToViewMode();
-    else if(e.detail === 'edit') switchToEditMode();
-    else throw new Error(`Unknown mode ${e.detail}`);
-  }}
+  isEditMode={$canEdit}
+  on:modeChange={e => handleModeChange(e.detail)}
   on:instanceTypeChange={(e) => {
     instanceType = e.detail;
-    mode = 'create';
+    editorStore.switchMode('create');
     init();
     }
   }
