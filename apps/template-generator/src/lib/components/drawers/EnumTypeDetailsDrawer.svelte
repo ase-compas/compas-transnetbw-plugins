@@ -87,7 +87,7 @@
       await editorStore.save();
       return true;
     } else {
-      return editorStore.close();
+      return editorStore.confirmLeave();
     }
   };
 

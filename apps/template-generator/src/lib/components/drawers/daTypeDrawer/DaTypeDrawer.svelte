@@ -95,7 +95,7 @@
       return true;
     }
 
-    return await editorStore.close();
+    return await editorStore.confirmLeave();
   };
 
   // ===== Initialization =====

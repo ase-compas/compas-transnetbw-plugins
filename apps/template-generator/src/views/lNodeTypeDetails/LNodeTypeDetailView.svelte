@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { createObjectReferenceStore, route } from '../../lib/stores';
-  import { OscdBreadcrumbs, OscdButton, OscdConfirmDialog, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
-  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { createObjectReferenceStore, route, doc as docStore} from '../../lib/stores';
+  import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
 
   // Components
   import TBoard from '../../lib/components/tboard/TBoard.svelte';
@@ -19,14 +18,15 @@
 
   // Types
   import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
-  import type { BasicType, BasicTypes, LNodeTypeDetails, ObjectReferenceDetails } from '../../lib/domain';
+  import type { BasicType, BasicTypes, LNodeTypeDetails, Mode, ObjectReferenceDetails } from '../../lib/domain';
   import {
-    confirmUnsavedChanges,
     openCreateDataAttributeTypeDialog, openCreateDataObjectTypeDialog, openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer, openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
     openReferencedTypeDrawer
   } from '../../lib/utils/overlayUitils';
+  import { createEditorStore } from '../../lib/stores/editorStore';
+  import { onMount } from 'svelte';
 
   export let doc: XMLDocument;
 
@@ -39,11 +39,16 @@
   // Stores
   // -----------------------------
   const refStore = createObjectReferenceStore(async () => logicalNodeType.children);
-  const { markedItems, configuredItems, isDirty } = refStore;
+  const { markedItems, configuredItems, isDirty: refStoreIsDirty } = refStore;
+
+  const editorStore = createEditorStore({ onSave: async () => handleSaveChanges(), onDiscard: async () => refStore.reset(), initialMode: 'view' });
+  const { canEdit, isEditModeSwitchState, mode, dirty, isSavable } = editorStore;
 
   // -----------------------------
   // Component state
   // -----------------------------
+  let lNodeTypeId: string;
+  let lnClass: string;
   let logicalNodeType: LNodeTypeDetails | null = null;
   let dataTypes: BasicTypes = {
     lNodeTypes: [],
@@ -52,81 +57,68 @@
     enumTypes: []
   };
 
-  let canEdit = false;
+  onMount(() => {
+    setModeFromPath();
+
+    lNodeTypeId = $route?.meta?.lNodeTypeId;
+    lnClass = $route?.meta?.lnClass;
+
+    const unsubscribeDoc = docStore.subscribe(_ => {
+      $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
+    })
+
+    return () => {
+      unsubscribeDoc();
+    }
+  });
 
   // -----------------------------
   // Reactive statements
   // -----------------------------
   // Determine mode based on route and edit state
-  type Mode = 'view' | 'edit' | 'create';
-  let mode: Mode = 'view';
-  const isCreateMode = () => mode === 'create';
 
-  route.subscribe(route => {
-    const path = route.path[0];
-    if (path === 'create') {
-      mode = 'create';
-      canEdit = true;
-    } else if (path === 'edit') {
-      mode = 'edit';
-      canEdit = true;
-    } else {
-      mode = 'view';
-      canEdit = false;
-    }
-  })
 
-  $: isSaveable = $isDirty || mode === 'create';
+  function setModeFromPath() {
+    const mode: Mode = $route?.path[0] === 'create' ? 'create' : ($route?.path[0] === 'edit' ? 'edit' : 'view');
+    editorStore.switchMode(mode);
+  }
+
+  $: $refStoreIsDirty ? editorStore.makeDirty() : editorStore.makeClean();
 
   // Breadcrumbs
-  $: breadcrumbs = createBreadcrumbs(mode === 'create', logicalNodeType);
+  $: breadcrumbs = createBreadcrumbs($mode === 'create', logicalNodeType);
 
   // Reference data objects (filtered, mapped, sorted)
   let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, canEdit, acceptDrop);
+  $: referenceDataObjects = getDisplayReferenceItems($refStore, $canEdit, acceptDrop);
 
   // Board data configuration
   $: boardData = {
     refs: referenceDataObjects,
-    doTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, canEdit),
-    daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, canEdit),
-    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, canEdit),
+    doTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
+    daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   };
 
-  $: columns = getColumns(canEdit); // Board column configuration
+  $: columns = getColumns($canEdit); // Board column configuration
+
+  $: if(logicalNodeType) loadDataTypes($markedItems); // load dataTypes when logicalNodeType or markedItems change
 
   // -----------------------------
   // Loaders
   // -----------------------------
-  async function loadLogicalNodeType() {
-    if($isDirty) return;
-    const { lNodeTypeId, lnClass } = $route.meta;
-    logicalNodeType = await loadLNodeType(mode, lNodeTypeId, lnClass);
+  async function loadLogicalNodeType(lNodeTypeId: string, lnClass?: string) {
+    logicalNodeType = await loadLNodeType($mode, lNodeTypeId, lnClass);
+    lNodeTypeId = logicalNodeType.id;
+    lnClass = logicalNodeType.lnClass;
     await refStore.reload();
   }
 
-  async function loadDataTypes() {
+  async function loadDataTypes(markedItems) {
     if (!logicalNodeType) return;
-    const loadMode: Mode = isCreateMode() ? 'create' : (canEdit ? 'edit' : 'view');
-    loadTypes(loadMode, logicalNodeType.id, logicalNodeType.lnClass, $markedItems.map(i => i.name))
+    loadTypes($mode, logicalNodeType.id, logicalNodeType.lnClass, markedItems.map(i => i.name))
       .then(types => dataTypes = types);
   }
-
-  // -----------------------------
-  // Lifecycle
-  // -----------------------------
-  $: if (doc && $route.meta) {
-    loadLogicalNodeType();
-  }
-
-  let debounceTimeout;
-  $: if(logicalNodeType && (doc || $markedItems || mode || canEdit)) {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-      loadDataTypes();
-    }, 50);
-  }
-
 
   // -----------------------------
   // Event Handlers
@@ -160,20 +152,6 @@
       children: newDos
     })
     refStore.commit();
-
-    if (isCreateMode()) {
-      switchToEditMode(logicalNodeType);
-    }
-  }
-
-  /** Handle unsaved changes with optional reset */
-  async function handleUnsavedChanges(resetOnDiscard = false) {
-    const {action} = await confirmUnsavedChanges();
-    if (action === 'save') {
-      handleSaveChanges();
-    } else if (action === 'discard' && resetOnDiscard) {
-      refStore.reset();
-    }
   }
 
   // Dialog handlers
@@ -199,17 +177,15 @@
   }
 
   async function handleBreadcrumbClick({ index }) {
-    if (isSaveable) {
-      await handleUnsavedChanges();
-    }
+    const ok = await editorStore.confirmLeave();
+    if(!ok) return;
     if (index === 0) route.set({ path: ['overview'] });
   }
 
   /** Handle edit mode toggle with unsaved changes check */
-  async function onEditModeChange(e) {
-    if(canEdit && isSaveable) {
-      await handleUnsavedChanges(true);
-    }
+  async function onEditModeChange(isEditMode) {
+    const ok = await editorStore.switchMode(isEditMode ? 'edit' : 'view');
+    if(ok) await loadLogicalNodeType(lNodeTypeId, lnClass);
   }
 
   function handleOnUnlink({ itemId }) {
@@ -225,10 +201,6 @@
   // -----------------------------
   // Utils
   // -----------------------------
-  function switchToEditMode(lNodeType: LNodeTypeDetails) {
-    route.set({ path: ['edit'], meta: { lNodeTypeId: lNodeType.id, lnClass: lNodeType.lnClass } });
-  }
-
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const sourceType: BasicType = dataTypes.dataObjectTypes.find(type => type.id === source.itemId);
     return canAssignTypeToObjectReference(target, sourceType)
@@ -243,15 +215,16 @@
     <div class="oscd-details-toolbar-right">
 
       <OscdSwitch
-        bind:checked={canEdit}
-        on:change={onEditModeChange}
+        bind:checked={$isEditModeSwitchState}
+        on:change={e => onEditModeChange(e.detail)}
+        preventToggleOnClick={true}
         id="edit-mode-switch"
         label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
       <OscdButton
-        disabled={!isSaveable} callback={handleSaveChanges} variant="unelevated">
+        disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
     </div>

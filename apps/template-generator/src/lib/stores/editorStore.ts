@@ -15,6 +15,7 @@ export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: E
   const isEditModeSwitchState = writable<boolean>(false);
 
   const canEdit = derived(mode, ($mode) => $mode === 'edit' || $mode === 'create');
+  const isSavable = derived([mode, dirty], ([$mode, $dirty]) => ($mode === 'edit' || $mode === 'create') && $dirty);
 
   canEdit.subscribe(canEdit => isEditModeSwitchState.set(canEdit));
 
@@ -34,11 +35,12 @@ export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: E
     dirty.set(false);
   }
 
-  async function close(): Promise<boolean> {
+  async function confirmLeave(): Promise<boolean> {
     if(get(dirty) || get(mode) === 'create') {
       const confirmed = await confirmUnsavedChanges()
       if(confirmed.action === 'save') {
         await save();
+        if(get(mode) === 'create') mode.set('edit');
         return true;
       } else if(confirmed.action === 'discard') {
         await onDiscard();
@@ -56,7 +58,7 @@ export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: E
 
     // only guard if leaving edit/create
     if ((current === "edit" || current === "create") && next === "view") {
-      const canLeave = await close();
+      const canLeave = await confirmLeave();
       if (!canLeave) return false;
     }
 
@@ -89,11 +91,12 @@ export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: E
     isCreateMode,
     isEditMode,
     isViewMode,
+    isSavable,
     isEditModeSwitchState,
     save,
     makeDirty,
     makeClean,
-    close,
+    confirmLeave,
     switchMode,
   };
 }

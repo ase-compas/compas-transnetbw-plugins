@@ -100,7 +100,7 @@
       return true;
     }
 
-    return await editorStore.close();
+    return await editorStore.confirmLeave();
   };
 
   // ===== Init & Data Loading =====
