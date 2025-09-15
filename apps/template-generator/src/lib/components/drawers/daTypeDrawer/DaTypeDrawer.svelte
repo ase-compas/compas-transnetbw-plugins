@@ -23,7 +23,7 @@
 
   // ===== Types =====
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TItem } from '../../tboard/types';
-  import { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, DataTypeKind } from '../../../domain';
+  import { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, DataTypeKind, Mode } from '../../../domain';
   import type { IDaTypeService } from '../../../services/da-type.service';
   import { getDATypeService } from '../../../services';
   import TypeHeader from '../../../TypeHeader.svelte';
@@ -150,13 +150,14 @@
   }
 
   function handleOnEdit(itemId: string, columnId: string) {
-    if (columnId === 'dataAttributeTypes') openDataAttributeTypeDrawer('edit', itemId);
-    else if (columnId === 'enumTypes') openDataEnumTypeDrawer('edit', itemId);
+    const openingMode: Mode = $canEdit ? 'edit' : 'view';
+    if (columnId === 'dataAttributeTypes') openDataAttributeTypeDrawer(openingMode, itemId);
+    else if (columnId === 'enumTypes') openDataEnumTypeDrawer(openingMode, itemId);
   }
 
   function handleOnReferenceClick(itemId: string) {
     const ref = $refStore.find(child => child.name === itemId);
-    openReferencedTypeDrawer(ref, 'edit');
+    openReferencedTypeDrawer(ref, 'view');
   }
 
   function handleActionClick({ columnId }) {
