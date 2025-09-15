@@ -44,7 +44,7 @@
   const editorStore = createEditorStore({
     onSave: async () => saveChanges(),
     onDiscard: async () => refStore.reset(),
-    initialMode: mode,
+    initialMode: instanceType ? mode : 'view',
   });
   const { canEdit, isEditModeSwitchState } = editorStore;
 
