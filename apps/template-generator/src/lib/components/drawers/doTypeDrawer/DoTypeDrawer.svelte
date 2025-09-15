@@ -111,6 +111,8 @@
 
   async function loadData() {
     dataObjectType = await loadDOType(editorStore.isCreateMode(), typeId, cdc);
+    typeId = dataObjectType.id;
+    cdc = dataObjectType.cdc;
     await refStore.reload();
   }
 
