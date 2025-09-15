@@ -59,6 +59,8 @@
     const result = await enumTypeService.getDefaultType(instanceTypeId);
     result.id = typeId;
     result.instanceType = instanceTypeId;
+    typeId = result.id;
+    instanceTypeId = result.instanceType;
     setAllChildrenToConfigured(result);
     return result;
   }
@@ -97,14 +99,19 @@
     const selectedSorted = selected.slice().sort();
     return JSON.stringify(configuredNames) !== JSON.stringify(selectedSorted);
   }
+
+  async function handleModeChange(newMode: 'view' | 'edit') {
+    const ok = await editorStore.switchMode(newMode);
+    if(ok) await loadData();
+  }
 </script>
 
 <TypeHeader
   {typeId}
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
-  isEditMode={$isEditModeSwitchState}
-  on:modeChange={(e) => editorStore.switchMode(e.detail)}
+  bind:isEditMode={$isEditModeSwitchState}
+  on:modeChange={(e) => handleModeChange(e.detail)}
   on:instanceTypeChange={(e) => {
     instanceTypeId = e.detail;
     editorStore.switchMode('create')
