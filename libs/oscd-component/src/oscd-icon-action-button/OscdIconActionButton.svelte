@@ -12,6 +12,8 @@
   // ===== Parameters =====
   /** Tooltip text to display on hover */
   export let tooltip: string;
+  /** Side of the tooltip */
+  export let tooltipSide: 'top' | 'bottom' | 'left' | 'right' = 'top';
   /** Type of action button, e.g., 'delete' or 'duplicate' */
   export let type: 'delete' | 'duplicate';
   /** Delay in ms before showing the tooltip */
@@ -22,7 +24,7 @@
   export let onClick: (e: MouseEvent) => void;
 
 </script>
- <OscdTooltip content={tooltip} hoverDelay={showDelay}>
+ <OscdTooltip content={tooltip} hoverDelay={showDelay} side={tooltipSide}>
 
   <button
     aria-label={tooltip}

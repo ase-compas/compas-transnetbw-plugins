@@ -203,7 +203,13 @@
 
 
 
-        <OscdIconActionButton type="close" fillColor="white" onClick={() => closeDrawer("button")}/>
+        <OscdIconActionButton
+          type="close"
+          fillColor="white"
+          onClick={() => closeDrawer("button")}
+          tooltip="Close"
+          tooltipSide="left"
+        />
       </div>
       <div class="drawer-body">
         <svelte:component
