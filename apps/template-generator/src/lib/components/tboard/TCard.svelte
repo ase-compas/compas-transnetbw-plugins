@@ -141,7 +141,7 @@
     class:drop={isDragTarget && canDrop}
   >
     {#if subtitle}
-      <OscdTooltip content="{subtitle}" hoverDelay={500}>
+      <OscdTooltip content="{subtitle}" hoverDelay={500} side="right">
         <button class="oscd-card-subtitle--with-tooltip" on:click={handleOnReferenceClick} class:pointer={canClickReference}>
           {#if canClickReference}
             <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />

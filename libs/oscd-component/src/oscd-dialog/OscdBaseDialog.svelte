@@ -43,6 +43,8 @@
           open = false;
           dispatch('close');
         }}
+        tooltip="Close"
+        tooltipSide="left"
         type="close"
         fillColor="white"/>
       {/if}
