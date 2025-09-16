@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
 
   export type TooltipSide = 'top' | 'bottom' | 'left' | 'right';
   export let content: string = "";
@@ -38,6 +38,7 @@
     let top = 0;
     let left = 0;
     const offset = 8;
+
     switch (side) {
       case 'top':
         top = rect.top - tooltipRect.height - offset;
@@ -56,99 +57,118 @@
         left = rect.right + offset;
         break;
     }
+
     tooltipEl.style.top = `${top + window.scrollY}px`;
     tooltipEl.style.left = `${left + window.scrollX}px`;
   }
 
-  onMount(() => {
-    tooltipEl = document.createElement('div');
-    tooltipEl.style.position = 'absolute';
-    tooltipEl.style.zIndex = '9999';
-    tooltipEl.style.pointerEvents = 'none';
+  // --- Create tooltip only when show becomes true ---
+  $: if (show && content) {
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.style.position = 'absolute';
+      tooltipEl.style.zIndex = '9999';
+      tooltipEl.style.pointerEvents = 'none';
+      tooltipEl.style.opacity = '0';
+      tooltipEl.style.transition = `opacity ${transitionDuration}ms ease`;
+      tooltipEl.id = id;
+      tooltipEl.setAttribute('role', 'tooltip');
+      document.body.appendChild(tooltipEl);
+
+      shadow = tooltipEl.attachShadow({ mode: 'open' });
+
+      const style = document.createElement('style');
+      style.textContent = `
+        .bubble {
+          --pad-y: 6px;
+          --pad-x: 10px;
+          --radius: 4px;
+          background: #000;
+          color: #fff;
+          font-size: 0.85rem;
+          line-height: 1.2;
+          padding: var(--pad-y) var(--pad-x);
+          border-radius: var(--radius);
+          white-space: nowrap;
+          box-shadow: 0 4px 14px rgba(0,0,0,.25);
+          pointer-events: none;
+          position: relative;
+          transition: none;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        }
+        .bubble::after {
+          content: "";
+          position: absolute;
+          background: #000;
+          width: 8px;
+          height: 8px;
+          transform: rotate(45deg);
+        }
+        .bubble.top::after {
+          left: 50%;
+          bottom: -4px;
+          transform: translateX(-50%) rotate(45deg);
+        }
+        .bubble.bottom::after {
+          left: 50%;
+          top: -4px;
+          transform: translateX(-50%) rotate(45deg);
+        }
+        .bubble.left::after {
+          top: 50%;
+          right: -4px;
+          transform: translateY(-50%) rotate(45deg);
+        }
+        .bubble.right::after {
+          top: 50%;
+          left: -4px;
+          transform: translateY(-50%) rotate(45deg);
+        }
+      `;
+      shadow.appendChild(style);
+
+      bubbleEl = document.createElement('div');
+      bubbleEl.className = `bubble ${side}`;
+      bubbleEl.innerHTML = content;
+      shadow.appendChild(bubbleEl);
+
+      // MutationObserver to reposition
+      const observer = new MutationObserver(() => {
+        if (show) updateTooltipPosition();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Cleanup on destroy
+      onDestroy(() => {
+        observer.disconnect();
+        if (tooltipEl && tooltipEl.parentNode) tooltipEl.parentNode.removeChild(tooltipEl);
+        tooltipEl = null;
+        bubbleEl = null;
+        shadow = null;
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+      });
+    }
+
+    tooltipEl.style.opacity = '1';
+    updateTooltipPosition();
+  }
+
+  $: if (!show && tooltipEl) {
     tooltipEl.style.opacity = '0';
-    tooltipEl.style.transition = `opacity ${transitionDuration}ms ease`;
-    tooltipEl.id = id;
-    tooltipEl.setAttribute('role', 'tooltip');
-    document.body.appendChild(tooltipEl);
+    // Remove tooltip from DOM after hiding
+    setTimeout(() => {
+      if (tooltipEl && tooltipEl.parentNode) tooltipEl.parentNode.removeChild(tooltipEl);
+      tooltipEl = null;
+      bubbleEl = null;
+      shadow = null;
+    }, transitionDuration);
+  }
 
-    shadow = tooltipEl.attachShadow({ mode: 'open' });
-    // Style for tooltip and arrow
-    const style = document.createElement('style');
-    style.textContent = `
-      .bubble {
-        --pad-y: 6px;
-        --pad-x: 10px;
-        --radius: 4px;
-        background: #000;
-        color: #fff;
-        font-size: 0.85rem;
-        line-height: 1.2;
-        padding: var(--pad-y) var(--pad-x);
-        border-radius: var(--radius);
-        white-space: nowrap;
-        box-shadow: 0 4px 14px rgba(0,0,0,.25);
-        pointer-events: none;
-        position: relative;
-        transition: none;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-        Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-      }
-      .bubble::after {
-        content: "";
-        position: absolute;
-        background: #000;
-        width: 8px;
-        height: 8px;
-        transform: rotate(45deg);
-      }
-      .bubble.top::after {
-        left: 50%;
-        bottom: -4px;
-        transform: translateX(-50%) rotate(45deg);
-      }
-      .bubble.bottom::after {
-        left: 50%;
-        top: -4px;
-        transform: translateX(-50%) rotate(45deg);
-      }
-      .bubble.left::after {
-        top: 50%;
-        right: -4px;
-        transform: translateY(-50%) rotate(45deg);
-      }
-      .bubble.right::after {
-        top: 50%;
-        left: -4px;
-        transform: translateY(-50%) rotate(45deg);
-      }
-    `;
-    shadow.appendChild(style);
-    bubbleEl = document.createElement('div');
-    bubbleEl.className = `bubble ${side}`;
-    bubbleEl.innerHTML = content;
-    shadow.appendChild(bubbleEl);
-
-    // Observe DOM changes to reposition if needed
-    const observer = new MutationObserver(() => {
-      if (show) updateTooltipPosition();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      if (tooltipEl) document.body.removeChild(tooltipEl);
-      observer.disconnect();
-      if (hoverTimeout) clearTimeout(hoverTimeout);
-    };
-  });
-
-  // --- Reactively show / hide tooltip and update content/side ---
+  // --- Reactive updates for content / side ---
   $: if (bubbleEl) {
     bubbleEl.className = `bubble ${side}`;
     bubbleEl.innerHTML = content;
-  }
-  $: if (tooltipEl) {
-    tooltipEl.style.opacity = (show && content) ? '1' : '0';
-    if (show && content) updateTooltipPosition();
   }
 </script>
 
