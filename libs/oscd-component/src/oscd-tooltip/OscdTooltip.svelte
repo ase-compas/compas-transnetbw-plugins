@@ -1,13 +1,16 @@
 <script>
   export let content = "";
   export let side = "top";
+  export let hoverDelay = 0; // in ms, default 0 for backwards compatibility
   const id = `tt-${Math.random().toString(36).slice(2)}`;
+  // Compute transition-delay style for the bubble
+  $: delayStyle = `transition-delay: ${hoverDelay}ms, ${hoverDelay}ms, 0s;`;
 </script>
 
 <span class="tt" tabindex="0" aria-describedby={content ? id : undefined}>
   <slot />
   {#if content}
-    <span id={id} role="tooltip" class="bubble {side}">
+    <span id={id} role="tooltip" class="bubble {side}" style={delayStyle}>
       {content}
     </span>
   {/if}
