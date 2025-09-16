@@ -217,7 +217,6 @@
   instanceType={dataObjectType?.cdc}
   bind:isEditMode={$isEditModeSwitchState}
   on:modeChange={e => handleModeChange(e.detail)}
-  }
 />
 <TBoard
   {columns}
