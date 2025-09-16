@@ -81,7 +81,7 @@
   $: dispatch('change', { id, selectedItem, valid });
 
   // --- Events ---
-  const dispatch = createEventDispatcher<>();
+  const dispatch = createEventDispatcher();
 
   // Emit values when they change
 </script>
