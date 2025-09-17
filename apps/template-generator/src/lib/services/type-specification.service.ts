@@ -2,13 +2,10 @@ import {
   LNodeTypeSpecification,
   TypeSpecification,
 } from '../domain';
-import { cdcData, lnClassData } from '../../data/nsdToJson/testNsdJson';
 import { DataTypeKind } from '../domain';
 import { nsd72, nsd73, nsd74, nsd7420 } from '../../data/nsdData';
-import {
-  MultiFileXMLSpecificationParser
-} from '../utils/type-specification-parser/multi-file-xml-specification-parser';
 import { TypeSpecifications } from '../utils/type-specification-parser/i-type-specification-parser';
+import { XMLTypeSpecificationParser } from '../utils/type-specification-parser/xml-type-specification-parser';
 
 export interface ITypeSpecificationService {
   /**
@@ -42,73 +39,6 @@ export interface ITypeSpecificationService {
   getSpecificationsForType(typeKind: DataTypeKind): Record<string, TypeSpecification>;
 }
 
-interface SclLibSpecsSchema {
-  tagName: string;
-  name: string;
-  presCond: 'M' | 'C' | 'O';
-  mandatory?: boolean;
-  type?: string;
-  typeKind?: string;
-}
-
-export class TypeSpecificationService implements ITypeSpecificationService {
-
-  getTypeSpecification(
-    typeKind: DataTypeKind,
-    instanceType: string
-  ): TypeSpecification | null {
-    if (typeKind === DataTypeKind.LNodeType) {
-      return this.getLNodeTypeSpecification(instanceType);
-    } else if (typeKind === DataTypeKind.DOType) {
-      return this.getDOTypeSpecification(instanceType);
-    }
-    return null;
-  }
-
-  getLNodeTypeSpecification(lnClass: string): LNodeTypeSpecification | null {
-    const classData = lnClassData[lnClass];
-    if (!classData) return null;
-    return Object.values(classData).map((child: SclLibSpecsSchema) => ({
-      name: child.name,
-      tagName: child.tagName,
-      isMandatory: child.presCond === 'M' || child.mandatory === true,
-      requiresReference: true,
-      objectType: child.type,
-      refTypeKind: DataTypeKind.DOType,
-    }));
-  }
-
-  getDOTypeSpecification(cdc: string): TypeSpecification | null {
-    const cdcSpec = cdcData[cdc]
-    if(!cdcSpec) return null;
-
-
-    return Object.values(cdcSpec).map((child: SclLibSpecsSchema) => {
-      let refTypeKind: DataTypeKind | undefined = undefined;
-      if(child.tagName === 'SDO') {
-        refTypeKind = DataTypeKind.DOType;
-      } else if(child?.typeKind === 'CONSTRUCTED') {
-       refTypeKind = DataTypeKind.DAType;
-      } else if (child?.typeKind === 'ENUMERATED') {
-        refTypeKind = DataTypeKind.EnumType;
-      }
-
-      return {
-        name: child.name,
-        tagName: child.tagName,
-        isMandatory: child.presCond === 'M' || child.mandatory === true,
-        requiresReference: child.tagName === 'SDO' || child.typeKind === 'CONSTRUCTED' || child.typeKind === 'ENUMERATED',
-        objectType: child.type,
-        refTypeKind: refTypeKind,
-      }
-    });
-  }
-
-  getSpecificationsForType(typeKind: DataTypeKind): Record<string, TypeSpecification> {
-    return {}
-  }
-}
-
 export class NsdSpecificationService implements ITypeSpecificationService {
 
   private readonly specs: TypeSpecifications;
@@ -120,8 +50,7 @@ export class NsdSpecificationService implements ITypeSpecificationService {
   }
 
   constructor() {
-    const parse = new MultiFileXMLSpecificationParser([nsd74, nsd72, nsd73, nsd7420]);
-    this.specs = parse.parse();
+    this.specs = new XMLTypeSpecificationParser().parseFromStrings([nsd72, nsd73, nsd74, nsd7420])
   }
 
   getTypeSpecification(typeKind: DataTypeKind, instanceType: string): TypeSpecification | null {

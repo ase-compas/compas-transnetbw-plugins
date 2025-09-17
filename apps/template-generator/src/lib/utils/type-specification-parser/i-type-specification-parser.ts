@@ -10,5 +10,8 @@ export type TypeSpecifications = {
 }
 
 export interface ITypeSpecificationParser {
-  parse(): TypeSpecifications;
+  parseFromString(xmlString: string): TypeSpecifications;
+  parseFromStrings(xmlStrings: string[]): TypeSpecifications;
+  parseFromDocument(xmlStrings: Document): TypeSpecifications;
+  parseFromDocuments(xmlStrings: Document[]): TypeSpecifications;
 }
