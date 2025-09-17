@@ -39,6 +39,13 @@ export interface ITypeSpecificationService {
   getSpecificationsForType(typeKind: DataTypeKind): Record<string, TypeSpecification>;
 }
 
+/**
+ * Service for loading and accessing type specifications from NSD XML files.
+ *
+ * Supports LNodeType, DOType, DAType, and EnumType specifications.
+ * Parses XML files into memory and provides methods to retrieve individual
+ * or all specifications by type kind and identifier.
+ */
 export class NsdSpecificationService implements ITypeSpecificationService {
 
   private readonly specs: TypeSpecifications;
