@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import TextField from "@smui/textfield";
   import Autocomplete from "@smui-extra/autocomplete";
+  import { tick } from 'svelte';
 
   // --- Types ---
   export interface Option {
@@ -83,11 +84,16 @@
   // --- Events ---
   const dispatch = createEventDispatcher();
 
-  // Emit values when they change
+  let idTextField;
+
+  export function focus() {
+     idTextField?.focus?.();
+  }
 </script>
 
 <div>
   <TextField
+    bind:this={idTextField}
     label={idLabel}
     bind:value={id}
     required

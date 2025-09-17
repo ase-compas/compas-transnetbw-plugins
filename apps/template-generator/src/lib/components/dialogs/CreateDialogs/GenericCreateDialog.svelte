@@ -3,6 +3,7 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
   import { TypeOption } from '../../../domain';
+  import { onMount } from 'svelte';
 
   // ===== Props =====
   export let open: boolean = false;
@@ -19,6 +20,7 @@
   let id;
   let valid = false;
   let selectedItem;
+  let formEl;
 
   // ===== Event Handlers =====
   const handleCreate = () => {
@@ -28,6 +30,16 @@
   const handleCancel = () => {
     closeDialog('cancel');
   };
+
+  const handleClose = () => {
+    closeDialog('close');
+  };
+
+  onMount(() => {
+    setTimeout(() => {
+      formEl.focus();
+    }, 300)
+  })
 
   // ===== Util Functions =====
 </script>
@@ -40,10 +52,12 @@
     bind:open
     on:confirm={handleCreate}
     on:cancel={handleCancel}
+    on:close={handleClose}
     confirmDisabled={!valid}
   >
     <div style="padding: 1rem;" slot="content">
       <CreateTypeForm
+        bind:this={formEl}
         {idLabel}
         {autocompleteLabel}
         getOptions={getOptions}
