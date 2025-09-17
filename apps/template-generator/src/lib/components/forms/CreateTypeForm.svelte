@@ -89,9 +89,16 @@
   export function focus() {
      idTextField?.focus?.();
   }
+
+  function handleSubmit(event: Event) {
+    event.preventDefault();
+    if (isFormValid) {
+      dispatch('submit', { id, selectedItem });
+    }
+  }
 </script>
 
-<div>
+<form on:submit={handleSubmit}>
   <TextField
     bind:this={idTextField}
     label={idLabel}
@@ -131,7 +138,8 @@
       </div>
     </svelte:fragment>
   </Autocomplete>
-</div>
+  <button type="submit" style="display: none"></button>
+</form>
 
 <style>
   .title {

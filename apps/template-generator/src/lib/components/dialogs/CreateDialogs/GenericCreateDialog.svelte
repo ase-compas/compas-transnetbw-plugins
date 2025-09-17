@@ -65,6 +65,7 @@
         bind:id
         bind:selectedItem
         bind:valid
+        on:submit={handleCreate}
       />
     </div>
   </OscdBaseDialog>

@@ -60,7 +60,8 @@
       {#if cancelActionText}
         <Button
           action="cancel"
-          color="secondary">
+          color="secondary"
+          tabindex="1">
           {cancelActionText}
         </Button>
       {/if}
@@ -69,6 +70,7 @@
         action="confirm"
         disabled={confirmDisabled}
         style={confirmDisabled ? '' : `background-color: ${color}; color: white;`}
+        tabindex="0"
       >{confirmActionText}</Button>
     </Actions>
   </div>
