@@ -78,7 +78,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       const abstractLnClass = doc.querySelector(`AbstractLNClass[name="${base}"]`);
       if (abstractLnClass) this.parseLNodeTypeSpecFromElement(abstractLnClass, lnClassName, result, doc);
     }
-    lnElement.querySelectorAll(":scope > DataObject").forEach((dataObject) => {
+    Array.from(lnElement.children)
+      .filter(el => el.tagName === 'DataObject' )
+      .forEach((dataObject) => {
       if (dataObject.getAttribute('deprecated') === 'true') return;
       const spec = this.parseDataObject(dataObject, 'DO');
       if (spec?.name) result[lnClassName][spec.name] = spec;
@@ -95,12 +97,16 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       const cdcName = cdc.getAttribute("name");
       if (!cdcName) return;
       if (!result[cdcName]) result[cdcName] = {};
-      cdc.querySelectorAll(":scope > SubDataObject").forEach((dataObject) => {
+      Array.from(cdc.children)
+        .filter(el => el.tagName === "SubDataObject")
+        .forEach((dataObject) => {
         if (dataObject.getAttribute('deprecated') === 'true') return;
         const spec = this.parseDataObject(dataObject, 'SDO');
         if (spec?.name) result[cdcName][spec.name] = spec;
       });
-      cdc.querySelectorAll(":scope > DataAttribute").forEach((dataAttribute) => {
+      Array.from(cdc.children)
+        .filter(el => el.tagName === "DataAttribute")
+        .forEach((dataAttribute) => {
         if (dataAttribute.getAttribute('deprecated') === 'true') return;
         const spec = this.parseDataAttribute(dataAttribute, 'DA');
         if (spec?.name) result[cdcName][spec.name] = spec;
@@ -119,7 +125,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       const attributeName = attribute.getAttribute("name");
       if (!attributeName) return;
       if (!result[attributeName]) result[attributeName] = {};
-      attribute.querySelectorAll(":scope > SubDataAttribute").forEach((subDataAttribute) => {
+      Array.from(attribute.children)
+        .filter(el => el.tagName === 'SubDataAttribute')
+        .forEach((subDataAttribute) => {
         if (subDataAttribute.getAttribute('deprecated') === 'true') return;
         const spec = this.parseDataAttribute(subDataAttribute, 'BDA');
         if (spec?.name) result[attributeName][spec.name] = spec;
@@ -138,7 +146,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       const name = enumeration.getAttribute("name");
       if (!name) return;
       if (!result[name]) result[name] = {};
-      enumeration.querySelectorAll(":scope > Literal").forEach((dataAttribute) => {
+      Array.from(enumeration.children)
+        .filter(el => el.tagName === 'Literal')
+        .forEach((dataAttribute) => {
         if (dataAttribute.getAttribute('deprecated') === 'true') return;
         const literalName = dataAttribute.getAttribute("name");
         const literalValue = dataAttribute.getAttribute("literalVal");
