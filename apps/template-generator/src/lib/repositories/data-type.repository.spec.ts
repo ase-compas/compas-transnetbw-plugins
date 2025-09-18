@@ -115,11 +115,11 @@ describe('DataTypeRepository', () => {
       const children = doType.children;
 
       expect(children[0].name).toBe('origin');
-      expect(children[0]?.attributes?.type).toBe('da1');
+      expect(children[0]?.typeRef).toBe('da1');
       expect(children[0]?.attributes?.bType).toBe('Struct');
 
       expect(children[1].name).toBe('ctlModel');
-      expect(children[1]?.attributes?.type).toBe('enum1');
+      expect(children[1]?.typeRef).toBe('enum1');
       expect(children[1]?.attributes?.fc).toBe('CF');
       expect(children[1]?.attributes?.dchg).toBe('true');
       expect(children[1]?.attributes?.bType).toBe('Enum');
@@ -143,7 +143,7 @@ describe('DataTypeRepository', () => {
       const children = daType.children;
 
       expect(children[0].name).toBe('orCat');
-      expect(children[0]?.attributes?.type).toBe('enum2');
+      expect(children[0]?.typeRef).toBe('enum2');
       expect(children[0]?.attributes?.bType).toBe('Enum');
 
       expect(children[1].name).toBe('orIdent');
