@@ -7,7 +7,7 @@
   import { getDOTypeService } from '../../../services';
   import { IDoTypeService } from '../../../services/do-type.service';
   import { createObjectReferenceStore, doc } from '../../../stores';
-  import { CloseReason } from '../../../stores/drawerStackStore';
+  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,

@@ -7,7 +7,7 @@
   // ===== Services & Utils =====
   import { getColumns } from './columns.config';
   import { createObjectReferenceStore, doc } from '../../../stores';
-  import { CloseReason } from '../../../stores/drawerStackStore';
+  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { drawers, closeDrawer } from '../../stores/drawerStackStore';
+  import { drawers, closeDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import type { Drawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { fly } from 'svelte/transition';
-  import type { Drawer } from '../../stores/drawerStackStore';
   import { onMount, onDestroy } from 'svelte';
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';

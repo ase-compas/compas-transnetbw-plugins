@@ -1,5 +1,5 @@
 import { SvelteComponent } from 'svelte';
-import { get, Readable, writable } from 'svelte/store';
+import { get, type Readable, writable } from 'svelte/store';
 
 export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
 

@@ -3,8 +3,7 @@
   import { getEnumTypeService } from '../../services';
   import { DataTypeKind, type EnumTypeDetails, Mode } from '../../domain';
   import { onMount } from 'svelte';
-  import { CloseReason } from '../../stores/drawerStackStore';
-  import { confirmUnsavedChanges } from '../../utils/overlayUitils';
+  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';

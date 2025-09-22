@@ -1,7 +1,7 @@
 import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import NewDataObjectType from '../components/dialogs/CreateDialogs/NewDataObjectType.svelte';
 import { DataTypeKind, Mode, ObjectReferenceDetails } from '../domain';
-import { openDrawer } from '../stores/drawerStackStore';
+import { openDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
 import DoTypeDrawer from '../components/drawers/doTypeDrawer/DoTypeDrawer.svelte';
 import NewDataAttributeTypeDialog from '../components/dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
 import NewEnumTypeDialog from '../components/dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
