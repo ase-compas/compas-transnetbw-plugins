@@ -13,6 +13,7 @@
   export let actionLabel: string | null = 'Action';
 
   export let hasSearch: boolean = false;
+  export let searchPlaceHolder: string = 'Search...';
   export let hasAction: boolean = false;
 
   export let showApplyDefaults: boolean = false;
@@ -23,6 +24,7 @@
 
   export let itemsDraggable: boolean = false;
   export let dropCandidate: TBoardItemContext | null = null;
+  export let dragAndDropType: string;
 
   export let items: TItem[] = []
 
@@ -58,6 +60,7 @@
   <TColumnSearchHeader
     title={title}
     subtitle={subtitle}
+    searchPlaceHolder={searchPlaceHolder}
     hasSearch={hasSearch}
     hasAction={hasAction}
     actionLabel={actionLabel}
@@ -84,6 +87,7 @@
     itemsDraggable={itemsDraggable}
     dropCandidate={dropCandidate}
     showSelectionIndicator={showSelectionIndicator}
+    dragAndDropType={dragAndDropType}
     on:itemClick={(e) => forwardEvent('itemClick', e.detail)}
     on:itemEdit={(e) => forwardEvent('itemEdit', e.detail)}
     on:itemApplyDefaults={(e) => forwardEvent('itemApplyDefaults', e.detail)}

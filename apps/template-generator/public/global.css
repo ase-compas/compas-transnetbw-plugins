@@ -91,3 +91,16 @@ button:focus {
   line-height: -1.4;
   user-select: none;
 }
+
+
+.oscd-card {
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  background: white;
+}
+
+.oscd-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}

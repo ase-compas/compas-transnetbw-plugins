@@ -16,6 +16,7 @@ export { default as OscdBreadcrumbs } from './oscd-breadcrumbs/OscdBreadcrumbs.s
 export { default as OscdSwitch } from './oscd-switch/OscdSwitch.svelte';
 export { default as OscdIconActionButton } from './oscd-icon-action-button/OscdIconActionButton.svelte';
 export { default as OscdDraggableList } from './oscd-draggable-list/OscdDraggableList.svelte';
+export {default as DrawerStack} from './drawer-stack/DrawerStack.svelte'
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
 

@@ -16,6 +16,8 @@
   export let workItems: TItem[] = items;
 
   export let dropCandidate: TBoardItemContext | null = null;
+  // Items of a list can only be dropped on items of another list with the same dragAndDropType.
+  export let dragAndDropType: string;
 
   $: workItems = [...items]
 
@@ -77,7 +79,8 @@
     items: workItems,
     dragDisabled: !itemsDraggable,
     dropAnimationDisabled: true,
-    dropTargetStyle: {}
+    dropTargetStyle: {},
+    type: dragAndDropType,
 
   }}
   on:consider={e => handleListConsider(e)}
@@ -89,7 +92,8 @@
                items: [item],
                dragDisabled: true,
                dropAnimationDisabled: true,
-              dropTargetStyle: {}
+              dropTargetStyle: {},
+              type: dragAndDropType
              }}
          on:consider={e => handleDropConsider(e, item.id)}
          on:finalize={e => handleDropFinalize(e, item.id)}

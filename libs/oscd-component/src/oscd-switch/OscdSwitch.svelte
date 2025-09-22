@@ -11,10 +11,17 @@
   export let formFieldClass = '';
   export let icons = false;
 
+  export let preventToggleOnClick = false;
+
   const dispatch = createEventDispatcher();
 
-  function handleChange() {
-    dispatch('change', !checked);
+  function handleChange(newChecked: boolean) {
+
+    if(preventToggleOnClick) {
+      checked = !newChecked;
+    }
+
+    dispatch('change', newChecked);
   }
 </script>
 
@@ -24,7 +31,7 @@
     class={switchClass}
     bind:checked
     {icons}
-    on:click={handleChange}
+    on:SMUISwitch:change={e => handleChange(e.detail.selected)}
   />
   {#if label}
   <label for={id} style={labelStyle} class="oscd-switch-label">

@@ -1,4 +1,4 @@
-import { DataTypeKind } from '../domain/core.model';
+import { DataTypeKind } from '../domain';
 
 type TypeElementVisitor = (typeKind: DataTypeKind, el: Element) => void;
 

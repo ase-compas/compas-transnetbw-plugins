@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import TextField from "@smui/textfield";
   import Autocomplete from "@smui-extra/autocomplete";
+  import { tick } from 'svelte';
 
   // --- Types ---
   export interface Option {
@@ -81,13 +82,25 @@
   $: dispatch('change', { id, selectedItem, valid });
 
   // --- Events ---
-  const dispatch = createEventDispatcher<>();
+  const dispatch = createEventDispatcher();
 
-  // Emit values when they change
+  let idTextField;
+
+  export function focus() {
+     idTextField?.focus?.();
+  }
+
+  function handleSubmit(event: Event) {
+    event.preventDefault();
+    if (isFormValid) {
+      dispatch('submit', { id, selectedItem });
+    }
+  }
 </script>
 
-<div>
+<form on:submit={handleSubmit}>
   <TextField
+    bind:this={idTextField}
     label={idLabel}
     bind:value={id}
     required
@@ -125,7 +138,8 @@
       </div>
     </svelte:fragment>
   </Autocomplete>
-</div>
+  <button type="submit" style="display: none"></button>
+</form>
 
 <style>
   .title {

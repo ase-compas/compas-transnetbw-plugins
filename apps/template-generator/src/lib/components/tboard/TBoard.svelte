@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { v4 as uuidv4 } from 'uuid';
 
   import IconButton from '@smui/icon-button';
   import TColumn from './TColumn.svelte';
@@ -12,6 +13,11 @@
   export let data: TData[] = [];
 
   let dropCandidate: TBoardItemContext | null = null; // This will hold the item being dragged. On The board only one item can be dragged at a time.
+  let boardId: string;
+
+  onMount(() => {
+    boardId = uuidv4();
+  });
 
   function forwardEvent(eventType: string, columnId: string, detail: any) {
     dispatch(eventType, { columnId, ...detail });
@@ -84,12 +90,14 @@
       dragAndDropBorder={column.dragAndDropBorder}
       actionLabel={column.actionLabel}
       hasSearch={column.hasSearch}
+      searchPlaceHolder={column.searchPlaceholder}
       hasAction={column.hasAction}
       showApplyDefaults={column.showApplyDefaults}
       canSelectItems={column.canSelectItems}
       showSelectionIndicator={column.showSelectionIndicator}
       itemsDraggable={column.itemsDraggable}
       items={data[column.id]}
+      dragAndDropType={boardId}
       dropCandidate={dropCandidate}
       on:columnActionClick={e => forwardEvent('columnActionClick', column.id, e.detail)}
       on:applyDefaults={e => forwardEvent('applyDefaults', column.id, e.detail)}
@@ -119,5 +127,3 @@
     display: flex;
   }
 </style>
-
-

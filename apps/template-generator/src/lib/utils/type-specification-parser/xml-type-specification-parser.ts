@@ -2,34 +2,66 @@ import { DataTypeKind, ObjectSpecification } from '../../domain';
 import { ITypeSpecificationParser, TypeSpecifications, TypeSpecMap } from './i-type-specification-parser';
 
 /**
- * Parses XML type specifications for LNodeType, DOType, DAType, and EnumType.
+ * Parses a Name Space Definition (NSD) XML string of an IEC 61850 data model
+ * and extracts all type specifications.
+ *
+ * Produces a normalized structure containing LNodeType, DOType, DAType,
+ * and EnumType definitions.
  */
 export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
-  private doc: Document;
 
-  constructor(xmlString: string) {
-    this.doc = new DOMParser().parseFromString(xmlString, "text/xml");
+  public parseFromString(xmlString: string): TypeSpecifications {
+    const doc = new DOMParser().parseFromString(xmlString, "text/xml");
+    return this.parseFromDocument(doc);
   }
 
-  /**
-   * Parses all type specifications from the XML document.
-   */
-  public parse(): TypeSpecifications {
+  public parseFromStrings(xmlStrings: string[]): TypeSpecifications {
+    const docs = xmlStrings.map(xmlString => new DOMParser().parseFromString(xmlString, "text/xml"));
+    return this.parseFromDocuments(docs);
+  }
+
+  public parseFromDocument(doc: Document): TypeSpecifications {
     return {
-      lNodeType: this.parseLNodeTypeSpecs(),
-      doType: this.parseDOTypeSpecs(),
-      daType: this.parseDATypeSpecs(),
-      enumType: this.parseEnumTypeSpecs(),
+      lNodeType: this.parseLNodeTypeSpecs(doc),
+      doType: this.parseDOTypeSpecs(doc),
+      daType: this.parseDATypeSpecs(doc),
+      enumType: this.parseEnumTypeSpecs(doc),
     };
+  }
+
+  public parseFromDocuments(docs: Document[]): TypeSpecifications {
+    const combinedSpecs: TypeSpecifications = {
+      lNodeType: {},
+      doType: {},
+      daType: {},
+      enumType: {},
+    };
+
+    docs.forEach(doc => {
+      const specs = this.parseFromDocument(doc);
+      // Merge lNodeType
+      this.mergeSpecs(combinedSpecs, specs);
+    });
+
+    return combinedSpecs;
+  }
+
+  private mergeSpecs(target: TypeSpecifications, source: TypeSpecifications) {
+    for (const key of ['lNodeType','doType','daType','enumType'] as const) {
+      for (const [subKey, value] of Object.entries(source[key])) {
+        if (!target[key][subKey]) target[key][subKey] = {};
+        Object.assign(target[key][subKey], value);
+      }
+    }
   }
 
   /**
    * Parses LNodeType specifications.
    */
-  private parseLNodeTypeSpecs(): TypeSpecMap {
+  private parseLNodeTypeSpecs(doc: Document): TypeSpecMap {
     const result: TypeSpecMap = {};
-    const lnClasses = this.doc.querySelectorAll("LNClass");
-    lnClasses.forEach((lnClass) => this.parseLNodeTypeSpecFromElement(lnClass, undefined, result));
+    const lnClasses = doc.querySelectorAll("LNClass");
+    lnClasses.forEach((lnClass) => this.parseLNodeTypeSpecFromElement(lnClass, undefined, result, doc));
     return result;
   }
 
@@ -37,18 +69,20 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
    * Parses a single LNClass element and its DataObjects.
    * If it has a base (abstract lnClass) attribute, it recursively parses the base LNClass first.
    */
-  private parseLNodeTypeSpecFromElement(lnElement: Element, subElement: string | undefined, result: TypeSpecMap): void {
+  private parseLNodeTypeSpecFromElement(lnElement: Element, subElement: string | undefined, result: TypeSpecMap, doc: Document): void {
     const lnClassName = subElement ?? lnElement.getAttribute("name");
     if (!lnClassName) return;
     if (!result[lnClassName]) result[lnClassName] = {};
     const base = lnElement.getAttribute("base");
     if (base) {
-      const abstractLnClass = this.doc.querySelector(`AbstractLNClass[name="${base}"]`);
-      if (abstractLnClass) this.parseLNodeTypeSpecFromElement(abstractLnClass, lnClassName, result);
+      const abstractLnClass = doc.querySelector(`AbstractLNClass[name="${base}"]`);
+      if (abstractLnClass) this.parseLNodeTypeSpecFromElement(abstractLnClass, lnClassName, result, doc);
     }
-    lnElement.querySelectorAll(":scope > DataObject").forEach((dataObject) => {
+    Array.from(lnElement.children)
+      .filter(el => el.tagName === 'DataObject' )
+      .forEach((dataObject) => {
       if (dataObject.getAttribute('deprecated') === 'true') return;
-      const spec = this.parseDataObject(dataObject);
+      const spec = this.parseDataObject(dataObject, 'DO');
       if (spec?.name) result[lnClassName][spec.name] = spec;
     });
   }
@@ -56,21 +90,25 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses DOType specifications (CDC elements).
    */
-  private parseDOTypeSpecs(): TypeSpecMap {
+  private parseDOTypeSpecs(doc: Document): TypeSpecMap {
     const result: TypeSpecMap = {};
-    const cdcs = this.doc.querySelectorAll("CDC");
+    const cdcs = doc.querySelectorAll("CDC");
     cdcs.forEach((cdc) => {
       const cdcName = cdc.getAttribute("name");
       if (!cdcName) return;
       if (!result[cdcName]) result[cdcName] = {};
-      cdc.querySelectorAll(":scope > SubDataObject").forEach((dataObject) => {
+      Array.from(cdc.children)
+        .filter(el => el.tagName === "SubDataObject")
+        .forEach((dataObject) => {
         if (dataObject.getAttribute('deprecated') === 'true') return;
-        const spec = this.parseDataObject(dataObject);
+        const spec = this.parseDataObject(dataObject, 'SDO');
         if (spec?.name) result[cdcName][spec.name] = spec;
       });
-      cdc.querySelectorAll(":scope > DataAttribute").forEach((dataAttribute) => {
+      Array.from(cdc.children)
+        .filter(el => el.tagName === "DataAttribute")
+        .forEach((dataAttribute) => {
         if (dataAttribute.getAttribute('deprecated') === 'true') return;
-        const spec = this.parseDataAttribute(dataAttribute);
+        const spec = this.parseDataAttribute(dataAttribute, 'DA');
         if (spec?.name) result[cdcName][spec.name] = spec;
       });
     });
@@ -80,16 +118,18 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses DAType specifications (ConstructedAttribute elements).
    */
-  private parseDATypeSpecs(): TypeSpecMap {
+  private parseDATypeSpecs(doc: Document): TypeSpecMap {
     const result: TypeSpecMap = {};
-    const attributes = this.doc.querySelectorAll("ConstructedAttribute");
+    const attributes = doc.querySelectorAll("ConstructedAttribute");
     attributes.forEach((attribute) => {
       const attributeName = attribute.getAttribute("name");
       if (!attributeName) return;
       if (!result[attributeName]) result[attributeName] = {};
-      attribute.querySelectorAll(":scope > SubDataAttribute").forEach((subDataAttribute) => {
+      Array.from(attribute.children)
+        .filter(el => el.tagName === 'SubDataAttribute')
+        .forEach((subDataAttribute) => {
         if (subDataAttribute.getAttribute('deprecated') === 'true') return;
-        const spec = this.parseDataAttribute(subDataAttribute);
+        const spec = this.parseDataAttribute(subDataAttribute, 'BDA');
         if (spec?.name) result[attributeName][spec.name] = spec;
       });
     });
@@ -99,14 +139,16 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses EnumType specifications (Enumeration elements).
    */
-  private parseEnumTypeSpecs(): TypeSpecMap {
+  private parseEnumTypeSpecs(doc: Document): TypeSpecMap {
     const result: TypeSpecMap = {};
-    const enumeration = this.doc.querySelectorAll("Enumeration");
+    const enumeration = doc.querySelectorAll("Enumeration");
     enumeration.forEach((enumeration) => {
       const name = enumeration.getAttribute("name");
       if (!name) return;
       if (!result[name]) result[name] = {};
-      enumeration.querySelectorAll(":scope > Literal").forEach((dataAttribute) => {
+      Array.from(enumeration.children)
+        .filter(el => el.tagName === 'Literal')
+        .forEach((dataAttribute) => {
         if (dataAttribute.getAttribute('deprecated') === 'true') return;
         const literalName = dataAttribute.getAttribute("name");
         const literalValue = dataAttribute.getAttribute("literalVal");
@@ -129,8 +171,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses a DataAttribute element into an ObjectSpecification.
    * Skips if deprecated.
+   * Only parases fc, dchg, qchg and dupd attributes for DA elements.
    */
-  private parseDataAttribute(dataAttribute: Element): ObjectSpecification | null {
+  private parseDataAttribute(dataAttribute: Element, tagName: 'DA' | 'BDA'): ObjectSpecification | null {
     if (dataAttribute.getAttribute('deprecated') === 'true') return null;
 
     const name = dataAttribute.getAttribute('name');
@@ -141,7 +184,9 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
 
     // Collect additional attributes
     const attributes: Record<string, string> = {};
-    ['fc', 'dchg', 'qchg', 'dupd'].forEach(attr => this.addAttributeIfExists(dataAttribute, attributes, attr));
+    if(tagName === 'DA') {
+      ['fc', 'dchg', 'qchg', 'dupd'].forEach(attr => this.addAttributeIfExists(dataAttribute, attributes, attr));
+    }
 
     // Determine reference type and base type
     let refTypeKind: DataTypeKind | undefined = undefined;
@@ -160,7 +205,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
 
     return {
       name,
-      tagName: 'DA',
+      tagName: tagName,
       isMandatory: presCond === 'M',
       requiresReference,
       objectType: type,
@@ -172,7 +217,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
   /**
    * Parses a DataObject element into an ObjectSpecification.
    */
-  private parseDataObject(dataObject: Element): ObjectSpecification | null {
+  private parseDataObject(dataObject: Element, tagName: 'DO' | 'SDO'): ObjectSpecification | null {
     if (dataObject.getAttribute('deprecated') === 'true') return null;
     const name = dataObject.getAttribute('name');
     const type = dataObject.getAttribute('type');
@@ -180,7 +225,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
     if (!name || !type || !presCond) return null;
     return {
       name: name,
-      tagName: 'DO',
+      tagName: tagName,
       isMandatory: presCond === 'M',
       requiresReference: true,
       objectType: type,

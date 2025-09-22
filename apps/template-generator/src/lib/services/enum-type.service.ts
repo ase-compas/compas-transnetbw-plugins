@@ -46,16 +46,12 @@ export class EnumTypeService implements IEnumTypeService {
   async getTypeById(id: string): Promise<EnumTypeDetails> {
     const dataType: EnumType = this.typeRepo.findDataTypeById(DataTypeKind.EnumType, id) as EnumType;
     if (!dataType) throw new Error(`Unable to find DOType with id ${id}`);
-
-    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => ({
-      ...child,
-      meta: {
-        isConfigured: true,
-        isMandatory: false,
-        requiresReference: false,
-        objectType: ''
-      },
-    }));
+    let objRefDetails: ObjectReferenceDetails[];
+    try {
+      objRefDetails = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.EnumType, dataType.instanceType, dataType.children);
+    } catch (error) {
+      objRefDetails = this.toDefaultDetails(dataType);
+    }
 
     return {
       ...dataType,
@@ -93,5 +89,18 @@ export class EnumTypeService implements IEnumTypeService {
 
   getTypeOptions(): Promise<TypeOption[]> {
     return this.dataTypeService.getTypeOptions(DataTypeKind.EnumType);
+  }
+
+  private toDefaultDetails(dataType: EnumType) {
+    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => ({
+      ...child,
+      meta: {
+        isConfigured: true,
+        isMandatory: false,
+        requiresReference: false,
+        objectType: ''
+      }
+    }));
+    return objRefDetails;
   }
 }

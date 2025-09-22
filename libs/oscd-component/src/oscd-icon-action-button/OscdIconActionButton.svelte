@@ -5,13 +5,15 @@
     OscdEditIcon,
     OscdVisibilityIcon,
     OscdWandStarsIcon,
-    OscdLinkOffIcon
+    OscdLinkOffIcon, OscdCloseIcon
   } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   // ===== Parameters =====
   /** Tooltip text to display on hover */
   export let tooltip: string;
+  /** Side of the tooltip */
+  export let tooltipSide: 'top' | 'bottom' | 'left' | 'right' = 'top';
   /** Type of action button, e.g., 'delete' or 'duplicate' */
   export let type: 'delete' | 'duplicate';
   /** Delay in ms before showing the tooltip */
@@ -22,7 +24,7 @@
   export let onClick: (e: MouseEvent) => void;
 
 </script>
- <OscdTooltip content={tooltip} hoverDelay={showDelay}>
+ <OscdTooltip content={tooltip} hoverDelay={showDelay} side={tooltipSide}>
 
   <button
     aria-label={tooltip}
@@ -44,6 +46,8 @@
       <OscdWandStarsIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
     {:else if type === 'link-off'}
       <OscdLinkOffIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+    {:else if type === 'close'}
+      <OscdCloseIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`}" />
     {:else}
       Unsupported supported type: {type}
     {/if}

@@ -23,3 +23,4 @@ export { default as OscdWandStarsIcon } from './oscd-wand-stars-icon/OscdWandSta
 export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte'
 export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte'
 export {default as OscdCallMadeIcon} from './oscd-call-made-icon/OscdCallMadeIcon.svelte'
+export {default as OscdCloseIcon} from './oscd-close-icon/OscdCloseIcon.svelte'

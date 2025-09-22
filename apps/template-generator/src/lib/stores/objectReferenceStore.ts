@@ -115,9 +115,7 @@ export function createObjectReferenceStore(
       if(curr.meta.isConfigured !== orig.meta.isConfigured) return true;
       if (!curr.meta.isConfigured) return false;
       return (curr.name !== orig.name ||
-        curr.typeRef !== orig.typeRef ||
-        curr.typeRef === '' ||
-        curr.typeRef == null || false);
+        curr.typeRef !== orig.typeRef);
     });
   });
 

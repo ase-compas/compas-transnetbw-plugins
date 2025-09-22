@@ -1,10 +1,11 @@
 <script lang="ts">
   import LNodeTypesView from "./views/lNodeTypes/LNodeTypesView.svelte";
   import LNodeTypeDetailView from "./views/lNodeTypeDetails/LNodeTypeDetailView.svelte";
-  import { route, host as storeHost } from "./lib/stores";
+  import { route, host as storeHost, doc as storeDoc } from "./lib/stores";
   import { onMount } from 'svelte';
   import { initServices } from './lib/services';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -35,6 +36,7 @@
 
   $: if(doc) {
     initServices(doc, host);
+    storeDoc.set(doc);
   }
 </script>
 
@@ -54,6 +56,7 @@
   {/if}
 </div>
 <DialogHost/>
+<DrawerStack/>
 
 <style>
   @import "/global.css";

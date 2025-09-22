@@ -5,7 +5,7 @@
   import TBoard from '../../tboard/TBoard.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { ItemDropOnItemEventDetail, type TBoardItemContext, TItem } from '../../tboard/types';
-  import { type BasicType, BasicTypes, DataTypes, DOTypeDetails, type ObjectReferenceDetails } from '../../../domain';
+  import { type BasicType, BasicTypes, DOTypeDetails, type ObjectReferenceDetails } from '../../../domain';
   import { IDoTypeService } from '../../../services/do-type.service';
   import { getDOTypeService } from '../../../services';
   import { createObjectReferenceStore } from '../../../stores';
@@ -15,6 +15,7 @@
     getDisplayReferenceItems
   } from '../../../utils/typeBoardUtils';
   import { mapDataTypeToItem } from '../../../mappers';
+  import { openCreateDataAttributeTypeDialog } from '../../../utils/overlayUitils';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -118,6 +119,16 @@
     }
   }
 
+  function handleActionClick({ columnId }) {
+    if (columnId === 'dataObjectTypes') {
+      openCreateDataAttributeTypeDialog();
+    } else if (columnId === 'dataAttributeTypes') {
+      openCreateDataAttributeTypeDialog();
+    } else if (columnId === 'enumTypes') {
+      openCreateDataAttributeTypeDialog();
+    }
+  }
+
   function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
     if(!source || !target) return;
     refStore.setTypeReference(target.itemId, source.itemId)
@@ -138,6 +149,7 @@
   width="calc(100vw - 10rem)"
   on:confirm={() => handleConfirm()}
   on:cancel={() => handleCancel()}>
+  on:columnActionClick={e => handleActionClick(e.detail)}
   <Content slot="content">
 
     <TBoard

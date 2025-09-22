@@ -28,6 +28,7 @@ function handleCancel() {
   {color}
   on:confirm={() => handleConfirm()}
   on:cancel={() => handleCancel()}
+  on:close={() => closeDialog('close')}
   width="100%"
   maxWidth="500px"
   height="auto"

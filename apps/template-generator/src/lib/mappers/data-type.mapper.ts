@@ -101,7 +101,9 @@ export function mapElementToObjectReference(element: Element): ObjectReference {
     name: element.getAttribute('name') || '',
     tagName: element.tagName,
     typeRef: element.getAttribute('type'),
-    attributes: Object.fromEntries(Array.from(element.attributes).map(attr => [attr.name, attr.value]))
+    attributes: Object.fromEntries(Array.from(element.attributes)
+      .filter(attr => attr.name !== 'name' && attr.name !== 'type')
+      .map(attr => [attr.name, attr.value]))
   };
 }
 

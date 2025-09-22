@@ -52,6 +52,9 @@
       "@oscd-transnet-plugins/oscd-services/dialog": [
         "libs/oscd-services/src/dialog/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-services/drawer": [
+        "libs/oscd-services/src/drawer/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-template-generator": [
         "libs/oscd-template-generator/src/index.ts"
       ],

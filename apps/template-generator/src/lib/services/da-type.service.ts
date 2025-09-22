@@ -78,7 +78,13 @@ export class DaTypeService implements IDaTypeService {
   async getTypeById(id: string): Promise<DATypeDetails> {
     const dataType: DAType = this.typeRepo.findDataTypeById(DataTypeKind.DAType, id) as DAType;
     if (!dataType) throw new Error(`Unable to find DAType with id ${id}`);
-    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.DAType, dataType.instanceType, dataType.children);
+    let objRefDetails: ObjectReferenceDetails[];
+    try {
+      objRefDetails = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.DAType, dataType.instanceType, dataType.children);
+    } catch (e) {
+      objRefDetails = this.toDefaultDetails(dataType);
+    }
+
     return {
       ...dataType,
       children: objRefDetails,
@@ -95,6 +101,10 @@ export class DaTypeService implements IDaTypeService {
     if (!data.id) throw new Error('No id provided');
     if (!data.instanceType) throw new Error('No instanceType provided');
     const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.DAType, data.instanceType, data.children);
+
+    // Set tagname to BDA. DAType can only have BDA children.
+    objRefDetails.forEach(child => child.tagName = 'BDA');
+
     const newType: DAType = {
       id: data.id,
       instanceType: data.instanceType,
@@ -126,5 +136,30 @@ export class DaTypeService implements IDaTypeService {
 
   async getTypeOptions(): Promise<TypeOption[]> {
     return this.dataTypeService.getTypeOptions(DataTypeKind.DAType);
+  }
+
+  private toDefaultDetails(dataType: DAType) {
+    const objRefDetails: ObjectReferenceDetails[] = dataType.children.map(child => {
+
+      let refTypeKind: DataTypeKind | undefined = undefined;
+      const bType = child.attributes?.bType;
+      if(bType && bType === 'Struct') {
+        refTypeKind = DataTypeKind.DAType;
+      } else if(bType && bType === 'Enum') {
+        refTypeKind = DataTypeKind.EnumType;
+      }
+
+      return {
+        ...child,
+        meta: {
+          isConfigured: true,
+          isMandatory: false,
+          objectType: undefined,
+          requiresReference: !!refTypeKind,
+          refTypeKind: refTypeKind,
+        }
+      }
+    });
+    return objRefDetails;
   }
 }
