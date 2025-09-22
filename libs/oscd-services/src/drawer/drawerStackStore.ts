@@ -3,6 +3,34 @@ import { get, type Readable, writable } from 'svelte/store';
 
 export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
 
+/**
+ * Drawer interface
+ *
+ * - `title`: Displayed in the header / breadcrumbs.
+ * - `component`: Svelte component that will be rendered inside the drawer.
+ * - `props`: Optional props to pass to the component.
+ * - `canClose`: (optional) callback to decide if the drawer is allowed to close.
+ *   - Receives a `CloseReason` (why the drawer is being closed).
+ *   - Should return `true` (allow close) or `false` (prevent close).
+ *   - Can also return a Promise for async validation (e.g., confirm dialogs).
+ * - `ref`: Reference to the mounted Svelte component instance.
+ *   - If the component itself defines and exports a `canClose` method, that will be called.
+ * Example usage in a Svelte component:
+ * ```svelte
+ * <script lang="ts">
+ * import type { CloseReason } from "@oscd-transnet-plugins/oscd-services/drawer";
+ *
+ *
+ * //This function will be called automatically before the drawer closes
+ *   export function canClose(reason: CloseReason): boolean {
+ *    if (reason === "save") return true;
+ *     return confirm("Are you sure you want to close without saving?");
+ *  }
+ *  </script>
+ *
+ * <div>Drawer Content</div>
+ * ```
+ */
 export interface Drawer<T = any> {
   title: string;
   component: typeof SvelteComponent;
@@ -16,6 +44,9 @@ export const drawers: Readable<Drawer[]> = {
   subscribe: drawerStore.subscribe
 };
 
+/**
+ * Open a new drawer by pushing it to the stack.
+ */
 export function openDrawer<T>(drawer: Drawer<T>) {
   drawerStore.update(list => [...list, drawer]);
 }
