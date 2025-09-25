@@ -1,9 +1,9 @@
 <script lang="ts">
   import LNodeTypesView from "./views/lNodeTypes/LNodeTypesView.svelte";
   import LNodeTypeDetailView from "./views/lNodeTypeDetails/LNodeTypeDetailView.svelte";
-  import { route, host as storeHost, doc as storeDoc } from "./lib/stores";
+  import { route, host as storeHost, doc as storeDoc } from "@oscd-transnet-plugins/oscd-template-generator";
   import { onMount } from 'svelte';
-  import { initServices } from './lib/services';
+  import { initServices } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
 

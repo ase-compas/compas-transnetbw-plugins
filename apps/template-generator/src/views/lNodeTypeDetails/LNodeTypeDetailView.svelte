@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { createObjectReferenceStore, route, doc as docStore} from '../../lib/stores';
+  import { createObjectReferenceStore, route, doc as docStore} from '@oscd-transnet-plugins/oscd-template-generator';
   import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
 
   // Components
-  import TBoard from '../../lib/components/tboard/TBoard.svelte';
+  import  { TBoard } from '@oscd-transnet-plugins/oscd-template-generator';
 
   // Services & utils
-  import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
+  import { getLNodeTypeService, ILNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
   import { loadLNodeType, loadTypes } from './dataLoader';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
@@ -14,21 +14,19 @@
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems
-  } from '../../lib/utils/typeBoardUtils';
+  } from '@oscd-transnet-plugins/oscd-template-generator';
 
   // Types
-  import type { TBoardItemContext, TItem } from '../../lib/components/tboard/types';
-  import type { BasicType, BasicTypes, LNodeTypeDetails, Mode, ObjectReferenceDetails } from '../../lib/domain';
+  import type { TBoardItemContext, TItem } from '@oscd-transnet-plugins/oscd-template-generator';
+  import type { BasicType, BasicTypes, LNodeTypeDetails, Mode, ObjectReferenceDetails } from '@oscd-transnet-plugins/oscd-template-generator';
   import {
     openCreateDataAttributeTypeDialog, openCreateDataObjectTypeDialog, openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer, openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
     openReferencedTypeDrawer
-  } from '../../lib/utils/overlayUitils';
-  import { createEditorStore } from '../../lib/stores/editorStore';
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { createEditorStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
-
-  export let doc: XMLDocument;
 
   // -----------------------------
   // Service instances

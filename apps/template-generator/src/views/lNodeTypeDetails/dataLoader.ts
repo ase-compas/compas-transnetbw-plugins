@@ -1,5 +1,5 @@
-import { getLNodeTypeService, ILNodeTypeService } from '../../lib/services';
-import { BasicTypes, LNodeTypeDetails } from '../../lib/domain';
+import { getLNodeTypeService, ILNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
+import { BasicTypes, LNodeTypeDetails } from '@oscd-transnet-plugins/oscd-template-generator';
 
 let lNodeTypeService: ILNodeTypeService;
 

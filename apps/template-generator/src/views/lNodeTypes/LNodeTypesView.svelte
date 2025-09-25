@@ -1,19 +1,20 @@
 <script lang="ts">
   // ===== Imports =====
   import {OscdInput, OscdButton, OscdConfirmDialog} from '@oscd-transnet-plugins/oscd-component';
-  import NewLNodeTypeDialog from '../../lib/components/dialogs/CreateDialogs/NewLNodeTypeDialog.svelte';
+  import { NewLNodeTypeDialog } from '@oscd-transnet-plugins/oscd-template-generator';
   import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import LogicalNodeTypeRow from '../../lib/components/tables/LogicalNodeTypeRow.svelte';
+  import { LogicalNodeTypeRow} from '@oscd-transnet-plugins/oscd-template-generator';
   import { createEventDispatcher } from 'svelte';
   import {
     getLNodeTypeService,
     ILNodeTypeService,
-  } from '../../lib/services';
-  import { type Route, route } from "../../lib/stores";
+    type Route,
+    route,
+    BasicType
+  } from '@oscd-transnet-plugins/oscd-template-generator';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { BasicType } from '../../lib/domain';
 
   export let doc: XMLDocument;
 

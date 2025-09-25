@@ -1,4 +1,4 @@
-import { LNodeTypeDetails } from '../../lib/domain';
+import { type LNodeTypeDetails } from '@oscd-transnet-plugins/oscd-template-generator'
 
 export function createBreadcrumbs(isCreateMode: boolean, lNodeType: LNodeTypeDetails) {
   const base = { label: 'Logical Node Types', enabled: true };
