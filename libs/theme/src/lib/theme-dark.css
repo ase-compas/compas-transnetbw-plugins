@@ -1,0 +1,8 @@
+@import "./global.css";
+@import "./colors-light.css";
+
+:root {
+  body {
+    background: #073642 !important;
+  }
+}
