@@ -6,9 +6,9 @@ This is a CSS-only theme library providing color and typography variables for de
  
 ## How to use
 
-Use the theme variables in your app (Open SCD will pick them up automatically).
+Use the theme variables in your app (Open SCD will set the colors to these variables).
 
-Import the styles into *only in development* into `App.svelte`:
+Import the styles *only in development* into `App.svelte`:
 
 ```ts
 if (import.meta.env.DEV) {
