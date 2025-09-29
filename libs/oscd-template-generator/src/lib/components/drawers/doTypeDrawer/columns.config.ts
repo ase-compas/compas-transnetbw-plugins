@@ -1,11 +1,11 @@
-import type { TColumnConfig } from '@oscd-transnet-plugins/oscd-template-generator'
+import { type TColumnConfig } from '../../tboard/types';
 
 export function getColumns(isEditMode: boolean): TColumnConfig[] {
   return [
     {
       id: 'refs',
-      title: 'Referenced Data Types',
-      searchPlaceholder: 'Search Referenced Types...',
+      title: 'Data Object Structure',
+      searchPlaceholder: 'Search Object Structures...',
       hasSearch: true,
       highlighted: true,
       dragAndDropBorder: isEditMode,
@@ -14,32 +14,34 @@ export function getColumns(isEditMode: boolean): TColumnConfig[] {
       itemsDraggable: false,
     },
     {
-      id: 'doTypes',
-      title: 'Data Object Types',
+      id: 'dataObjectTypes',
+      title: 'Data Object Types (SDO)',
       searchPlaceholder: 'Search Object Types...',
-      actionLabel: 'Create',
+      actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
       itemsDraggable: isEditMode,
       dragAndDropBorder: isEditMode,
     },
     {
-      id: 'daTypes',
+      id: 'dataAttributeTypes',
       title: 'Data Attribute Types',
       searchPlaceholder: 'Search Attribute Types...',
-      actionLabel: 'Create',
+      actionLabel: 'Add New',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: false
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     },
     {
       id: 'enumTypes',
       title: 'Enum Types',
+      actionLabel: 'Add New',
       searchPlaceholder: 'Search Enum Types...',
-      actionLabel: 'Create',
       hasSearch: true,
       hasAction: true,
-      itemsDraggable: false
+      itemsDraggable: isEditMode,
+      dragAndDropBorder: isEditMode,
     }
   ];
 }
