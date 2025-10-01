@@ -11,6 +11,10 @@
   export let devMode: boolean = false;
   export let host: HTMLElement | null = null;
 
+  if (import.meta.env.DEV) {
+    import("../../../libs/theme/src/lib/theme-light.css")
+  }
+
   async function handleFileChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
