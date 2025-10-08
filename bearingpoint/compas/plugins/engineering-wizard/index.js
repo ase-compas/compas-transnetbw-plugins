@@ -7804,7 +7804,7 @@ function tl(n, e) {
   });
 }
 function Xs(n) {
-  console.log(n), Vt.update((e) => e.isOpen ? { ...e, props: { ...e.props, ...n } } : e);
+  Vt.update((e) => e.isOpen ? { ...e, props: { ...e.props, ...n } } : e);
 }
 Pe({
   class: "smui-paper__content",
