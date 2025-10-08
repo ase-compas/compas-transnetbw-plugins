@@ -5,7 +5,7 @@
   import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost } from '../../../libs/oscd-services/src/dialog';
-  import { openDialog } from '../../../libs/oscd-services/src/dialog';
+  import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
@@ -89,8 +89,12 @@
           // Optionally handle exit logic; currently nothing persistent to reset.
         }
       });
-    selected = null; // ensure list view stays visible behind dialog
+    selected = null;
   }
+
+  $: updateDialogProps({
+    editCount, doc
+  });
 
   function handleView(e: CustomEvent<Process>) {
     selected = e.detail;
@@ -102,10 +106,6 @@
 
   function goBack() {
     selected = null;
-  }
-
-  function exitWorkflow() {
-    // No persistent state to reset, but could add logic here if needed.
   }
 </script>
 

@@ -77,3 +77,15 @@ export function closeDialog<T = any>(type: string, data?: T) {
     return { component: null, props: {}, isOpen: false };
   });
 }
+
+/**
+ * Helper to update props of the currently open dialog reactively.
+ * @param partial - An object containing the props to update.
+ */
+export function updateDialogProps(partial: Record<string, any>) {
+  console.log(partial);
+  dialogStore.update((store) => {
+    if (!store.isOpen) return store; // nothing to do
+    return { ...store, props: { ...store.props, ...partial } };
+  });
+}
