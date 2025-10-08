@@ -1,7 +1,8 @@
 import { writable } from 'svelte/store';
 import type { ComponentType } from 'svelte';
 
-export type DialogResult<T = any> = { type: string; data?: T };
+export type DialogCloseType = 'confirm' | 'cancel' | 'exit';
+export type DialogResult<T = any> = { type: DialogCloseType; data?: T };
 
 interface DialogStore<T = any> {
   component: ComponentType | null;

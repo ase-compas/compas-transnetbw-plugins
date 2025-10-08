@@ -1,44 +1,9 @@
-/**
- * Dialog system for Svelte using a global store.
- *
- * Usage:
- *
- * 1. Place <DialogHost /> at the root of your app:
- *
- *    <DialogHost {dialogStore} />
- *
- * 2. Open a dialog anywhere in your code:
- *
- *    const result = await openDialog(MyModal, { message: 'Are you sure?' });
- *
- *    if (result.type === 'confirm') {
- *      console.log('Confirmed with:', result.data);
- *    } else {
- *      console.log('Cancelled');
- *    }
- *
- *    // or using .then:
- *    openDialog(MyModal, { message: 'Delete item?' }).then((result) => {
- *      if (result.type === 'confirm') {
- *        // proceed
- *      }
- *    });
- *
- * 3. From inside MyModal.svelte, close the dialog like this:
- *
- *    function onConfirm() {
- *      closeDialog('confirm', { userId: 123 });
- *    }
- *
- *    function onCancel() {
- *      closeDialog('cancel');
- *    }
- *
- *    // This will resolve the openDialog promise with:
- *    // { type: 'confirm', data: { userId: 123 } }
- */
 import type { ComponentType } from 'svelte';
-import { type DialogResult, dialogStore } from './dialog.store';
+import {
+  type DialogCloseType,
+  type DialogResult,
+  dialogStore,
+} from './dialog.store';
 
 /**
  * Opens a dialog with the given component and props.
@@ -71,7 +36,7 @@ export function openDialog<T = any>(
  * @param type - A string describing how the dialog was closed (e.g., 'confirm', 'cancel').
  * @param data - Optional data to return from the dialog.
  */
-export function closeDialog<T = any>(type: string, data?: T) {
+export function closeDialog<T = any>(type: DialogCloseType, data?: T) {
   dialogStore.update((store) => {
     store.resolve?.({ type, data });
     return { component: null, props: {}, isOpen: false };
