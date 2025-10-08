@@ -87,7 +87,9 @@
 </div>
 
 {#if tagName}
-  <svelte:element this={tagName} use:setProps={{ doc, editCount }} />
+  <div class="plugin-container">
+    <svelte:element this={tagName} use:setProps={{ doc, editCount }} />
+  </div>
 {/if}
 
 <style>
@@ -129,5 +131,11 @@
   .next-button {
     background-color: white;
     color: #004552;
+  }
+
+  .plugin-container {
+    height: 100%;
+    width: 100%;
+    overflow: auto;
   }
 </style>
