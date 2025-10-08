@@ -1,9 +1,11 @@
 <script lang="ts">
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
-  import EngineeringWorkflow from './views/engineering-workflow.view.svelte';
+  import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
   import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
+  import { DialogHost } from '../../../libs/oscd-services/src/dialog';
+  import { openDialog } from '../../../libs/oscd-services/src/dialog';
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
@@ -11,7 +13,6 @@
 
   let processes: Process[] = [];
   let selected: Process | null = null;
-  let running: Process | null = null;
   let loading = true;
   let errorMsg = '';
 
@@ -82,8 +83,13 @@
   });
 
   function startProcess(proc: Process) {
-    running = proc;
-    selected = null;
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: proc.plugins })
+      .then(result => {
+        if (result.type === 'exit') {
+          // Optionally handle exit logic; currently nothing persistent to reset.
+        }
+      });
+    selected = null; // ensure list view stays visible behind dialog
   }
 
   function handleView(e: CustomEvent<Process>) {
@@ -99,20 +105,13 @@
   }
 
   function exitWorkflow() {
-    running = null;
-    selected = null;
+    // No persistent state to reset, but could add logic here if needed.
   }
 </script>
 
-{#if running}
-  <EngineeringWorkflow
-    {doc}
-    {editCount}
-    {host}
-    plugins={running.plugins}
-    on:exit={exitWorkflow}
-  />
-{:else if selected}
+<DialogHost/>
+
+{#if selected}
   <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
 {:else}
   <EngineeringProcessesList
