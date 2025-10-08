@@ -1,9 +1,11 @@
 <script lang="ts">
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
-  import EngineeringWorkflow from './views/engineering-workflow.view.svelte';
+  import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
   import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import { DialogHost } from '../../../libs/oscd-services/src/dialog';
+  import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
@@ -11,11 +13,10 @@
 
   let processes: Process[] = [];
   let selected: Process | null = null;
-  let running: Process | null = null;
   let loading = true;
   let errorMsg = '';
 
-  const SRC = new URL('./assets/processes.xml', import.meta.url).href;
+  const SOURCE_URL = new URL('./assets/processes.xml', import.meta.url).href;
   const txt = (el: Element | null | undefined) => el?.textContent?.trim() ?? '';
 
   const parsePlugin = (pl: Element): Plugin => ({
@@ -55,36 +56,38 @@
     loading = true;
     errorMsg = '';
 
+    const current = new AbortController();
     controller?.abort();
-    controller = new AbortController();
+    controller = current;
 
     try {
-      const res = await fetch(SRC, { cache: 'no-cache', signal: controller.signal });
+      const res = await fetch(SOURCE_URL, { cache: 'no-cache', signal: current.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const text = await res.text();
       const xml = new DOMParser().parseFromString(text, 'application/xml');
 
       if (xml.querySelector('parsererror')) throw new Error('Invalid XML file format.');
+      if (current !== controller) return;
       processes = parseProcessesFromXml(xml);
     } catch (e) {
       if ((e as DOMException)?.name === 'AbortError') return;
       processes = [];
       errorMsg = (e as Error).message || 'Failed to load processes.';
     } finally {
-      loading = false;
+      if (current === controller) loading = false;
     }
   }
 
-  onMount(() => {
-    loadXml();
-    return () => controller?.abort();
-  });
+  onMount(loadXml);
+  onDestroy(() => controller?.abort());
 
   function startProcess(proc: Process) {
-    running = proc;
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: proc.plugins });
     selected = null;
   }
+
+  $: updateDialogProps({ editCount, doc });
 
   function handleView(e: CustomEvent<Process>) {
     selected = e.detail;
@@ -97,22 +100,11 @@
   function goBack() {
     selected = null;
   }
-
-  function exitWorkflow() {
-    running = null;
-    selected = null;
-  }
 </script>
 
-{#if running}
-  <EngineeringWorkflow
-    {doc}
-    {editCount}
-    {host}
-    plugins={running.plugins}
-    on:exit={exitWorkflow}
-  />
-{:else if selected}
+<DialogHost />
+
+{#if selected}
   <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
 {:else}
   <EngineeringProcessesList
