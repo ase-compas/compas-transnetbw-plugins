@@ -106,6 +106,7 @@
       badgeText={item.badgeText}
       canEdit={item.canEdit}
       canMark={item.canMark}
+      canSetDefault={item.canSetDefault}
       selectionEnabled={selectable}
       showSelectionIndicator={showSelectionIndicator}
       canApplyDefaults={item.canApplyDefaults}
@@ -125,6 +126,7 @@
       on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}
       on:unlink={() => forwardEvent('itemUnlink', item)}
       on:referenceClick={(e) => dispatch('itemReferenceClick', {item, itemId: item.id, reference: e.detail})}
+      on:setDefault={() => forwardEvent('itemSetDefault', item)}
     />
     </div>
   {/each}

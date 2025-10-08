@@ -14,6 +14,7 @@ export type TItem = {
   canSelect?: boolean;
   canApplyDefaults?: boolean;
   canUnlink?: boolean
+  canSetDefault?: boolean;
 
   acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
 
