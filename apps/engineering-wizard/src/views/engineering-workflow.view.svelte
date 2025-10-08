@@ -102,7 +102,7 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    background-color: #004552;
+    background-color: var(--primary-base);
   }
 
   .stepper-navigation {
@@ -128,7 +128,7 @@
 
   .next-button {
     background-color: white;
-    color: #004552;
+    color: var(--primary-base);
   }
 
   .plugin-container {
