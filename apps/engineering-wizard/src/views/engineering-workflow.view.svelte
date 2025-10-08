@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
   import WorkflowStepper from '../components/engineering-workflow/WorkflowStepper.svelte';
   import type { ViewPlugin } from '../types/view-plugin';
-  import {
-    ensureCustomElementDefined,
-    preloadAllPlugins,
-  } from '../services/engineering-workflow.service';
+  import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
 
   export let doc: XMLDocument | undefined;
@@ -14,53 +11,54 @@
   export let host: HTMLElement;
   export let plugins: ViewPlugin[] = [];
 
+  type Status = 'check' | 'warning' | 'error';
+  const STATUSES: Status[] = ['check', 'warning', 'error'];
+
   let tagName: string | null = null;
   let visited: string[] = [];
+  let pluginStatus: Record<string, Status> = {};
 
-  const statuses: ('check' | 'warning' | 'error')[] = ['check', 'warning', 'error'];
-  let pluginStatus: Record<string, 'check' | 'warning' | 'error'> = {};
+  const dispatch = createEventDispatcher<{ exit: void }>();
 
-  const dispatch = createEventDispatcher<any>();
-
-  async function loadPlugin(plugin: ViewPlugin) {
+  async function selectPlugin(plugin?: ViewPlugin) {
+    if (!plugin) return;
     await ensureCustomElementDefined(plugin);
-
     tagName = plugin.id;
 
     if (!visited.includes(plugin.id)) {
       visited = [...visited, plugin.id];
-      const idx = plugins.findIndex(p => p.id === plugin.id);
-      pluginStatus = {
-        ...pluginStatus,
-        [plugin.id]: statuses[idx % statuses.length],
-      };
+      const idx = plugins.findIndex((p) => p.id === plugin.id);
+      pluginStatus = { ...pluginStatus, [plugin.id]: STATUSES[idx % STATUSES.length] };
     }
   }
 
-  function nextPlugin()     { advance(+1); }
-  function previousPlugin() { advance(-1); }
+  $: currentIndex = tagName ? plugins.findIndex((p) => p.id === tagName) : -1;
+
   function advance(step: number) {
-    const idx = plugins.findIndex(p => p.id === tagName);
-    loadPlugin(plugins[(idx + step + plugins.length) % plugins.length]);
+    if (!plugins.length) return;
+    const next = currentIndex < 0 ? 0 : (currentIndex + step + plugins.length) % plugins.length;
+    selectPlugin(plugins[next]);
   }
+
+  function nextPlugin()     { advance(1); }
+  function previousPlugin() { advance(-1); }
 
   function setProps(node: HTMLElement, props: any) {
     Object.assign(node, props);
     return { update: (p: any) => Object.assign(node, p) };
   }
 
-  $: tooltipText = plugins.reduce<Record<string, string>>((map, p) => {
-    const status = pluginStatus[p.id];
-    map[p.id] = status ?? '';
-    return map;
-  }, {});
+  $: if (plugins.length && (currentIndex === -1 || !plugins.some((p) => p.id === tagName))) {
+    selectPlugin(plugins[0]);
+  }
 
   onMount(() => {
-    if (plugins.length) {
-      preloadAllPlugins(plugins).catch(console.error);
-      loadPlugin(plugins[0]);
-    }
+    if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
     editorTabsVisible.set(false);
+  });
+
+  onDestroy(() => {
+    editorTabsVisible.set(true);
   });
 
   function exitWorkflow() {
@@ -77,12 +75,12 @@
     visited={visited}
     currentId={tagName}
     {pluginStatus}
-    on:select={(e) => loadPlugin(e.detail)}
+    on:select={(e) => selectPlugin(e.detail)}
   />
 
   <div class="stepper-navigation">
-    <button on:click={previousPlugin} class="back-button">Back</button>
-    <button on:click={nextPlugin}     class="next-button">Next</button>
+    <button type="button" on:click={previousPlugin} class="back-button" aria-label="Previous plugin" disabled={!plugins.length}>Back</button>
+    <button type="button" on:click={nextPlugin}     class="next-button" aria-label="Next plugin"      disabled={!plugins.length}>Next</button>
   </div>
 </div>
 
