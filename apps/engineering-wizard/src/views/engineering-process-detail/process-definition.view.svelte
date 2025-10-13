@@ -4,11 +4,11 @@
   import { onMount } from 'svelte';
   import ProcessExternalPluginList from '../../components/engineering-process-detail/ProcessExternalPluginList.svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
+  import { loadEditorPluginNamesFromLocalStorage } from '../../services/engineering-process-detail.service';
 
   export let pluginGroups: PluginGroup[] = [];
-  export let proc: Process | null = null;
 
-  let pluginNames: string[] = ['test', 'test2'];
+  let pluginNames: string[] = ['test', 'test2', 'example', 'sample', 'demo', 'plugin', 'alpha', 'beta', 'gamma'];
   let searchTerm: string = '';
   $: filteredPluginNames = (pluginNames || []).filter(name => {
     const q = searchTerm.trim().toLowerCase();
@@ -17,16 +17,7 @@
   });
 
   onMount(() => {
-    const pluginsStr = localStorage.getItem('plugins');
-    try {
-      const plugins = pluginsStr ? JSON.parse(pluginsStr) : [];
-      pluginNames = (Array.isArray(plugins) ? plugins : [])
-        .filter(p => p?.kind === 'editor')
-        .map(p => p?.name);
-    } catch (err) {
-      console.error('Invalid JSON in localStorage key "plugins"', err);
-      pluginNames = [];
-    }
+    // pluginNames = loadEditorPluginNamesFromLocalStorage();
   });
 </script>
 
