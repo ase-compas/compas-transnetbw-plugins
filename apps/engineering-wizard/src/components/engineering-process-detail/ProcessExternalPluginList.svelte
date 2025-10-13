@@ -38,7 +38,7 @@
   .header-info {
     font-weight: 500;
     color: var(--brand);
-    font-size: 24px;
+    font-size: 1.25rem;
     margin: 0;
   }
 

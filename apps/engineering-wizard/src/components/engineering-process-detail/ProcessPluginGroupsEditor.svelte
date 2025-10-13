@@ -3,6 +3,7 @@
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
   import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
+  import { OscdCardItem, OscdCardParent } from '../../../../../libs/oscd-component/src';
 
   export let pluginGroups: PluginGroup[] = [];
 
@@ -17,12 +18,12 @@
   };
 </script>
 
-<div class="plugins-list">
-  <div class="plugins-list__header">
-    <p>Process</p>
+<OscdCardParent class="plugin-list" backgroundColor="var(--brand)">
+  <div slot="header" class="plugin-list__header">
+    <p class="plugin-list__title">Process</p>
     <Button
+      style="background-color: #FF203A"
       variant="raised"
-      style="--mdc-theme-primary: #FF203A; --mdc-theme-on-primary: var(--on-brand)"
       aria-label="Remove all plugins"
       on:click={removeAllPlugins}
     >
@@ -30,105 +31,112 @@
     </Button>
   </div>
 
-  {#each pluginGroups as group, i}
-    <div class="plugin">
-      <div class="plugin__group-title">
-        <span class="plugin__index">{i + 1}.</span>
-        <span class="plugin__title">{group.title}</span>
-      </div>
+  <div slot="content" class="plugin-list__content">
+    {#each pluginGroups as group, i}
+      <section class="plugin-list__group">
+        <header class="plugin-list__groupHeader">
+          <span class="plugin-list__groupIndex">{i + 1}.</span>
+          <span class="plugin-list__groupTitle">{group.title}</span>
+        </header>
 
-      <div class="plugin__items">
         {#each group.plugins as plugin, j}
-          <div class="plugin-item">
-            <span class="plugin-item__name">{plugin.name}</span>
-            <button
-              type="button"
-              class="plugin-item__remove"
-              on:click={() => removeOne(i, j)}
-            >
-              <OscdRemoveIcon svgStyles="fill: #FF203A"></OscdRemoveIcon>
-            </button>
-          </div>
+          <OscdCardItem variant="secondary">
+            <div class="plugin-list__itemRow">
+              <span class="plugin-list__itemName">{plugin.name}</span>
+              <button
+                type="button"
+                class="plugin-list__removeBtn"
+                aria-label={`Remove ${plugin.name}`}
+                on:click={() => removeOne(i, j)}
+              >
+                <OscdRemoveIcon svgStyles="fill: #FF203A"></OscdRemoveIcon>
+              </button>
+            </div>
+          </OscdCardItem>
         {/each}
-      </div>
-    </div>
-  {/each}
-</div>
+      </section>
+    {/each}
+  </div>
+</OscdCardParent>
 
 <style>
-  .plugins-list {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    width: 30vw;
-    border-radius: 4px;
-    padding: 24px;
-    background-color: var(--brand);
-    height: fit-content;
-  }
-
-  .plugins-list__header {
+  .plugin-list__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
 
-  .plugins-list__header p {
+  .plugin-list__title {
+    margin: 0;
     font-weight: 500;
     color: var(--on-brand);
-    font-size: 24px;
-    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.2;
   }
 
-  .plugin {
+  .plugin-list__content {
     display: flex;
     flex-direction: column;
-    gap: 8px;
   }
 
-  .plugin__group-title {
+  .plugin-list__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .plugin-list__group:last-child {
+    margin-bottom: 0;
+  }
+
+  .plugin-list__groupHeader {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
   }
 
-  .plugin__index,
-  .plugins-list p {
+  .plugin-list__groupIndex {
     font-weight: 500;
     color: var(--on-brand);
   }
 
-  .plugin__title {
+  .plugin-list__groupTitle {
     font-weight: 500;
     color: #dae3e6;
   }
 
-  .plugin__items {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .plugin-item {
+  .plugin-list__itemRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding: 12px;
-    background-color: #ffffff;
-    border-radius: 4px;
+    width: 100%;
   }
 
-  .plugin-item__remove {
-    display: flex;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    margin: 0;
-  }
-
-  .plugin-item__name {
+  .plugin-list__itemName {
     font-weight: 500;
     color: var(--brand);
+  }
+
+  .plugin-list__removeBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    padding: 0.25rem;
+    margin: 0;
+    cursor: pointer;
+    border-radius: 0.375rem;
+  }
+
+  .plugin-list__removeBtn:hover {
+    opacity: 0.9;
+  }
+
+  .plugin-list__removeBtn:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
   }
 </style>
