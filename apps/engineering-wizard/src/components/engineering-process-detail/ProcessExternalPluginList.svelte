@@ -1,8 +1,8 @@
 <script lang="ts">
   export let pluginNames: string[];
+  export let searchTerm: string = '';
 
   import { OscdCardItem, OscdCardParent, OscdInput } from '../../../../../libs/oscd-component/src';
-  let tst: string;
 </script>
 
 <OscdCardParent backgroundColor="#DAE3E6">
@@ -13,7 +13,7 @@
         label="Search Plugins"
         icon="search"
         variant="outlined"
-        bind:value={tst}
+        bind:value={searchTerm}
       />
     </div>
   </div>
@@ -25,11 +25,13 @@
     {/each}
   </div>
 </OscdCardParent>
+
 <style>
   .card-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     gap: 8px;
   }
 

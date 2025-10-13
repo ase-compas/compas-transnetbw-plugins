@@ -60,8 +60,7 @@
     display: flex;
     flex-direction: column;
     gap: 32px;
-    width: 33vw;
-    max-width: 640px;
+    width: 30vw;
     border-radius: 4px;
     padding: 24px;
     background-color: var(--brand);

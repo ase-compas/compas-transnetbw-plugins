@@ -13,7 +13,7 @@
     flex-direction: column;
     height: fit-content;
     gap: 24px;
-    width: 33vw;
+    width: 30vw;
     border-radius: 4px;
     padding: 24px;
     background-color: var(--bg-color);

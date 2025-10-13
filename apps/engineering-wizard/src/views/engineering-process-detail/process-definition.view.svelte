@@ -8,6 +8,12 @@
   export let proc: Process | null = null;
 
   let pluginNames: string[] = ['test', 'test2'];
+  let searchTerm: string = '';
+  $: filteredPluginNames = (pluginNames || []).filter(name => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return true;
+    return name.toLowerCase().includes(q);
+  });
 
   onMount(() => {
     // const pluginsStr = localStorage.getItem('plugins');
@@ -31,7 +37,7 @@
   />
 
   {#if pluginNames.length}
-    <ProcessExternalPluginList {pluginNames}></ProcessExternalPluginList>
+    <ProcessExternalPluginList pluginNames={filteredPluginNames} bind:searchTerm />
   {/if}
 
 <!--  <div class="plugin-list">-->

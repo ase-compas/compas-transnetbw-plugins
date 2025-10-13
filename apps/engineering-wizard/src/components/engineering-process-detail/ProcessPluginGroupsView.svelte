@@ -45,7 +45,7 @@
     display: flex;
     flex-direction: column;
     gap: 32px;
-    width: 33vw;
+    width: 30vw;
     max-width: 640px;
     border-radius: 4px;
     padding: 24px;
