@@ -65,6 +65,7 @@
     border-radius: 4px;
     padding: 24px;
     background-color: var(--brand);
+    height: fit-content;
   }
 
   .plugins-list__header {
