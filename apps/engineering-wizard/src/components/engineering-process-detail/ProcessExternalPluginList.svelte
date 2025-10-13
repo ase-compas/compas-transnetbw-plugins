@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
+
   export let pluginNames: string[];
   export let searchTerm: string = '';
 
@@ -17,10 +19,13 @@
       />
     </div>
   </div>
-  <div class="card-content" slot="content">
+  <div class="card-parent-content" slot="content">
     {#each pluginNames as name}
       <OscdCardItem variant="secondary">
-        <p class="plugin-name">{name}</p>
+        <div class="card-item-content">
+          <p class="plugin-name">{name}</p>
+          <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
+        </div>
       </OscdCardItem>
     {/each}
   </div>
@@ -46,10 +51,19 @@
     max-width: 500px;
   }
 
-  .card-content {
+  .card-parent-content {
     display: flex;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .card-item-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
   }
 
   .plugin-name {

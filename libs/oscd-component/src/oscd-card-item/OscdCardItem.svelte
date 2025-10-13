@@ -16,18 +16,18 @@
   .osc-card {
     display: flex;
     border-radius: 4px;
-    background: #fff;
-    color: #004552;
+    background: var(--on-brand);
+    color: var(--brand);
     padding: 12px;
   }
 
   .osc-card--primary {
-    --osc-card-bg: #004552;
-    --osc-card-fg: #ffffff;
+    --osc-card-bg: var(--brand);
+    --osc-card-fg: var(--on-brand);
   }
 
   .osc-card--secondary {
-    --osc-card-bg: #ffffff;
-    --osc-card-fg: #004552;
+    --osc-card-bg: var(--on-brand);
+    --osc-card-fg: var(--brand);
   }
 </style>
