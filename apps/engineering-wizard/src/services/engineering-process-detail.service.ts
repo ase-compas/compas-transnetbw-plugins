@@ -19,10 +19,12 @@ export function getPluginGroups(proc: Process | null): PluginGroup[] {
 export interface LocalStoredPlugin {
   name?: string;
   kind?: string;
+  src?: string;
+  sourceUrl?: string;
   [key: string]: unknown;
 }
 
-export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): string[] {
+export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): LocalStoredPlugin[] {
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
     if (!raw) return [];
@@ -30,8 +32,6 @@ export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): s
     if (!Array.isArray(parsed)) return [];
     return parsed
       .filter(p => (p as LocalStoredPlugin)?.kind === 'editor')
-      .map(p => (p as LocalStoredPlugin)?.name)
-      .filter((n): n is string => !!n);
   } catch (err) {
     console.error('Failed to load plugins from localStorage', err);
     return [];

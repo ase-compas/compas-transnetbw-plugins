@@ -4,20 +4,23 @@
   import { onMount } from 'svelte';
   import ProcessExternalPluginList from '../../components/engineering-process-detail/ProcessExternalPluginList.svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
-  import { loadEditorPluginNamesFromLocalStorage } from '../../services/engineering-process-detail.service';
+  import {
+    loadEditorPluginNamesFromLocalStorage,
+    LocalStoredPlugin
+  } from '../../services/engineering-process-detail.service';
 
   export let pluginGroups: PluginGroup[] = [];
 
-  let pluginNames: string[] = ['test', 'test2', 'example', 'sample', 'demo', 'plugin', 'alpha', 'beta', 'gamma'];
+  let localStoredPlugins: LocalStoredPlugin[] = [];
   let searchTerm: string = '';
-  $: filteredPluginNames = (pluginNames || []).filter(name => {
+  $: filteredPlugins = (localStoredPlugins || []).filter(plugin => {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return true;
-    return name.toLowerCase().includes(q);
+    return plugin.name.toLowerCase().includes(q);
   });
 
   onMount(() => {
-    // pluginNames = loadEditorPluginNamesFromLocalStorage();
+    localStoredPlugins = loadEditorPluginNamesFromLocalStorage();
   });
 </script>
 
@@ -28,13 +31,13 @@
     on:removePlugin={(e) => console.log('remove one', e.detail)}
   />
 
-  {#if pluginNames.length}
+  {#if localStoredPlugins.length}
     <div class="drag-and-drop-info">
       <OscdCompareArrowsIcon svgStyles="fill: #6B9197"></OscdCompareArrowsIcon>
       <p>SELECT OR DRAG & DROP PLUGINS</p>
     </div>
 
-    <ProcessExternalPluginList pluginNames={filteredPluginNames} bind:searchTerm />
+    <ProcessExternalPluginList plugins={filteredPlugins} bind:searchTerm />
   {/if}
 </div>
 

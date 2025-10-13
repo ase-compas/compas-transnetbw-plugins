@@ -51,7 +51,7 @@
     justify-content: center;
     background: transparent;
     border: 0;
-    padding: 0.25rem;
+    padding: 0;
     margin: 0;
     cursor: pointer;
     border-radius: 0.375rem;
