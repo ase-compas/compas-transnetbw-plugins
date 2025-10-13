@@ -2,6 +2,7 @@
   import Button from '@smui/button';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
+  import { OscdCardItem, OscdCardParent } from '../../../../../libs/oscd-component/src';
 
   export let pluginGroups: PluginGroup[] = [];
 
@@ -9,9 +10,9 @@
   const requestEdit = () => dispatch('editRequested');
 </script>
 
-<div class="plugins-list">
-  <div class="plugins-list__header">
-    <p>Process</p>
+<OscdCardParent class="plugin-list" backgroundColor="var(--brand)">
+  <div slot="header" class="plugin-list__header">
+    <p class="plugin-list__title">Process</p>
     <Button
       variant="raised"
       style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
@@ -22,89 +23,71 @@
     </Button>
   </div>
 
-  {#each pluginGroups as group, i}
-    <div class="plugin">
-      <div class="plugin__group-title">
-        <span class="plugin__index">{i + 1}.</span>
-        <span class="plugin__title">{group.title}</span>
-      </div>
+  <div slot="content" class="plugin-list__content">
+    {#each pluginGroups as group, i}
+      <section class="plugin-list__group">
+        <header class="plugin-list__groupHeader">
+          <span class="plugin-list__groupIndex">{i + 1}.</span>
+          <span class="plugin-list__groupTitle">{group.title}</span>
+        </header>
 
-      <div class="plugin__items">
         {#each group.plugins as plugin}
-          <div class="plugin-item">
-            <span class="plugin-item__name">{plugin.name}</span>
-          </div>
+          <OscdCardItem variant="secondary">
+            <div class="plugin-list__itemRow">
+              <span class="plugin-list__itemName">{plugin.name}</span>
+            </div>
+          </OscdCardItem>
         {/each}
-      </div>
-    </div>
-  {/each}
-</div>
+      </section>
+    {/each}
+  </div>
+</OscdCardParent>
 
 <style>
-  .plugins-list {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    width: 30vw;
-    max-width: 640px;
-    border-radius: 4px;
-    padding: 24px;
-    background-color: var(--brand);
-  }
-
-  .plugins-list__header {
+  .plugin-list__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
 
-  .plugins-list__header p {
-    font-weight: 500;
-    color: var(--on-brand);
-    font-size: 24px;
+  .plugin-list__title {
     margin: 0;
-  }
-
-  .plugin {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .plugin__group-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .plugin__index,
-  .plugins-list p {
     font-weight: 500;
     color: var(--on-brand);
+    font-size: 1.25rem;
+    line-height: 1.2;
   }
 
-  .plugin__title {
-    font-weight: 500;
-    color: #dae3e6;
-  }
-
-  .plugin__items {
+  .plugin-list__content {
     display: flex;
     flex-direction: column;
-    gap: 8px;
   }
 
-  .plugin-item {
+  .plugin-list__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .plugin-list__group:last-child { margin-bottom: 0; }
+
+  .plugin-list__groupHeader {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 12px;
-    background-color: #ffffff;
-    border-radius: 4px;
+    gap: 0.5rem;
   }
 
-  .plugin-item__name {
-    font-weight: 500;
-    color: var(--brand);
+  .plugin-list__groupIndex { font-weight: 500; color: var(--on-brand); }
+  .plugin-list__groupTitle { font-weight: 500; color: #dae3e6; }
+
+  .plugin-list__itemRow {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
   }
+
+  .plugin-list__itemName { font-weight: 500; color: var(--brand); }
 </style>
