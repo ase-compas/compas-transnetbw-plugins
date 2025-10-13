@@ -121,7 +121,7 @@
     padding: 0 24px;
     margin-bottom: 24px;
     border-radius: 4px;
-    background-color: #004552;
+    background-color: var(--primary-base);
   }
 
   .process-banner__info {
@@ -132,7 +132,7 @@
 
   .process-banner span {
     font-family: 'Roboto', sans-serif;
-    color: #ffffff;
+    color: var(--white);
     font-weight: 500;
   }
 
