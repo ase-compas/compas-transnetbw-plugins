@@ -6,6 +6,7 @@
   import { initServices } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
+  import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -53,6 +54,8 @@
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
         <LNodeTypesView {doc}/>
+      {:else if $route.path[0] === 'defaults'}
+        <DefaultTypeView/>
       {:else}
         <LNodeTypeDetailView {doc}/>
       {/if}

@@ -5,3 +5,4 @@ export * from './do-type.service';
 export * from './data-type.service';
 export * from './enum-type.service';
 export * from './type-specification.service';
+export * from './default.service';

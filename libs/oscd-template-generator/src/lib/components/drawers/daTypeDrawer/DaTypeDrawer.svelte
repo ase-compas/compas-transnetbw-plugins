@@ -11,26 +11,35 @@
   import {
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
-    getDisplayReferenceItems
-  } from '../../../utils/typeBoardUtils';
+    getDisplayReferenceItems,
+    setTypeAsDefaultWithConfirmationForBasicType
+  } from '../../../utils';
   import {
     openCreateDataAttributeTypeDialog,
     openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer,
     openDataEnumTypeDrawer,
     openReferencedTypeDrawer
-  } from '../../../utils/overlayUitils';
+  } from '../../../utils';
 
   // ===== Types =====
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TItem } from '../../tboard/types';
   import { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, DataTypeKind, Mode } from '../../../domain';
   import type { IDaTypeService } from '../../../services/da-type.service';
-  import { getDATypeService } from '../../../services';
+  import {
+    getDataTypeService,
+    getDATypeService,
+    getDefaultTypeService,
+    type IDataTypeService,
+    type IDefaultService
+  } from '../../../services';
   import TypeHeader from '../../TypeHeader.svelte';
-  import { createEditorStore } from '../../../stores/editorStore';
+  import { createEditorStore } from '../../../stores';
 
   // ===== Services =====
   const daTypeService: IDaTypeService = getDATypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
+  const defaultTypeService: IDefaultService = getDefaultTypeService();
 
   // ===== Props =====
   export let mode: 'view' | 'edit' | 'create' = 'view';
@@ -155,6 +164,23 @@
     else if (columnId === 'enumTypes') openDataEnumTypeDrawer(openingMode, itemId);
   }
 
+  async function handleOnSetAsDefault(itemId: string, columnId: string) {
+    let types: BasicType[];
+    if (columnId === 'dataObjectTypes') {
+      types = dataTypes.dataObjectTypes;
+    } else if (columnId === 'dataAttributeTypes') {
+      types = dataTypes.dataAttributeTypes;
+    } else if (columnId === 'enumTypes') {
+      types = dataTypes.enumTypes;
+    } else {
+      return;
+    }
+    const type = types.find(t => t.id === itemId);
+    if(!type) return;
+
+    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+  }
+
   function handleOnReferenceClick(itemId: string) {
     const ref = $refStore.find(child => child.name === itemId);
     openReferencedTypeDrawer(ref, 'view');
@@ -213,4 +239,5 @@
   on:itemEdit={e => handleOnEdit(e.detail.itemId, e.detail.columnId)}
   on:itemReferenceClick={e => handleOnReferenceClick(e.detail.itemId)}
   on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
+  on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
 />

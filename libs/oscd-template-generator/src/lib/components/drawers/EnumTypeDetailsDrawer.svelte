@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IEnumTypeService } from '../../services/enum-type.service';
-  import { getEnumTypeService } from '../../services';
+  import { IEnumTypeService, IDefaultService, IDataTypeService } from '../../services';
+  import { getEnumTypeService, getDefaultTypeService, getDataTypeService } from '../../services';
   import { DataTypeKind, type EnumTypeDetails, Mode } from '../../domain';
   import { onMount } from 'svelte';
   import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
@@ -8,11 +8,14 @@
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
   import TypeHeader from '../TypeHeader.svelte';
-  import { createEditorStore } from '../../stores/editorStore';
+  import { createEditorStore } from '../../stores';
+  import { setTypeAsDefaultWithConfirmation } from '../../utils';
 
 
   // ===== Services =====
   const enumTypeService: IEnumTypeService = getEnumTypeService();
+  const defaultService: IDefaultService = getDefaultTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== Props =====
   export let mode: Mode = 'view';
@@ -103,12 +106,17 @@
     const ok = await editorStore.switchMode(newMode);
     if(ok) await loadData();
   }
+
+  function handleOnSetAsDefault() {
+    setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
+  }
 </script>
 
 <TypeHeader
   {typeId}
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
+  on:clickDefault={() => handleOnSetAsDefault()}
   bind:isEditMode={$isEditModeSwitchState}
   on:modeChange={(e) => handleModeChange(e.detail)}
   on:instanceTypeChange={(e) => {

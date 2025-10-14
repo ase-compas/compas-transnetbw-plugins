@@ -4,14 +4,15 @@
   import Button from '@smui/button';
   import { openSelectInstanceTypeDialog } from '../utils/overlayUitils';
   import { createEventDispatcher } from 'svelte';
+  import { SetDefaultButton } from '@oscd-transnet-plugins/oscd-template-generator';
 
   const dispatch = createEventDispatcher();
-
 
   export let type: DataTypeKind;
   export let typeId: string;
   export let instanceType: string | null = null;
   export let isEditMode = false;
+  export let showSetAsDefault = true;
 
   const handleChange = (checked) => dispatch('modeChange', checked ? 'edit' : 'view');
 
@@ -73,6 +74,9 @@
   <!-- Right side: actions -->
   <div class="actions-section">
     {#if instanceType}
+      {#if showSetAsDefault}
+        <SetDefaultButton on:click={() => dispatch('clickDefault')}/>
+      {/if}
     <OscdSwitch
       bind:checked={isEditMode}
       on:change={e => handleChange(e.detail)}
@@ -169,6 +173,12 @@
   .actions-section {
     display: flex;
     gap: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.mdc-button) {
+    margin-bottom: 0;
   }
 
 </style>

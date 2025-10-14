@@ -2,6 +2,9 @@ import { type ObjectReferenceState } from '../stores';
 import { type TItem } from '../components/tboard/types';
 import { mapDataTypeToItem, mapObjectReferenceStateToTItem } from '../mappers';
 import { type BasicType, type ObjectReferenceDetails } from '../domain';
+import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+import type { IDataTypeService, IDefaultService } from '../services';
 
 /**
  * Converts an array of BasicType objects into TItem objects for display.
@@ -93,4 +96,30 @@ export function canAssignTypeToObjectReferenceParams(
     refRequiredTypeKind === candidateTypeKind &&
     (!candidateInstanceType || refRequiredInstanceType === candidateInstanceType)
   );
+}
+
+export async function setTypeAsDefaultWithConfirmation(
+  defaultTypeService: IDefaultService,
+  dataTypeService: IDataTypeService,
+  kind: DataTypeKind,
+  instanceType: string,
+  id: string
+) {
+  // check if already a type for this kind and instanceType exists to resolve conflict
+  const defaultType = defaultTypeService.getDefault({kind: kind, instanceType: instanceType});
+  const exists = defaultType !== undefined;
+  if(exists) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Replace Existing Default?',
+      message: `A default type "${defaultType.rootType.id}" is already set for type kind "${kind}" and instance type "${instanceType}". Do you want to replace it with the new default?`,
+      confirmActionText: 'Yes, Replace',
+      cancelActionText: 'No, Keep Existing',
+    });
+    if (result?.type !== 'confirm') return;
+  }
+  await dataTypeService.setDefaultType(kind,id);
+}
+
+export async function setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService: IDefaultService, dataTypeService: IDataTypeService, type: BasicType) {
+  await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, type.typeKind, type.instanceType ?? '', type.id);
 }

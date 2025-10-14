@@ -105,6 +105,7 @@
 </script>
 
 <div class="logical-nodes-overview">
+  <OscdButton callback={() => route.set({path: ["defaults"]})}>Default Types</OscdButton>
 
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">

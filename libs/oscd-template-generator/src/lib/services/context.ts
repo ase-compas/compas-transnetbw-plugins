@@ -5,6 +5,7 @@ import { DataTypeService, type IDataTypeService } from './data-type.service';
 import { DoTypeService, type IDoTypeService } from './do-type.service';
 import { DaTypeService, type IDaTypeService } from './da-type.service';
 import { EnumTypeService, type IEnumTypeService } from './enum-type.service';
+import { type IDefaultService, LocalStorageDefaultService } from './default.service';
 
 // App-scoped state
 let xmlDoc: XMLDocument | null = null;
@@ -19,6 +20,7 @@ let enumTypeService: IEnumTypeService | null = null;
 
 let typeSpecService: ITypeSpecificationService | null = null;
 let dataTypeService: IDataTypeService | null = null;
+let defaultService: IDefaultService | null = null;
 
 /**
  * Initializes all repositories and services with the provided XML document and host element.
@@ -37,10 +39,11 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
     dataTypeRepo = new DataTypeRepository(xmlDoc, hostElement);
   }
 
+  defaultService = new LocalStorageDefaultService();
   if(!typeSpecService) typeSpecService = new NsdSpecificationService();
-  if(!dataTypeService) dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService);
+  if(!dataTypeService) dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService, defaultService);
 
-  lNodeTypeService = new LNodeTypeService(dataTypeRepo, dataTypeService, typeSpecService);
+  lNodeTypeService = new LNodeTypeService(dataTypeRepo, dataTypeService);
   doTypeService = new DoTypeService(dataTypeRepo, dataTypeService, typeSpecService);
   daTypeService = new DaTypeService(dataTypeRepo, dataTypeService, typeSpecService);
   enumTypeService = new EnumTypeService(dataTypeRepo, dataTypeService);
@@ -74,4 +77,18 @@ export function getLNodeTypeService(): ILNodeTypeService {
     throw new Error('LNodeTypeV2Service not initialized. Call initServices() first.');
   }
   return lNodeTypeService;
+}
+
+export function getDataTypeService(): IDataTypeService {
+  if (!dataTypeService) {
+    throw new Error('DataTypeService not initialized. Call initServices() first.');
+  }
+  return dataTypeService;
+}
+
+export function getDefaultTypeService(): IDefaultService {
+  if (!defaultService) {
+    throw new Error('DefaultService not initialized. Call initServices() first.');
+  }
+  return defaultService;
 }
