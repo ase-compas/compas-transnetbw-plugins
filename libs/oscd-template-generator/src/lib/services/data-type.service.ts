@@ -122,7 +122,8 @@ export interface IDataTypeService {
 
 function groupObjectTypeByTypeKind(requiredSpecs: ObjectSpecification[]): Map<DataTypeKind, Set<string>> {
   return requiredSpecs.reduce((acc, spec) => {
-    if (!spec.refTypeKind || !spec.objectType) return acc;
+    // skip those without refTypeKind
+    if (!spec.refTypeKind) return acc;
 
     if (!acc.has(spec.refTypeKind)) {
       acc.set(spec.refTypeKind, new Set<string>());
@@ -177,6 +178,13 @@ export class DataTypeService implements IDataTypeService {
     const objectTypeByTypeKind = groupObjectTypeByTypeKind(requiredSpecs);
 
     const getTypes = <K extends DataTypeKind>(kind: K): DataTypeMap[K][] => {
+      // if instanceType is parametrized (objectType is null), load all data types of that kind
+      // otherwise only those that match the required object types
+      // always include those without instanceType as well
+      if(objectTypeByTypeKind.get(kind)?.has(null)) {
+        return this.typeRepo.findAllDataTypesByKind(kind);
+      }
+
       const specificType = Array.from(objectTypeByTypeKind.get(kind) ?? []).flatMap(type =>
         this.typeRepo.findAllDataTypesByKind(kind, type));
 

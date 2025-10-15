@@ -1,7 +1,7 @@
 import { type ObjectReferenceState } from '../stores';
-import { type TItem } from '../components/tboard/types';
+import { type TItem } from '../components';
 import { mapDataTypeToItem, mapObjectReferenceStateToTItem } from '../mappers';
-import { type BasicType, type ObjectReferenceDetails } from '../domain';
+import { type BasicType, DataTypeKind, type ObjectReferenceDetails } from '../domain';
 import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 import type { IDataTypeService, IDefaultService } from '../services';
@@ -77,6 +77,11 @@ export function canAssignTypeToObjectReference(
  * Function to determine if a type can be assigned to an object reference
  * based only on primitive parameters, not on specific type objects.
  *
+ * Assignment is possible if:
+ *  - The object reference requires a reference,
+ *  - The required type kind matches the candidate type kind,
+ *  - The required instance type is not specified, or the candidate instance type is not specified, or both instance types match.
+ *
  * @param refRequiresReference Whether the object reference requires a reference.
  * @param refRequiredTypeKind The expected type kind for the object reference.
  * @param refRequiredInstanceType The expected instance type for the object reference.
@@ -94,7 +99,7 @@ export function canAssignTypeToObjectReferenceParams(
   return (
     refRequiresReference &&
     refRequiredTypeKind === candidateTypeKind &&
-    (!candidateInstanceType || refRequiredInstanceType === candidateInstanceType)
+    (!refRequiredInstanceType || !candidateInstanceType || refRequiredInstanceType === candidateInstanceType)
   );
 }
 
@@ -117,9 +122,9 @@ export async function setTypeAsDefaultWithConfirmation(
     });
     if (result?.type !== 'confirm') return;
   }
-  await dataTypeService.setDefaultType(kind,id);
+  await dataTypeService.setDefaultType(kind, id);
 }
 
 export async function setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService: IDefaultService, dataTypeService: IDataTypeService, type: BasicType) {
-  await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, type.typeKind, type.instanceType ?? '', type.id);
+  await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, type.typeKind, type.instanceType, type.id);
 }
