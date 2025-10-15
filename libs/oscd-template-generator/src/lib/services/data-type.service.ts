@@ -144,7 +144,7 @@ export class DataTypeService implements IDataTypeService {
 
   async getObjectReferenceDetails(typeKind: DataTypeKind, instanceType: string, reference: SimpleReference[]): Promise<ObjectReferenceDetails[]> {
     const typeSpec = this.typeSpecificationService.getTypeSpecification(typeKind, instanceType)
-    if(!typeSpec) throw new Error(`No type specification found for type ${typeKind} with id ${instanceType}`);
+    if(!typeSpec) throw new Error(`No type specification found for type ${typeKind} with instanceType ${instanceType}`);
     return this.specsToObjectReferenceDetails(typeSpec, reference) as ObjectReferenceDetails[];
   }
 
@@ -168,7 +168,7 @@ export class DataTypeService implements IDataTypeService {
 
   async getAssignableTypes(typeKind: DataTypeKind, instanceType: string, childNameFilter?: string[]): Promise<DataTypes> {
     const typeSpec = this.typeSpecificationService.getTypeSpecification(typeKind, instanceType);
-    if(!typeSpec) throw new Error(`No type specification found for type ${typeKind} with id ${instanceType}`);
+    if(!typeSpec) throw new Error(`No type specification found for type ${typeKind} with instanceType ${instanceType}`);
 
     const requiredSpecs = typeSpec
       .filter(spec => spec.requiresReference && (childNameFilter.length === 0 || childNameFilter.includes(spec.name))) // only those that require a reference and are in the filter
@@ -272,6 +272,7 @@ export class DataTypeService implements IDataTypeService {
       throw new Error(`Reference '${name}' on ${typeKind} ${id} does not require a valid reference`);
     }
 
+
     // Retrieve the stored default for that reference type
     const defaultKey: DefaultKey = {
       kind: targetRef.meta.refTypeKind,
@@ -308,7 +309,7 @@ export class DataTypeService implements IDataTypeService {
           updates.push({ kind: defaultType.rootType.kind, dataType: existingDefault });
         }
         // Update the target object reference to point to the existing default root type
-      this.resolveDefaultTypeIDConflicts(defaultType.rootType, defaultType.referencedTypes);
+        this.resolveDefaultTypeIDConflicts(defaultType.rootType, defaultType.referencedTypes);
 
         // the rootDefaultCreate should have te prop with kind and dataType
         const rootDefault = await this.defaultToDataType(defaultType.rootType);
