@@ -153,7 +153,7 @@ function appendPrivateWithInstanceType(doc: XMLDocument, parent: Element, instan
     const privateEl = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
     privateEl.setAttribute('type', PRIVATE_INSTANCE_TYPE_NS);
     privateEl.textContent = instanceType;
-    parent.appendChild(privateEl);
+    parent.insertBefore(privateEl, parent.firstChild);
   }
 }
 
@@ -162,7 +162,7 @@ function appendPrivateWithDefaultVersion(doc: XMLDocument, parent: Element, defa
     const privateEl = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
     privateEl.setAttribute('type', PRIVATE_DEFAULT_VERSION_NS);
     privateEl.textContent = defaultVersion;
-    parent.appendChild(privateEl);
+    parent.insertBefore(privateEl, parent.firstChild);
   }
 }
 
