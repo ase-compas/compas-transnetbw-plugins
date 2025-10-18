@@ -1,9 +1,11 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-export default defineConfig({
+export default defineConfig(async () => {
+  const { svelte } = await import('@sveltejs/vite-plugin-svelte');
+  
+  return {
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/archive-explorer',
 
@@ -20,7 +22,12 @@ export default defineConfig({
     host: 'localhost'
   },
 
-  plugins: [svelte(), nxViteTsPaths()],
+  plugins: [svelte({
+    compilerOptions: {
+      runes: false,
+      format: undefined
+    }
+  }), nxViteTsPaths()],
 
   build: {
     outDir: '../../dist/apps/archive-explorer',
@@ -39,7 +46,8 @@ export default defineConfig({
       fileName: 'index',
     },
   },
-  optimizeDeps: {
-    exclude: ['@smui/select'],
-  },
-});
+      optimizeDeps: {
+        exclude: ['@smui/select'],
+      },
+    };
+  });

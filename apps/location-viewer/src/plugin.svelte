@@ -1,6 +1,3 @@
-<svelte:options tag={null} />
-
-
 <script lang="ts">
   import * as pckg from '../package.json';
   import App from './App.svelte';

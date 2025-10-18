@@ -1,9 +1,11 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-export default defineConfig({
+export default defineConfig(async () => {
+  const { svelte } = await import('@sveltejs/vite-plugin-svelte');
+  
+  return {
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/location-manager',
 
@@ -63,4 +65,5 @@ export default defineConfig({
       provider: 'v8',
     },
   },
+  };
 });
