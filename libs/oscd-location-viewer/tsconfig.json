@@ -6,7 +6,7 @@
     "types": ["vite/client", "vitest"]
   },
   "files": [],
-  "include": [],
+  "include": ["svelte"],
   "references": [
     {
       "path": "./tsconfig.lib.json"

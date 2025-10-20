@@ -3,11 +3,10 @@
     "allowJs": false,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "module": "esnext",
     "types": ["vite/client", "vitest"],
   },
   "files": [],
-  "include": [],
+  "include": ["src"],
   "references": [
     {
       "path": "./tsconfig.app.json"
