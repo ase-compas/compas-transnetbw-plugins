@@ -40,7 +40,7 @@
       "configurations": {
         "development": {
           "buildTarget": "engineering-wizard:build:development",
-          "hmr": true
+          "hmr": false
         },
         "production": {
           "buildTarget": "engineering-wizard:build:production",

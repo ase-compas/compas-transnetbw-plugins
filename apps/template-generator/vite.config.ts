@@ -1,5 +1,6 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
+import { resolve as pathResolve } from 'node:path';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig(async () => {
@@ -22,7 +23,22 @@ export default defineConfig(async () => {
     host: 'localhost',
   },
 
-  plugins: [svelte(), nxViteTsPaths()],
+  plugins: [
+    svelte({
+      compilerOptions: { runes: false },
+      prebundleSvelteLibraries: false
+    }),
+    nxViteTsPaths()
+  ],
+
+  resolve: {
+    alias: [
+      {
+        find: /(^|\/)svelte\/internal$/,
+        replacement: pathResolve(__dirname, '../../libs/shared/src/shims/svelte-internal.ts')
+      }
+    ]
+  },
 
   // Uncomment this if you are using workers.
   // worker: {
@@ -48,7 +64,7 @@ export default defineConfig(async () => {
   },
 
   optimizeDeps: {
-    exclude: ['@smui/select'],
+    disabled: true
   },
 
   test: {

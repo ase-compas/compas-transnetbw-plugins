@@ -4,8 +4,8 @@
   import { route, host as storeHost, doc as storeDoc } from "@oscd-transnet-plugins/oscd-template-generator";
   import { onMount } from 'svelte';
   import { initServices } from '@oscd-transnet-plugins/oscd-template-generator';
-  import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
+  import DialogHost from '../../../libs/oscd-services/src/dialog/DialogHost.svelte';
+  import DrawerStack from '../../../libs/oscd-component/src/drawer-stack/DrawerStack.svelte';
 
   export let doc: XMLDocument | null = null;
   export let devMode: boolean = false;
@@ -38,6 +38,9 @@
     storeHost.set(host);
   })
 
+  // Ensure component symbols are referenced in script so bundler retains them
+  const __ensureComponents = [DialogHost, DrawerStack];
+
   $: if(doc) {
     initServices(doc, host);
     storeDoc.set(doc);
@@ -54,7 +57,7 @@
       {#if $route.path[0] === 'overview'}
         <LNodeTypesView {doc}/>
       {:else}
-        <LNodeTypeDetailView {doc}/>
+        <LNodeTypeDetailView />
       {/if}
     </div>
   {/if}

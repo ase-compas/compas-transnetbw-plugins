@@ -40,7 +40,7 @@
       "configurations": {
         "development": {
           "buildTarget": "template-generator:build:development",
-          "hmr": true
+          "hmr": false
         },
         "production": {
           "buildTarget": "template-generator:build:production",

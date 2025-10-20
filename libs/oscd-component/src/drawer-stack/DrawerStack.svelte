@@ -8,8 +8,7 @@
 
   let drawerList: Drawer[] = [];
   const widthStep = 45;
-
-  $: drawerList = $drawers
+  let unsubscribeDrawers: (() => void) | null = null;
 
   let innerWidth = window.innerWidth;
 
@@ -26,6 +25,10 @@
   }
 
   onMount(() => {
+    // subscribe to drawer store
+    unsubscribeDrawers = drawers.subscribe(list => {
+      drawerList = list;
+    });
     window.addEventListener('resize', handleResize);
     window.addEventListener('keydown', handleKeydown);
   });
@@ -40,6 +43,10 @@
   }
 
   onDestroy(() => {
+    if (unsubscribeDrawers) {
+      unsubscribeDrawers();
+      unsubscribeDrawers = null;
+    }
     window.removeEventListener('resize', handleResize);
     window.removeEventListener('keydown', handleKeydown);
     document.body.style.overflow = '';

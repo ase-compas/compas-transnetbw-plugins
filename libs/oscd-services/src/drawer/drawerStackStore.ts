@@ -1,4 +1,4 @@
-import { SvelteComponent } from 'svelte';
+// Avoid importing Svelte runtime/types to keep compatibility across Svelte versions
 import { get, type Readable, writable } from 'svelte/store';
 
 export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
@@ -33,10 +33,10 @@ export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
  */
 export interface Drawer<T = any> {
   title: string;
-  component: typeof SvelteComponent;
+  component: any;
   props?: T;
   canClose?: (reason: CloseReason) => boolean | Promise<boolean>;
-  ref?: SvelteComponent; // reference to the mounted component
+  ref?: any; // reference to the mounted component
 }
 
 const drawerStore = writable<Drawer[]>([]);

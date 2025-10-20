@@ -14,8 +14,8 @@
   export let tooltip: string;
   /** Side of the tooltip */
   export let tooltipSide: 'top' | 'bottom' | 'left' | 'right' = 'top';
-  /** Type of action button, e.g., 'delete' or 'duplicate' */
-  export let type: 'delete' | 'duplicate';
+  /** Type of action button */
+  export let type: 'delete' | 'duplicate' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'close';
   /** Delay in ms before showing the tooltip */
   export let showDelay = 1000;
   /** Fill color for the icon SVG */

@@ -1,5 +1,6 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
+import { resolve as pathResolve } from 'node:path';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig(async () => {
@@ -22,7 +23,22 @@ export default defineConfig(async () => {
       host: 'localhost'
     },
 
-    plugins: [svelte(), nxViteTsPaths()],
+    plugins: [
+      svelte({
+        compilerOptions: { runes: false },
+        prebundleSvelteLibraries: false
+      }),
+      nxViteTsPaths()
+    ],
+
+    resolve: {
+      alias: [
+        {
+          find: /(^|\/)svelte\/internal$/,
+          replacement: pathResolve(__dirname, '../../libs/shared/src/shims/svelte-internal.ts')
+        }
+      ]
+    },
 
     build: {
       outDir: '../../dist/apps/engineering-wizard',

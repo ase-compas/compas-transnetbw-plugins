@@ -65,7 +65,6 @@
     }
   },
   "plugins": [
-    "@nxext/svelte",
     {
       "plugin": "@nx/eslint/plugin",
       "options": {
