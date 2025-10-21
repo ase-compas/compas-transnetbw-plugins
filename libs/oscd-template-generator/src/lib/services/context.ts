@@ -39,7 +39,7 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
     dataTypeRepo = new DataTypeRepository(xmlDoc, hostElement);
   }
 
-  defaultService = new LocalStorageDefaultService();
+  if (!defaultService) defaultService = new LocalStorageDefaultService();
   if(!typeSpecService) typeSpecService = new NsdSpecificationService();
   if(!dataTypeService) dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService, defaultService);
 
