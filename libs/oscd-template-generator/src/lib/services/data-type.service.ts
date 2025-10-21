@@ -337,7 +337,8 @@ export class DataTypeService implements IDataTypeService {
 
     // Step 4: Update the target reference to the proper type
     const updatedRef = { name, typeRef: refId };
-    const updateRefDetails = await this.getConfiguredObjectReferenceDetails(typeKind, instanceType, [updatedRef]);
+    let updateRefDetails = await this.getConfiguredObjectReferenceDetails(typeKind, instanceType, [updatedRef]);
+    updateRefDetails = updateRefDetails.filter(ref => ref.name === updatedRef.name);
 
     const updatedDataType = {
       ...dataType,

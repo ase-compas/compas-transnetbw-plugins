@@ -103,6 +103,12 @@ export class DataTypeRepository implements IDataTypeRepository {
     [DataTypeKind.DAType]: new DATypeMapperV(),
     [DataTypeKind.EnumType]: new EnumTypeMapperV(),
   };
+  private static typeOrder: DataTypeKind[] = [
+    DataTypeKind.LNodeType,
+    DataTypeKind.DOType,
+    DataTypeKind.DAType,
+    DataTypeKind.EnumType,
+  ];
 
   constructor(private doc: XMLDocument, private hostElement: HTMLElement) {}
 
@@ -187,10 +193,11 @@ export class DataTypeRepository implements IDataTypeRepository {
       updates?: { kind: K; dataType: DataTypeMap[K] }[]
     }
   ): boolean {
-    const edits: EditV2[] = [];
+    const edits: {kind: DataTypeKind, edits: EditV2[]}[] = [];
     const root = this.ensureRootElement();
 
     // Handle Creates
+    // skips create if type already exists
     for (const create of editInputs.creates ?? []) {
       const { kind, dataType } = create;
       if (!dataType.id) {
@@ -207,18 +214,25 @@ export class DataTypeRepository implements IDataTypeRepository {
       const mapper = DataTypeRepository.typeMapperRegistry[kind];
       const newEl = mapper.toElement(dataType, this.doc);
       const reference = this.findInsertionReference(root, kind);
-      edits.push(buildInsert(root, newEl, reference));
+      edits.push({kind: kind, edits: [buildInsert(root, newEl, reference)]});
     }
 
     //  Handle Updates
+    // overwrites existing types, creates if not existing
     for (const update of editInputs.updates ?? []) {
       const { kind, dataType } = update;
-      edits.push(...this.buildUpsertEdit(kind, dataType));
+      edits.push({kind: kind, edits: this.buildUpsertEdit(kind, dataType)});
     }
 
     // Dispatch once if any edits
     if (edits.length > 0) {
-      dispatchEditEvent(this.hostElement, edits);
+      // sort by hierarchy to avoid dependency issues
+      edits.sort((a, b) => {
+        return DataTypeRepository.typeOrder.indexOf(a.kind) - DataTypeRepository.typeOrder.indexOf(b.kind);
+      });
+
+      const flatEdits = edits.flatMap(e => e.edits);
+      dispatchEditEvent(this.hostElement, flatEdits);
       return true;
     }
 
@@ -336,19 +350,14 @@ export class DataTypeRepository implements IDataTypeRepository {
 
   /** Find where to insert a new DataType, respecting order and siblings */
   private findInsertionReference(root: Element, kind: DataTypeKind): Element | null {
-    // 1. if siblings of same kind exist → insert after last one
-    const sameTagEls = Array.from(root.querySelectorAll(kind));
-    if (sameTagEls.length > 0) {
-      return sameTagEls[sameTagEls.length - 1].nextSibling as Element;
+    // 1. if siblings of same kind exist -> insert before first one
+    const ref = root.querySelector(kind);
+    if (ref) {
+      return ref as Element;
     }
 
     // 2️. else -> insert before first element of later kind in canonical order
-    const order: DataTypeKind[] = [
-      DataTypeKind.LNodeType,
-      DataTypeKind.DOType,
-      DataTypeKind.DAType,
-      DataTypeKind.EnumType,
-    ];
+    const order = DataTypeRepository.typeOrder;
     const index = order.indexOf(kind);
 
     for (let i = index + 1; i < order.length; i++) {
