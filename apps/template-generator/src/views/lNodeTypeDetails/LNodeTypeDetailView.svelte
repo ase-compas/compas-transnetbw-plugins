@@ -28,7 +28,10 @@
     openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
     openReferencedTypeDrawer,
-    route, setTypeAsDefaultWithConfirmationForBasicType,
+    route,
+    SetDefaultButton,
+    setTypeAsDefaultWithConfirmation,
+    setTypeAsDefaultWithConfirmationForBasicType,
     TBoard,
     TBoardItemContext,
     TItem
@@ -58,6 +61,7 @@
   // -----------------------------
   // Component state
   // -----------------------------
+  let created = false;
   let lNodeTypeId: string;
   let lnClass: string;
   let logicalNodeType: LNodeTypeDetails | null = null;
@@ -91,6 +95,7 @@
 
   function setModeFromPath() {
     const mode: Mode = $route?.path[0] === 'create' ? 'create' : ($route?.path[0] === 'edit' ? 'edit' : 'view');
+    created = mode !== 'create';
     editorStore.switchMode(mode);
   }
 
@@ -119,9 +124,14 @@
   // Loaders
   // -----------------------------
   async function loadLogicalNodeType(lNodeTypeId: string, lnClass?: string) {
+    lNodeTypeId = lNodeTypeId;
+    lnClass = lnClass;
+    if ($mode === "create") {
+      lNodeTypeService.createOrUpdateType({id: lNodeTypeId, instanceType: lnClass, children: []})
+      editorStore.switchMode("edit")
+      return;
+    }
     logicalNodeType = await loadLNodeType($mode, lNodeTypeId, lnClass);
-    lNodeTypeId = logicalNodeType.id;
-    lnClass = logicalNodeType.lnClass;
     await refStore.reload();
   }
 
@@ -204,6 +214,11 @@
     await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
   }
 
+  function handleClickOnSetAsDefault() {
+    if(!logicalNodeType) return;
+    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+  }
+
   async function handleBreadcrumbClick({ index }) {
     const ok = await editorStore.confirmLeave();
     if(!ok) return;
@@ -245,6 +260,8 @@
     <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={e => handleBreadcrumbClick(e.detail)} />
 
     <div class="oscd-details-toolbar-right">
+
+      <SetDefaultButton on:click={() => handleClickOnSetAsDefault()}/>
 
       <OscdSwitch
         bind:checked={$isEditModeSwitchState}

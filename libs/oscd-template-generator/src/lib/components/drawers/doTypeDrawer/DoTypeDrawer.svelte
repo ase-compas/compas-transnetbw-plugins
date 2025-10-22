@@ -8,41 +8,37 @@
     getDataTypeService,
     getDefaultTypeService,
     getDOTypeService,
-    type IDataTypeService, type IDefaultService
+    type IDataTypeService,
+    type IDefaultService,
+    IDoTypeService
   } from '../../../services';
-  import { IDoTypeService } from '../../../services';
-  import { createObjectReferenceStore, doc } from '../../../stores';
+  import { createEditorStore, createObjectReferenceStore, doc } from '../../../stores';
   import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
-    getDisplayReferenceItems, setTypeAsDefaultWithConfirmationForBasicType
-  } from '../../../utils';
-  import {
-    confirmUnsavedChanges,
+    getDisplayReferenceItems,
     openCreateDataAttributeTypeDialog,
     openCreateDataObjectTypeDialog,
     openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer,
     openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
-    openReferencedTypeDrawer,
+    openReferencedTypeDrawer, setTypeAsDefaultWithConfirmation,
+    setTypeAsDefaultWithConfirmationForBasicType
   } from '../../../utils';
 
   // ===== Types =====
   import {
     type BasicType,
-    BasicTypes, DataTypeKind,
-    DOTypeDetails, Mode,
+    BasicTypes,
+    DataTypeKind,
+    DOTypeDetails,
+    Mode,
     type ObjectReferenceDetails
   } from '../../../domain';
-  import {
-    ItemDropOnItemEventDetail,
-    type TBoardItemContext,
-    TItem,
-  } from '../../tboard/types';
+  import { ItemDropOnItemEventDetail, type TBoardItemContext, TItem } from '../../tboard/types';
   import TypeHeader from '../../TypeHeader.svelte';
-  import { createEditorStore } from '../../../stores';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -85,7 +81,7 @@
 
   // ===== Lifecycle =====
   onMount(() => {
-    init();
+    validateProps()
 
     // Subscribe to doc changes to reload data
     const unsubscribe = doc.subscribe(async () => {
@@ -110,13 +106,12 @@
     return await editorStore.confirmLeave();
   };
 
-  // ===== Init & Data Loading =====
-  function init() {
-    validateProps();
-    loadData();
-  }
-
   async function loadData() {
+    if(editorStore.isCreateMode()) {
+      doTypeService.createOrUpdateType({id: typeId, instanceType: cdc, children: []})
+      editorStore.switchMode('edit');
+      return
+    }
     dataObjectType = await loadDOType(editorStore.isCreateMode(), typeId, cdc);
     typeId = dataObjectType.id;
     cdc = dataObjectType.cdc;
@@ -205,6 +200,15 @@
     await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type);
   }
 
+  function handleApplyDefaults(detail) {
+    const {itemId} = detail;
+    dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
+  }
+
+  function handleClickSetAsDefault() {
+    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
+  }
+
   function handleOnReferenceClick(itemId: string) {
     const ref = $refStore.find((child) => child.name === itemId);
     openReferencedTypeDrawer(ref, 'edit');
@@ -241,6 +245,7 @@
   instanceType={dataObjectType?.cdc}
   bind:isEditMode={$isEditModeSwitchState}
   on:modeChange={e => handleModeChange(e.detail)}
+  on:clickDefault={() => handleClickSetAsDefault()}
 />
 <TBoard
   {columns}
@@ -253,4 +258,5 @@
   on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
   on:columnActionClick={({ detail: { columnId } }) => handleActionClick({ columnId })}
   on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
+  on:itemApplyDefaults={e => handleApplyDefaults(e.detail)}
 />

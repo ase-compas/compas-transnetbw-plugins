@@ -12,6 +12,7 @@
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
+    setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType
   } from '../../../utils';
   import {
@@ -82,7 +83,7 @@
 
   // ===== Lifecycle =====
   onMount(() => {
-    init()
+    validateProps();
 
     // Subscribe to doc changes to reload data
     const unsubscribe = doc.subscribe(async () => {
@@ -107,13 +108,12 @@
     return await editorStore.confirmLeave();
   };
 
-  // ===== Initialization =====
-  function init() {
-    validateProps();
-    loadData();
-  }
-
   async function loadData() {
+    if(editorStore.isCreateMode()) {
+      daTypeService.createOrUpdateType({id: typeId, instanceType: instanceType, children: []})
+      editorStore.switchMode('edit')
+      return
+    }
     const result = await loadDAType(editorStore.isCreateMode(), typeId, instanceType);
     if (!result?.instanceType || result.instanceType === '') mode = 'view'
     dataAttributeTypes = result;
@@ -181,6 +181,15 @@
     await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
   }
 
+  function handleApplyDefaults(detail) {
+    const {itemId} = detail;
+    dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
+  }
+
+  function handleClickSetAsDefault() {
+    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
+  }
+
   function handleOnReferenceClick(itemId: string) {
     const ref = $refStore.find(child => child.name === itemId);
     openReferencedTypeDrawer(ref, 'view');
@@ -222,10 +231,11 @@
   instanceType={dataAttributeTypes?.instanceType}
   isEditMode={$isEditModeSwitchState}
   on:modeChange={e => handleModeChange(e.detail)}
+  on:clickDefault={() => handleClickSetAsDefault()}
   on:instanceTypeChange={(e) => {
     instanceType = e.detail;
     editorStore.switchMode('create');
-    init();
+    loadData();
     }
   }
 />
@@ -240,4 +250,5 @@
   on:itemReferenceClick={e => handleOnReferenceClick(e.detail.itemId)}
   on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
   on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
+  on:itemApplyDefaults={e => handleApplyDefaults(e.detail)}
 />
