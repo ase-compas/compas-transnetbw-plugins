@@ -332,8 +332,8 @@ export class DataTypeService implements IDataTypeService {
     }
 
     // Update the target object reference id to the new default type id
-    const updatedDataType = this.setTypeRefId(dataType, name, refId);
-    updates.push({ kind: typeKind, dataType: updatedDataType });
+    dataType.children = await this.getConfiguredObjectReferenceDetails(typeKind, instanceType, [...dataType.children.filter(c => c.name !== name), { name, typeRef: refId }]);
+    updates.push({ kind: typeKind, dataType: dataType });
 
     //  Apply all changes atomically (dispatch event once)
     this.typeRepo.applyDataTypeChanges({
@@ -365,15 +365,6 @@ export class DataTypeService implements IDataTypeService {
 
     // Write all types to the repository
     this.typeRepo.applyDataTypeChanges({creates: [defaultDataTypes.root, ...defaultDataTypes.references]})
-  }
-
-  private setTypeRefId(dataType: LNodeType | DOType | DAType | EnumType, objRefName: string, newId: string): LNodeType | DOType | DAType | EnumType {
-    return {
-      ...dataType,
-      children: dataType.children.map(child =>
-        child.name === objRefName ? { ...child, typeRef: newId } : child
-      ),
-    };
   }
 
   /**
