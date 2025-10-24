@@ -137,13 +137,13 @@ export class LocalStorageDefaultService implements IDefaultService {
   /**
    * Loads all persisted defaults from localStorage into cache.
    */
-  private loadFromStorage(): void {
+  private async loadFromStorage(): Promise<void> {
     const json = localStorage.getItem(this.storageKey);
     if (!json) return;
 
     try {
       const items: DefaultConfig[] = JSON.parse(json);
-      items.forEach(item => this.cache.setDefault(item));
+      await Promise.all(items.map(item => this.cache.setDefault(item)));
     } catch (err) {
       console.warn('Failed to parse default configs from localStorage', err);
     }
@@ -152,8 +152,8 @@ export class LocalStorageDefaultService implements IDefaultService {
   /**
    * Persists all defaults from cache into localStorage.
    */
-  private saveToStorage(): void {
-    const allDefaults = this.cache.getAllDefaults();
+  private async saveToStorage(): Promise<void> {
+    const allDefaults = await this.cache.getAllDefaults();
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(allDefaults));
     } catch (err) {
