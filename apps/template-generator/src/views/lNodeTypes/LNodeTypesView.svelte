@@ -1,19 +1,22 @@
 <script lang="ts">
   // ===== Imports =====
-  import {OscdInput, OscdButton, OscdConfirmDialog} from '@oscd-transnet-plugins/oscd-component';
-  import { NewLNodeTypeDialog } from '@oscd-transnet-plugins/oscd-template-generator';
-  import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
+  import { OscdButton, OscdConfirmDialog, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    BasicType,
+    DataTypeKind,
+    getDataTypeService,
+    getLNodeTypeService,
+    IDataTypeService,
+    ILNodeTypeService,
+    LogicalNodeTypeRow,
+    NewLNodeTypeDialog,
+    type Route,
+    route
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import DataTable, { Body, Cell, Head, Label, Row, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import { LogicalNodeTypeRow} from '@oscd-transnet-plugins/oscd-template-generator';
   import { createEventDispatcher } from 'svelte';
-  import {
-    getLNodeTypeService,
-    ILNodeTypeService,
-    type Route,
-    route,
-    BasicType
-  } from '@oscd-transnet-plugins/oscd-template-generator';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   export let doc: XMLDocument;
@@ -21,6 +24,7 @@
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== State =====
   let nodeSearchTerm = '';
@@ -93,7 +97,25 @@
     });
   }
 
-  function handleDialogCreate({id, lnClass}) {
+  async function handleDialogCreate({id, lnClass, createFromDefault}) {
+    if(createFromDefault) {
+      try {
+        await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
+        setTimeout(() => {
+          route.set({
+            path: ['edit'],
+            meta: {
+              lNodeTypeId: id,
+              lnClass: lnClass
+            }
+          } as Route)
+        }, 50);
+      } catch (e) {
+        console.error(`Error creating LNodeType from default: ${e}`);
+      }
+      return;
+    }
+
     route.set({
       path: ['create'],
       meta: {

@@ -14,17 +14,19 @@
 
   export let getOptions: () => Promise<TypeOption[]> = async () => [];
   export let isIdTaken: (id: string) => Promise<boolean> = async () => false;
-
-  export let onConfirm: (id: string, selected: any) => void;
+  export let onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
+  export let checkDefaultAvailable: (instanceType: string) => Promise<boolean> = async () => false;
+  export let showCreateFromDefault: boolean = false;
 
   let id;
   let valid = false;
   let selectedItem;
+  let createFromDefault;
   let formEl;
 
   // ===== Event Handlers =====
   const handleCreate = () => {
-    onConfirm(id, selectedItem.id);
+    onConfirm(id, selectedItem.id, createFromDefault);
   };
 
   const handleCancel = () => {
@@ -64,8 +66,11 @@
         isIdTakenFn={isIdTaken}
         bind:id
         bind:selectedItem
+        bind:createFromDefault
         bind:valid
         on:submit={handleCreate}
+        showCreateFromDefault={showCreateFromDefault}
+        checkDefaultAvailable={checkDefaultAvailable}
       />
     </div>
   </OscdBaseDialog>

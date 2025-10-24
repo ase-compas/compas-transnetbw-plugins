@@ -118,6 +118,14 @@ export interface IDataTypeService {
    * @param name
    */
   applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<void>;
+
+  /**
+   * Inserts all types of the default type into the repository.
+   * @param typeKind
+   * @param instanceType
+   * @param rootId
+   */
+  createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void>;
 }
 
 function groupObjectTypeByTypeKind(requiredSpecs: ObjectSpecification[]): Map<DataTypeKind, Set<string>> {
@@ -134,6 +142,8 @@ function groupObjectTypeByTypeKind(requiredSpecs: ObjectSpecification[]): Map<Da
     return acc;
   }, new Map<DataTypeKind, Set<string>>());
 }
+
+type DataTypeWithKind = { kind: DataTypeKind; dataType: LNodeType | DOType | DAType | EnumType };
 
 export class DataTypeService implements IDataTypeService {
 
@@ -280,7 +290,6 @@ export class DataTypeService implements IDataTypeService {
       throw new Error(`Reference '${name}' on ${typeKind} ${id} does not require a valid reference`);
     }
 
-
     // Retrieve the stored default for that reference type
     const defaultKey: DefaultKey = {
       kind: targetRef.meta.refTypeKind,
@@ -304,7 +313,7 @@ export class DataTypeService implements IDataTypeService {
       existingDefault.privates?.defaultVersion === defaultType.version;
 
     if (isSameVersion) {
-      // If the existing default type matches the stored default (by id and version), reuse it
+        // If the existing default type matches the stored default (by id and version), reuse it
         // Update the target object reference to point to the existing default root type
         refId = existingDefault.id;
         // no need to insert defaults, just update existing reference
@@ -316,42 +325,78 @@ export class DataTypeService implements IDataTypeService {
           delete existingDefault.privates?.defaultVersion;
           updates.push({ kind: defaultType.rootType.kind, dataType: existingDefault });
         }
-        // Update the target object reference to point to the existing default root type
-        this.resolveDefaultTypeIDConflicts(defaultType.rootType, defaultType.referencedTypes);
 
-        // the rootDefaultCreate should have te prop with kind and dataType
-        const rootDefault = await this.defaultToDataType(defaultType.rootType);
-        const root = { kind: defaultType.rootType.kind, dataType: rootDefault };
-        root.dataType.privates = { defaultVersion: defaultType.version }; // sets the new default version
-        // set the private defaultVersion
-        const referencedDefaults = await Promise.all(
-          defaultType.referencedTypes.map(async t => ({
-            kind: t.kind,
-            dataType: await this.defaultToDataType(t),
-          }))
-        );
-
-        creates = [root, ...referencedDefaults];
+        const defaultDataTypes = await this.defaultConfigToDataTypes(defaultType);
+        creates = [defaultDataTypes.root, ...defaultDataTypes.references];
         refId = defaultType.rootType.id;
     }
 
-    // Step 4: Update the target reference to the proper type
-    const updatedRef = { name, typeRef: refId };
-    let updateRefDetails = await this.getConfiguredObjectReferenceDetails(typeKind, instanceType, [updatedRef]);
-    updateRefDetails = updateRefDetails.filter(ref => ref.name === updatedRef.name);
-
-    const updatedDataType = {
-      ...dataType,
-      children: dataType.children.filter(c => c.name !== name).concat(updateRefDetails),
-    };
-
+    // Update the target object reference id to the new default type id
+    const updatedDataType = this.setTypeRefId(dataType, name, refId);
     updates.push({ kind: typeKind, dataType: updatedDataType });
 
-    // Step 5: Apply all changes atomically (dispatch event once)
+    //  Apply all changes atomically (dispatch event once)
     this.typeRepo.applyDataTypeChanges({
       creates,
       updates,
     });
+  }
+
+  async createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void> {
+    const defaultKey: DefaultKey = { kind: typeKind, instanceType };
+    const existingDefault = this.defaultService.getDefault(defaultKey);
+    if (!existingDefault) {
+      throw new Error(`No default type configured for kind=${typeKind}, instanceType=${instanceType}`);
+    }
+    // Create a default types and resolve ID conflicts
+    const defaultDataTypes = await this.defaultConfigToDataTypes(existingDefault);
+
+    if (rootId) {
+      // Check for ID conflicts
+      const idConflictInDefaults = defaultDataTypes.references.some(dt => dt.dataType.id === rootId);
+      const idConflictInRepo = this.typeRepo.findDataTypeById(typeKind, rootId);
+      if (idConflictInDefaults || idConflictInRepo) {
+        throw new Error(`The provided rootId '${rootId}' conflicts with existing type IDs.`);
+      }
+
+      // Override the root ID if provided
+      defaultDataTypes.root.dataType.id = rootId;
+    }
+
+    // Write all types to the repository
+    this.typeRepo.applyDataTypeChanges({creates: [defaultDataTypes.root, ...defaultDataTypes.references]})
+  }
+
+  private setTypeRefId(dataType: LNodeType | DOType | DAType | EnumType, objRefName: string, newId: string): LNodeType | DOType | DAType | EnumType {
+    return {
+      ...dataType,
+      children: dataType.children.map(child =>
+        child.name === objRefName ? { ...child, typeRef: newId } : child
+      ),
+    };
+  }
+
+  /**
+   * Converts a DefaultConfig into DataTypeWithKind objects for root and referenced types.
+   * Resolves ID conflicts before conversion.
+   * @param defaultConfig default config
+   */
+  private async defaultConfigToDataTypes(defaultConfig: DefaultConfig): Promise<{ root: DataTypeWithKind; references: DataTypeWithKind[] }> {
+    // Update the target object reference to point to the existing default root type
+    this.resolveDefaultTypeIDConflicts(defaultConfig.rootType, defaultConfig.referencedTypes);
+
+    // the rootDefaultCreate should have te prop with kind and dataType
+    const rootDefault = await this.defaultToDataType(defaultConfig.rootType);
+    const root = { kind: defaultConfig.rootType.kind, dataType: rootDefault };
+    root.dataType.privates = { defaultVersion: defaultConfig.version }; // sets the new default version
+    // set the private defaultVersion
+    const referencedDefaults = await Promise.all(
+      defaultConfig.referencedTypes.map(async t => ({
+        kind: t.kind,
+        dataType: await this.defaultToDataType(t),
+      }))
+    );
+    return { root, references: referencedDefaults };
   }
 
   /**
@@ -381,8 +426,10 @@ export class DataTypeService implements IDataTypeService {
 
         // Ensure uniqueness for this kind
         while (this.typeRepo.findDataTypeById(type.kind, newId)) {
+          // Remove any existing _D[number] suffix before adding a new one
+          const baseIdWithoutSuffix = baseId.replace(/_D\d+$/, '');
           const suffix = `_D${counter++}`;
-          const truncatedBase = baseId.slice(0, MAX_ID_LENGTH - suffix.length);
+          const truncatedBase = baseIdWithoutSuffix.slice(0, MAX_ID_LENGTH - suffix.length);
           newId = truncatedBase + suffix;
         }
 
