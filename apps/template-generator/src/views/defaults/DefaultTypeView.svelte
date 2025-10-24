@@ -38,10 +38,11 @@
     loadDefaultTypes();
   });
 
-  function loadDefaultTypes() {
+  async function loadDefaultTypes() {
     loading = true;
     try {
-      data = defaultTypeService.getAllDefaults().map(cfg => ({
+      const defaultType = await defaultTypeService.getAllDefaults();
+      data = defaultType.map(cfg => ({
         id: cfg.rootType.kind + ":" + cfg.rootType.instanceType,
         description: cfg.description,
         type: cfg.key.kind,

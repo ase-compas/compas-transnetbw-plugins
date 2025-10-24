@@ -21,30 +21,34 @@ export interface IDefaultService {
    *      either in referencedTypes or as a rootType in another DefaultConfig.
    *
    * @param config DefaultConfig to store as the default for its key.
+   * @returns The stored DefaultConfig, with updated version.
    */
-  setDefault(config: DefaultConfig): void;
+  setDefault(config: DefaultConfig): Promise<DefaultConfig>;
 
   /**
    * Returns the default configuration for the given key.
    * Includes the rootType and all referencedTypes.
-   * Returns undefined if no default is set.
    *
    * @param key Key identifying the kind + instanceType.
+   * @returns undefined if no default is set.
    */
-  getDefault(key: DefaultKey): DefaultConfig | undefined;
+  getDefault(key: DefaultKey): Promise<DefaultConfig | undefined>;
 
   /**
-   * Returns all default configurations currently stored.
+   * Gets all default configurations.
+   * @returns all default configurations currently stored.
    */
-  getAllDefaults(): DefaultConfig[];
+  getAllDefaults(): Promise<DefaultConfig[]>;
 
   /**
    * Removes the default configuration for the given key.
    * Does nothing if no default exists for the key.
    *
    * @param key Key identifying the kind + instanceType.
+   * @return true, if a default existed and has been removed,
+   * or false if the default does not exist .
    */
-  clearDefault(key: DefaultKey): void;
+  clearDefault(key: DefaultKey): Promise<boolean>;
 }
 
 /**
@@ -62,7 +66,7 @@ export class InMemoryDefaultService implements IDefaultService {
    * Sets or updates a default configuration.
    * Validates required attributes and references.
    */
-  setDefault(config: DefaultConfig):void {
+  setDefault(config: DefaultConfig): Promise<DefaultConfig> {
     const keyStr = this.makeKey(config.key);
 
     // Validate rootType
@@ -100,18 +104,20 @@ export class InMemoryDefaultService implements IDefaultService {
 
     // Store the default
     this.defaults.set(keyStr, configWithVersion);
+
+    return Promise.resolve(configWithVersion);
   }
 
-  getDefault(key: DefaultKey): DefaultConfig | undefined {
-    return this.defaults.get(this.makeKey(key));
+  getDefault(key: DefaultKey): Promise<DefaultConfig | undefined> {
+    return Promise.resolve(this.defaults.get(this.makeKey(key)));
   }
 
-  getAllDefaults(): DefaultConfig[] {
-    return Array.from(this.defaults.values());
+  getAllDefaults(): Promise<DefaultConfig[]> {
+    return Promise.resolve(Array.from(this.defaults.values()));
   }
 
-  clearDefault(key: DefaultKey): void {
-    this.defaults.delete(this.makeKey(key));
+  clearDefault(key: DefaultKey): Promise<boolean> {
+    return Promise.resolve(this.defaults.delete(this.makeKey(key)));
   }
 }
 
@@ -155,21 +161,23 @@ export class LocalStorageDefaultService implements IDefaultService {
     }
   }
 
-  setDefault(config: DefaultConfig): void {
-    this.cache.setDefault(config);  // validate and store in cache
+  setDefault(config: DefaultConfig): Promise<DefaultConfig> {
+    const promise = this.cache.setDefault(config);  // validate and store in cache
     this.saveToStorage();           // persist updated cache
+    return promise;
   }
 
-  getDefault(key: DefaultKey): DefaultConfig | undefined {
+  getDefault(key: DefaultKey): Promise<DefaultConfig | undefined> {
     return this.cache.getDefault(key);
   }
 
-  getAllDefaults(): DefaultConfig[] {
+  getAllDefaults(): Promise<DefaultConfig[]> {
     return this.cache.getAllDefaults();
   }
 
-  clearDefault(key: DefaultKey): void {
-    this.cache.clearDefault(key);
+  clearDefault(key: DefaultKey): Promise<boolean> {
+    const promise = this.cache.clearDefault(key);
     this.saveToStorage();
+    return promise;
   }
 }

@@ -111,7 +111,7 @@ export async function setTypeAsDefaultWithConfirmation(
   id: string
 ) {
   // check if already a type for this kind and instanceType exists to resolve conflict
-  const defaultType = defaultTypeService.getDefault({kind: kind, instanceType: instanceType});
+  const defaultType = await defaultTypeService.getDefault({kind: kind, instanceType: instanceType});
   const exists = defaultType !== undefined;
   if(exists) {
     const result = await openDialog(OscdConfirmDialog, {

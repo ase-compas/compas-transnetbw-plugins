@@ -265,7 +265,10 @@ export class DataTypeService implements IDataTypeService {
     const referencedTypes = await this.getReferencedTypes(typeKind, id);
 
     const defaultConfig = this.getDefaultConfig(rootType, typeKind, referencedTypes);
-    this.defaultService.setDefault(defaultConfig);
+    const defaultConfigWithVersion = await this.defaultService.setDefault(defaultConfig);
+    if (!rootType.privates) rootType.privates = {};
+    rootType.privates.defaultVersion = defaultConfigWithVersion.version;
+    this.typeRepo.upsertDataType(typeKind, rootType);
   }
 
   async applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<void> {
@@ -296,7 +299,7 @@ export class DataTypeService implements IDataTypeService {
       instanceType: targetRef.meta.objectType
     };
 
-    const defaultType = this.defaultService.getDefault(defaultKey);
+    const defaultType = await this.defaultService.getDefault(defaultKey);
     if (!defaultType) {
       throw new Error(`No default type configured for kind=${defaultKey.kind}, instanceType=${defaultKey.instanceType}`);
     }
@@ -344,7 +347,7 @@ export class DataTypeService implements IDataTypeService {
 
   async createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void> {
     const defaultKey: DefaultKey = { kind: typeKind, instanceType };
-    const existingDefault = this.defaultService.getDefault(defaultKey);
+    const existingDefault = await this.defaultService.getDefault(defaultKey);
     if (!existingDefault) {
       throw new Error(`No default type configured for kind=${typeKind}, instanceType=${instanceType}`);
     }
