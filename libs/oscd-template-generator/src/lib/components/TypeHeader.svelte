@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DataTypeKind } from '../domain';
-  import { OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openSelectInstanceTypeDialog } from '../utils/overlayUitils';
   import { createEventDispatcher } from 'svelte';
@@ -13,6 +13,7 @@
   export let instanceType: string | null = null;
   export let isEditMode = false;
   export let showSetAsDefault = true;
+  export let setAsDefaultDisabled = false;
 
   const handleChange = (checked) => dispatch('modeChange', checked ? 'edit' : 'view');
 
@@ -75,7 +76,13 @@
   <div class="actions-section">
     {#if instanceType}
       {#if showSetAsDefault}
-        <SetDefaultButton on:click={() => dispatch('clickDefault')}/>
+        {#if setAsDefaultDisabled}
+          <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
+            <SetDefaultButton on:click={() => dispatch('clickDefault')} disabled={setAsDefaultDisabled}/>
+          </OscdTooltip>
+        {:else}
+          <SetDefaultButton on:click={() => dispatch('clickDefault')} />
+        {/if}
       {/if}
     <OscdSwitch
       bind:checked={isEditMode}

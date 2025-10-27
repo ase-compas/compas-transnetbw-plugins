@@ -55,7 +55,7 @@
   const { markedItemIds, configuredItems, isDirty } = refStore;
 
   const editorStore = createEditorStore({onSave: async () => saveChanges(), onDiscard: async () => refStore.reset(), initialMode: mode});
-  const { canEdit, isEditModeSwitchState } = editorStore;
+  const { canEdit, isEditModeSwitchState, dirty } = editorStore;
 
   // ===== State =====
   let dataObjectType: DOTypeDetails | null = null;
@@ -243,6 +243,7 @@
   {typeId}
   type={DataTypeKind.DOType}
   instanceType={dataObjectType?.cdc}
+  setAsDefaultDisabled={$dirty}
   bind:isEditMode={$isEditModeSwitchState}
   on:modeChange={e => handleModeChange(e.detail)}
   on:clickDefault={() => handleClickSetAsDefault()}

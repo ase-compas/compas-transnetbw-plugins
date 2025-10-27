@@ -36,7 +36,7 @@
     TBoardItemContext,
     TItem
   } from '@oscd-transnet-plugins/oscd-template-generator';
-  import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { loadLNodeType, loadTypes } from './dataLoader';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
@@ -261,7 +261,13 @@
 
     <div class="oscd-details-toolbar-right">
 
-      <SetDefaultButton on:click={() => handleClickOnSetAsDefault()}/>
+      {#if $dirty}
+        <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
+          <SetDefaultButton on:click={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
+        </OscdTooltip>
+      {:else}
+        <SetDefaultButton on:click={() => handleClickOnSetAsDefault()} />
+      {/if}
 
       <OscdSwitch
         bind:checked={$isEditModeSwitchState}
