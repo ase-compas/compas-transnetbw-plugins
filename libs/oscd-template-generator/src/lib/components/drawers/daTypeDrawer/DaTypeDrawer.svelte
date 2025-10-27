@@ -181,13 +181,14 @@
     await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
   }
 
-  function handleApplyDefaults(detail) {
+  async function handleApplyDefaults(detail) {
     const {itemId} = detail;
-    dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
+    const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
+    refStore.setTypeReference(itemId, defaultRootId);
   }
 
   function handleClickSetAsDefault() {
-    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
+    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, instanceType, typeId);
   }
 
   function handleOnReferenceClick(itemId: string) {

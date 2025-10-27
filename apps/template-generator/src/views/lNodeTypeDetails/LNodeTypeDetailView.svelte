@@ -240,9 +240,11 @@
     openReferencedTypeDrawer(ref, 'view')
   }
 
-  function handleApplyDefaults(detail) {
+  async function handleApplyDefaults(detail) {
     const { itemId } = detail;
-    dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
+    const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
+    // Set the reference to the newly created to reflect the change in the UI
+    refStore.setTypeReference(itemId, defaultRootId);
   }
 
   // -----------------------------

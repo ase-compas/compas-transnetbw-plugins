@@ -116,8 +116,9 @@ export interface IDataTypeService {
    * @param typeKind
    * @param id
    * @param name
+   * @return root-id of the applied default type
    */
-  applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<void>;
+  applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<string>;
 
   /**
    * Inserts all types of the default type into the repository.
@@ -271,7 +272,7 @@ export class DataTypeService implements IDataTypeService {
     this.typeRepo.upsertDataType(typeKind, rootType);
   }
 
-  async applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<void> {
+  async applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<string> {
     // Load the current type and its specification
     const dataType = this.typeRepo.findDataTypeById(typeKind, id);
     if (!dataType) throw new Error(`Data type ${typeKind} with id ${id} not found`);
@@ -343,6 +344,8 @@ export class DataTypeService implements IDataTypeService {
       creates,
       updates,
     });
+
+    return Promise.resolve(refId)
   }
 
   async createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void> {
