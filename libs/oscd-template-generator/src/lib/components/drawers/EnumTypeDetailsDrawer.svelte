@@ -33,8 +33,11 @@
   let isLoading = false;
 
   // ===== Derived =====
-  $: filteredItems = enumType?.children.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
+  $: filteredItems = enumType?.children
+    .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())) // filter by name
+    .filter(item => $isEditModeSwitchState ? true : item.meta.isConfigured) // only show configured options in view mode
+    ?? [];
+
   $: if(selected) {
     const dirty = isDirty();
     dirty ? editorStore.makeDirty() : editorStore.makeClean();
