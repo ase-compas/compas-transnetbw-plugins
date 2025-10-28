@@ -98,7 +98,7 @@
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
-    if (reason === 'save') {
+    if (reason === 'save' && $isDirty) {
       await editorStore.save();
       return true;
     }
