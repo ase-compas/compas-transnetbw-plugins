@@ -23,7 +23,7 @@
   export let instanceTypeId: string | null = null;
 
   // ===== Stores =====
-  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view'});
+  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: mode });
   const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
@@ -90,8 +90,8 @@
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
-    if (reason === 'save' && isDirty()) {
-      await editorStore.save();
+    if (reason === 'save') {
+      if(isDirty()) await editorStore.save();
       return true;
     } else {
       return editorStore.confirmLeave();
@@ -100,6 +100,7 @@
 
   function isDirty() {
     if(!enumType) return false;
+    if(mode === 'create') return true;
     const configuredNames = enumType.children.filter(item => item.meta.isConfigured).map(a => a.name).sort();
     const selectedSorted = selected.slice().sort();
     return JSON.stringify(configuredNames) !== JSON.stringify(selectedSorted);
