@@ -9,7 +9,7 @@
     createEditorStore,
     createObjectReferenceStore,
     DataTypeKind,
-    doc as docStore,
+    doc as docStore, getAlertService,
     getDataTypeService,
     getDefaultTypeService,
     getDisplayDataTypeItems,
@@ -41,6 +41,7 @@
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
+  import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
 
   // -----------------------------
   // Service instances
@@ -48,6 +49,7 @@
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
   const dataTypeService: IDataTypeService = getDataTypeService()
   const defaultTypeService: IDefaultService = getDefaultTypeService();
+  const alertService: OscdAlertService = getAlertService();
 
   // -----------------------------
   // Stores
@@ -211,12 +213,22 @@
     const type = types.find(t => t.id === itemId);
     if(!type) return;
 
-    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+    try {
+      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      alertService.info(`set as default successfully.`);
+    } catch (e: Error) {
+     alertService.error(e.message)
+    }
   }
 
-  function handleClickOnSetAsDefault() {
+  async function handleClickOnSetAsDefault() {
     if(!logicalNodeType) return;
-    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+    try {
+      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+      alertService.error("LNodeType set as default successfully.");
+    } catch (e: Error) {
+     alertService.error(e.message);
+    }
   }
 
   async function handleBreadcrumbClick({ index }) {
@@ -242,9 +254,13 @@
 
   async function handleApplyDefaults(detail) {
     const { itemId } = detail;
-    const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
+    try {
+      const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
+      refStore.setTypeReference(itemId, defaultRootId);
+    } catch (e: Error) {
+      alertService.error(e.message);
+    }
     // Set the reference to the newly created to reflect the change in the UI
-    refStore.setTypeReference(itemId, defaultRootId);
   }
 
   // -----------------------------

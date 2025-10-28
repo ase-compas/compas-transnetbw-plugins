@@ -6,6 +6,7 @@ import { DoTypeService, type IDoTypeService } from './do-type.service';
 import { DaTypeService, type IDaTypeService } from './da-type.service';
 import { EnumTypeService, type IEnumTypeService } from './enum-type.service';
 import { type IDefaultService, LocalStorageDefaultService } from './default.service';
+import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
 
 // App-scoped state
 let xmlDoc: XMLDocument | null = null;
@@ -21,6 +22,7 @@ let enumTypeService: IEnumTypeService | null = null;
 let typeSpecService: ITypeSpecificationService | null = null;
 let dataTypeService: IDataTypeService | null = null;
 let defaultService: IDefaultService | null = null;
+let alertService: OscdAlertService | null = null;
 
 /**
  * Initializes all repositories and services with the provided XML document and host element.
@@ -40,8 +42,9 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
   }
 
   if (!defaultService) defaultService = new LocalStorageDefaultService();
-  if(!typeSpecService) typeSpecService = new NsdSpecificationService();
-  if(!dataTypeService) dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService, defaultService);
+  if (!typeSpecService) typeSpecService = new NsdSpecificationService();
+  if (!dataTypeService) dataTypeService = new DataTypeService(dataTypeRepo, typeSpecService, defaultService);
+  if (!alertService) alertService = new OscdAlertService(hostElement)
 
   lNodeTypeService = new LNodeTypeService(dataTypeRepo, dataTypeService);
   doTypeService = new DoTypeService(dataTypeRepo, dataTypeService, typeSpecService);
@@ -50,6 +53,13 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
 }
 
 // === Service Getters ===
+
+export function getAlertService(): OscdAlertService {
+  if (!alertService) {
+    throw new Error('AlertService not initialized. Call initServices() first.');
+  }
+  return alertService;
+}
 
 export function getEnumTypeService(): IEnumTypeService {
   if (!enumTypeService) {
