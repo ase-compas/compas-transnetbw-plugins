@@ -15,6 +15,7 @@
     id: string;
     type: DataTypeKind;
     instance: string;
+    version?: string;
     root: string;
     description: string;
     subtypes: number;
@@ -29,6 +30,7 @@
   const columns = [
     { header: 'Type', key: 'type'},
     { header: 'Instance', key: 'instance'},
+    { header: 'Version', key: 'version'},
     { header: 'Root-ID', key: 'root'},
     { header: 'Description', key: 'description'},
     { header: 'Sub-Types', key: 'subtypes'}
@@ -47,6 +49,7 @@
         description: cfg.description,
         type: cfg.key.kind,
         instance: cfg.key.instanceType,
+        version: cfg.version,
         root: cfg.rootType.id,
         subtypes: cfg.referencedTypes.length
       }));
