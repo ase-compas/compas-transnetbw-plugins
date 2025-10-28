@@ -212,23 +212,12 @@
     }
     const type = types.find(t => t.id === itemId);
     if(!type) return;
-
-    try {
-      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
-      alertService.info(`set as default successfully.`);
-    } catch (e: Error) {
-     alertService.error(e.message)
-    }
+    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
   }
 
   async function handleClickOnSetAsDefault() {
     if(!logicalNodeType) return;
-    try {
-      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
-      alertService.error("LNodeType set as default successfully.");
-    } catch (e: Error) {
-     alertService.error(e.message);
-    }
+    await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
   }
 
   async function handleBreadcrumbClick({ index }) {
