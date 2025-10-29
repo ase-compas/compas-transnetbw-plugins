@@ -8,17 +8,6 @@ export interface LocalStoredPlugin {
   [key: string]: unknown;
 }
 
-export function getBreadcrumbs(
-  proc: Process | null,
-  opts?: { edit?: boolean }
-) {
-  const name = proc?.name ?? '—';
-  return [
-    { label: 'Engineering-Wizard', enabled: true },
-    { label: opts?.edit ? `Edit ${name}` : name, enabled: false },
-  ];
-}
-
 export function getPluginGroups(proc: Process | null): PluginGroup[] {
   if (proc?.pluginGroups?.length) return proc.pluginGroups as PluginGroup[];
   return [{ title: 'Process', plugins: proc?.plugins ?? [] }];
@@ -30,8 +19,7 @@ export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): L
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(p => (p as LocalStoredPlugin)?.kind === 'editor')
+    return parsed.filter(p => (p as LocalStoredPlugin)?.kind === 'editor');
   } catch (err) {
     console.error('Failed to load plugins from localStorage', err);
     return [];

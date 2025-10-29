@@ -5,7 +5,11 @@ export const processesLoadingStore = writable<boolean>(false);
 export const processesErrorStore   = writable<string>('');
 export const processesStore        = writable<Process[]>([]);
 
-const SOURCE_URL = new URL('../assets/processes.xml', import.meta.url).href;
+/* eslint-disable @nx/enforce-module-boundaries */
+// const SOURCE_URL = new URL('../assets/processes.xml', import.meta.url).href;
+import processesUrl from '../assets/processes.xml?url';
+import type { LocalStoredPlugin } from './plugin.service';
+const SOURCE_URL = processesUrl;
 
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
 const $all = (root: ParentNode, selector: string) => Array.from(root.querySelectorAll(selector));

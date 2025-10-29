@@ -1,13 +1,10 @@
 <script lang="ts">
   import ProcessPluginGroupsEditor from '../../components/engineering-process-detail/ProcessPluginGroupsEditor.svelte';
-  import { PluginGroup, Process } from 'libs/shared/src';
   import { onMount } from 'svelte';
   import ProcessExternalPluginList from '../../components/engineering-process-detail/ProcessExternalPluginList.svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
-  import {
-    loadEditorPluginNamesFromLocalStorage,
-    LocalStoredPlugin
-  } from '../../services/engineering-process-detail.service';
+  import { loadEditorPluginNamesFromLocalStorage, type LocalStoredPlugin } from '../../services/plugin.service';
+  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
 
   export let pluginGroups: PluginGroup[] = [];
 

@@ -5,7 +5,7 @@
   export let searchTerm: string = '';
 
   import { OscdCardItem, OscdCardParent, OscdInput } from '../../../../../libs/oscd-component/src';
-  import { LocalStoredPlugin } from '../../services/engineering-process-detail.service';
+  import type { LocalStoredPlugin } from '../../services/plugin.service';
 
   function addPlugin(plugin: LocalStoredPlugin) {
     // Placeholder function for adding a plugin

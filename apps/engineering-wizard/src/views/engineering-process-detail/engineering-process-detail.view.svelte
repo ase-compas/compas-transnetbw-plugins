@@ -1,15 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { PluginGroup, Process } from 'libs/shared/src';
+  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+  import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
   import Button from '@smui/button';
   import ProcessStepper from '../../components/engineering-process-detail/ProcessStepper.svelte';
   import WorkflowBack from '../../components/engineering-workflow/WorkflowBack.svelte';
   import ProcessPluginGroupsView from '../../components/engineering-process-detail/ProcessPluginGroupsView.svelte';
-  import { getBreadcrumbs, getPluginGroups } from '../../services/engineering-process-detail.service';
-  import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
+  import { buildProcessBreadcrumbs } from './breadcrumbs.util';
+  import { getPluginGroups } from '../../services/plugin.service';
 
   export let selectedProcess: Process | null = null;
 
@@ -26,7 +27,7 @@
   $: isAtFirstStep = currentStepIndex === 0;
   $: isAtLastStep = currentStepIndex === STEP_IDS.length - 1;
 
-  $: breadcrumbs = getBreadcrumbs(selectedProcess, { edit: isEditing });
+  $: breadcrumbs = buildProcessBreadcrumbs(selectedProcess, { edit: isEditing });
 
   let pluginGroups: PluginGroup[] = [];
   $: pluginGroups = getPluginGroups(selectedProcess);
