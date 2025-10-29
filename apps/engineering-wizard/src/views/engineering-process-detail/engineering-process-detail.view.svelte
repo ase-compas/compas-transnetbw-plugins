@@ -11,7 +11,7 @@
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
 
-  export let currentProcess: Process | null = null;
+  export let selectedProcess: Process | null = null;
 
   type StepId = 'process-definition' | 'validator-configuration';
   const STEP_IDS: StepId[] = ['process-definition', 'validator-configuration'];
@@ -26,10 +26,10 @@
   $: isAtFirstStep = currentStepIndex === 0;
   $: isAtLastStep = currentStepIndex === STEP_IDS.length - 1;
 
-  $: breadcrumbs = getBreadcrumbs(currentProcess, { edit: isEditing });
+  $: breadcrumbs = getBreadcrumbs(selectedProcess, { edit: isEditing });
 
   let pluginGroups: PluginGroup[] = [];
-  $: pluginGroups = getPluginGroups(currentProcess);
+  $: pluginGroups = getPluginGroups(selectedProcess);
 
   let visitedSteps: StepId[] = [];
 
@@ -40,7 +40,7 @@
   }
 
   function startProcess() {
-    if (currentProcess) dispatch('start', currentProcess);
+    if (selectedProcess) dispatch('start', selectedProcess);
   }
 
   function startEditing() {
@@ -127,7 +127,7 @@
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
             on:click={handleAddValidationClick}
-            disabled={!currentProcess}
+            disabled={!selectedProcess}
             aria-label="Add validation"
           >
             ADD NEW VALIDATION
@@ -135,9 +135,6 @@
         </div>
         <ProcessValidationGroups
           {pluginGroups}
-          {currentProcess}
-          {breadcrumbs}
-          activeBreadcrumbIndex={2}
           on:addValidation={handleAddValidationClick}
           on:breadcrumbClick={handleBreadcrumbClick}
         />
@@ -152,7 +149,7 @@
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
           on:click={startProcess}
-          disabled={!currentProcess}
+          disabled={!selectedProcess}
           aria-label="Start process"
         >
           START PROCESS

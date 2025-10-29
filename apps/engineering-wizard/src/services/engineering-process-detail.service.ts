@@ -1,5 +1,13 @@
 import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
 
+export interface LocalStoredPlugin {
+  name?: string;
+  kind?: string;
+  src?: string;
+  sourceUrl?: string;
+  [key: string]: unknown;
+}
+
 export function getBreadcrumbs(
   proc: Process | null,
   opts?: { edit?: boolean }
@@ -14,14 +22,6 @@ export function getBreadcrumbs(
 export function getPluginGroups(proc: Process | null): PluginGroup[] {
   if (proc?.pluginGroups?.length) return proc.pluginGroups as PluginGroup[];
   return [{ title: 'Process', plugins: proc?.plugins ?? [] }];
-}
-
-export interface LocalStoredPlugin {
-  name?: string;
-  kind?: string;
-  src?: string;
-  sourceUrl?: string;
-  [key: string]: unknown;
 }
 
 export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): LocalStoredPlugin[] {

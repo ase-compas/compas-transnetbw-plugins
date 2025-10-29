@@ -2,95 +2,43 @@
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
   import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
-  import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { onMount, onDestroy } from 'svelte';
+  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { onMount } from 'svelte';
   import { DialogHost } from '../../../libs/oscd-services/src/dialog';
   import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
+  import {
+    getProcesses,
+    processesLoadingStore,
+    processesErrorStore,
+    processesStore
+  } from './services/engineering-process.service';
 
   export let doc: XMLDocument | undefined;
   export let editCount = -1;
   export let host: HTMLElement;
 
   let processes: Process[] = [];
-  let selected: Process | null = null;
+  let selectedProcess: Process | null = null;
   let loading = true;
   let errorMsg = '';
 
-  const SOURCE_URL = new URL('./assets/processes.xml', import.meta.url).href;
-  const txt = (el: Element | null | undefined) => el?.textContent?.trim() ?? '';
+  $: processes = $processesStore;
+  $: loading = $processesLoadingStore;
+  $: errorMsg = $processesErrorStore;
 
-  const parsePlugin = (pl: Element): Plugin => ({
-    id:   txt(pl.querySelector('id')),
-    name: txt(pl.querySelector('name')),
-    src:  txt(pl.querySelector('src')),
+  onMount(() => {
+    getProcesses();
   });
-
-  const parseProcessesFromXml = (xml: XMLDocument): Process[] =>
-    Array.from(xml.querySelectorAll('process')).map((p) => {
-      const groups = Array.from(p.querySelectorAll('plugins-sequence > group'));
-
-      const pluginGroups: PluginGroup[] | undefined = groups.length
-        ? groups.map((g) => ({
-          title: txt(g.querySelector(':scope > title')),
-          plugins: Array.from(g.querySelectorAll(':scope > plugin')).map(parsePlugin),
-        }))
-        : undefined;
-
-      const flatPlugins: Plugin[] = pluginGroups
-        ? pluginGroups.flatMap((g) => g.plugins)
-        : Array.from(p.querySelectorAll('plugins-sequence > plugin')).map(parsePlugin);
-
-      return {
-        id:          txt(p.querySelector(':scope > id')),
-        version:     txt(p.querySelector(':scope > version')),
-        name:        txt(p.querySelector(':scope > name')),
-        description: txt(p.querySelector(':scope > description')),
-        plugins:     flatPlugins,
-        pluginGroups,
-      };
-    });
-
-  let controller: AbortController | null = null;
-
-  async function loadXml() {
-    loading = true;
-    errorMsg = '';
-
-    const current = new AbortController();
-    controller?.abort();
-    controller = current;
-
-    try {
-      const res = await fetch(SOURCE_URL, { cache: 'no-cache', signal: current.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const text = await res.text();
-      const xml = new DOMParser().parseFromString(text, 'application/xml');
-
-      if (xml.querySelector('parsererror')) throw new Error('Invalid XML file format.');
-      if (current !== controller) return;
-      processes = parseProcessesFromXml(xml);
-    } catch (e) {
-      if ((e as DOMException)?.name === 'AbortError') return;
-      processes = [];
-      errorMsg = (e as Error).message || 'Failed to load processes.';
-    } finally {
-      if (current === controller) loading = false;
-    }
-  }
-
-  onMount(loadXml);
-  onDestroy(() => controller?.abort());
 
   function startProcess(proc: Process) {
     openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: proc.plugins });
-    selected = null;
+    selectedProcess = null;
   }
 
   $: updateDialogProps({ editCount, doc });
 
   function handleView(e: CustomEvent<Process>) {
-    selected = e.detail;
+    selectedProcess = e.detail;
   }
 
   function handleStart(e: CustomEvent<Process>) {
@@ -98,14 +46,14 @@
   }
 
   function goBack() {
-    selected = null;
+    selectedProcess = null;
   }
 </script>
 
 <DialogHost />
 
-{#if selected}
-  <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
+{#if selectedProcess}
+  <EngineeringProcessDetail {selectedProcess} on:back={goBack} on:start={handleStart} />
 {:else}
   <EngineeringProcessesList
     {processes}
