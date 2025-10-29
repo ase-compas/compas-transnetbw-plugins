@@ -40,7 +40,7 @@
     loadDefaultTypes();
   });
 
-  // sort data where, type, LNodeType > DOType > DAtype > EnumType and then by instance name
+  // sort data where, type, LNodeType > DOType > DAType > EnumType and then by instance name
   let sortedData: DefaultTypeRow[];
   $: sortedData = data.sort((a, b) => {
     const typeOrder = [DataTypeKind.LNodeType, DataTypeKind.DOType, DataTypeKind.DAType, DataTypeKind.EnumType];
