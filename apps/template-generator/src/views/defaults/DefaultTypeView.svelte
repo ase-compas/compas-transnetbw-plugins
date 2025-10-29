@@ -40,6 +40,17 @@
     loadDefaultTypes();
   });
 
+  // sort data where, type, LNodeType > DOType > DAtype > EnumType and then by instance name
+  let sortedData: DefaultTypeRow[];
+  $: sortedData = data.sort((a, b) => {
+    const typeOrder = [DataTypeKind.LNodeType, DataTypeKind.DOType, DataTypeKind.DAType, DataTypeKind.EnumType];
+    const typeComparison = typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+    if (typeComparison !== 0) {
+      return typeComparison;
+    }
+    return a.instance.localeCompare(b.instance);
+  });
+
   async function loadDefaultTypes() {
     loading = true;
     try {
@@ -83,7 +94,7 @@
 <OscdButton callback={() => {route.set({path: ['overview']})}}>&lt; Back To Overview</OscdButton>
 
 <OscdBasicDataTable
-  items={data}
+  items={sortedData}
   {columns}
   {loading}
   emptyText="No default types found."
