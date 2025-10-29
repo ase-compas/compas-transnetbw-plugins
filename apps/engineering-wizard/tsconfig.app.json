@@ -15,7 +15,11 @@
     "allowJs": true
   },
   "files": [],
-  "include": [],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "src/**/*.js"
+  ],
   "references": [
     {
       "path": "./tsconfig.app.json"
