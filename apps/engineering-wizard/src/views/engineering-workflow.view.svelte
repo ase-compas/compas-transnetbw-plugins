@@ -6,17 +6,26 @@
   import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
 
-  export let doc: XMLDocument | undefined;
-  export let editCount = -1;
-  export let host: HTMLElement;
-  export let plugins: ViewPlugin[] = [];
+  interface Props {
+    doc: XMLDocument | undefined;
+    editCount?: any;
+    host: HTMLElement;
+    plugins?: ViewPlugin[];
+  }
+
+  let {
+    doc,
+    editCount = -1,
+    host,
+    plugins = []
+  }: Props = $props();
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: Status[] = ['check', 'warning', 'error'];
 
-  let tagName: string | null = null;
-  let visited: string[] = [];
-  let pluginStatus: Record<string, Status> = {};
+  let tagName: string | null = $state(null);
+  let visited: string[] = $state([]);
+  let pluginStatus: Record<string, Status> = $state({});
 
   const dispatch = createEventDispatcher<{ exit: void }>();
 
@@ -32,7 +41,7 @@
     }
   }
 
-  $: currentIndex = tagName ? plugins.findIndex((p) => p.id === tagName) : -1;
+  let currentIndex = $derived(tagName ? plugins.findIndex((p) => p.id === tagName) : -1);
 
   function advance(step: number) {
     if (!plugins.length) return;
@@ -48,9 +57,11 @@
     return { update: (p: any) => Object.assign(node, p) };
   }
 
-  $: if (plugins.length && (currentIndex === -1 || !plugins.some((p) => p.id === tagName))) {
-    selectPlugin(plugins[0]);
-  }
+  $effect(() => {
+    if (plugins.length && (currentIndex === -1 || !plugins.some((p) => p.id === tagName))) {
+      selectPlugin(plugins[0]);
+    }
+  });
 
   onMount(() => {
     if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
@@ -79,8 +90,8 @@
   />
 
   <div class="stepper-navigation">
-    <button type="button" on:click={previousPlugin} class="back-button" aria-label="Previous plugin" disabled={!plugins.length}>Back</button>
-    <button type="button" on:click={nextPlugin}     class="next-button" aria-label="Next plugin"      disabled={!plugins.length}>Next</button>
+    <button type="button" onclick={previousPlugin} class="back-button" aria-label="Previous plugin" disabled={!plugins.length}>Back</button>
+    <button type="button" onclick={nextPlugin}     class="next-button" aria-label="Next plugin"      disabled={!plugins.length}>Next</button>
   </div>
 </div>
 

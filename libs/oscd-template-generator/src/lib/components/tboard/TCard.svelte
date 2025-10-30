@@ -6,35 +6,58 @@
 
   const dispatch = createEventDispatcher();
 
-  export let title: string;
-  export let subtitle: string | null = null;
-  export let references: number | null = null;
-  export let badgeText: string | null = null;
-
-  export let canEdit: boolean = false;
-  export let canMark: boolean = false;
-  export let canApplyDefaults: boolean = false;
-  export let canClick: boolean = false;
-  export let canUnlink: boolean = true;
-  export let canClickReference: boolean = true;
-
-  export let selectionEnabled: boolean = false;
-  export let selected: boolean = false;
-  export let isMandatory: boolean = false;
-  export let showSelectionIndicator: boolean
-
-  export let marked: boolean = false;
-
-  export let isDragTarget: boolean = false; // Indicates if the card is a valid drop target
-  export let canDrop: boolean = false; // Indicates if the card can accept a drop of the dragged card
-  export let isOver: boolean = false; // Indicates if the card is currently being hovered over by a dragged card
-  export let canDrag: boolean = false; // Indicates if the card can be dragged
 
 
-  export let referencable: boolean = false;
 
-  $: cardState= getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected);
-  $: onPrimaryColor = ((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)';
+
+
+
+  interface Props {
+    title: string;
+    subtitle?: string | null;
+    references?: number | null;
+    badgeText?: string | null;
+    canEdit?: boolean;
+    canMark?: boolean;
+    canApplyDefaults?: boolean;
+    canClick?: boolean;
+    canUnlink?: boolean;
+    canClickReference?: boolean;
+    selectionEnabled?: boolean;
+    selected?: boolean;
+    isMandatory?: boolean;
+    showSelectionIndicator: boolean;
+    marked?: boolean;
+    isDragTarget?: boolean;
+    canDrop?: boolean;
+    isOver?: boolean;
+    canDrag?: boolean;
+    referencable?: boolean;
+  }
+
+  let {
+    title,
+    subtitle = null,
+    references = null,
+    badgeText = null,
+    canEdit = false,
+    canMark = false,
+    canApplyDefaults = false,
+    canClick = false,
+    canUnlink = true,
+    canClickReference = true,
+    selectionEnabled = false,
+    selected = false,
+    isMandatory = false,
+    showSelectionIndicator,
+    marked = false,
+    isDragTarget = false,
+    canDrop = false,
+    isOver = false,
+    canDrag = false,
+    referencable = false
+  }: Props = $props();
+
 
   function getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected): 'drag-can-drop' | 'drag-cannot-drop' | 'mandatory' | 'selected' | 'unselected' | 'default' {
     if (isDragTarget) return canDrop ? 'drag-can-drop' : 'drag-cannot-drop';
@@ -55,6 +78,8 @@
   function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
   function handleOnReferenceClick() { if (canClickReference) dispatch('referenceClick'); }
 
+  let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
+  let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
 </script>
 
 <div
@@ -64,7 +89,7 @@
   class:error={(isMandatory || selected) && referencable && !subtitle && !isDragTarget}
   class:draggable={canDrag}
   role={canClick ? 'button' : 'undefined'}
-  on:click={handleOnClick}
+  onclick={handleOnClick}
 >
 
   <!-- Selection Checkbox: Start -->
@@ -141,8 +166,8 @@
     class:drop={isDragTarget && canDrop}
   >
     {#if subtitle}
-      <OscdTooltip content="{subtitle}" hoverDelay={500} side="right">
-        <button class="oscd-card-subtitle--with-tooltip" on:click={handleOnReferenceClick} class:pointer={canClickReference}>
+      <OscdTooltip content={subtitle} hoverDelay={500} side="right">
+        <button class="oscd-card-subtitle--with-tooltip" onclick={handleOnReferenceClick} class:pointer={canClickReference}>
           {#if canClickReference}
             <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />
           {/if}
@@ -203,7 +228,7 @@
   .oscd-card-item.selected .oscd-references,
   .oscd-card-item.mandatory .oscd-card-title,
   .oscd-card-item.mandatory .oscd-card-subtitle,
-  .oscd-card-item.mandatory .oscd-card-references {
+  .oscd-card-item.mandatory .oscd-references {
     color: white;
   }
 

@@ -2,18 +2,23 @@
   import Textfield from '@smui/textfield';
   import Icon from '@smui/textfield/icon';
 
-  export let placeholder = '';
-  export let label = '';
-  export let icon = '';
-  export let value = '';
-  export let variant = 'standard';
-  export let styles = '';
+  /** @type {{placeholder?: string, label?: string, icon?: string, value?: string, variant?: string, styles?: string}} */
+  let {
+    placeholder = '',
+    label = '',
+    icon = '',
+    value = $bindable(''),
+    variant = 'standard',
+    styles = ''
+  } = $props();
 </script>
 
 {#if icon}
-  <Textfield bind:value={value} label={label} placeholder={placeholder} style={`width: 100%; ${styles}`} variant="{variant}">
-    <Icon class="material-icons" slot="leadingIcon">{icon}</Icon>
+  <Textfield bind:value={value} label={label} placeholder={placeholder} style={`width: 100%; ${styles}`} variant={variant}>
+    {#snippet leadingIcon()}
+        <Icon class="material-icons" >{icon}</Icon>
+      {/snippet}
   </Textfield>
 {:else}
-  <Textfield bind:value={value} label={label} placeholder={placeholder} style="width: 100%" variant="{variant}"></Textfield>
+  <Textfield bind:value={value} label={label} placeholder={placeholder} style="width: 100%" variant={variant}></Textfield>
 {/if}

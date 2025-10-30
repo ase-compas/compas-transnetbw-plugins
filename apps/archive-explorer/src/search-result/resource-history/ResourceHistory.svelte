@@ -5,11 +5,15 @@
   import { writable } from 'svelte/store';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
 
-  export let searchResult: ArchiveSearchResult;
+  interface Props {
+    searchResult: ArchiveSearchResult;
+  }
+
+  let { searchResult }: Props = $props();
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const dataStore = { store: writable([]) as writable<ArchiveSearchResult[]> };
-  let loadingDone = false;
+  let loadingDone = $state(false);
 
   const columnDefs = [
     { headerName: 'Type', field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },

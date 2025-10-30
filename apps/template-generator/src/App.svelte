@@ -7,9 +7,13 @@
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
 
-  export let doc: XMLDocument | null = null;
-  export let devMode: boolean = false;
-  export let host: HTMLElement | null = null;
+  interface Props {
+    doc?: XMLDocument | null;
+    devMode?: boolean;
+    host?: HTMLElement | null;
+  }
+
+  let { doc = $bindable(null), devMode = false, host = $bindable(null) }: Props = $props();
 
   if (import.meta.env.DEV) {
     import("../../../libs/theme/src/lib/theme-light.css")
@@ -38,16 +42,18 @@
     storeHost.set(host);
   })
 
-  $: if(doc) {
-    initServices(doc, host);
-    storeDoc.set(doc);
-  }
+  $effect(() => {
+    if (doc) {
+      initServices(doc, host);
+      storeDoc.set(doc);
+    }
+  });
 </script>
 
 <div class="oscd-app">
   {#if !doc && devMode}
     <!-- Development mode: allow file upload -->
-    <input type="file" accept=".ssd" on:change={handleFileChange} />
+    <input type="file" accept=".ssd" onchange={handleFileChange} />
     <p>Please load an XML file to start.</p>
   {:else}
     <div class="template-generator-container">

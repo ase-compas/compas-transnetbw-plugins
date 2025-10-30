@@ -2,18 +2,30 @@
   import { onDestroy } from 'svelte';
 
   export type TooltipSide = 'top' | 'bottom' | 'left' | 'right';
-  export let content: string = "";
-  export let side: TooltipSide = "top";
-  export let hoverDelay: number = 0;
-  export let transitionDuration: number = 80;
+  interface Props {
+    content?: string;
+    side?: TooltipSide;
+    hoverDelay?: number;
+    transitionDuration?: number;
+    children?: import('svelte').Snippet;
+  }
+
+  let {
+    content = "",
+    side = "top",
+    hoverDelay = 0,
+    transitionDuration = 80,
+    children
+  }: Props = $props();
 
   const id = `tt-${Math.random().toString(36).slice(2)}`;
-  let triggerEl: HTMLSpanElement | null = null;
-  let tooltipEl: HTMLDivElement | null = null;
-  let shadow: ShadowRoot | null = null;
-  let bubbleEl: HTMLDivElement | null = null;
-  let show = false;
-  let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+  let triggerEl: HTMLSpanElement | null = $state(null);
+  let tooltipEl: HTMLDivElement | null = $state(null);
+  let shadow: ShadowRoot | null = $state(null);
+  let bubbleEl: HTMLDivElement | null = $state(null);
+  let show = $state(false);
+  let hoverTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+  let observer: MutationObserver | null = $state(null);
 
   // --- Hover / focus handlers ---
   function handleMouseEnter() {
@@ -63,7 +75,25 @@
   }
 
   // --- Create tooltip only when show becomes true ---
-  $: if (show && content) {
+  function destroyTooltip() {
+    observer?.disconnect();
+    observer = null;
+    if (tooltipEl && tooltipEl.parentNode) {
+      tooltipEl.parentNode.removeChild(tooltipEl);
+    }
+    tooltipEl = null;
+    bubbleEl = null;
+    shadow = null;
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+  }
+
+  onDestroy(destroyTooltip);
+
+  $effect(() => {
+    if (!show || !content) {
+      return;
+    }
+
     if (!tooltipEl) {
       tooltipEl = document.createElement('div');
       tooltipEl.style.position = 'absolute';
@@ -129,47 +159,43 @@
       shadow.appendChild(style);
 
       bubbleEl = document.createElement('div');
-      bubbleEl.className = `bubble ${side}`;
-      bubbleEl.innerHTML = content;
       shadow.appendChild(bubbleEl);
 
-      // MutationObserver to reposition
-      const observer = new MutationObserver(() => {
+      observer = new MutationObserver(() => {
         if (show) updateTooltipPosition();
       });
       observer.observe(document.body, { childList: true, subtree: true });
-
-      // Cleanup on destroy
-      onDestroy(() => {
-        observer.disconnect();
-        if (tooltipEl && tooltipEl.parentNode) tooltipEl.parentNode.removeChild(tooltipEl);
-        tooltipEl = null;
-        bubbleEl = null;
-        shadow = null;
-        if (hoverTimeout) clearTimeout(hoverTimeout);
-      });
     }
 
-    tooltipEl.style.opacity = '1';
-    updateTooltipPosition();
-  }
+    if (bubbleEl) {
+      bubbleEl.className = `bubble ${side}`;
+      bubbleEl.innerHTML = content;
+    }
 
-  $: if (!show && tooltipEl) {
+    if (tooltipEl) {
+      tooltipEl.style.opacity = '1';
+      updateTooltipPosition();
+    }
+  });
+
+  $effect(() => {
+    if (show || !tooltipEl) {
+      return;
+    }
+
     tooltipEl.style.opacity = '0';
-    // Remove tooltip from DOM after hiding
-    setTimeout(() => {
-      if (tooltipEl && tooltipEl.parentNode) tooltipEl.parentNode.removeChild(tooltipEl);
-      tooltipEl = null;
-      bubbleEl = null;
-      shadow = null;
+    const currentTooltip = tooltipEl;
+    const timeout = setTimeout(() => {
+      if (currentTooltip && currentTooltip.parentNode) {
+        currentTooltip.parentNode.removeChild(currentTooltip);
+      }
+      if (tooltipEl === currentTooltip) {
+        destroyTooltip();
+      }
     }, transitionDuration);
-  }
 
-  // --- Reactive updates for content / side ---
-  $: if (bubbleEl) {
-    bubbleEl.className = `bubble ${side}`;
-    bubbleEl.innerHTML = content;
-  }
+    return () => clearTimeout(timeout);
+  });
 </script>
 
 <!-- Trigger -->
@@ -177,8 +203,8 @@
   bind:this={triggerEl}
   tabindex="0"
   aria-describedby={content ? id : undefined}
-  on:mouseenter={handleMouseEnter}
-  on:mouseleave={handleMouseLeave}
+  onmouseenter={handleMouseEnter}
+  onmouseleave={handleMouseLeave}
 >
-  <slot />
+  {@render children?.()}
 </span>

@@ -5,11 +5,21 @@
 
   const dispatch = createEventDispatcher();
 
-  export let title: string;
-  export let subtitle: string | null = null;
-  export let actionLabel: string | null = null;
-  export let hasAction: boolean = false
-  export let secondaryActionLabel: string | null = null;
+  interface Props {
+    title: string;
+    subtitle?: string | null;
+    actionLabel?: string | null;
+    hasAction?: boolean;
+    secondaryActionLabel?: string | null;
+  }
+
+  let {
+    title,
+    subtitle = null,
+    actionLabel = null,
+    hasAction = false,
+    secondaryActionLabel = null
+  }: Props = $props();
 
 </script>
 
@@ -19,11 +29,9 @@
   {actionLabel}
   {hasAction}
 >
-  <svelte:fragment slot="bot-action">
-    <OscdButton
-      variant="raised"
-      callback={() => dispatch('secondaryAction')}>
+  {#snippet botAction()}
+    <OscdButton variant="raised" callback={() => dispatch('secondaryAction')}>
       {secondaryActionLabel}
     </OscdButton>
-  </svelte:fragment>
+  {/snippet}
 </TColumnHeaderLayout>

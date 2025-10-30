@@ -10,18 +10,35 @@
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   // ===== Parameters =====
-  /** Tooltip text to display on hover */
-  export let tooltip: string;
-  /** Side of the tooltip */
-  export let tooltipSide: 'top' | 'bottom' | 'left' | 'right' = 'top';
-  /** Type of action button, e.g., 'delete' or 'duplicate' */
-  export let type: 'delete' | 'duplicate';
-  /** Delay in ms before showing the tooltip */
-  export let showDelay = 1000;
-  /** Fill color for the icon SVG */
-  export let fillColor: string = 'var(--mdc-theme-primary)';
-  /** Click event handler for the button */
-  export let onClick: (e: MouseEvent) => void;
+  
+  
+  
+  
+  
+  
+  interface Props {
+    /** Tooltip text to display on hover */
+    tooltip: string;
+    /** Side of the tooltip */
+    tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
+    /** Type of action button, e.g., 'delete' or 'duplicate' */
+    type: 'delete' | 'duplicate';
+    /** Delay in ms before showing the tooltip */
+    showDelay?: number;
+    /** Fill color for the icon SVG */
+    fillColor?: string;
+    /** Click event handler for the button */
+    onClick: (e: MouseEvent) => void;
+  }
+
+  let {
+    tooltip,
+    tooltipSide = 'top',
+    type,
+    showDelay = 1000,
+    fillColor = 'var(--mdc-theme-primary)',
+    onClick
+  }: Props = $props();
 
 </script>
  <OscdTooltip content={tooltip} hoverDelay={showDelay} side={tooltipSide}>
@@ -29,25 +46,25 @@
   <button
     aria-label={tooltip}
     class="icon-button"
-    on:click={(e)=> {
+    onclick={(e)=> {
       e.stopPropagation(); // blocks bubbling forward to the row click handler
       onClick?.(e);
     }}
   >
     {#if type === 'delete'}
-      <OscdDeleteIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+      <OscdDeleteIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'duplicate'}
-      <OscdControlPointDuplicateIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+      <OscdControlPointDuplicateIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'edit'}
-      <OscdEditIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+      <OscdEditIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'visibility'}
-      <OscdVisibilityIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+      <OscdVisibilityIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'wand-stars'}
-      <OscdWandStarsIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+      <OscdWandStarsIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'link-off'}
-      <OscdLinkOffIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`}" />
+      <OscdLinkOffIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'close'}
-      <OscdCloseIcon svgStyles="{`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`}" />
+      <OscdCloseIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`} />
     {:else}
       Unsupported supported type: {type}
     {/if}

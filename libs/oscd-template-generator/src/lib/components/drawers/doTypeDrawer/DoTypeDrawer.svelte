@@ -5,9 +5,9 @@
   // ===== Services & Utilities =====
   import { getColumns } from './columns.config';
   import { getDOTypeService } from '../../../services';
-  import { IDoTypeService } from '../../../services/do-type.service';
+  import type { IDoTypeService } from '../../../services/do-type.service';
   import { createObjectReferenceStore, doc } from '../../../stores';
-  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
@@ -27,14 +27,16 @@
   // ===== Types =====
   import {
     type BasicType,
-    BasicTypes, DataTypeKind,
-    DOTypeDetails, Mode,
+    type BasicTypes,
+    DataTypeKind,
+    type DOTypeDetails,
+    type Mode,
     type ObjectReferenceDetails
   } from '../../../domain';
   import {
-    ItemDropOnItemEventDetail,
+    type ItemDropOnItemEventDetail,
     type TBoardItemContext,
-    TItem,
+    type TItem,
   } from '../../tboard/types';
   import TypeHeader from '../../TypeHeader.svelte';
   import { createEditorStore } from '../../../stores/editorStore';
@@ -43,9 +45,13 @@
   const doTypeService: IDoTypeService = getDOTypeService();
 
   // ===== Props =====
-  export let mode: Mode = 'view';
-  export let typeId: string;
-  export let cdc: string | null = null;
+  interface Props {
+    mode?: Mode;
+    typeId: string;
+    cdc?: string | null;
+  }
+
+  let { mode = 'view', typeId = $bindable(), cdc = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
   const refStore = createObjectReferenceStore(async () => dataObjectType.children);
@@ -55,26 +61,15 @@
   const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
-  let dataObjectType: DOTypeDetails | null = null;
-  let dataTypes: BasicTypes = {
+  let dataObjectType: DOTypeDetails | null = $state(null);
+  let dataTypes: BasicTypes = $state({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
     enumTypes: [],
-  };
-  let referenceDataObjects: TItem[] = [];
+  });
 
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, $canEdit, acceptDrop);
 
-  $: boardData = {
-    refs: referenceDataObjects,
-    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
-    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
-    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
-  };
-
-  $: columns = getColumns($canEdit);
-  $: $isDirty ? editorStore.makeDirty() : editorStore.makeClean();
 
   // ===== Lifecycle =====
   onMount(() => {
@@ -125,10 +120,6 @@
     return await doTypeService.getTypeById(typeId);
   }
 
-  $: if (dataObjectType) {
-    loadTypes(editorStore.getCanEdit(), dataObjectType.id, dataObjectType.cdc, $markedItemIds)
-      .then((types) => (dataTypes = types));
-  }
 
   async function loadTypes(isEditMode: boolean, typeId: string, cdc: string, childNameFilter: string[]) {
     return isEditMode
@@ -208,6 +199,31 @@
     );
     return canAssignTypeToObjectReference(target, sourceType);
   }
+  let referenceDataObjects = $derived(
+    getDisplayReferenceItems($refStore, $canEdit, acceptDrop)
+  );
+
+  $effect(() => {
+    if (dataObjectType) {
+      loadTypes(
+        editorStore.getCanEdit(),
+        dataObjectType.id,
+        dataObjectType.cdc,
+        $markedItemIds
+      ).then((types) => (dataTypes = types));
+    }
+  });
+  let boardData = $derived({
+    refs: referenceDataObjects,
+    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
+    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
+  });
+  let columns = $derived(getColumns($canEdit));
+  $effect(() => {
+    if ($isDirty) editorStore.makeDirty();
+    else editorStore.makeClean();
+  });
 </script>
 
 

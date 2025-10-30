@@ -1,6 +1,6 @@
 <script>
-  export let label = "";
-  export let value = "";
+  /** @type {{label?: string, value?: string}} */
+  let { label = "", value = $bindable("") } = $props();
 
   function handleDateTimeChange(event) {
     value = event.target.value;
@@ -12,7 +12,7 @@
     type="datetime-local"
     id="datetime-picker"
     bind:value={value}
-    on:change={handleDateTimeChange}
+    onchange={handleDateTimeChange}
     class="custom-text-field__input"
     placeholder=""
   />

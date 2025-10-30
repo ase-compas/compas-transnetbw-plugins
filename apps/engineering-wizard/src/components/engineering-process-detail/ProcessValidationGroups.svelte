@@ -2,28 +2,34 @@
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdArrowDownIcon, OscdArrowUpIcon, OscdDeleteIcon } from '../../../../../libs/oscd-icons/src';
 
-  export let pluginGroups: PluginGroup[] = [];
-
-  let selectedIdx: number | null = null;
-  let activePluginIdx: number | null = null;
-
-  $: currentGroup = selectedIdx != null ? pluginGroups[selectedIdx] : null;
-  $: currentPlugin =
-    currentGroup && activePluginIdx != null ? currentGroup.plugins[activePluginIdx] : null;
-
-  $: if (pluginGroups?.length && (selectedIdx == null || selectedIdx >= pluginGroups.length)) {
-    selectedIdx = 0;
-    activePluginIdx = pluginGroups[0]?.plugins?.length ? 0 : null;
+  interface Props {
+    pluginGroups?: PluginGroup[];
   }
 
-  let xmlText = '';
-  let loadingXml = false;
-  let xmlError = '';
+  let { pluginGroups = [] }: Props = $props();
+
+  let selectedIdx: number | null = $state(null);
+  let activePluginIdx: number | null = $state(null);
+
+  let currentGroup = $derived(selectedIdx != null ? pluginGroups[selectedIdx] : null);
+  let currentPlugin =
+    $derived(currentGroup && activePluginIdx != null ? currentGroup.plugins[activePluginIdx] : null);
+
+  $effect(() => {
+    if (pluginGroups?.length && (selectedIdx == null || selectedIdx >= pluginGroups.length)) {
+      selectedIdx = 0;
+      activePluginIdx = pluginGroups[0]?.plugins?.length ? 0 : null;
+    }
+  });
+
+  let xmlText = $state('');
+  let loadingXml = $state(false);
+  let xmlError = $state('');
   let xmlAbort: AbortController | null = null;
 
   type ValidationEntry = { name: string; description?: string; xml: string };
-  let validationEntries: ValidationEntry[] = [];
-  let openSet: Set<number> = new Set();
+  let validationEntries: ValidationEntry[] = $state([]);
+  let openSet: Set<number> = $state(new Set());
 
   async function loadXmlFor(pluginId: string) {
     loadingXml = true;
@@ -78,8 +84,10 @@
     }
   }
 
-  $: currentPluginId = currentPlugin?.id ?? null;
-  $: if (currentPluginId) loadXmlFor(currentPluginId);
+  let currentPluginId = $derived(currentPlugin?.id ?? null);
+  $effect(() => {
+    if (currentPluginId) loadXmlFor(currentPluginId);
+  });
 
   function selectGroup(gIdx: number) {
     const group = pluginGroups[gIdx];
@@ -106,7 +114,7 @@
         type="button"
         class="validation-groups__group-title"
         aria-pressed={gIdx === selectedIdx}
-        on:click={() => selectGroup(gIdx)}
+        onclick={() => selectGroup(gIdx)}
       >
         {group.title}
       </button>
@@ -117,7 +125,7 @@
             type="button"
             class="validation-groups__plugin"
             class:active={gIdx === selectedIdx && idx === activePluginIdx}
-            on:click={() => selectPlugin(gIdx, idx)}
+            onclick={() => selectPlugin(gIdx, idx)}
           >
             <span>{plugin.name}</span>
           </button>
@@ -159,7 +167,7 @@
                     type="button"
                     class="toggle-btn"
                     aria-expanded="true"
-                    on:click={() => toggleEntry(idx)}
+                    onclick={() => toggleEntry(idx)}
                     title="Collapse"
                   >
                     <OscdArrowUpIcon svgStyles="fill: #004552" />
@@ -169,7 +177,7 @@
                     type="button"
                     class="toggle-btn"
                     aria-expanded="false"
-                    on:click={() => toggleEntry(idx)}
+                    onclick={() => toggleEntry(idx)}
                     title="Expand"
                   >
                     <OscdArrowDownIcon svgStyles="fill: #004552" />

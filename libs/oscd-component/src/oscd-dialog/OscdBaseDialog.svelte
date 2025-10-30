@@ -4,17 +4,35 @@
   import Button from '@smui/button';
   import { OscdIconActionButton } from '../index';
 
-  export let open: boolean = false;
-  export let title: string = '';
-  export let confirmActionText: string = 'Confirm';
-  export let cancelActionText: string = 'Cancel';
-  export let width: string = '80vw';
-  export let maxWidth: string = '85vw';
-  export let height: string = '85vh';
-  export let maxHeight: string = '85vh';
-  export let confirmDisabled: boolean = false;
-  export let color: string = 'var(--mdc-theme-primary, #ff3e00)'; //css color for primary button and dialog title bar
-  export let showCloseButton: boolean = true;
+  interface Props {
+    open?: boolean;
+    title?: string;
+    confirmActionText?: string;
+    cancelActionText?: string;
+    width?: string;
+    maxWidth?: string;
+    height?: string;
+    maxHeight?: string;
+    confirmDisabled?: boolean;
+    color?: string;
+    showCloseButton?: boolean;
+    content?: import('svelte').Snippet;
+  }
+
+  let {
+    open = $bindable(false),
+    title = '',
+    confirmActionText = 'Confirm',
+    cancelActionText = 'Cancel',
+    width = '80vw',
+    maxWidth = '85vw',
+    height = '85vh',
+    maxHeight = '85vh',
+    confirmDisabled = false,
+    color = 'var(--mdc-theme-primary, #ff3e00)',
+    showCloseButton = true,
+    content
+  }: Props = $props();
 
   const dispatch = createEventDispatcher();
 
@@ -52,7 +70,7 @@
   </Header>
 
   <Content id="dialog__content">
-    <slot name="content" />
+    {@render content?.()}
   </Content>
 
   <div class="dialog__actions">

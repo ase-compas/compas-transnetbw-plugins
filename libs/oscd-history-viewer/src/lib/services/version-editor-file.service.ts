@@ -1,6 +1,8 @@
 import { filter, map, Observable } from 'rxjs';
-import { FileSearchResult, SearchParams } from '../domain';
-import { Configuration, DataResourceSearch, HistoryApi } from '@oscd-transnet-plugins/oscd-history-api-client';
+import { FileSearchResult } from '../domain';
+import type { SearchParams } from '../domain';
+import { Configuration, HistoryApi } from '@oscd-transnet-plugins/oscd-history-api-client';
+import type { DataResourceSearch } from '@oscd-transnet-plugins/oscd-history-api-client';
 
 export class VersionEditorFileService {
   private static instance: VersionEditorFileService;

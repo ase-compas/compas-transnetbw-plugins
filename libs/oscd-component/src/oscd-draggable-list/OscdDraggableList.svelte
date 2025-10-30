@@ -16,8 +16,12 @@
     label: string;
   }
 
-  export let canDrag: boolean = true;
-  export let items: ListItem[] = [];
+  interface Props {
+    canDrag?: boolean;
+    items?: ListItem[];
+  }
+
+  let { canDrag = true, items = $bindable([]) }: Props = $props();
 
   const flipDurationMs = 100;
 
@@ -29,16 +33,16 @@
 
 <div class="draggable-list">
   {#if items.length > 0}
-    <ol
-    use:dragHandleZone="{{ items, flipDurationMs, dropTargetStyle: {}}}"
-    on:consider={handleSort}
-    on:finalize={e => {
+    <ul
+    use:dragHandleZone={{ items, flipDurationMs, dropTargetStyle: {} }}
+    onconsider={handleSort}
+    onfinalize={e => {
       handleSort(e);
       dispatch('orderChange', { items });
     }}
  >
       {#each items as item, index (item.id)}
-        <li  data-id={item.id} style:cursor={canDrag ? 'move' : 'default'} animate:flip="{{ duration: flipDurationMs }}">
+        <li  data-id={item.id} style:cursor={canDrag ? 'move' : 'default'} animate:flip={{ duration: flipDurationMs }}>
 
           <div class="draggable-item">
 
@@ -56,7 +60,7 @@
           </div>
         </li>
       {/each}
-    </ol>
+    </ul>
   {/if}
 </div>
 

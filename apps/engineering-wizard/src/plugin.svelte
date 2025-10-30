@@ -1,16 +1,18 @@
-<svelte:options tag={null} />
 <script lang="ts">
-  import * as pckg from '../package.json';
   import App from './App.svelte';
+  import * as pckg from '../package.json';
 
-  export let doc: XMLDocument;
-  export let dev = false;
-  export let editCount = 0;
-  console.log("editcount", editCount);
+  interface Props {
+    doc?: XMLDocument;
+    dev?: boolean;
+    editCount?: number;
+  }
+
+  let { doc, dev = false, editCount = 0 }: Props = $props();
 </script>
 
 {#if doc || dev}
-    <App { doc } { editCount }></App>
+  <App {doc} {editCount} />
 {/if}
 
 <input type="hidden" name="package-name" value={pckg.name} />

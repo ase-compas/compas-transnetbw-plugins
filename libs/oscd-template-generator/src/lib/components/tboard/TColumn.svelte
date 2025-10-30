@@ -1,53 +1,63 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import TColumnHeaderLayout from './columnHeader/TColumnHeaderLayout.svelte';
   import TCardList from './TCardList.svelte';
-  import { TBoardItemContext, TItem } from './types';
-  import TColumnSearchHeader from './columnHeader/TColumnSearchHeader.svelte';
   import TColumnActionHeader from './columnHeader/TColumnActionHeader.svelte';
+  import TColumnSearchHeader from './columnHeader/TColumnSearchHeader.svelte';
+  import type { TBoardItemContext, TItem } from './types';
 
   const dispatch = createEventDispatcher();
 
-  export let title: string;
-  export let subtitle: string | null = null;
-  export let actionLabel: string | null = 'Action';
+  interface Props {
+    title: string;
+    subtitle?: string | null;
+    actionLabel?: string | null;
+    hasSearch?: boolean;
+    searchPlaceHolder?: string;
+    hasAction?: boolean;
+    showApplyDefaults?: boolean;
+    highlighted?: boolean;
+    dragAndDropBorder?: boolean;
+    canSelectItems?: boolean;
+    showSelectionIndicator?: boolean;
+    itemsDraggable?: boolean;
+    dropCandidate?: TBoardItemContext | null;
+    dragAndDropType: string;
+    items?: TItem[];
+  }
 
-  export let hasSearch: boolean = false;
-  export let searchPlaceHolder: string = 'Search...';
-  export let hasAction: boolean = false;
+  let {
+    title,
+    subtitle = null,
+    actionLabel = 'Action',
+    hasSearch = false,
+    searchPlaceHolder = 'Search...',
+    hasAction = false,
+    showApplyDefaults = false,
+    highlighted = false,
+    dragAndDropBorder = false,
+    canSelectItems = false,
+    showSelectionIndicator = false,
+    itemsDraggable = false,
+    dropCandidate = null,
+    dragAndDropType,
+    items = [],
+  }: Props = $props();
 
-  export let showApplyDefaults: boolean = false;
-  export let highlighted: boolean = false; // If true, visually highlights the column background
-  export let dragAndDropBorder: boolean = false; // If true, shows a dashed border around the column to indicate a valid drop target
-  export let canSelectItems: boolean = false;
-  export let showSelectionIndicator: boolean = false;
+  let searchQuery = $state('');
 
-  export let itemsDraggable: boolean = false;
-  export let dropCandidate: TBoardItemContext | null = null;
-  export let dragAndDropType: string;
-
-  export let items: TItem[] = []
-
-  let searchQuery = '';
-
-  let filteredItems: TItem[] = [];
-  $: filteredItems = filterItems(items, searchQuery);
-
+  let filteredItems = $derived(() => filterItems(items, searchQuery));
 
   function matchesQuery(item: TItem, query: string): boolean {
     const q = query.toLowerCase().trim();
 
-    return (
-      item.title.toLowerCase().includes(q) ||
-      (item.subtitle?.toLowerCase().includes(q))
-    );
+    return item.title.toLowerCase().includes(q) || item.subtitle?.toLowerCase().includes(q);
   }
 
-  function filterItems(items: TItem[], query: string): TItem[] {
-    return items.filter(item => matchesQuery(item, query));
+  function filterItems(itemsToFilter: TItem[], query: string): TItem[] {
+    return itemsToFilter.filter((item) => matchesQuery(item, query));
   }
 
-  function forwardEvent(eventType, detail) {
+  function forwardEvent<T>(eventType: string, detail: T) {
     dispatch(eventType, detail);
   }
 </script>
@@ -125,6 +135,6 @@
   }
 
   .oscd-tcolumn.drag-border {
-    outline: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);;
+    outline: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);
   }
 </style>

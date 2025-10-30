@@ -2,14 +2,23 @@
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, {Row, Cell} from '@smui/data-table';
 
-  export let node: {
+  interface Props {
+    node: {
     name: string;
     class: string;
     references: number;
   };
-  export let onDuplicate: () => void;
-  export let onDelete: () => void;
-  export let onClick: () => void;
+    onDuplicate: () => void;
+    onDelete: () => void;
+    onClick: () => void;
+  }
+
+  let {
+    node,
+    onDuplicate,
+    onDelete,
+    onClick
+  }: Props = $props();
 </script>
 
 <Row key={node.name} on:click={onClick} class="mdc-data-table__logical-node-row" style="background: white">

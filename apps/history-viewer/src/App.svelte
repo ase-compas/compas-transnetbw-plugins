@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
@@ -21,12 +21,12 @@
   import { from, of } from 'rxjs';
   import {
     FileSearchResult,
-    SearchParams,
     VersionEditorFileService,
     VersionEditorStore
   } from '@oscd-transnet-plugins/oscd-history-viewer';
+  import type { SearchParams } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Label } from '@smui/button';
-  import { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
+  import type { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
   import { OscdCancelIcon, OscdSearchIcon } from '../../../libs/oscd-icons/src';
   import {onMount} from "svelte";
   import {_, locale} from 'svelte-i18n';
@@ -35,16 +35,20 @@
 
   let rowData: FileSearchResult[] = [];
   let historyData: FileSearchResult[] = [];
-  let currentSelectFile: FileSearchResult;
+  let currentSelectFile: FileSearchResult = $state();
 
-  export let dataStore = new VersionEditorStore();
-  export let historyStore = new VersionEditorStore();
+  interface Props {
+    dataStore?: any;
+    historyStore?: any;
+  }
 
-  let loadingDone = true;
-  let dialogOpen = false;
+  let { dataStore = new VersionEditorStore(), historyStore = new VersionEditorStore() }: Props = $props();
+
+  let loadingDone = $state(true);
+  let dialogOpen = $state(false);
 
   //loading quickfix for css to load
-  let loading = true;
+  let loading = $state(true);
 
   onMount(() => {
     setTimeout(() => {
@@ -66,7 +70,7 @@
     sortable: false
   };
 
-  $: columnDefs = [
+  let columnDefs = $derived([
     { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('filename'), field: 'filename', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
@@ -82,12 +86,12 @@
     },
     { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
     columnDefsActions
-  ];
+  ]);
 
-  $: modalColumnDef = [
+  let modalColumnDef = $derived([
     ...columnDefs,
     { headerName: 'Comment', field: 'comment', numeric: false, filter: true, filterType: 'text', sortable: true },
-  ];
+  ]);
 
   const rowActions = [
     {
@@ -153,7 +157,7 @@
     }
   ];
 
-  let filtersToSearch: ActiveFilter[] = [];
+  let filtersToSearch: ActiveFilter[] = $state([]);
 
   function downloadBlob(row: FileSearchResult) {
     console.log('Download file: ', row);
@@ -285,28 +289,41 @@
   <OscdLoadingSpinner loadingDone={!loading} />
 {:else}
   <div class="version-editor-container">
-    <OscdDialog bind:open="{dialogOpen}" on:close={onCloseDialog}>
-      <h3 slot="title">{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
-      <div slot="content">
-        <OscdDataTable columnDefs={modalColumnDef}
-                       store={historyStore}
-                       {loadingDone}
-                       rowActions={historyRowActions}
-                       searchInputLabel={$_('search')} />
-      </div>
-      <div slot="actions">
-        <OscdButton callback={onCloseDialog} variant="raised">
-          <OscdCancelIcon />
-          <Label>{$_('done')}</Label>
-        </OscdButton>
-      </div>
+    <OscdDialog bind:open={dialogOpen} on:close={onCloseDialog}>
+      {#snippet title()}
+            <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
+          {/snippet}
+      {#snippet content()}
+            <div >
+          <OscdDataTable columnDefs={modalColumnDef}
+                         store={historyStore}
+                         {loadingDone}
+                         rowActions={historyRowActions}
+                         searchInputLabel={$_('search')} />
+        </div>
+          {/snippet}
+      {#snippet actions()}
+            <div >
+          <OscdButton callback={onCloseDialog} variant="raised">
+            <OscdCancelIcon />
+            <Label>{$_('done')}</Label>
+          </OscdButton>
+        </div>
+          {/snippet}
     </OscdDialog>
     <div class="search-filter">
-      <OscdFilterBox {filterTypes} bind:activeFilters={filtersToSearch} addFilterLabel={$_('add_filter')} selectFilterLabel={$_('filter_types')}>
-        <OscdButton slot="filter-controls" variant="raised" callback={search}>
-          <OscdSearchIcon />
-          <Label>{$_('search')}</Label>
-        </OscdButton>
+      <OscdFilterBox
+        {filterTypes}
+        bind:activeFilters={filtersToSearch}
+        addFilterLabel={$_('add_filter')}
+        selectFilterLabel={$_('filter_types')}
+      >
+        {#snippet filterControls()}
+          <OscdButton variant="raised" callback={search}>
+            <OscdSearchIcon />
+            <Label>{$_('search')}</Label>
+          </OscdButton>
+        {/snippet}
       </OscdFilterBox>
     </div>
     <div class="table-container">

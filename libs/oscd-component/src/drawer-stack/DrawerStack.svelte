@@ -6,12 +6,10 @@
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
 
-  let drawerList: Drawer[] = [];
+  let drawerList: Drawer[] = $derived($drawers);
   const widthStep = 45;
 
-  $: drawerList = $drawers
-
-  let innerWidth = window.innerWidth;
+  let innerWidth = $state(window.innerWidth);
 
   // update on resize
   function handleResize() {
@@ -25,19 +23,23 @@
     }
   }
 
+  function stopEvent(event: Event) {
+    event.stopPropagation();
+  }
+
   onMount(() => {
     window.addEventListener('resize', handleResize);
     window.addEventListener('keydown', handleKeydown);
   });
 
   // Prevent body scroll when drawer is open
-  $: {
+  $effect(() => {
     if (drawerList.length > 0) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-  }
+  });
 
   onDestroy(() => {
     window.removeEventListener('resize', handleResize);
@@ -46,10 +48,10 @@
   });
 
 
-  $: zBase = 1000;
+  let zBase = $derived(1000);
 
   // Base width: almost full viewport
-  $: baseWidth = Math.floor(Math.max(innerWidth - (widthStep*1.5), 300)); // minimum width 300px
+  let baseWidth = $derived(Math.floor(Math.max(innerWidth - (widthStep*1.5), 300))); // minimum width 300px
 </script>
 
 <style>
@@ -154,11 +156,11 @@
     <div
       class="drawer-backdrop"
       style="z-index: {zBase + (drawerList.length - 1) * 2};"
-      on:click={() => closeDrawer('backdrop')}
-      on:pointerdown|stopPropagation
-      on:pointerup|stopPropagation
-      on:pointermove|stopPropagation
-      on:wheel|stopPropagation
+      onclick={() => closeDrawer('backdrop')}
+      onpointerdown={stopEvent}
+      onpointerup={stopEvent}
+      onpointermove={stopEvent}
+      onwheel={stopEvent}
     ></div>
   {/if}
 
@@ -212,8 +214,7 @@
         />
       </div>
       <div class="drawer-body">
-        <svelte:component
-          this={drawer.component}
+        <drawer.component
           {...drawer.props}
           bind:this={drawer.ref}
         />

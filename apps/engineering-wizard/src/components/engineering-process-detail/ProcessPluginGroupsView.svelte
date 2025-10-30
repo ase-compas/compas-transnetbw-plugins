@@ -3,7 +3,11 @@
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { createEventDispatcher } from 'svelte';
 
-  export let pluginGroups: PluginGroup[] = [];
+  interface Props {
+    pluginGroups?: PluginGroup[];
+  }
+
+  let { pluginGroups = [] }: Props = $props();
 
   const dispatch = createEventDispatcher();
   const requestEdit = () => dispatch('editRequested');

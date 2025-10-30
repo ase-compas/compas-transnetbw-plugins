@@ -6,7 +6,8 @@
   import  { TBoard } from '@oscd-transnet-plugins/oscd-template-generator';
 
   // Services & utils
-  import { getLNodeTypeService, ILNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { getLNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
+  import type { ILNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
   import { loadLNodeType, loadTypes } from './dataLoader';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
@@ -47,13 +48,13 @@
   // -----------------------------
   let lNodeTypeId: string;
   let lnClass: string;
-  let logicalNodeType: LNodeTypeDetails | null = null;
-  let dataTypes: BasicTypes = {
+  let logicalNodeType: LNodeTypeDetails | null = $state(null);
+  let dataTypes: BasicTypes = $state({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
     enumTypes: []
-  };
+  });
 
   onMount(() => {
     setModeFromPath();
@@ -81,27 +82,9 @@
     editorStore.switchMode(mode);
   }
 
-  $: $refStoreIsDirty ? editorStore.makeDirty() : editorStore.makeClean();
 
-  // Breadcrumbs
-  $: breadcrumbs = createBreadcrumbs($mode === 'create', logicalNodeType);
 
   // Reference data objects (filtered, mapped, sorted)
-  let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, $canEdit, acceptDrop);
-
-  // Board data configuration
-  $: boardData = {
-    refs: referenceDataObjects,
-    doTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
-    daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
-    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
-  };
-
-  $: columns = getColumns($canEdit); // Board column configuration
-
-  $: if(logicalNodeType) loadDataTypes($markedItems); // load dataTypes when logicalNodeType or markedItems change
-
   // -----------------------------
   // Loaders
   // -----------------------------
@@ -203,6 +186,26 @@
     const sourceType: BasicType = dataTypes.dataObjectTypes.find(type => type.id === source.itemId);
     return canAssignTypeToObjectReference(target, sourceType)
   }
+  $effect(() => {
+    if ($refStoreIsDirty) editorStore.makeDirty();
+    else editorStore.makeClean();
+  });
+  // Breadcrumbs
+  let breadcrumbs = $derived(createBreadcrumbs($mode === 'create', logicalNodeType));
+  let referenceDataObjects = $derived(
+    getDisplayReferenceItems($refStore, $canEdit, acceptDrop)
+  );
+  // Board data configuration
+  let boardData = $derived({
+    refs: referenceDataObjects,
+    doTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
+    daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
+  });
+  let columns = $derived(getColumns($canEdit)); // Board column configuration
+  $effect(() => {
+    if (logicalNodeType) loadDataTypes($markedItems);
+  }); // load dataTypes when logicalNodeType or markedItems change
 </script>
 
 <div class="oscd-details">

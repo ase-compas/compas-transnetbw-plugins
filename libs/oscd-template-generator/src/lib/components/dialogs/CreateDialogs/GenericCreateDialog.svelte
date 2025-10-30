@@ -2,25 +2,38 @@
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
-  import { TypeOption } from '../../../domain';
+  import type { TypeOption } from '../../../domain';
   import { onMount } from 'svelte';
 
   // ===== Props =====
-  export let open: boolean = false;
-  export let dialogTitle: string;
-  export let confirmText: string = 'Confirm';
-  export let idLabel: string = 'ID';
-  export let autocompleteLabel: string = 'Select Option';
 
-  export let getOptions: () => Promise<TypeOption[]> = async () => [];
-  export let isIdTaken: (id: string) => Promise<boolean> = async () => false;
 
-  export let onConfirm: (id: string, selected: any) => void;
+  interface Props {
+    open?: boolean;
+    dialogTitle: string;
+    confirmText?: string;
+    idLabel?: string;
+    autocompleteLabel?: string;
+    getOptions?: () => Promise<TypeOption[]>;
+    isIdTaken?: (id: string) => Promise<boolean>;
+    onConfirm: (id: string, selected: any) => void;
+  }
 
-  let id;
-  let valid = false;
-  let selectedItem;
-  let formEl;
+  let {
+    open = $bindable(false),
+    dialogTitle,
+    confirmText = 'Confirm',
+    idLabel = 'ID',
+    autocompleteLabel = 'Select Option',
+    getOptions = async () => [],
+    isIdTaken = async () => false,
+    onConfirm
+  }: Props = $props();
+
+  let id = $state();
+  let valid = $state(false);
+  let selectedItem = $state();
+  let formEl = $state();
 
   // ===== Event Handlers =====
   const handleCreate = () => {
@@ -55,18 +68,20 @@
     on:close={handleClose}
     confirmDisabled={!valid}
   >
-    <div style="padding: 1rem;" slot="content">
-      <CreateTypeForm
-        bind:this={formEl}
-        {idLabel}
-        {autocompleteLabel}
-        getOptions={getOptions}
-        isIdTakenFn={isIdTaken}
-        bind:id
-        bind:selectedItem
-        bind:valid
-        on:submit={handleCreate}
-      />
-    </div>
+    {#snippet content()}
+        <div style="padding: 1rem;" >
+        <CreateTypeForm
+          bind:this={formEl}
+          {idLabel}
+          {autocompleteLabel}
+          getOptions={getOptions}
+          isIdTakenFn={isIdTaken}
+          bind:id
+          bind:selectedItem
+          bind:valid
+          on:submit={handleCreate}
+        />
+      </div>
+      {/snippet}
   </OscdBaseDialog>
 </div>

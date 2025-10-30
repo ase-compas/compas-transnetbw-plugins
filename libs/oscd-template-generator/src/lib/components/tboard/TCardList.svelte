@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher} from 'svelte';
-  import {TBoardItemContext, TItem} from './types';
+  import type { TBoardItemContext, TItem } from './types';
   import TCard from './TCard.svelte';
   import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
   import { isDragTarget, isDroppable } from './utils';
@@ -8,20 +8,34 @@
 
   const dispatch = createEventDispatcher();
 
-  export let selectable: boolean = false;
-  export let showSelectionIndicator: boolean = false;
-  export let itemsDraggable: boolean;
 
-  export let items: TItem[] = [];
-  export let workItems: TItem[] = items;
 
-  export let dropCandidate: TBoardItemContext | null = null;
   // Items of a list can only be dropped on items of another list with the same dragAndDropType.
-  export let dragAndDropType: string;
+  interface Props {
+    selectable?: boolean;
+    showSelectionIndicator?: boolean;
+    itemsDraggable: boolean;
+    items?: TItem[];
+    dropCandidate?: TBoardItemContext | null;
+    dragAndDropType: string;
+  }
 
-  $: workItems = [...items]
+  let {
+    selectable = false,
+    showSelectionIndicator = false,
+    itemsDraggable,
+    items = [],
+    dropCandidate = null,
+    dragAndDropType
+  }: Props = $props();
 
-  let isOverId: string | null = null;
+  let workItems = $state([...items]);
+
+  $effect(() => {
+    workItems = [...items];
+  });
+
+  let isOverId: string | null = $state(null);
 
   function forwardEvent(eventType: string, item: TItem) {
     dispatch(eventType, { itemId: item.id, item: item });
@@ -83,8 +97,8 @@
     type: dragAndDropType,
 
   }}
-  on:consider={e => handleListConsider(e)}
-  on:finalize={e => handleListFinalize(e)}
+  onconsider={e => handleListConsider(e)}
+  onfinalize={e => handleListFinalize(e)}
 >
   {#each workItems as item (item.id)}
     <div class="card-wrapper"
@@ -95,8 +109,8 @@
               dropTargetStyle: {},
               type: dragAndDropType
              }}
-         on:consider={e => handleDropConsider(e, item.id)}
-         on:finalize={e => handleDropFinalize(e, item.id)}
+         onconsider={e => handleDropConsider(e, item.id)}
+         onfinalize={e => handleDropFinalize(e, item.id)}
          animate:flip={{ duration: 400 }}
     >
     <TCard

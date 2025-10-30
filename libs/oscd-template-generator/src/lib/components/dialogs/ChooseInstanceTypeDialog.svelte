@@ -6,16 +6,20 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
 
-  export let type: DataTypeKind;
-  export let text: string | undefined = undefined;
-  export let open: boolean = false;
+  interface Props {
+    type: DataTypeKind;
+    text?: string | undefined;
+    open?: boolean;
+  }
 
-  let selectedItem = null;
-  let options = [];
+  let { type, text = undefined, open = $bindable(false) }: Props = $props();
+
+  let selectedItem = $state(null);
+  let options = $state([]);
   let getOptionLabel: (opt) => string = (opt) => opt?.id ?? '';
 
 
-  $: isValid = selectedItem !== null;
+  let isValid = $derived(selectedItem !== null);
 
   onMount(() => {
     switch (type) {
@@ -75,27 +79,31 @@
   on:confirm={handleConfirm}
   confirmDisabled={!isValid}
 >
-  <div slot="content">
-    <p>{text}</p>
+  {#snippet content()}
+    <div >
+      <p>{text}</p>
 
-    <Autocomplete
-      label={`Select ${typeToInstanceText(type)}`}
-      bind:value={selectedItem}
-      {options}
-      {getOptionLabel}
-      textfield$required
-      menu$style="max-height: 500px;"
-    >
-      <svelte:fragment slot="match" let:match>
-        <div class="custom-item">
-          <div class="title">{match.id}</div>
-          {#if match.id}
-            <div class="subtitle">{match.description}</div>
-          {/if}
-        </div>
-      </svelte:fragment>
-    </Autocomplete>
-  </div>
+      <Autocomplete
+        label={`Select ${typeToInstanceText(type)}`}
+        bind:value={selectedItem}
+        {options}
+        {getOptionLabel}
+        textfield$required
+        menu$style="max-height: 500px;"
+      >
+        {#snippet match({ match })}
+          
+            <div class="custom-item">
+              <div class="title">{match.id}</div>
+              {#if match.id}
+                <div class="subtitle">{match.description}</div>
+              {/if}
+            </div>
+          
+          {/snippet}
+      </Autocomplete>
+    </div>
+  {/snippet}
 
 
 </OscdBaseDialog>

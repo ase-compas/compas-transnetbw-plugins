@@ -2,8 +2,8 @@
   import { dialogStore } from './dialog.store';
   import { onMount } from 'svelte';
 
-  let dialogData;
-  let isOpen = false;
+  let dialogData = $state();
+  let isOpen = $state(false);
 
   const unsubscribe = dialogStore.subscribe(value => {
     dialogData = value;
@@ -16,8 +16,7 @@
 </script>
 
 {#if dialogData.isOpen && dialogData.component}
-  <svelte:component
-    this={dialogData.component}
+  <dialogData.component
     bind:open={isOpen}
     {...dialogData.props} />
 {/if}

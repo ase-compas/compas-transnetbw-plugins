@@ -1,9 +1,13 @@
 <script lang="ts">
   import ProcessPluginGroupsEditor from '../../components/engineering-process-detail/ProcessPluginGroupsEditor.svelte';
-  import { PluginGroup, Process } from 'libs/shared/src';
+  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
 
-  export let pluginGroups: PluginGroup[] = [];
-  export let proc: Process | null = null;
+  interface Props {
+    pluginGroups?: PluginGroup[];
+    proc?: Process | null;
+  }
+
+  let { pluginGroups = [], proc = null }: Props = $props();
 </script>
 
 <ProcessPluginGroupsEditor

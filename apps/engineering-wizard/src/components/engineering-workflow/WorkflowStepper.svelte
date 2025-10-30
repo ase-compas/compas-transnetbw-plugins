@@ -3,18 +3,27 @@
   import type { ViewPlugin } from '../../types/view-plugin';
   import { createEventDispatcher } from 'svelte';
 
-  export let plugins: ViewPlugin[] = [];
-  export let visited: string[] = [];
-  export let currentId: string | null = null;
-  export let pluginStatus: Record<string, 'check' | 'warning' | 'error'> = {};
+  interface Props {
+    plugins?: ViewPlugin[];
+    visited?: string[];
+    currentId?: string | null;
+    pluginStatus?: Record<string, 'check' | 'warning' | 'error'>;
+  }
+
+  let {
+    plugins = [],
+    visited = [],
+    currentId = null,
+    pluginStatus = {}
+  }: Props = $props();
 
   const dispatch = createEventDispatcher();
 
-  $: tooltipText = plugins.reduce<Record<string, string>>((map, p) => {
+  let tooltipText = $derived(plugins.reduce<Record<string, string>>((map, p) => {
     const status = pluginStatus[p.id];
     map[p.id] = status ?? '';
     return map;
-  }, {});
+  }, {}));
 
   const onSelect = (e: CustomEvent<string>) => {
     const selected = plugins.find(p => p.id === e.detail);

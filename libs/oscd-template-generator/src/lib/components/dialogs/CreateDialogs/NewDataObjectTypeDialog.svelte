@@ -4,7 +4,11 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const service = getDOTypeService();
-  export let open = false;
+  interface Props {
+    open?: boolean;
+  }
+
+  let { open = $bindable(false) }: Props = $props();
 
   const handleConfirm = (id: string, optionId: string) => {
     closeDialog('confirm', { id, cdc: optionId });

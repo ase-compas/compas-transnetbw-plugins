@@ -17,28 +17,41 @@
   }
 
   // --- Props ---
-  export let id: string = "";
-  export let selectedItem: Option | null = null;
-  export let valid: boolean = false;
 
-  export let idLabel: string = "Enter ID";
-  export let autocompleteLabel: string = "Select";
-  let options: Option[] = [];
+  let options: Option[] = $state([]);
 
-  export let getOptions: () => Promise<any[]> = async () => [];
-  export let mapOption: (data: any) => Option = (data) => data;
-  export let isIdTakenFn : (id: string) => Promise<boolean> = async (id: string) => false;
+  interface Props {
+    id?: string;
+    selectedItem?: Option | null;
+    valid?: boolean;
+    idLabel?: string;
+    autocompleteLabel?: string;
+    getOptions?: () => Promise<any[]>;
+    mapOption?: (data: any) => Option;
+    isIdTakenFn?: (id: string) => Promise<boolean>;
+  }
+
+  let {
+    id = $bindable(""),
+    selectedItem = $bindable(null),
+    valid = $bindable(false),
+    idLabel = "Enter ID",
+    autocompleteLabel = "Select",
+    getOptions = async () => [],
+    mapOption = (data) => data,
+    isIdTakenFn = async (id: string) => false
+  }: Props = $props();
 
 
   let getOptionLabel: (opt: Option) => string = (opt) => opt?.id ?? '';
 
   // --- State ---
-  let idTouched: boolean = false;
+  let idTouched: boolean = $state(false);
 
-  let isIdValid: boolean = false;
-  let isIdTaken: boolean = false;
-  let isIdTakenLoading = false;
-  let isFormValid: boolean = false;
+  let isIdValid: boolean = $state(false);
+  let isIdTaken: boolean = $state(false);
+  let isIdTakenLoading = $state(false);
+  let isFormValid: boolean = $state(false);
 
   onMount(() => {
     getOptions().then(data => {
@@ -68,23 +81,13 @@
     isFormValid = isIdValid && !isIdTaken && id && selectedItem !== null;
   }
 
-  $: if (id) {
-    isIdValid = validateId(id);
-    validateIdTaken(id, selectedItem);
-  } else {
-    isIdTaken = false;
-    isIdTakenLoading = false;
-    updateFormValid(selectedItem);
-  }
 
-  $: valid = isFormValid;
 
-  $: dispatch('change', { id, selectedItem, valid });
 
   // --- Events ---
   const dispatch = createEventDispatcher();
 
-  let idTextField;
+  let idTextField = $state();
 
   export function focus() {
      idTextField?.focus?.();
@@ -96,9 +99,28 @@
       dispatch('submit', { id, selectedItem });
     }
   }
+  $effect(() => {
+    if (id) {
+      isIdValid = validateId(id);
+      updateFormValid(selectedItem);
+      validateIdTaken(id, selectedItem);
+    } else {
+      isIdTaken = false;
+      isIdTakenLoading = false;
+      updateFormValid(selectedItem);
+    }
+  });
+
+  $effect(() => {
+    valid = isFormValid;
+  });
+
+  $effect(() => {
+    dispatch('change', { id, selectedItem, valid });
+  });
 </script>
 
-<form on:submit={handleSubmit}>
+<form onsubmit={handleSubmit}>
   <TextField
     bind:this={idTextField}
     label={idLabel}
@@ -108,17 +130,19 @@
     invalid={idTouched && (!isIdValid || isIdTaken)}
     on:input={() => (idTouched = true)}
   >
-    <svelte:fragment slot="helper">
-      {#if idTouched && !isIdValid}
-        <span style="color: var(--mdc-theme-error, #b71c1c);">
-          Invalid ID
-        </span>
-      {:else if idTouched && isIdTaken}
-        <span style="color: var(--mdc-theme-error, #b71c1c);">
-          This ID is already taken.
-        </span>
-      {/if}
-    </svelte:fragment>
+    {#snippet helper()}
+      
+        {#if idTouched && !isIdValid}
+          <span style="color: var(--mdc-theme-error, #b71c1c);">
+            Invalid ID
+          </span>
+        {:else if idTouched && isIdTaken}
+          <span style="color: var(--mdc-theme-error, #b71c1c);">
+            This ID is already taken.
+          </span>
+        {/if}
+      
+      {/snippet}
   </TextField>
 
   <Autocomplete
@@ -129,14 +153,16 @@
     textfield$required
     menu$style="max-height: 500px;"
   >
-    <svelte:fragment slot="match" let:match>
-      <div class="custom-item">
-        <div class="title">{match.id}</div>
-        {#if match.id}
-          <div class="subtitle">{match.description}</div>
-        {/if}
-      </div>
-    </svelte:fragment>
+    {#snippet match({ match })}
+      
+        <div class="custom-item">
+          <div class="title">{match.id}</div>
+          {#if match.id}
+            <div class="subtitle">{match.description}</div>
+          {/if}
+        </div>
+      
+      {/snippet}
   </Autocomplete>
   <button type="submit" style="display: none"></button>
 </form>

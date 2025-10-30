@@ -4,7 +4,11 @@
   import { createEventDispatcher } from 'svelte';
   import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
 
-  export let pluginGroups: PluginGroup[] = [];
+  interface Props {
+    pluginGroups?: PluginGroup[];
+  }
+
+  let { pluginGroups = [] }: Props = $props();
 
   const dispatch = createEventDispatcher();
 
@@ -44,7 +48,7 @@
             <button
               type="button"
               class="plugin-item__remove"
-              on:click={() => removeOne(i, j)}
+              onclick={() => removeOne(i, j)}
             >
               <OscdRemoveIcon svgStyles="fill: #FF203A"></OscdRemoveIcon>
             </button>

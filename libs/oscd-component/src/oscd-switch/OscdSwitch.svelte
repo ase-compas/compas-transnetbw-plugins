@@ -3,15 +3,28 @@
   import FormField from '@smui/form-field';
   import { createEventDispatcher } from 'svelte';
 
-  export let checked = false;
-  export let label = 'Toggle';
-  export let id = 'toggle-switch';
-  export let labelStyle = '';
-  export let switchClass = '';
-  export let formFieldClass = '';
-  export let icons = false;
 
-  export let preventToggleOnClick = false;
+  interface Props {
+    checked?: boolean;
+    label?: string;
+    id?: string;
+    labelStyle?: string;
+    switchClass?: string;
+    formFieldClass?: string;
+    icons?: boolean;
+    preventToggleOnClick?: boolean;
+  }
+
+  let {
+    checked = $bindable(false),
+    label = 'Toggle',
+    id = 'toggle-switch',
+    labelStyle = '',
+    switchClass = '',
+    formFieldClass = '',
+    icons = false,
+    preventToggleOnClick = false
+  }: Props = $props();
 
   const dispatch = createEventDispatcher();
 

@@ -9,15 +9,15 @@
   surface$style="width: 1080px; max-width: calc(100vw - 32px);"
 >
   <div class="dialog-title">
-    <slot name="title" />
+    {@render title?.()}
   </div>
 
   <Content id="large-scroll-content">
-    <slot name="content" />
+    {@render content?.()}
   </Content>
 
   <Actions>
-    <slot name="actions" />
+    {@render actions?.()}
   </Actions>
 </Dialog>
 
@@ -25,11 +25,21 @@
   import Dialog, { Title, Content, Actions } from '@smui/dialog';
   import {createEventDispatcher} from "svelte";
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    title?: import('svelte').Snippet;
+    content?: import('svelte').Snippet;
+    actions?: import('svelte').Snippet;
+  }
+
+  let {
+    open = $bindable(false),
+    title,
+    content,
+    actions
+  }: Props = $props();
 
   const dispatch = createEventDispatcher();
-
-  $: console.log('Dialog open status changed:', open);
 </script>
 
 <style lang="css">

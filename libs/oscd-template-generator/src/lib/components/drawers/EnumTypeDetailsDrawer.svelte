@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { IEnumTypeService } from '../../services/enum-type.service';
+  import type { IEnumTypeService } from '../../services/enum-type.service';
   import { getEnumTypeService } from '../../services';
-  import { DataTypeKind, type EnumTypeDetails, Mode } from '../../domain';
+  import { DataTypeKind, type EnumTypeDetails, type Mode } from '../../domain';
   import { onMount } from 'svelte';
-  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
@@ -15,27 +15,24 @@
   const enumTypeService: IEnumTypeService = getEnumTypeService();
 
   // ===== Props =====
-  export let mode: Mode = 'view';
-  export let typeId: string;
-  export let instanceTypeId: string | null = null;
+  interface Props {
+    mode?: Mode;
+    typeId: string;
+    instanceTypeId?: string | null;
+  }
+
+  let { mode = 'view', typeId, instanceTypeId = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
   const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view'});
   const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
-  let enumType: EnumTypeDetails = null;
-  let searchQuery = '';
-  let selected: string[] = []
-  let isLoading = false;
+  let enumType: EnumTypeDetails = $state(null);
+  let searchQuery = $state('');
+  let selected: string[] = $state([])
+  let isLoading = $state(false);
 
-  // ===== Derived =====
-  $: filteredItems = enumType?.children.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
-  $: if(selected) {
-    const dirty = isDirty();
-    dirty ? editorStore.makeDirty() : editorStore.makeClean();
-  }
 
   // ===== Lifecycle =====
   onMount(async () => {
@@ -103,6 +100,15 @@
     const ok = await editorStore.switchMode(newMode);
     if(ok) await loadData();
   }
+  // ===== Derived =====
+  let filteredItems = $derived(enumType?.children.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? []);
+  $effect(() => {
+    if (!selected) return;
+    const dirty = isDirty();
+    if (dirty) editorStore.makeDirty();
+    else editorStore.makeClean();
+  });
 </script>
 
 <TypeHeader

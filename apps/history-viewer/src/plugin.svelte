@@ -1,16 +1,17 @@
-<svelte:options tag={null} />
-
-
 <script lang="ts">
-  import * as pckg from '../package.json';
   import App from './App.svelte';
+  import * as pckg from '../package.json';
 
-  export let doc: XMLDocument;
-  export let dev = false;
+  interface Props {
+    doc?: XMLDocument;
+    dev?: boolean;
+  }
+
+  let { doc, dev = false }: Props = $props();
 </script>
 
 {#if doc || dev}
-    <App></App>
+  <App />
 {/if}
 
 <input type="hidden" name="package-name" value={pckg.name} />
