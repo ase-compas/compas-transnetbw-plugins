@@ -7,7 +7,7 @@
   import { OscdCardItem, OscdCardParent, OscdInput } from '../../../../../libs/oscd-component/src';
   import type { LocalStoredPlugin } from '../../services/plugin.service';
 
-  function addPlugin(plugin: LocalStoredPlugin) {
+  function addPluginToProcess(plugin: LocalStoredPlugin) {
     // Placeholder function for adding a plugin
     console.log('Add plugin clicked', plugin);
   }
@@ -32,7 +32,7 @@
           <p class="plugin-name">{plugin.name}</p>
           <button
             class="plugin-add-btn"
-            on:click={() => addPlugin(plugin)}>
+            on:click={() => addPluginToProcess(plugin)}>
             <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
           </button>
         </div>

@@ -1,9 +1,5 @@
 import type {Plugin} from "./Plugin";
-
-export type PluginGroup = {
-  title: string;
-  plugins: Plugin[];
-};
+import type { PluginGroup } from './PluginGroup';
 
 export type Process = {
   id: string;

@@ -1,14 +1,17 @@
-import type { Plugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+import type {
+  Plugin,
+  PluginGroup,
+  Process,
+} from '@oscd-transnet-plugins/shared';
 import { writable } from 'svelte/store';
+/* eslint-disable @nx/enforce-module-boundaries */
+// const SOURCE_URL = new URL('../assets/processes.xml', import.meta.url).href;
+import processesUrl from '../assets/processes.xml?url';
 
 export const processesLoadingStore = writable<boolean>(false);
 export const processesErrorStore   = writable<string>('');
 export const processesStore        = writable<Process[]>([]);
 
-/* eslint-disable @nx/enforce-module-boundaries */
-// const SOURCE_URL = new URL('../assets/processes.xml', import.meta.url).href;
-import processesUrl from '../assets/processes.xml?url';
-import type { LocalStoredPlugin } from './plugin.service';
 const SOURCE_URL = processesUrl;
 
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
@@ -68,4 +71,8 @@ export async function getProcesses(): Promise<Process[]> {
   } finally {
     processesLoadingStore.set(false);
   }
+}
+
+export async function addProcess(proc: Process, group: PluginGroup): Promise<void> {
+
 }
