@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { OscdCardItem, OscdCardParent } from '../../../../../libs/oscd-component/src';
+  import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   export let pluginGroups: PluginGroup[] = [];
 </script>
 
-<OscdCardParent class="plugin-list" backgroundColor="var(--brand)">
+<OscdPanel class="plugin-list" backgroundColor="var(--brand)">
   <div slot="header" class="plugin-list__header">
     <p class="plugin-list__title">Process</p>
     <slot name="headerAction" />
@@ -19,17 +19,17 @@
         </header>
 
         {#each group.plugins as plugin, j}
-          <OscdCardItem variant="secondary">
+          <OscdListItem variant="secondary">
             <div class="plugin-list__itemRow">
               <span class="plugin-list__itemName">{plugin.name}</span>
               <slot name="itemAction" {group} {plugin} groupIndex={i} pluginIndex={j} />
             </div>
-          </OscdCardItem>
+          </OscdListItem>
         {/each}
       </section>
     {/each}
   </div>
-</OscdCardParent>
+</OscdPanel>
 
 <style>
   .plugin-list__header {

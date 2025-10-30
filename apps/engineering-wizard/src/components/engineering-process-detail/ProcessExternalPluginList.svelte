@@ -4,7 +4,7 @@
   export let plugins: LocalStoredPlugin[];
   export let searchTerm: string = '';
 
-  import { OscdCardItem, OscdCardParent, OscdInput } from '../../../../../libs/oscd-component/src';
+  import { OscdListItem, OscdPanel, OscdInput } from '../../../../../libs/oscd-component/src';
   import type { LocalStoredPlugin } from '../../services/plugin.service';
 
   function addPluginToProcess(plugin: LocalStoredPlugin) {
@@ -13,7 +13,7 @@
   }
 </script>
 
-<OscdCardParent backgroundColor="#DAE3E6">
+<OscdPanel backgroundColor="#DAE3E6">
   <div class="card-header" slot="header">
     <p class="header-info">Add External Plugins</p>
     <div class="search-input">
@@ -27,7 +27,7 @@
   </div>
   <div class="card-parent-content" slot="content">
     {#each plugins as plugin}
-      <OscdCardItem variant="secondary">
+      <OscdListItem variant="secondary">
         <div class="card-item-content">
           <p class="plugin-name">{plugin.name}</p>
           <button
@@ -36,10 +36,10 @@
             <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
           </button>
         </div>
-      </OscdCardItem>
+      </OscdListItem>
     {/each}
   </div>
-</OscdCardParent>
+</OscdPanel>
 
 <style>
   .card-header {
