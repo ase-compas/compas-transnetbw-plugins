@@ -8,10 +8,19 @@
   const dispatch = createEventDispatcher();
 
 
-  export let type: DataTypeKind;
-  export let typeId: string;
-  export let instanceType: string | null = null;
-  export let isEditMode = false;
+  interface Props {
+    type: DataTypeKind;
+    typeId: string;
+    instanceType?: string | null;
+    isEditMode?: boolean;
+  }
+
+  let {
+    type,
+    typeId,
+    instanceType = null,
+    isEditMode = $bindable(false)
+  }: Props = $props();
 
   const handleChange = (checked) => dispatch('modeChange', checked ? 'edit' : 'view');
 

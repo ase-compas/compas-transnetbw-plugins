@@ -3,13 +3,26 @@ import {OscdBaseDialog} from "@oscd-transnet-plugins/oscd-component";
 import {Content} from "@smui/dialog";
 import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
 
-export let open = false;
 
-export let title = '';              // Dialog title text
-export let message = '';            // Short message in center
-export let confirmActionText = 'OK';// Confirm button label
-export let cancelActionText = 'Cancel'; // Cancel button label
-export let color = 'var(--mdc-theme-primary, #ff3e00)'; // CSS color for primary button and dialog title bar
+  /**
+   * @typedef {Object} Props
+   * @property {boolean} [open]
+   * @property {string} [title] - Dialog title text
+   * @property {string} [message] - Short message in center
+   * @property {string} [confirmActionText] - Confirm button label
+   * @property {string} [cancelActionText] - Cancel button label
+   * @property {string} [color] - CSS color for primary button and dialog title bar
+   */
+
+  /** @type {Props} */
+  let {
+    open = $bindable(false),
+    title = '',
+    message = '',
+    confirmActionText = 'OK',
+    cancelActionText = 'Cancel',
+    color = 'var(--mdc-theme-primary, #ff3e00)'
+  } = $props();
 
 function handleConfirm() {
   closeDialog('confirm');
@@ -34,11 +47,13 @@ function handleCancel() {
   height="auto"
   maxHeight="auto"
 >
-  <Content slot="content">
-    <div class="oscd-confirm-dialog__content">
-      {message}
-    </div>
-  </Content>
+  {#snippet content()}
+    <Content >
+      <div class="oscd-confirm-dialog__content">
+        {message}
+      </div>
+    </Content>
+  {/snippet}
 </OscdBaseDialog>
 
 

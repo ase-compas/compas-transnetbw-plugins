@@ -1,7 +1,13 @@
 <script>
   import OscdIconBase from '../oscd-icon-base/OscdIconBase.svelte';
 
-  export let svgStyles = '';
+  /**
+   * @typedef {Object} Props
+   * @property {string} [svgStyles]
+   */
+
+  /** @type {Props} */
+  let { svgStyles = '' } = $props();
 </script>
 
 <OscdIconBase>

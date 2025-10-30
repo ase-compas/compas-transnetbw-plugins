@@ -1,6 +1,12 @@
 <script>
-  export let label = "";
-  export let value = "";
+  /**
+   * @typedef {Object} Props
+   * @property {string} [label]
+   * @property {string} [value]
+   */
+
+  /** @type {Props} */
+  let { label = "", value = $bindable("") } = $props();
 
   function handleDateTimeChange(event) {
     value = event.target.value;
@@ -12,7 +18,7 @@
     type="date"
     id="datetime-picker"
     bind:value={value}
-    on:change={handleDateTimeChange}
+    onchange={handleDateTimeChange}
     class="custom-text-field__input"
     placeholder=""
   />

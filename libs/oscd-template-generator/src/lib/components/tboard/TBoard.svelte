@@ -1,19 +1,25 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { createEventDispatcher, onMount } from 'svelte';
   import { v4 as uuidv4 } from 'uuid';
 
   import IconButton from '@smui/icon-button';
   import TColumn from './TColumn.svelte';
-  import { ItemDropOnItemEventDetail, TBoardItemContext, TColumnConfig, TData } from './types';
+  import type { ItemDropOnItemEventDetail, TBoardItemContext, TColumnConfig, TData } from './types';
   import { isDroppable } from './utils';
 
   const dispatch = createEventDispatcher();
 
-  export let columns: TColumnConfig[] = [];
-  export let data: TData[] = [];
+  interface Props {
+    columns?: TColumnConfig[];
+    data?: TData[];
+  }
 
-  let dropCandidate: TBoardItemContext | null = null; // This will hold the item being dragged. On The board only one item can be dragged at a time.
-  let boardId: string;
+  let { columns = [], data = $bindable([]) }: Props = $props();
+
+  let dropCandidate: TBoardItemContext | null = $state(null); // This will hold the item being dragged. On The board only one item can be dragged at a time.
+  let boardId: string = $state();
 
   onMount(() => {
     boardId = uuidv4();
@@ -49,26 +55,26 @@
   }
 
   // Check that columns are defined
-  $: {
+  run(() => {
     columns.forEach(column => {
       if (!data[column.id]) {
         data[column.id] = []; // Initialize with an empty array if no data exists for this column
         console.warn(`Warning: No data found for column with id "${column.id}"`);
       }
     });
-  }
+  });
 
   // Check that column ids are unique
-  $: {
+  run(() => {
     const columnIds = columns.map(col => col.id);
     const uniqueColumnIds = new Set(columnIds);
     if (uniqueColumnIds.size !== columnIds.length) {
       throw new Error('Duplicate column ids detected! Each column id must be unique.');
     }
-  }
+  });
 
   // Check that each TItem's id is unique within its column
-  $: {
+  run(() => {
     for (const col of columns) {
       const items = data[col.id] || [];
       const itemIds = items.map(item => item.id);
@@ -77,7 +83,7 @@
         throw new Error(`Duplicate item ids detected in column "${col.id}". Each item id must be unique.`);
       }
     }
-  }
+  });
 
 </script>
 

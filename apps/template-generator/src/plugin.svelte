@@ -2,9 +2,13 @@
   import * as pckg from '../package.json';
   import App from './App.svelte';
 
-  export let doc: XMLDocument;
-  export let dev = false;
-  export let host: HTMLElement;
+  interface Props {
+    doc: XMLDocument;
+    dev?: boolean;
+    host: HTMLElement;
+  }
+
+  let { doc, dev = false, host }: Props = $props();
 
 </script>
 

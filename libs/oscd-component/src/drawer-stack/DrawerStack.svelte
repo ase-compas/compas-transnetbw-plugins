@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { run, createBubbler, stopPropagation } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { drawers, closeDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import type { Drawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { fly } from 'svelte/transition';
@@ -53,10 +56,11 @@
   });
 
 
-  $: zBase = 1000;
+  
 
   // Base width: almost full viewport
-  $: baseWidth = Math.floor(Math.max(innerWidth - (widthStep*1.5), 300)); // minimum width 300px
+  let baseWidth = Math.floor(Math.max(innerWidth - (widthStep*1.5), 300)); // minimum width 300px
+  $: baseWidth = Math.floor(Math.max(innerWidth - (widthStep*1.5), 300));
 </script>
 
 <style>
@@ -161,11 +165,11 @@
     <div
       class="drawer-backdrop"
       style="z-index: {zBase + (drawerList.length - 1) * 2};"
-      on:click={() => closeDrawer('backdrop')}
-      on:pointerdown|stopPropagation
-      on:pointerup|stopPropagation
-      on:pointermove|stopPropagation
-      on:wheel|stopPropagation
+      onclick={() => closeDrawer('backdrop')}
+      onpointerdown={stopPropagation(bubble('pointerdown'))}
+      onpointerup={stopPropagation(bubble('pointerup'))}
+      onpointermove={stopPropagation(bubble('pointermove'))}
+      onwheel={stopPropagation(bubble('wheel'))}
     ></div>
   {/if}
 
@@ -219,8 +223,7 @@
         />
       </div>
       <div class="drawer-body">
-        <svelte:component
-          this={drawer.component}
+        <drawer.component
           {...drawer.props}
           bind:this={drawer.ref}
         />

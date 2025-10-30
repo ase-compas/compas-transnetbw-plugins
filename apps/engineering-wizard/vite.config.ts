@@ -24,7 +24,7 @@ export default defineConfig(async () => {
     },
 
     plugins: [
-      svelte({
+    svelte({
         compilerOptions: { runes: false },
         prebundleSvelteLibraries: false
       }),

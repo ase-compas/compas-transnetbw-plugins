@@ -6,21 +6,25 @@
   import Button from '@smui/button';
   import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
 
-  export let processes: Process[] = [];
-  export let loading = false;
-  export let errorMsg = '';
+  interface Props {
+    processes?: Process[];
+    loading?: boolean;
+    errorMsg?: string;
+  }
+
+  let { processes = [], loading = false, errorMsg = '' }: Props = $props();
 
   const dispatch = createEventDispatcher<{ view: Process; start: Process }>();
   const handleStart = (p: Process) => dispatch('start', p);
   const handleView = (p: Process) => dispatch('view', p);
 
-  let searchQuery = '';
+  let searchQuery = $state('');
 
-  $: searchLower = searchQuery.trim().toLowerCase();
-  $: rows = (processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id }));
-  $: filteredRows = searchLower
+  let searchLower = $derived(searchQuery.trim().toLowerCase());
+  let rows = $derived((processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id })));
+  let filteredRows = $derived(searchLower
     ? rows.filter((p) => (p.displayName ?? '').toLowerCase().includes(searchLower))
-    : rows;
+    : rows);
 
   const columns: { key: string; header: string }[] = [
     { key: 'displayName', header: 'Name' },
@@ -75,24 +79,26 @@
     headerBg="#DAE3E6"
     rowBg="#ffffff"
   >
-    <svelte:fragment slot="actions" let:item>
-      <button
-        type="button"
-        class="icon"
-        aria-label="View process"
-        on:click={() => handleView(item)}
-      >
-        <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-      </button>
-      <button
-        type="button"
-        class="icon"
-        aria-label="Start process"
-        on:click={() => handleStart(item)}
-      >
-        <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-      </button>
-    </svelte:fragment>
+    {#snippet actions({ item })}
+      
+        <button
+          type="button"
+          class="icon"
+          aria-label="View process"
+          onclick={() => handleView(item)}
+        >
+          <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+        </button>
+        <button
+          type="button"
+          class="icon"
+          aria-label="Start process"
+          onclick={() => handleStart(item)}
+        >
+          <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+        </button>
+      
+      {/snippet}
   </OscdBasicDataTable>
 </div>
 

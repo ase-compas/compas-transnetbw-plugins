@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot (filter-controls to filter_controls) making the component unusable -->
 <script lang="ts">
   import type { ActiveFilter, FilterType } from './interfaces';
   import {OscdButton, OscdDateTimePicker, OscdInput, OscdSelect} from '../index';

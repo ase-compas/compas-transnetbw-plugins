@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import LNodeTypesView from "./views/lNodeTypes/LNodeTypesView.svelte";
   import LNodeTypeDetailView from "./views/lNodeTypeDetails/LNodeTypeDetailView.svelte";
   import { route, host as storeHost, doc as storeDoc } from "@oscd-transnet-plugins/oscd-template-generator";
@@ -41,16 +43,18 @@
   // Ensure component symbols are referenced in script so bundler retains them
   const __ensureComponents = [DialogHost, DrawerStack];
 
-  $: if(doc) {
-    initServices(doc, host);
-    storeDoc.set(doc);
-  }
+  run(() => {
+    if(doc) {
+      initServices(doc, host);
+      storeDoc.set(doc);
+    }
+  });
 </script>
 
 <div class="oscd-app">
   {#if !doc && devMode}
     <!-- Development mode: allow file upload -->
-    <input type="file" accept=".ssd" on:change={handleFileChange} />
+    <input type="file" accept=".ssd" onchange={handleFileChange} />
     <p>Please load an XML file to start.</p>
   {:else}
     <div class="template-generator-container">

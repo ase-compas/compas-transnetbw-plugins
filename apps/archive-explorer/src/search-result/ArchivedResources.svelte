@@ -3,8 +3,12 @@
   import { OscdExpansionPanel } from '@oscd-transnet-plugins/oscd-component';
   import ResourceHistory from './resource-history/ResourceHistory.svelte';
 
-  export let searchResults: ArchiveSearchResult[] = [];
-  export let noResourcesLabel: string = "No resources found.";
+  interface Props {
+    searchResults?: ArchiveSearchResult[];
+    noResourcesLabel?: string;
+  }
+
+  let { searchResults = [], noResourcesLabel = "No resources found." }: Props = $props();
 </script>
 
 <div class="result-container">
@@ -12,9 +16,11 @@
     {#if searchResults.length}
       {#each searchResults as searchResult (searchResult.uuid)}
         <OscdExpansionPanel title="{searchResult.name}">
-          <span slot="content">
-            <ResourceHistory {searchResult} />
-          </span>
+          {#snippet content()}
+                    <span >
+              <ResourceHistory {searchResult} />
+            </span>
+                  {/snippet}
         </OscdExpansionPanel>
         <br>
       {/each}

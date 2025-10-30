@@ -33,7 +33,7 @@
                   type="text"
                   placeholder={`${searchInputLabel} ${col.headerName}`}
                   bind:value={filters[col.field]}
-                  on:input={() => filterAndSortTable()}
+                  oninput={() => filterAndSortTable()}
                 />
               {/if}
               {#if col.filterType === 'number'}
@@ -41,7 +41,7 @@
                   type="number"
                   placeholder={`${searchInputLabel} ${col.headerName}`}
                   bind:value={filters[col.field]}
-                  on:input={() => filterAndSortTable()}
+                  oninput={() => filterAndSortTable()}
                 />
               {/if}
             {/if}
@@ -100,12 +100,14 @@
   {/each}
   </Body>
 
-  <LinearProgress
-    indeterminate
-    bind:closed={loadingDone}
-    aria-label="Data is being loaded..."
-    slot="progress"
-  />
+  {#snippet progress()}
+    <LinearProgress
+      indeterminate
+      bind:closed={loadingDone}
+      aria-label="Data is being loaded..."
+      
+    />
+  {/snippet}
 </DataTable>
 
 <script lang="ts">
@@ -126,19 +128,31 @@
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
   import { v4 as uuidv4 } from 'uuid';
 
-  export let loadingDone = true;
-  export let label = uuidv4();
-  export let columnDefs = [];
-  export let rowData = [];
-  export let store;
-  export let rowActions: RowAction[] = [];
-  export let searchInputLabel: string = 'Search';
+  interface Props {
+    loadingDone?: boolean;
+    label?: any;
+    columnDefs?: any;
+    rowData?: any;
+    store: any;
+    rowActions?: RowAction[];
+    searchInputLabel?: string;
+  }
 
-  let filters = {
+  let {
+    loadingDone = $bindable(true),
+    label = uuidv4(),
+    columnDefs = [],
+    rowData = $bindable([]),
+    store,
+    rowActions = [],
+    searchInputLabel = 'Search'
+  }: Props = $props();
+
+  let filters = $state({
     name: '',
     color: '',
     number: ''
-  };
+  });
 
   let filteredData = writable<any[]>([]);
   let sortColumn = writable<string | null>(null);

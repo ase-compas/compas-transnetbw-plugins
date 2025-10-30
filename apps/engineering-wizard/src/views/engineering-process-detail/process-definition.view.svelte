@@ -2,8 +2,12 @@
   import ProcessPluginGroupsEditor from '../../components/engineering-process-detail/ProcessPluginGroupsEditor.svelte';
   import { PluginGroup, Process } from 'libs/shared/src';
 
-  export let pluginGroups: PluginGroup[] = [];
-  export let proc: Process | null = null;
+  interface Props {
+    pluginGroups?: PluginGroup[];
+    proc?: Process | null;
+  }
+
+  let { pluginGroups = [], proc = null }: Props = $props();
 </script>
 
 <ProcessPluginGroupsEditor

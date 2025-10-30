@@ -1,15 +1,31 @@
 <script>
   import Select, { Option } from '@smui/select';
 
-  export let data = [];
-  export let placeholder = '';
-  export let label = '';
-  export let description = '';
-  export let value = '';
-  export let required = false;
-  export let size = 'sm';
-  export let selectedOptionIndex = -1;
-  export let disabled = false;
+  /**
+   * @typedef {Object} Props
+   * @property {any} [data]
+   * @property {string} [placeholder]
+   * @property {string} [label]
+   * @property {string} [description]
+   * @property {string} [value]
+   * @property {boolean} [required]
+   * @property {string} [size]
+   * @property {any} [selectedOptionIndex]
+   * @property {boolean} [disabled]
+   */
+
+  /** @type {Props} */
+  let {
+    data = [],
+    placeholder = '',
+    label = '',
+    description = '',
+    value = $bindable(''),
+    required = false,
+    size = 'sm',
+    selectedOptionIndex = $bindable(-1),
+    disabled = false
+  } = $props();
 
   function setSelectedIndex(index) {
     return () => selectedOptionIndex = index;

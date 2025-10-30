@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { createEventDispatcher } from 'svelte';
   import type { PluginGroup, Process } from 'libs/shared/src';
   import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
@@ -11,27 +13,35 @@
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
 
-  export let currentProcess: Process | null = null;
+  interface Props {
+    currentProcess?: Process | null;
+  }
+
+  let { currentProcess = null }: Props = $props();
 
   type StepId = 'process-definition' | 'validator-configuration';
   const STEP_IDS: StepId[] = ['process-definition', 'validator-configuration'];
 
   const dispatch = createEventDispatcher();
 
-  let isEditing = false;
+  let isEditing = $state(false);
 
-  let currentStepIndex = 0;
-  let currentStepId: StepId = STEP_IDS[0];
-  $: currentStepId = STEP_IDS[currentStepIndex];
-  $: isAtFirstStep = currentStepIndex === 0;
-  $: isAtLastStep = currentStepIndex === STEP_IDS.length - 1;
+  let currentStepIndex = $state(0);
+  let currentStepId: StepId = $state(STEP_IDS[0]);
+  run(() => {
+    currentStepId = STEP_IDS[currentStepIndex];
+  });
+  let isAtFirstStep = $derived(currentStepIndex === 0);
+  let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  $: breadcrumbs = getBreadcrumbs(currentProcess, { edit: isEditing });
+  let breadcrumbs = $derived(getBreadcrumbs(currentProcess, { edit: isEditing }));
 
-  let pluginGroups: PluginGroup[] = [];
-  $: pluginGroups = getPluginGroups(currentProcess);
+  let pluginGroups: PluginGroup[] = $state([]);
+  run(() => {
+    pluginGroups = getPluginGroups(currentProcess);
+  });
 
-  let visitedSteps: StepId[] = [];
+  let visitedSteps: StepId[] = $state([]);
 
   function handleBreadcrumbClick(e: CustomEvent<{ index: number }>) {
     if (e.detail.index !== 0) return;
@@ -94,7 +104,7 @@
         <button
           type="button"
           class="btn btn--back"
-          on:click={goToPreviousStep}
+          onclick={goToPreviousStep}
           disabled={isAtFirstStep}
           aria-label="Previous step"
         >
@@ -104,7 +114,7 @@
         <button
           type="button"
           class="btn btn--next"
-          on:click={goToNextStep}
+          onclick={goToNextStep}
           disabled={isAtLastStep}
           aria-label="Next step"
         >

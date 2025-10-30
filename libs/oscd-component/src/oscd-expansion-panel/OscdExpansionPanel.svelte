@@ -1,15 +1,22 @@
 <script>
   import Paper from '@smui/paper';
 
-  export let title = '';
-  export let open = false;
+  /**
+   * @typedef {Object} Props
+   * @property {string} [title]
+   * @property {boolean} [open]
+   * @property {import('svelte').Snippet} [content]
+   */
+
+  /** @type {Props} */
+  let { title = '', open = false, content } = $props();
 </script>
 
 <Paper>
   <details {open}>
     <summary>{title}</summary>
     <div class="expandable-content">
-      <slot name="content" />
+      {@render content?.()}
     </div>
   </details>
 </Paper>

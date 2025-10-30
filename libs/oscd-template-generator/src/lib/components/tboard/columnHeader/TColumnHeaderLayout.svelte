@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot (bot-action to bot_action) making the component unusable -->
 <script lang="ts">
   import { OscdButton, OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import { createEventDispatcher } from 'svelte';

@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
@@ -40,16 +40,16 @@
   const locationFilterStore = LocationFilterStore.getInstance();
   const archiveExplorerLocationStore = LocationStore.getInstance();
 
-  let filterTypes: FilterType[] = [];
-  let locationFilterType: FilterType[] = [];
-  let filtersToSearch: ActiveFilter[] = filterStore.currentData;
-  let locationFiltersToSearch: ActiveFilter[] = locationFilterStore.currentData;
-  let searchResults: Map<string, ArchiveSearchResult[]> = new Map();
+  let filterTypes: FilterType[] = $state([]);
+  let locationFilterType: FilterType[] = $state([]);
+  let filtersToSearch: ActiveFilter[] = $state(filterStore.currentData);
+  let locationFiltersToSearch: ActiveFilter[] = $state(locationFilterStore.currentData);
+  let searchResults: Map<string, ArchiveSearchResult[]> = $state(new Map());
 
-  let loadingDone = false;
+  let loadingDone = $state(false);
 
   //loading quickfix for css to load
-  let loading = true;
+  let loading = $state(true);
 
   onMount(() => {
     setTimeout(() => {
@@ -57,7 +57,7 @@
     }, 1000)
   });
 
-  $: uuidFilterSelected = filtersToSearch.length && !!filtersToSearch?.find(f => f.key === 'uuid');
+  let uuidFilterSelected = $derived(filtersToSearch.length && !!filtersToSearch?.find(f => f.key === 'uuid'));
 
   onMount(async () => {
     filterTypes = archiveFilterService.createArchiveFilter();
@@ -118,7 +118,8 @@
                      bind:activeFilters={filtersToSearch}
                      addFilterLabel={$_('add_filter')}
                      selectFilterLabel={$_('filter_types')}>
-        <OscdButton slot="filter-controls" variant="raised" callback={search}
+        <!-- @migration-task: migrate this slot by hand, `filter-controls` is an invalid identifier -->
+  <OscdButton slot="filter-controls" variant="raised" callback={search}
                     disabled="{!locationFiltersToSearch.length}">
           <OscdSearchIcon />
           <Label>{$_('search')}</Label>
@@ -133,9 +134,11 @@
           <!-- result[1] => ArchiveSearchResult[] -->
           <OscdExpansionPanel open="{index === 0}"
                               title="{archiveExplorerLocationStore.getLocationNameByUuid(result[0])}">
-            <span slot="content">
-                <ArchivedResources searchResults="{result[1]}" noResourcesLabel={$_('no_resources_found')} />
-            </span>
+            {#snippet content()}
+                        <span >
+                  <ArchivedResources searchResults="{result[1]}" noResourcesLabel={$_('no_resources_found')} />
+              </span>
+                      {/snippet}
           </OscdExpansionPanel>
           <div class="separator"></div>
         {/each}

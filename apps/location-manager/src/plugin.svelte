@@ -2,8 +2,12 @@
   import * as pckg from '../package.json';
   import App from './App.svelte';
 
-  export let doc: XMLDocument;
-  export let dev = false;
+  interface Props {
+    doc: XMLDocument;
+    dev?: boolean;
+  }
+
+  let { doc, dev = false }: Props = $props();
 </script>
 
 {#if doc || dev}

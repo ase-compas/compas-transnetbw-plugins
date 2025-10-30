@@ -2,9 +2,13 @@
   import * as pckg from '../package.json';
   import App from './App.svelte';
 
-  export let doc: XMLDocument;
-  export let dev = false;
-  export let editCount = 0;
+  interface Props {
+    doc: XMLDocument;
+    dev?: boolean;
+    editCount?: number;
+  }
+
+  let { doc, dev = false, editCount = 0 }: Props = $props();
   console.log("editcount", editCount);
 </script>
 

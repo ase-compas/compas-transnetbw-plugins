@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   // ===== Imports =====
   import {OscdInput, OscdButton, OscdConfirmDialog} from '@oscd-transnet-plugins/oscd-component';
   import { NewLNodeTypeDialog } from '@oscd-transnet-plugins/oscd-template-generator';
@@ -9,29 +11,30 @@
   import { createEventDispatcher } from 'svelte';
   import {
     getLNodeTypeService,
-    ILNodeTypeService,
+    type ILNodeTypeService,
     type Route,
     route,
-    BasicType
+    type BasicType
   } from '@oscd-transnet-plugins/oscd-template-generator';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
-  export let doc: XMLDocument;
+  interface Props {
+    doc: XMLDocument;
+  }
+
+  let { doc }: Props = $props();
 
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
 
   // ===== State =====
-  let nodeSearchTerm = '';
-  let sort: 'id' | 'lnClass' = 'id';
-  let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
-  let items: BasicType[] = [];
+  let nodeSearchTerm = $state('');
+  let sort: 'id' | 'lnClass' = $state('id');
+  let sortDirection: Lowercase<keyof typeof SortValue> = $state('ascending');
+  let items: BasicType[] = $state([]);
   let isLoading = false;
 
-  $: if(doc) {
-    if(lNodeTypeService) loadItems()
-  }
 
   function loadItems() {
     lNodeTypeService.getAllTypes().then(data => {
@@ -41,16 +44,7 @@
 
   // ===== Derived Values =====
 
-  let filteredAndSortedItems: BasicType[] = [];
-  $: filteredAndSortedItems = items
-    .filter(node => node.id.toLowerCase().includes(nodeSearchTerm.toLowerCase()))
-    .sort((a, b) => {
-      const aVal = a[sort];
-      const bVal = b[sort];
-      return sortDirection === 'ascending'
-        ? (aVal > bVal ? 1 : -1)
-        : (aVal < bVal ? 1 : -1);
-    });
+  let filteredAndSortedItems: BasicType[] = $state([]);
 
   // ===== Handlers =====
   const handleDuplicate = (lNodeTypeId: string) => {
@@ -102,6 +96,22 @@
       }
     } as Route)
   }
+  run(() => {
+    if(doc) {
+      if(lNodeTypeService) loadItems()
+    }
+  });
+  run(() => {
+    filteredAndSortedItems = items
+      .filter(node => node.id.toLowerCase().includes(nodeSearchTerm.toLowerCase()))
+      .sort((a, b) => {
+        const aVal = a[sort];
+        const bVal = b[sort];
+        return sortDirection === 'ascending'
+          ? (aVal > bVal ? 1 : -1)
+          : (aVal < bVal ? 1 : -1);
+      });
+  });
 </script>
 
 <div class="logical-nodes-overview">

@@ -1,8 +1,10 @@
+<!-- @migration-task Error while migrating Svelte code: Declaration cannot be empty
+https://svelte.dev/e/css_empty_declaration -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import TColumnHeaderLayout from './columnHeader/TColumnHeaderLayout.svelte';
   import TCardList from './TCardList.svelte';
-  import { TBoardItemContext, TItem } from './types';
+  import type { TBoardItemContext, TItem } from './types';
   import TColumnSearchHeader from './columnHeader/TColumnSearchHeader.svelte';
   import TColumnActionHeader from './columnHeader/TColumnActionHeader.svelte';
 
@@ -125,6 +127,6 @@
   }
 
   .oscd-tcolumn.drag-border {
-    outline: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);;
+    outline: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);
   }
 </style>

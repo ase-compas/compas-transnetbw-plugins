@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { onMount } from 'svelte';
 
   // ===== Components =====
@@ -7,7 +9,7 @@
   // ===== Services & Utils =====
   import { getColumns } from './columns.config';
   import { createObjectReferenceStore, doc } from '../../../stores';
-  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
@@ -23,7 +25,8 @@
 
   // ===== Types =====
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TItem } from '../../tboard/types';
-  import { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, DataTypeKind, Mode } from '../../../domain';
+  import { DataTypeKind } from '../../../domain';
+  import type { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, Mode } from '../../../domain';
   import type { IDaTypeService } from '../../../services/da-type.service';
   import { getDATypeService } from '../../../services';
   import TypeHeader from '../../TypeHeader.svelte';
@@ -32,10 +35,15 @@
   // ===== Services =====
   const daTypeService: IDaTypeService = getDATypeService();
 
-  // ===== Props =====
-  export let mode: 'view' | 'edit' | 'create' = 'view';
-  export let typeId: string;
-  export let instanceType: string | null = null;
+  
+  interface Props {
+    // ===== Props =====
+    mode?: 'view' | 'edit' | 'create';
+    typeId: string;
+    instanceType?: string | null;
+  }
+
+  let { mode = $bindable('view'), typeId, instanceType = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
   const refStore = createObjectReferenceStore(async () => dataAttributeTypes.children);
@@ -49,26 +57,17 @@
   const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
-  let dataAttributeTypes: DATypeDetails | null = null;
-  let dataTypes: BasicTypes = {
+  let dataAttributeTypes: DATypeDetails | null = $state(null);
+  let dataTypes: BasicTypes = $state({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
     enumTypes: [],
-  };
+  });
 
-  let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, editorStore.getCanEdit(), acceptDrop);
+  let referenceDataObjects: TItem[] = $state([]);
 
-  $: boardData = {
-    refs: referenceDataObjects,
-    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
-    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
-    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
-  };
 
-  $: columns = getColumns($canEdit);
-  $: $isDirty ? editorStore.makeDirty() : editorStore.makeClean();
 
 
   // ===== Lifecycle =====
@@ -111,10 +110,6 @@
     await refStore.reload();
   }
 
-  $: if (dataAttributeTypes) {
-    loadTypes(editorStore.getCanEdit(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
-      .then(types => dataTypes = types);
-  }
 
   async function loadDAType(isCreateMode: boolean, typeId: string, instanceType: string | null) {
     if (isCreateMode) {
@@ -188,6 +183,25 @@
     editorStore.switchMode(newMode);
     loadData();
   }
+  run(() => {
+    referenceDataObjects = getDisplayReferenceItems($refStore, editorStore.getCanEdit(), acceptDrop);
+  });
+  run(() => {
+    if (dataAttributeTypes) {
+      loadTypes(editorStore.getCanEdit(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
+        .then(types => dataTypes = types);
+    }
+  });
+  let boardData = $derived({
+    refs: referenceDataObjects,
+    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
+    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
+  });
+  let columns = $derived(getColumns($canEdit));
+  run(() => {
+    $isDirty ? editorStore.makeDirty() : editorStore.makeClean();
+  });
 </script>
 
 <TypeHeader

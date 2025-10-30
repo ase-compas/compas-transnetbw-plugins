@@ -10,18 +10,35 @@
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   // ===== Parameters =====
-  /** Tooltip text to display on hover */
-  export let tooltip: string;
-  /** Side of the tooltip */
-  export let tooltipSide: 'top' | 'bottom' | 'left' | 'right' = 'top';
-  /** Type of action button */
-  export let type: 'delete' | 'duplicate' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'close';
-  /** Delay in ms before showing the tooltip */
-  export let showDelay = 1000;
-  /** Fill color for the icon SVG */
-  export let fillColor: string = 'var(--mdc-theme-primary)';
-  /** Click event handler for the button */
-  export let onClick: (e: MouseEvent) => void;
+  
+  
+  
+  
+  
+  
+  interface Props {
+    /** Tooltip text to display on hover */
+    tooltip: string;
+    /** Side of the tooltip */
+    tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
+    /** Type of action button */
+    type: 'delete' | 'duplicate' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'close';
+    /** Delay in ms before showing the tooltip */
+    showDelay?: number;
+    /** Fill color for the icon SVG */
+    fillColor?: string;
+    /** Click event handler for the button */
+    onClick: (e: MouseEvent) => void;
+  }
+
+  let {
+    tooltip,
+    tooltipSide = 'top',
+    type,
+    showDelay = 1000,
+    fillColor = 'var(--mdc-theme-primary)',
+    onClick
+  }: Props = $props();
 
 </script>
  <OscdTooltip content={tooltip} hoverDelay={showDelay} side={tooltipSide}>
@@ -29,7 +46,7 @@
   <button
     aria-label={tooltip}
     class="icon-button"
-    on:click={(e)=> {
+    onclick={(e)=> {
       e.stopPropagation(); // blocks bubbling forward to the row click handler
       onClick?.(e);
     }}

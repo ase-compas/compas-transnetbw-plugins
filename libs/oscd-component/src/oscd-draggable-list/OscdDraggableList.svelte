@@ -16,8 +16,12 @@
     label: string;
   }
 
-  export let canDrag: boolean = true;
-  export let items: ListItem[] = [];
+  interface Props {
+    canDrag?: boolean;
+    items?: ListItem[];
+  }
+
+  let { canDrag = true, items = $bindable([]) }: Props = $props();
 
   const flipDurationMs = 100;
 
@@ -31,8 +35,8 @@
   {#if items.length > 0}
     <ol
     use:dragHandleZone="{{ items, flipDurationMs, dropTargetStyle: {}}}"
-    on:consider={handleSort}
-    on:finalize={e => {
+    onconsider={handleSort}
+    onfinalize={e => {
       handleSort(e);
       dispatch('orderChange', { items });
     }}

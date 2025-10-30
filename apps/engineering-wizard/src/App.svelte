@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
   import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
@@ -7,14 +9,18 @@
   import { DialogHost } from '../../../libs/oscd-services/src/dialog';
   import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
 
-  export let doc: XMLDocument | undefined;
-  export let editCount = -1;
-  export let host: HTMLElement;
+  interface Props {
+    doc: XMLDocument | undefined;
+    editCount?: any;
+    host: HTMLElement;
+  }
 
-  let processes: Process[] = [];
-  let selected: Process | null = null;
-  let loading = true;
-  let errorMsg = '';
+  let { doc, editCount = -1, host }: Props = $props();
+
+  let processes: Process[] = $state([]);
+  let selected: Process | null = $state(null);
+  let loading = $state(true);
+  let errorMsg = $state('');
 
   const SOURCE_URL = new URL('./assets/processes.xml', import.meta.url).href;
   const txt = (el: Element | null | undefined) => el?.textContent?.trim() ?? '';
@@ -87,7 +93,9 @@
     selected = null;
   }
 
-  $: updateDialogProps({ editCount, doc });
+  run(() => {
+    updateDialogProps({ editCount, doc });
+  });
 
   function handleView(e: CustomEvent<Process>) {
     selected = e.detail;

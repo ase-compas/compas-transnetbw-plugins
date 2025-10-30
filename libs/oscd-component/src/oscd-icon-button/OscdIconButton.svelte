@@ -2,9 +2,13 @@
   import IconButton from '@smui/icon-button';
   import { Icon } from '@smui/button';
 
-  export let callback: () => void = () => {};
-  export let icon = '';
-  export let disabled = false;
+  interface Props {
+    callback?: () => void;
+    icon?: string;
+    disabled?: boolean;
+  }
+
+  let { callback = () => {}, icon = '', disabled = false }: Props = $props();
 </script>
 
 <IconButton

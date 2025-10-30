@@ -7,8 +7,12 @@
     enabled?: boolean;
   }
 
-  export let breadcrumbs: Breadcrumb[] = [];
-  export let activeIndex: number = 0;
+  interface Props {
+    breadcrumbs?: Breadcrumb[];
+    activeIndex?: number;
+  }
+
+  let { breadcrumbs = [], activeIndex = 0 }: Props = $props();
 
   const dispatch = createEventDispatcher();
 
@@ -25,7 +29,7 @@
     <div class="breadcrumb-wrapper">
       <span
         class="breadcrumb {crumb.enabled ? '' : 'br-disabled'} {i === activeIndex ? 'br-active' : ''}"
-        on:click={() => handleClick(i)}
+        onclick={() => handleClick(i)}
         aria-current={i === activeIndex ? 'page' : undefined}
       >
         <span class="label">{crumb.label}</span>

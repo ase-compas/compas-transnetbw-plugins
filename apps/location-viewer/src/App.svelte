@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
@@ -9,6 +9,8 @@
   });
 </script>
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import {
     LocationViewerService,
     ResourceStore,
@@ -31,12 +33,12 @@
   import {_, locale} from "svelte-i18n";
 
   const locationViewerService = LocationViewerService.getInstance();
-  let locations: { label: string, value: string }[] = [];
-  let selectedLocationUUID: string;
-  let searchOpen = false;
+  let locations: { label: string, value: string }[] = $state([]);
+  let selectedLocationUUID: string = $state();
+  let searchOpen = $state(false);
 
   //loading quickfix for css to load
-  let loading = true;
+  let loading = $state(true);
 
   onMount(() => {
     setTimeout(() => {
@@ -52,29 +54,9 @@
     })
   })
 
-  export let locationResourceStore = new ResourceStore();
-  export let searchResourceStore = new ResourceStore();
+  let { locationResourceStore = new ResourceStore(), searchResourceStore = new ResourceStore() } = $props();
 
-  $: searchColumnDefs = [
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('location'), field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatLocation },
-    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
-  ];
 
-  $: locationColumnDefs = [
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
-  ];
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
@@ -153,7 +135,7 @@
     { icon: 'add', callback: (row) => assign(row), disabled: () => false },
   ];
 
-  let filtersToSearch: ActiveFilter[] = [];
+  let filtersToSearch: ActiveFilter[] = $state([]);
 
   function assign(row: SclResourceModel) {
     locationViewerService.assignResourceToLocation(selectedLocationUUID, row.uuid).subscribe({
@@ -208,17 +190,38 @@
     searchOpen = !searchOpen;
   }
 
-  $: if (selectedLocationUUID) {
-    locationViewerService.searchResources({}).subscribe({
-      next: (data) => {
-        console.log({data, selectedLocation: selectedLocationUUID});
-        locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
-      },
-      error: (err) => {
-        console.error('Error loading resources:', err);
-      }
-    });
-  }
+  let searchColumnDefs = $derived([
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('location'), field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatLocation },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
+  ]);
+  let locationColumnDefs = $derived([
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
+  ]);
+  run(() => {
+    if (selectedLocationUUID) {
+      locationViewerService.searchResources({}).subscribe({
+        next: (data) => {
+          console.log({data, selectedLocation: selectedLocationUUID});
+          locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
+        },
+        error: (err) => {
+          console.error('Error loading resources:', err);
+        }
+      });
+    }
+  });
 </script>
 
 {#if loading}
@@ -232,29 +235,32 @@
     />
       <div class="search-filter">
       <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
-        <div slot="content">
-          <div class="filter-box">
-            <OscdFilterBox {filterTypes}
-                           addFilterLabel={$_('add_filter')}
-                           selectFilterLabel={$_('filter_types')}
-                           bind:activeFilters={filtersToSearch}
-            >
-              <OscdButton slot="filter-controls" variant="raised" callback={search}>
-                <OscdSearchIcon />
-                <Label>{$_('search')}</Label>
-              </OscdButton>
-            </OscdFilterBox>
+        {#snippet content()}
+                <div >
+            <div class="filter-box">
+              <OscdFilterBox {filterTypes}
+                             addFilterLabel={$_('add_filter')}
+                             selectFilterLabel={$_('filter_types')}
+                             bind:activeFilters={filtersToSearch}
+              >
+                <!-- @migration-task: migrate this slot by hand, `filter-controls` is an invalid identifier -->
+  <OscdButton slot="filter-controls" variant="raised" callback={search}>
+                  <OscdSearchIcon />
+                  <Label>{$_('search')}</Label>
+                </OscdButton>
+              </OscdFilterBox>
+            </div>
+            <div class="table-container">
+              <Card style="padding: 1rem; width: 100%; height: 100%;">
+                <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
+                <OscdDataTable columnDefs="{searchColumnDefs}"
+                               store={searchResourceStore}
+                               rowActions={searchRowActions}
+                               searchInputLabel={$_('search')}/>
+              </Card>
+            </div>
           </div>
-          <div class="table-container">
-            <Card style="padding: 1rem; width: 100%; height: 100%;">
-              <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
-              <OscdDataTable columnDefs="{searchColumnDefs}"
-                             store={searchResourceStore}
-                             rowActions={searchRowActions}
-                             searchInputLabel={$_('search')}/>
-            </Card>
-          </div>
-        </div>
+              {/snippet}
       </OscdExpansionPanel>
     </div>
     <div class="table-container">

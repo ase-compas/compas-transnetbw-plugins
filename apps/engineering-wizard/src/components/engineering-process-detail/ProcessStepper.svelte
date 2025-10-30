@@ -9,8 +9,12 @@
     { id: 'validator-configuration', label: 'Validator Configuration' },
   ];
 
-  export let currentId: string | null = null;
-  export let visited: string[] = [];
+  interface Props {
+    currentId?: string | null;
+    visited?: string[];
+  }
+
+  let { currentId = null, visited = [] }: Props = $props();
 
   const onSelect = (e: CustomEvent<string>) => dispatch('select', e.detail);
 </script>
