@@ -5,7 +5,7 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig(async () => {
   const { svelte } = await import('@sveltejs/vite-plugin-svelte');
-  
+
   return {
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/template-generator',
@@ -63,8 +63,10 @@ export default defineConfig(async () => {
     },
   },
 
+  // Vite 5.1+: optimizeDeps.disabled removed. Disable discovery explicitly if needed.
   optimizeDeps: {
-    disabled: true
+    noDiscovery: true,
+    include: [],
   },
 
   test: {
