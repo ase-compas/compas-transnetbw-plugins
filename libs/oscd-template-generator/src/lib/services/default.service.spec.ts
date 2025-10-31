@@ -38,28 +38,30 @@ function defaultServiceTests(createService: () => IDefaultService) {
       ]
     };
 
-    it('stores and retrieves a default', () => {
-      service.setDefault(defaultConfig);
-      const retrieved = service.getDefault({ kind: DataTypeKind.DOType, instanceType: 'SPS' });
+    it('stores and retrieves a default', async () => {
+      await service.setDefault(defaultConfig);
+      const retrieved = await service.getDefault({ kind: DataTypeKind.DOType, instanceType: 'SPS' });
       expect(retrieved).toBeDefined();
       expect(retrieved?.rootType.id).toBe('DO1');
     });
 
-    it('clears a default', () => {
-      service.setDefault(defaultConfig);
-      service.clearDefault({ kind: DataTypeKind.DOType, instanceType: 'SPS' });
-      const retrieved = service.getDefault({ kind: DataTypeKind.DOType, instanceType: 'SPS' });
+    it('clears a default', async () => {
+      await service.setDefault(defaultConfig);
+      await service.clearDefault({ kind: DataTypeKind.DOType, instanceType: 'SPS' });
+      const retrieved = await service.getDefault({ kind: DataTypeKind.DOType, instanceType: 'SPS' });
       expect(retrieved).toBeUndefined();
     });
 
-    it('throws if rootType missing required attributes', () => {
+    it('throws if rootType missing required attributes', async () => {
       const invalid = { ...defaultConfig, rootType: { ...defaultConfig.rootType, id: '' } };
-      expect(() => service.setDefault(invalid)).toThrow();
+      await expect(service.setDefault(invalid))
+        .rejects
+        .toThrow('rootType must have id, kind, and instanceType defined.');
     });
 
-    it('throws if typeRef does not exist', () => {
+    it('throws if typeRef does not exist', async () => {
       const invalid = { ...defaultConfig, rootType: { ...defaultConfig.rootType, children: [{ name: 'bad', typeRef: 'X' }] } };
-      expect(() => service.setDefault(invalid)).toThrow();
+      await expect(service.setDefault(invalid)).rejects.toThrow('Child "bad" references unknown typeRef "X".');
     });
   });
 }

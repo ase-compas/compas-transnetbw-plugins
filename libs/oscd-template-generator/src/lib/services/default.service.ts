@@ -66,7 +66,7 @@ export class InMemoryDefaultService implements IDefaultService {
    * Sets or updates a default configuration.
    * Validates required attributes and references.
    */
-  setDefault(config: DefaultConfig): Promise<DefaultConfig> {
+  async setDefault(config: DefaultConfig): Promise<DefaultConfig> {
     const keyStr = this.makeKey(config.key);
 
     // Validate rootType
@@ -108,15 +108,15 @@ export class InMemoryDefaultService implements IDefaultService {
     return Promise.resolve(configWithVersion);
   }
 
-  getDefault(key: DefaultKey): Promise<DefaultConfig | undefined> {
+  async getDefault(key: DefaultKey): Promise<DefaultConfig | undefined> {
     return Promise.resolve(this.defaults.get(this.makeKey(key)));
   }
 
-  getAllDefaults(): Promise<DefaultConfig[]> {
+  async getAllDefaults(): Promise<DefaultConfig[]> {
     return Promise.resolve(Array.from(this.defaults.values()));
   }
 
-  clearDefault(key: DefaultKey): Promise<boolean> {
+  async clearDefault(key: DefaultKey): Promise<boolean> {
     return Promise.resolve(this.defaults.delete(this.makeKey(key)));
   }
 }
@@ -161,23 +161,23 @@ export class LocalStorageDefaultService implements IDefaultService {
     }
   }
 
-  setDefault(config: DefaultConfig): Promise<DefaultConfig> {
-    const promise = this.cache.setDefault(config);  // validate and store in cache
-    this.saveToStorage();           // persist updated cache
+  async setDefault(config: DefaultConfig): Promise<DefaultConfig> {
+    const promise = await this.cache.setDefault(config);  // validate and store in cache
+    await this.saveToStorage();           // persist updated cache
     return promise;
   }
 
-  getDefault(key: DefaultKey): Promise<DefaultConfig | undefined> {
+  async getDefault(key: DefaultKey): Promise<DefaultConfig | undefined> {
     return this.cache.getDefault(key);
   }
 
-  getAllDefaults(): Promise<DefaultConfig[]> {
+  async getAllDefaults(): Promise<DefaultConfig[]> {
     return this.cache.getAllDefaults();
   }
 
-  clearDefault(key: DefaultKey): Promise<boolean> {
-    const promise = this.cache.clearDefault(key);
-    this.saveToStorage();
+  async clearDefault(key: DefaultKey): Promise<boolean> {
+    const promise = await this.cache.clearDefault(key);
+    await this.saveToStorage();
     return promise;
   }
 }
