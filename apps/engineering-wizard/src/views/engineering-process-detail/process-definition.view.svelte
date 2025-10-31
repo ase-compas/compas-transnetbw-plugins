@@ -4,9 +4,10 @@
   import ProcessExternalPluginList from '../../components/engineering-process-detail/ProcessExternalPluginList.svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
   import { loadEditorPluginNamesFromLocalStorage, type LocalStoredPlugin } from '../../services/plugin.service';
-  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
+  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
 
   export let pluginGroups: PluginGroup[] = [];
+  export let selectedProcess: Process;
 
   let localStoredPlugins: LocalStoredPlugin[] = [];
   let searchTerm: string = '';
@@ -34,7 +35,7 @@
       <p>SELECT OR DRAG & DROP PLUGINS</p>
     </div>
 
-    <ProcessExternalPluginList plugins={filteredPlugins} bind:searchTerm />
+    <ProcessExternalPluginList plugins={filteredPlugins} {selectedProcess} bind:searchTerm />
   {/if}
 </div>
 

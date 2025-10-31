@@ -119,7 +119,7 @@
         <div class="header">
           <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
         </div>
-        <ProcessDefinition {pluginGroups} />
+        <ProcessDefinition {pluginGroups} {selectedProcess} />
       {:else if currentStepId === 'validator-configuration'}
         <div class="header">
           <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />

@@ -1,15 +1,33 @@
 <script lang="ts">
   import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
+  import type { Process, Plugin } from '@oscd-transnet-plugins/shared';
 
   export let plugins: LocalStoredPlugin[];
   export let searchTerm: string = '';
+  export let selectedProcess: Process;
 
   import { OscdListItem, OscdPanel, OscdInput } from '../../../../../libs/oscd-component/src';
   import type { LocalStoredPlugin } from '../../services/plugin.service';
+  import { addPluginToProcessStore } from '../../services/engineering-process.service';
+  import { onMount } from 'svelte';
 
-  function addPluginToProcess(plugin: LocalStoredPlugin) {
-    // Placeholder function for adding a plugin
-    console.log('Add plugin clicked', plugin);
+  onMount(() => {
+    console.log('plugins in ProcessExternalPluginList:', plugins);
+    console.log('selectedProcess in ProcessExternalPluginList:', selectedProcess);
+  })
+
+  function addPluginToProcess(localPlugin: LocalStoredPlugin, processId: string) {
+    const plugin = localStoredPluginToPlugin(localPlugin);
+    addPluginToProcessStore(processId, plugin);
+    console.log('Add plugin clicked', localPlugin);
+  }
+
+  function localStoredPluginToPlugin(localPlugin: LocalStoredPlugin): Plugin {
+    return {
+      id: 'test',
+      name: localPlugin.name,
+      sourceUrl: localPlugin.sourceUrl,
+    };
   }
 </script>
 
@@ -32,7 +50,7 @@
           <p class="plugin-name">{plugin.name}</p>
           <button
             class="plugin-add-btn"
-            on:click={() => addPluginToProcess(plugin)}>
+            on:click={() => addPluginToProcess(plugin, selectedProcess.id)}>
             <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
           </button>
         </div>

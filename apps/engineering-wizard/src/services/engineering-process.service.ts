@@ -13,6 +13,26 @@ export const processesErrorStore   = writable<string>('');
 export const processesStore        = writable<Process[]>([]);
 
 const SOURCE_URL = processesUrl;
+const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
+
+if (typeof localStorage !== 'undefined') {
+  const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed: Process[] = JSON.parse(saved);
+      if (Array.isArray(parsed)) processesStore.set(parsed);
+    } catch (_) {/* ignore corrupt data */}
+  }
+}
+
+if (typeof localStorage !== 'undefined') {
+  processesStore.subscribe((value) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(value));
+    } catch (_) {
+    }
+  });
+}
 
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
 const $all = (root: ParentNode, selector: string) => Array.from(root.querySelectorAll(selector));
@@ -73,6 +93,24 @@ export async function getProcesses(): Promise<Process[]> {
   }
 }
 
-export async function addProcess(proc: Process, group: PluginGroup): Promise<void> {
+export function setProcesses(processes: Process[]): void {
+  processesStore.set(processes);
+}
 
+export function updateProcesses(updater: (current: Process[]) => Process[]): void {
+  processesStore.update((curr) => updater(curr));
+}
+
+export function addProcess(proc: Process): void {
+  processesStore.update((curr) => [...curr, proc]);
+}
+
+export function addPluginToProcessStore(procId: string, plugin: Plugin): void {
+  processesStore.update((curr) =>
+    curr.map((p) =>
+      p.id === procId
+        ? { ...p, plugins: [...(p.plugins ?? []), plugin] }
+        : p
+    )
+  );
 }
