@@ -6,6 +6,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { DialogHost } from '../../../libs/oscd-services/src/dialog';
   import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
+  import 'svelte-material-ui/bare.css';
 
   interface Props {
     doc: XMLDocument | undefined;
