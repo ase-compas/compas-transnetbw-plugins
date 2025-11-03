@@ -51,7 +51,7 @@ const SCL = `
     <DAType id="da1">
       <BDA name="orCat" type="enum2" bType="Enum"/>
       <BDA name="orIdent" bType="Octet64"/>
-      <Private type="be-template-generator:instanceType">Originator</Private>
+      <Private type="compas:instanceType">Originator</Private>
     </DAType>
     <EnumType id="enum1">
       <EnumVal ord="0">status-only</EnumVal>
@@ -59,7 +59,7 @@ const SCL = `
       <EnumVal ord="2">sbo-with-normal-security</EnumVal>
       <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
       <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
-      <Private type="be-template-generator:instanceType">CtlModelKind</Private>
+      <Private type="compas:instanceType">CtlModelKind</Private>
     </EnumType>
     <EnumType id="enum2">
       <EnumVal ord="0">not-supported</EnumVal>
@@ -71,7 +71,7 @@ const SCL = `
       <EnumVal ord="6">automatic-remote</EnumVal>
       <EnumVal ord="7">maintenance</EnumVal>
       <EnumVal ord="8">process</EnumVal>
-      <Private type="be-template-generator:instanceType">OriginatorCategoryKind</Private>
+      <Private type="compas:instanceType">OriginatorCategoryKind</Private>
     </EnumType>
   </DataTypeTemplates>
 </SCL>
@@ -130,7 +130,7 @@ describe('DataTypeRepository', () => {
        *  <DAType id="da1">
        *       <BDA name="orCat" type="enum2" bType="Enum"/>
        *       <BDA name="orIdent" bType="Octet64"/>
-       *       <Private type="be-template-generator:instanceType">Originator</Private>
+       *       <Private type="compas:instanceType">Originator</Private>
        *     </DAType>
        */
       const daType = repo.findDataTypeById(DataTypeKind.DAType, 'da1');

@@ -1,19 +1,22 @@
 <script lang="ts">
   // ===== Imports =====
-  import {OscdInput, OscdButton, OscdConfirmDialog} from '@oscd-transnet-plugins/oscd-component';
-  import { NewLNodeTypeDialog } from '@oscd-transnet-plugins/oscd-template-generator';
-  import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
+  import { OscdButton, OscdConfirmDialog, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    type BasicType,
+    DataTypeKind,
+    getDataTypeService,
+    getLNodeTypeService,
+    type IDataTypeService,
+    type ILNodeTypeService,
+    LogicalNodeTypeRow,
+    NewLNodeTypeDialog,
+    type Route,
+    route
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import DataTable, { Body, Cell, Head, Label, Row, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import { LogicalNodeTypeRow} from '@oscd-transnet-plugins/oscd-template-generator';
   import { createEventDispatcher } from 'svelte';
-  import {
-    getLNodeTypeService,
-    type ILNodeTypeService,
-    type Route,
-    route,
-    type BasicType
-  } from '@oscd-transnet-plugins/oscd-template-generator';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   interface Props {
@@ -25,6 +28,7 @@
   // ===== Store and Service Instances =====
   const dispatch = createEventDispatcher();
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== State =====
   let nodeSearchTerm = $state('');
@@ -83,22 +87,33 @@
     });
   }
 
-  function handleDialogCreate({id, lnClass}) {
-    route.set({
-      path: ['create'],
-      meta: {
-        lNodeTypeId: id,
-        lnClass: lnClass
+  async function handleDialogCreate({id, lnClass, createFromDefault}) {
+    if(createFromDefault) {
+      try {
+        await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
+        setTimeout(() => {
+          route.set({
+            path: ['edit'],
+            meta: {
+              lNodeTypeId: id,
+              lnClass: lnClass
+            }
+          } as Route)
+        }, 50);
+      } catch (e) {
+        console.error(`Error creating LNodeType from default: ${e}`);
       }
-    } as Route)
+      return;
+    }
   }
+
   $effect(() => {
     if (doc && lNodeTypeService) {
       loadItems();
     }
   });
 
-  let filteredAndSortedItems = $derived(() => {
+  let filteredAndSortedItems = $derived.by(() => {
     const searchTerm = nodeSearchTerm.toLowerCase();
     return items
       .filter((node) => node.id.toLowerCase().includes(searchTerm))
@@ -113,6 +128,7 @@
 </script>
 
 <div class="logical-nodes-overview">
+  <OscdButton callback={() => route.set({path: ["defaults"]})}>Default Types</OscdButton>
 
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">

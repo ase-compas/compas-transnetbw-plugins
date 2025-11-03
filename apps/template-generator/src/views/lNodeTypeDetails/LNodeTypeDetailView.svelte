@@ -1,38 +1,54 @@
 <script lang="ts">
-  import { createObjectReferenceStore, route, doc as docStore} from '@oscd-transnet-plugins/oscd-template-generator';
-  import { OscdBreadcrumbs, OscdButton, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
-
+  // Types
   // Components
-  import  { TBoard } from '@oscd-transnet-plugins/oscd-template-generator';
-
   // Services & utils
-  import { getLNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
-  import type { ILNodeTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
+  import {
+    type BasicType,
+    type BasicTypes,
+    canAssignTypeToObjectReference,
+    createEditorStore,
+    createObjectReferenceStore,
+    DataTypeKind,
+    doc as docStore, getAlertService,
+    getDataTypeService,
+    getDefaultTypeService,
+    getDisplayDataTypeItems,
+    getDisplayReferenceItems,
+    getLNodeTypeService,
+    type IDataTypeService,
+    type IDefaultService,
+    type ILNodeTypeService,
+    type LNodeTypeDetails,
+    type Mode,
+    type  ObjectReferenceDetails,
+    openCreateDataAttributeTypeDialog,
+    openCreateDataObjectTypeDialog,
+    openCreateEnumTypeDialog,
+    openDataAttributeTypeDrawer,
+    openDataEnumTypeDrawer,
+    openDataObjectTypeDrawer,
+    openReferencedTypeDrawer,
+    route,
+    SetDefaultButton,
+    setTypeAsDefaultWithConfirmation,
+    setTypeAsDefaultWithConfirmationForBasicType,
+    TBoard,
+    type TBoardItemContext,
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { loadLNodeType, loadTypes } from './dataLoader';
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
-  import {
-    canAssignTypeToObjectReference,
-    getDisplayDataTypeItems,
-    getDisplayReferenceItems
-  } from '@oscd-transnet-plugins/oscd-template-generator';
-
-  // Types
-  import type { TBoardItemContext, TItem } from '@oscd-transnet-plugins/oscd-template-generator';
-  import type { BasicType, BasicTypes, LNodeTypeDetails, Mode, ObjectReferenceDetails } from '@oscd-transnet-plugins/oscd-template-generator';
-  import {
-    openCreateDataAttributeTypeDialog, openCreateDataObjectTypeDialog, openCreateEnumTypeDialog,
-    openDataAttributeTypeDrawer, openDataEnumTypeDrawer,
-    openDataObjectTypeDrawer,
-    openReferencedTypeDrawer
-  } from '@oscd-transnet-plugins/oscd-template-generator';
-  import { createEditorStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
+  import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
 
   // -----------------------------
   // Service instances
   // -----------------------------
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService()
+  const defaultTypeService: IDefaultService = getDefaultTypeService();
+  const alertService: OscdAlertService = getAlertService();
 
   // -----------------------------
   // Stores
@@ -46,8 +62,9 @@
   // -----------------------------
   // Component state
   // -----------------------------
-  let lNodeTypeId: string;
-  let lnClass: string;
+  let created = $state(false);
+  let lNodeTypeId: string = $state('');
+  let lnClass: string = $state('');
   let logicalNodeType: LNodeTypeDetails | null = $state(null);
   let dataTypes: BasicTypes = $state({
     lNodeTypes: [],
@@ -79,19 +96,24 @@
 
   function setModeFromPath() {
     const mode: Mode = $route?.path[0] === 'create' ? 'create' : ($route?.path[0] === 'edit' ? 'edit' : 'view');
+    created = mode !== 'create';
     editorStore.switchMode(mode);
   }
 
 
 
-  // Reference data objects (filtered, mapped, sorted)
   // -----------------------------
   // Loaders
   // -----------------------------
   async function loadLogicalNodeType(lNodeTypeId: string, lnClass?: string) {
+    lNodeTypeId = lNodeTypeId;
+    lnClass = lnClass;
+    if ($mode === "create") {
+      lNodeTypeService.createOrUpdateType({id: lNodeTypeId, instanceType: lnClass, children: []})
+      editorStore.switchMode("edit")
+      return;
+    }
     logicalNodeType = await loadLNodeType($mode, lNodeTypeId, lnClass);
-    lNodeTypeId = logicalNodeType.id;
-    lnClass = logicalNodeType.lnClass;
     await refStore.reload();
   }
 
@@ -157,6 +179,27 @@
     }
   }
 
+  async function handleOnSetAsDefault(itemId: string, columnId: string) {
+    let types: BasicType[];
+    if (columnId === 'doTypes') {
+      types = dataTypes.dataObjectTypes;
+    } else if (columnId === 'daTypes') {
+      types = dataTypes.dataAttributeTypes;
+    } else if (columnId === 'enumTypes') {
+      types = dataTypes.enumTypes;
+    } else {
+      return;
+    }
+    const type = types.find(t => t.id === itemId);
+    if(!type) return;
+    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+  }
+
+  async function handleClickOnSetAsDefault() {
+    if(!logicalNodeType) return;
+    await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+  }
+
   async function handleBreadcrumbClick({ index }) {
     const ok = await editorStore.confirmLeave();
     if(!ok) return;
@@ -178,6 +221,16 @@
     openReferencedTypeDrawer(ref, 'view')
   }
 
+  async function handleApplyDefaults(detail) {
+    const { itemId } = detail;
+    try {
+      const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
+      refStore.setTypeReference(itemId, defaultRootId);
+    } catch (e: any) {
+      alertService.error(e.message);
+    }
+    // Set the reference to the newly created to reflect the change in the UI
+  }
 
   // -----------------------------
   // Utils
@@ -186,10 +239,12 @@
     const sourceType: BasicType = dataTypes.dataObjectTypes.find(type => type.id === source.itemId);
     return canAssignTypeToObjectReference(target, sourceType)
   }
+
   $effect(() => {
     if ($refStoreIsDirty) editorStore.makeDirty();
     else editorStore.makeClean();
   });
+
   // Breadcrumbs
   let breadcrumbs = $derived(createBreadcrumbs($mode === 'create', logicalNodeType));
   let referenceDataObjects = $derived(
@@ -202,7 +257,9 @@
     daTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   });
+
   let columns = $derived(getColumns($canEdit)); // Board column configuration
+
   $effect(() => {
     if (logicalNodeType) loadDataTypes($markedItems);
   }); // load dataTypes when logicalNodeType or markedItems change
@@ -214,6 +271,14 @@
     <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={e => handleBreadcrumbClick(e.detail)} />
 
     <div class="oscd-details-toolbar-right">
+
+      {#if $dirty}
+        <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
+          <SetDefaultButton on:click={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
+        </OscdTooltip>
+      {:else}
+        <SetDefaultButton on:click={() => handleClickOnSetAsDefault()} />
+      {/if}
 
       <OscdSwitch
         bind:checked={$isEditModeSwitchState}
@@ -241,9 +306,10 @@
       on:itemMarkChange={({detail: {itemId}}) => handleToggleMark(itemId)}
       on:itemSelectChange={e => handleToggleSelect(e.detail)}
       on:itemDrop={e => handleItemDrop(e.detail)}
-      on:itemApplyDefaults={e => console.log(e.detail)}
+      on:itemApplyDefaults={e => handleApplyDefaults(e.detail)}
       on:itemUnlink={e => handleOnUnlink(e.detail)}
       on:itemReferenceClick={e => handleOnReferenceClick(e.detail)}
+      on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
     />
   </div>
 </div>

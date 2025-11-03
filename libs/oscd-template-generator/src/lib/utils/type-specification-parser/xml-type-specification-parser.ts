@@ -180,7 +180,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
     const type = dataAttribute.getAttribute('type');
     const presCond = dataAttribute.getAttribute('presCond');
     const typeKind = dataAttribute.getAttribute('typeKind');
-    if (!name || !type || !presCond) return null;
+    if (!name || !presCond) return null;
 
     // Collect additional attributes
     const attributes: Record<string, string> = {};
@@ -190,7 +190,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
 
     // Determine reference type and base type
     let refTypeKind: DataTypeKind | undefined = undefined;
-    let bType = type;
+    let bType = type ? type : undefined;
     let requiresReference = false;
     if (typeKind === 'ENUMERATED') {
       refTypeKind = DataTypeKind.EnumType;

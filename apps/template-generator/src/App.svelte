@@ -6,6 +6,11 @@
   import { initServices } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
+  import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
   interface Props {
     doc?: XMLDocument | null;
@@ -56,23 +61,23 @@
     <input type="file" accept=".ssd" onchange={handleFileChange} />
     <p>Please load an XML file to start.</p>
   {:else}
+    {#if $storeDoc}
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
         <LNodeTypesView {doc}/>
+      {:else if $route.path[0] === 'defaults'}
+        <DefaultTypeView/>
       {:else}
-        <LNodeTypeDetailView {doc}/>
+        <LNodeTypeDetailView/>
       {/if}
     </div>
+    {/if}
   {/if}
 </div>
 <DialogHost/>
 <DrawerStack/>
 
 <style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-
   .template-generator-container {
     padding: 1rem 2rem;
   }

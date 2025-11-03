@@ -1,9 +1,10 @@
 <script lang="ts">
   import { DataTypeKind } from '../domain';
-  import { OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openSelectInstanceTypeDialog } from '../utils/overlayUitils';
   import { createEventDispatcher } from 'svelte';
+  import { SetDefaultButton } from '@oscd-transnet-plugins/oscd-template-generator';
 
   const dispatch = createEventDispatcher();
 
@@ -13,13 +14,17 @@
     typeId: string;
     instanceType?: string | null;
     isEditMode?: boolean;
+    showSetAsDefault?: boolean;
+    setAsDefaultDisabled?: boolean;
   }
 
   let {
     type,
     typeId,
     instanceType = null,
-    isEditMode = $bindable(false)
+    isEditMode = $bindable(false),
+    showSetAsDefault = true,
+    setAsDefaultDisabled = false
   }: Props = $props();
 
   const handleChange = (checked) => dispatch('modeChange', checked ? 'edit' : 'view');
@@ -82,6 +87,15 @@
   <!-- Right side: actions -->
   <div class="actions-section">
     {#if instanceType}
+      {#if showSetAsDefault}
+        {#if setAsDefaultDisabled}
+          <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
+            <SetDefaultButton on:click={() => dispatch('clickDefault')} disabled={setAsDefaultDisabled}/>
+          </OscdTooltip>
+        {:else}
+          <SetDefaultButton on:click={() => dispatch('clickDefault')} />
+        {/if}
+      {/if}
     <OscdSwitch
       bind:checked={isEditMode}
       on:change={e => handleChange(e.detail)}
@@ -178,6 +192,12 @@
   .actions-section {
     display: flex;
     gap: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.mdc-button) {
+    margin-bottom: 0;
   }
 
 </style>

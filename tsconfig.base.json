@@ -56,6 +56,9 @@
       "@oscd-transnet-plugins/oscd-services/drawer": [
         "libs/oscd-services/src/drawer/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-services/alert": [
+        "libs/oscd-services/src/alert/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-template-generator": [
         "libs/oscd-template-generator/src/index.ts"
       ],

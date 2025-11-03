@@ -40,7 +40,7 @@
     "svelte-dnd-action": "^0.9.64",
     "svelte-i18n": "^4.0.1",
     "svelte-loader": "^3.2.3",
-    "svelte-material-ui": "^8.0.0",
+    "svelte-material-ui": "^8.0.3",
     "tslib": "^2.3.0",
     "uuid": "^11.1.0"
   },

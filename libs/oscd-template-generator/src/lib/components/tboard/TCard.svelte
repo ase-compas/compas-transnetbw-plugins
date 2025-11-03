@@ -6,12 +6,6 @@
 
   const dispatch = createEventDispatcher();
 
-
-
-
-
-
-
   interface Props {
     title: string;
     subtitle?: string | null;
@@ -23,6 +17,7 @@
     canClick?: boolean;
     canUnlink?: boolean;
     canClickReference?: boolean;
+    canSetDefault: boolean;
     selectionEnabled?: boolean;
     selected?: boolean;
     isMandatory?: boolean;
@@ -46,6 +41,7 @@
     canClick = false,
     canUnlink = true,
     canClickReference = true,
+    canSetDefault = false,
     selectionEnabled = false,
     selected = false,
     isMandatory = false,
@@ -68,8 +64,6 @@
     return 'default'
   }
 
-
-
   // ==== Event Handlers ====
   function handleOnClick() { if (canClick) dispatch('click'); }
   function toggleMark() { if(canMark) dispatch('marked', !marked); }
@@ -77,6 +71,7 @@
   function handleOnApplyDefaults() { if (canApplyDefaults) dispatch('applyDefaults'); }
   function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
   function handleOnReferenceClick() { if (canClickReference) dispatch('referenceClick'); }
+  function handleOnSetDefault() { if (canSetDefault) dispatch('setDefault'); }
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
   let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
@@ -124,6 +119,14 @@
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
+            fillColor={onPrimaryColor}
+          />
+        {/if}
+        {#if canSetDefault}
+          <OscdIconActionButton
+            type="star"
+            tooltip="Set as Default"
+            onClick={handleOnSetDefault}
             fillColor={onPrimaryColor}
           />
         {/if}
@@ -228,7 +231,7 @@
   .oscd-card-item.selected .oscd-references,
   .oscd-card-item.mandatory .oscd-card-title,
   .oscd-card-item.mandatory .oscd-card-subtitle,
-  .oscd-card-item.mandatory .oscd-references {
+  .oscd-card-item.mandatory .oscd-card-references {
     color: white;
   }
 

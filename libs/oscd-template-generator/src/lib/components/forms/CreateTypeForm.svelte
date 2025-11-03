@@ -2,7 +2,8 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import TextField from "@smui/textfield";
   import Autocomplete from "@smui-extra/autocomplete";
-  import { tick } from 'svelte';
+  import Checkbox from '@smui/checkbox';
+  import FormField from '@smui/form-field';
 
   // --- Types ---
   export interface Option {
@@ -24,6 +25,15 @@
     id?: string;
     selectedItem?: Option | null;
     valid?: boolean;
+
+    // create form default
+    createFromDefault?: boolean;
+    defaultAvailable?: boolean;
+    showCreateFromDefault?: boolean;
+    checkDefaultAvailable: (instanceType: string) => Promise<boolean>;
+
+
+    // auto complete options
     idLabel?: string;
     autocompleteLabel?: string;
     getOptions?: () => Promise<any[]>;
@@ -39,7 +49,12 @@
     autocompleteLabel = "Select",
     getOptions = async () => [],
     mapOption = (data) => data,
-    isIdTakenFn = async (id: string) => false
+    isIdTakenFn = async (id: string) => false,
+
+    createFromDefault = false,
+    defaultAvailable = false,
+    showCreateFromDefault = false,
+    checkDefaultAvailable = async () => false
   }: Props = $props();
 
 
@@ -81,9 +96,6 @@
     isFormValid = isIdValid && !isIdTaken && id && selectedItem !== null;
   }
 
-
-
-
   // --- Events ---
   const dispatch = createEventDispatcher();
 
@@ -96,7 +108,7 @@
   function handleSubmit(event: Event) {
     event.preventDefault();
     if (isFormValid) {
-      dispatch('submit', { id, selectedItem });
+      dispatch('submit', { id, selectedItem, createFromDefault });
     }
   }
   $effect(() => {
@@ -116,7 +128,7 @@
   });
 
   $effect(() => {
-    dispatch('change', { id, selectedItem, valid });
+    dispatch('change', { id, selectedItem, createFromDefault, valid });
   });
 </script>
 
@@ -131,7 +143,7 @@
     on:input={() => (idTouched = true)}
   >
     {#snippet helper()}
-      
+
         {#if idTouched && !isIdValid}
           <span style="color: var(--mdc-theme-error, #b71c1c);">
             Invalid ID
@@ -141,7 +153,7 @@
             This ID is already taken.
           </span>
         {/if}
-      
+
       {/snippet}
   </TextField>
 
@@ -154,16 +166,31 @@
     menu$style="max-height: 500px;"
   >
     {#snippet match({ match })}
-      
+
         <div class="custom-item">
           <div class="title">{match.id}</div>
           {#if match.id}
             <div class="subtitle">{match.description}</div>
           {/if}
         </div>
-      
+
       {/snippet}
   </Autocomplete>
+
+  {#if showCreateFromDefault && selectedItem}
+    <div style="margin-top: 1em;">
+      <FormField align="start">
+        <Checkbox bind:checked={createFromDefault} disabled={!defaultAvailable} />
+        <span slot="label">
+          Create from Default
+          {#if !defaultAvailable}
+            <span style="color: gray; font-size: 0.85rem;"> (No default available for this class)</span>
+          {/if}
+        </span>
+      </FormField>
+    </div>
+  {/if}
+
   <button type="submit" style="display: none"></button>
 </form>
 

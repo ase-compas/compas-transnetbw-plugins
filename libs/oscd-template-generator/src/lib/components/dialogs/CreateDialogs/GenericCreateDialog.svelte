@@ -16,7 +16,9 @@
     autocompleteLabel?: string;
     getOptions?: () => Promise<TypeOption[]>;
     isIdTaken?: (id: string) => Promise<boolean>;
-    onConfirm: (id: string, selected: any) => void;
+    onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
+    checkDefaultAvailable: (instanceType: string) => Promise<boolean>;
+    showCreateFromDefault: boolean;
   }
 
   let {
@@ -27,17 +29,20 @@
     autocompleteLabel = 'Select Option',
     getOptions = async () => [],
     isIdTaken = async () => false,
-    onConfirm
+    onConfirm,
+    checkDefaultAvailable =  async () => false,
+    showCreateFromDefault = false
   }: Props = $props();
 
   let id = $state();
   let valid = $state(false);
   let selectedItem = $state();
+  let createFromDefault = $state();
   let formEl = $state();
 
   // ===== Event Handlers =====
   const handleCreate = () => {
-    onConfirm(id, selectedItem.id);
+    onConfirm(id, selectedItem.id, createFromDefault);
   };
 
   const handleCancel = () => {
@@ -78,8 +83,11 @@
           isIdTakenFn={isIdTaken}
           bind:id
           bind:selectedItem
+          bind:createFromDefault
           bind:valid
           on:submit={handleCreate}
+          showCreateFromDefault={showCreateFromDefault}
+          checkDefaultAvailable={checkDefaultAvailable}
         />
       </div>
       {/snippet}
