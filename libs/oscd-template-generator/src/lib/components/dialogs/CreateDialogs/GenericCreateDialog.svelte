@@ -3,11 +3,9 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
   import type { TypeOption } from '../../../domain';
-  import { onMount } from 'svelte';
+  import type { ChangeEventDetails } from '../../forms/types';
 
   // ===== Props =====
-
-
   interface Props {
     open?: boolean;
     dialogTitle: string;
@@ -34,30 +32,30 @@
     showCreateFromDefault = false
   }: Props = $props();
 
-  let id = $state();
-  let valid = $state(false);
-  let selectedItem = $state();
-  let createFromDefault = $state();
-  let formEl = $state();
+  let formState = $state<ChangeEventDetails | undefined>();
+
+  let valid = $derived(() => {
+    return formState?.valid ?? false;
+  });
+
+  function updateState(details: ChangeEventDetails) {
+    formState = details;
+  }
 
   // ===== Event Handlers =====
-  const handleCreate = () => {
-    onConfirm(id, selectedItem.id, createFromDefault);
-  };
+  function handleCreate() {
+    if(!formState) return;
+    if(!formState.valid) return;
+    onConfirm(formState.id, formState.selectedItem.id, formState.createFromDefault);
+  }
 
-  const handleCancel = () => {
+  function handleCancel() {
     closeDialog('cancel');
-  };
+  }
 
-  const handleClose = () => {
-    closeDialog('close');
-  };
-
-  onMount(() => {
-    setTimeout(() => {
-      formEl.focus();
-    }, 300)
-  })
+  function handleClose ()  {
+    closeDialog('exit');
+  }
 
   // ===== Util Functions =====
 </script>
@@ -68,26 +66,25 @@
     confirmActionText={confirmText}
     maxWidth="800px"
     bind:open
-    on:confirm={handleCreate}
-    on:cancel={handleCancel}
-    on:close={handleClose}
+    onConfirm={handleCreate}
+    onCancel={handleCancel}
+    onClose={handleClose}
     confirmDisabled={!valid}
   >
     {#snippet content()}
         <div style="padding: 1rem;" >
         <CreateTypeForm
-          bind:this={formEl}
           {idLabel}
+          isIdTaken={isIdTaken}
+
           {autocompleteLabel}
           getOptions={getOptions}
-          isIdTakenFn={isIdTaken}
-          bind:id
-          bind:selectedItem
-          bind:createFromDefault
-          bind:valid
-          on:submit={handleCreate}
-          showCreateFromDefault={showCreateFromDefault}
-          checkDefaultAvailable={checkDefaultAvailable}
+
+          allowCreateFormDefault={showCreateFromDefault}
+          isDefaultAvilable={checkDefaultAvailable}
+
+          onSubmit={handleCreate}
+          onChange={updateState}
         />
       </div>
       {/snippet}

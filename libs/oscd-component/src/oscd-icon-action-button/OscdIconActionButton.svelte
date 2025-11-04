@@ -22,7 +22,7 @@
     /** Side of the tooltip */
     tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
     /** Type of action button, e.g., 'delete' or 'duplicate' */
-    type: 'delete' | 'duplicate';
+    type: 'delete' | 'duplicate' | 'close' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'star';
     /** Delay in ms before showing the tooltip */
     showDelay?: number;
     /** Fill color for the icon SVG */

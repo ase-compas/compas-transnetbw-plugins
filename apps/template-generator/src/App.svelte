@@ -64,7 +64,7 @@
     {#if $storeDoc}
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
-        <LNodeTypesView {doc}/>
+        <LNodeTypesView/>
       {:else if $route.path[0] === 'defaults'}
         <DefaultTypeView/>
       {:else}

@@ -4,11 +4,12 @@
   import {
     type BasicType,
     DataTypeKind,
+    doc,
     getDataTypeService,
     getLNodeTypeService,
     type IDataTypeService,
     type ILNodeTypeService,
-    LogicalNodeTypeRow,
+    LogicalNodeTypeRow, type Mode,
     NewLNodeTypeDialog,
     type Route,
     route
@@ -16,17 +17,9 @@
   import DataTable, { Body, Cell, Head, Label, Row, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import { createEventDispatcher } from 'svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
-  interface Props {
-    doc: XMLDocument;
-  }
-
-  let { doc }: Props = $props();
-
   // ===== Store and Service Instances =====
-  const dispatch = createEventDispatcher();
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
   const dataTypeService: IDataTypeService = getDataTypeService();
 
@@ -37,82 +30,7 @@
   let items: BasicType[] = $state([]);
   let isLoading = false;
 
-
-  function loadItems() {
-    lNodeTypeService.getAllTypes().then(data => {
-      items = data;
-    })
-  }
-
-  // ===== Derived Values =====
-
-  // ===== Handlers =====
-  const handleDuplicate = (lNodeTypeId: string) => {
-    lNodeTypeService.duplicateType(lNodeTypeId);
-  };
-
-  const handleDelete = (lNodeTypeId: string) => {
-    openDialog(
-      OscdConfirmDialog,
-      {
-        title: 'Confirm Delete Logical Node Type',
-        message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
-        confirmActionText: 'Delete',
-        cancelActionText: 'Cancel',
-        color: 'red'
-      })
-      .then(result => {
-      if (result.type === 'confirm') {
-        lNodeTypeService.deleteTypeById(lNodeTypeId).then(() => {
-          items = items.filter(item => item.id !== lNodeTypeId);
-        });
-      }
-    })
-  };
-
-  const handleNodeClick = (lNodeTypeId: string) => {
-    route.set({
-      path: ['view'],
-      meta: {
-       lNodeTypeId: lNodeTypeId
-      }
-    } as Route);
-  };
-
-  function openCreateDialog() {
-    openDialog(NewLNodeTypeDialog).then(result => {
-      if (result.type === 'confirm') {
-        handleDialogCreate(result.data);
-      }
-    });
-  }
-
-  async function handleDialogCreate({id, lnClass, createFromDefault}) {
-    if(createFromDefault) {
-      try {
-        await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
-        setTimeout(() => {
-          route.set({
-            path: ['edit'],
-            meta: {
-              lNodeTypeId: id,
-              lnClass: lnClass
-            }
-          } as Route)
-        }, 50);
-      } catch (e) {
-        console.error(`Error creating LNodeType from default: ${e}`);
-      }
-      return;
-    }
-  }
-
-  $effect(() => {
-    if (doc && lNodeTypeService) {
-      loadItems();
-    }
-  });
-
+  // ===== Derived State =====
   let filteredAndSortedItems = $derived.by(() => {
     const searchTerm = nodeSearchTerm.toLowerCase();
     return items
@@ -125,6 +43,78 @@
           : (aVal < bVal ? 1 : -1);
       });
   });
+
+  // load data on doc change
+  $effect(() => {
+    if ($doc) {
+      loadItems();
+    }
+  });
+
+  async function loadItems() {
+    try {
+      items = await lNodeTypeService.getAllTypes();
+    } catch (e) {
+      console.error('Error loading logical node types:', e);
+    }
+  }
+
+  // ===== Handlers =====
+  function handleDuplicate(lNodeTypeId: string) {
+    try {
+      lNodeTypeService.duplicateType(lNodeTypeId);
+    } catch (e) {
+      console.error(`Error duplicating LNodeType "${lNodeTypeId}": ${e}`);
+    }
+  }
+
+  async function handleDelete(lNodeTypeId: string) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Confirm Delete Logical Node Type',
+      message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
+      confirmActionText: 'Delete',
+      cancelActionText: 'Cancel',
+      color: 'red'
+    });
+
+    if (result.type !== 'confirm') return;
+
+    try {
+      await lNodeTypeService.deleteTypeById(lNodeTypeId);
+      items = items.filter(item => item.id !== lNodeTypeId);
+    } catch (e) {
+      console.error(`Error deleting LNodeType "${lNodeTypeId}": ${e}`);
+    }
+  }
+
+  function handleNodeClick(lNodeTypeId: string) {
+    navigateToLNodeTypeDetail('view', lNodeTypeId);
+  }
+
+  async function openCreateDialog() {
+    const result = await openDialog(NewLNodeTypeDialog);
+    if (result.type === 'confirm') {
+      await handleDialogCreate(result.data);
+    }
+  }
+
+  async function handleDialogCreate({ id, lnClass, createFromDefault }) {
+    if (createFromDefault) {
+      try {
+        await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
+        setTimeout(() => navigateToLNodeTypeDetail('edit', id, lnClass), 50);
+      } catch (e) {
+        console.error(`Error creating LNodeType from default: ${e}`);
+      }
+    } else {
+      navigateToLNodeTypeDetail('create', id, lnClass);
+    }
+  }
+
+  function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
+    route.set({ path: [mode], meta: { lNodeTypeId: lNodeTypeId, lnClass: lnClass } } as Route);
+  }
+
 </script>
 
 <div class="logical-nodes-overview">

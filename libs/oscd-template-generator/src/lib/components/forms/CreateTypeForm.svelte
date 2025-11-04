@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import TextField from "@smui/textfield";
-  import Autocomplete from "@smui-extra/autocomplete";
+  import { onMount } from 'svelte';
+  import TextField from '@smui/textfield';
+  import Autocomplete from '@smui-extra/autocomplete';
   import Checkbox from '@smui/checkbox';
   import FormField from '@smui/form-field';
+  import HelperText from '@smui/textfield/helper-text';
+  import CharacterCounter from '@smui/textfield/character-counter';
 
   // --- Types ---
   export interface Option {
@@ -11,190 +13,180 @@
     description?: string;
   }
 
-  export interface ChangeEventDetail {
+  export interface ChangeEventDetails {
     id: string;
     selectedItem: Option | null;
+    createFromDefault: boolean;
     valid: boolean;
   }
 
-  // --- Props ---
-
-  let options: Option[] = $state([]);
-
   interface Props {
-    id?: string;
-    selectedItem?: Option | null;
-    valid?: boolean;
-
-    // create form default
-    createFromDefault?: boolean;
-    defaultAvailable?: boolean;
-    showCreateFromDefault?: boolean;
-    checkDefaultAvailable: (instanceType: string) => Promise<boolean>;
-
-
-    // auto complete options
+    // id settings
     idLabel?: string;
+    isIdTaken?: (id: string) => Promise<boolean>;
+
+    // auto complete settings
     autocompleteLabel?: string;
-    getOptions?: () => Promise<any[]>;
-    mapOption?: (data: any) => Option;
-    isIdTakenFn?: (id: string) => Promise<boolean>;
+    getOptions?: () => Promise<Option[]>;
+
+    // create from default settings
+    allowCreateFromDefault?: boolean; // callbacks
+    isDefaultAvailable?: (typeId: string) => Promise<boolean>;
+
+    onChange?: (_: ChangeEventDetails) => void;
+    onSubmit?: (_: ChangeEventDetails) => void;
   }
 
   let {
-    id = $bindable(""),
-    selectedItem = $bindable(null),
-    valid = $bindable(false),
-    idLabel = "Enter ID",
-    autocompleteLabel = "Select",
-    getOptions = async () => [],
-    mapOption = (data) => data,
-    isIdTakenFn = async (id: string) => false,
+    idLabel = 'Enter Id',
+    isIdTaken = async (_: string) => false,
 
-    createFromDefault = false,
-    defaultAvailable = false,
-    showCreateFromDefault = false,
-    checkDefaultAvailable = async () => false
+    autocompleteLabel = 'Select Option',
+    getOptions = async () => [],
+
+    allowCreateFromDefault = false,
+    isDefaultAvailable = async (_: string) => false,
+
+    onChange = (_: ChangeEventDetails) => {
+    },
+    onSubmit = (_: ChangeEventDetails) => {
+    }
   }: Props = $props();
 
 
-  let getOptionLabel: (opt: Option) => string = (opt) => opt?.id ?? '';
-
   // --- State ---
-  let idTouched: boolean = $state(false);
+  let loading = $state<boolean>(false);
+  let options = $state<Option[]>([]);
 
-  let isIdValid: boolean = $state(false);
-  let isIdTaken: boolean = $state(false);
-  let isIdTakenLoading = $state(false);
-  let isFormValid: boolean = $state(false);
+  // from fields
+  let typeId = $state<string>('');
+  let selectedItem = $state<Option | undefined>(undefined);
+  let createFromDefault = $state<boolean>(false);
+
+  // typeId validation state
+  let typeIdTouched = $derived<boolean>(false);
+  let isTypeIdRequiredValid = $derived<boolean>(typeId && typeId.trim().length > 0);
+  let isTypeIdFormatValid = $derived<boolean>(/^\S+$/.test(typeId));
+  let isTypeIdAvailable = $state<boolean>(false);
+  let isTypeIdValid = $derived<boolean>(isTypeIdRequiredValid && isTypeIdFormatValid && isTypeIdAvailable);
+
+  // form is valid
+  let isFormValid = $derived<boolean>(isTypeIdValid && !!selectedItem);
+
 
   onMount(() => {
-    getOptions().then(data => {
-      options = data.map(mapOption);
+    loadOptions();
+  });
+
+  function loadOptions() {
+    loading = true;
+    getOptions().then((data) => {
+      options = data;
+      loading = false;
+    }).catch((err) => {
+      console.log('Error loading options:', err);
     });
-  })
-
-
-  function validateId(id: string): boolean {
-    return /^[^\s]+$/.test(id);
   }
 
-  async function validateIdTaken(id: string, selectedItem) {
-    isIdTakenLoading = true;
-    const currentId = id;
-    const taken = await isIdTakenFn(id);
-    // Only update if the id hasn't changed since the check started
-    if (currentId === id) {
-      isIdTaken = taken;
-      isIdTakenLoading = false;
-      updateFormValid(selectedItem);
-    }
-  }
-
-  function updateFormValid(selectedItem) {
-    isIdValid = validateId(id);
-    isFormValid = isIdValid && !isIdTaken && id && selectedItem !== null;
-  }
-
-  // --- Events ---
-  const dispatch = createEventDispatcher();
-
-  let idTextField = $state();
-
-  export function focus() {
-     idTextField?.focus?.();
-  }
+  let getOptionLabel: (opt: Option) => string = (opt) => opt?.id ?? '';
 
   function handleSubmit(event: Event) {
     event.preventDefault();
-    if (isFormValid) {
-      dispatch('submit', { id, selectedItem, createFromDefault });
-    }
+    onSubmit({
+      id: typeId,
+      selectedItem: selectedItem,
+      createFromDefault: createFromDefault,
+      valid: isFormValid
+    });
   }
+
+  // check if typeId is taken available whenever it changes
   $effect(() => {
-    if (id) {
-      isIdValid = validateId(id);
-      updateFormValid(selectedItem);
-      validateIdTaken(id, selectedItem);
-    } else {
-      isIdTaken = false;
-      isIdTakenLoading = false;
-      updateFormValid(selectedItem);
-    }
+    if (!typeId) return;
+    isIdTaken(typeId).then((isTaken) => {
+      console.log(isTaken);
+      isTypeIdAvailable = !isTaken;
+    }).catch((err) => {
+      console.error('Failed to check if ID is taken:', err);
+    })
   });
 
+  // onInputChange
   $effect(() => {
-    valid = isFormValid;
-  });
-
-  $effect(() => {
-    dispatch('change', { id, selectedItem, createFromDefault, valid });
-  });
+    onChange({
+      id: typeId,
+      selectedItem: selectedItem,
+      createFromDefault: createFromDefault,
+      valid: isFormValid
+    });
+  })
 </script>
 
 <form onsubmit={handleSubmit}>
   <TextField
-    bind:this={idTextField}
+    bind:value={typeId}
     label={idLabel}
-    bind:value={id}
     required
     style="width: 100%;"
-    invalid={idTouched && (!isIdValid || isIdTaken)}
-    on:input={() => (idTouched = true)}
-  >
+    invalid={typeIdTouched && !isTypeIdValid}
+    input$maxlength={64}
+    onblur={() => typeIdTouched = true}
+    >
     {#snippet helper()}
-
-        {#if idTouched && !isIdValid}
-          <span style="color: var(--mdc-theme-error, #b71c1c);">
-            Invalid ID
-          </span>
-        {:else if idTouched && isIdTaken}
-          <span style="color: var(--mdc-theme-error, #b71c1c);">
-            This ID is already taken.
-          </span>
+      <HelperText validationMsg persitent>
+        {#if !isTypeIdRequiredValid}
+          Please enter an ID.
+        {:else if !isTypeIdFormatValid}
+          ID must contain no spaces.
+        {:else if !isTypeIdAvailable}
+          That ID is already in use. Please choose a different one.
         {/if}
-
-      {/snippet}
+      </HelperText>
+    <CharacterCounter>0 / 64</CharacterCounter>
+    {/snippet}
   </TextField>
 
-  <Autocomplete
-    label={autocompleteLabel}
-    bind:value={selectedItem}
-    {options}
-    {getOptionLabel}
-    textfield$required
-    menu$style="max-height: 500px;"
-  >
-    {#snippet match({ match })}
-
+  {#if !loading}
+    <Autocomplete
+      label={autocompleteLabel}
+      bind:value={selectedItem}
+      {options}
+      {getOptionLabel}
+      textfield$required
+      menu$style="max-height: 500px;">
+      {#snippet match(item: Option)}
         <div class="custom-item">
-          <div class="title">{match.id}</div>
-          {#if match.id}
-            <div class="subtitle">{match.description}</div>
+          <div class="title">{item.id}</div>
+          {#if item.id}
+            <div class="subtitle">{item.description}</div>
           {/if}
         </div>
-
       {/snippet}
-  </Autocomplete>
+      {#snippet helper()}
+        <span>hehe</span>
+      {/snippet}
+    </Autocomplete>
+  {/if}
 
-  {#if showCreateFromDefault && selectedItem}
+  {#if allowCreateFromDefault && selectedItem}
     <div style="margin-top: 1em;">
       <FormField align="start">
-        <Checkbox bind:checked={createFromDefault} disabled={!defaultAvailable} />
-        <span slot="label">
-          Create from Default
-          {#if !defaultAvailable}
-            <span style="color: gray; font-size: 0.85rem;"> (No default available for this class)</span>
-          {/if}
-        </span>
+        <Checkbox
+          bind:checked={createFromDefault} />
       </FormField>
     </div>
   {/if}
 
-  <button type="submit" style="display: none"></button>
+  <button type="submit" style="display: none" aria-label="submit button"></button>
 </form>
 
 <style>
+  form {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
   .title {
     font-weight: bold;
   }
