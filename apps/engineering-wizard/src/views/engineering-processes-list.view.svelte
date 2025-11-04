@@ -80,7 +80,7 @@
     rowBg="#ffffff"
   >
     {#snippet actions({ item })}
-      
+
         <button
           type="button"
           class="icon"
@@ -97,15 +97,12 @@
         >
           <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
         </button>
-      
+
       {/snippet}
   </OscdBasicDataTable>
 </div>
 
 <style>
-  @import "/material-icon.css";
-  @import "/smui.css";
-
   .processes {
     margin-top: 16px;
     padding: 0 24px;
