@@ -192,7 +192,13 @@
     }
     const type = types.find(t => t.id === itemId);
     if(!type) return;
-    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+
+    try {
+      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+    } catch (e) {
+      console.error(e);
+      alertService.error(e.message);
+    }
   }
 
   async function handleClickOnSetAsDefault() {
@@ -282,7 +288,7 @@
 
       <OscdSwitch
         bind:checked={$isEditModeSwitchState}
-        on:change={e => onEditModeChange(e.detail)}
+        onChange={e => onEditModeChange(e)}
         preventToggleOnClick={true}
         id="edit-mode-switch"
         label="Edit Mode"
@@ -301,15 +307,15 @@
     <TBoard
       {columns}
       data={boardData}
-      on:columnActionClick={e => handleActionClick(e.detail)}
-      on:itemEdit={({detail: {itemId, columnId}}) => handleOnEdit(itemId, columnId)}
-      on:itemMarkChange={({detail: {itemId}}) => handleToggleMark(itemId)}
-      on:itemSelectChange={e => handleToggleSelect(e.detail)}
-      on:itemDrop={e => handleItemDrop(e.detail)}
-      on:itemApplyDefaults={e => handleApplyDefaults(e.detail)}
-      on:itemUnlink={e => handleOnUnlink(e.detail)}
-      on:itemReferenceClick={e => handleOnReferenceClick(e.detail)}
-      on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
+      onColumnActionClick={e => handleActionClick(e)}
+      onItemEdit={({itemId, columnId}) => handleOnEdit(itemId, columnId)}
+      onItemMarkChange={({itemId}) => handleToggleMark(itemId)}
+      onItemSelectChange={e => handleToggleSelect(e)}
+      onItemDrop={e => handleItemDrop(e)}
+      onItemApplyDefaults={e => handleApplyDefaults(e)}
+      onItemUnlink={e => handleOnUnlink(e)}
+      onItemReferenceClick={e => handleOnReferenceClick(e)}
+      onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
     />
   </div>
 </div>

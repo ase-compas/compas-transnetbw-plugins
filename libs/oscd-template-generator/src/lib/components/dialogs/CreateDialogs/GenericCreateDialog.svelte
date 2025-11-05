@@ -80,7 +80,7 @@
           {autocompleteLabel}
           getOptions={getOptions}
 
-          allowCreateFormDefault={showCreateFromDefault}
+          allowCreateFromDefault={showCreateFromDefault}
           isDefaultAvilable={checkDefaultAvailable}
 
           onSubmit={handleCreate}

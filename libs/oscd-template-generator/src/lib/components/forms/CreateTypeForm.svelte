@@ -6,19 +6,7 @@
   import FormField from '@smui/form-field';
   import HelperText from '@smui/textfield/helper-text';
   import CharacterCounter from '@smui/textfield/character-counter';
-
-  // --- Types ---
-  export interface Option {
-    id: string;
-    description?: string;
-  }
-
-  export interface ChangeEventDetails {
-    id: string;
-    selectedItem: Option | null;
-    createFromDefault: boolean;
-    valid: boolean;
-  }
+  import type { ChangeEventDetails, Option } from './types';
 
   interface Props {
     // id settings
@@ -53,7 +41,6 @@
     }
   }: Props = $props();
 
-
   // --- State ---
   let loading = $state<boolean>(false);
   let options = $state<Option[]>([]);
@@ -73,6 +60,8 @@
   // form is valid
   let isFormValid = $derived<boolean>(isTypeIdValid && !!selectedItem);
 
+  // default available for selected item
+  let defaultAvailable = $state<boolean>(false);
 
   onMount(() => {
     loadOptions();
@@ -104,14 +93,13 @@
   $effect(() => {
     if (!typeId) return;
     isIdTaken(typeId).then((isTaken) => {
-      console.log(isTaken);
       isTypeIdAvailable = !isTaken;
     }).catch((err) => {
       console.error('Failed to check if ID is taken:', err);
     })
   });
 
-  // onInputChange
+  // dispatch if any input changes
   $effect(() => {
     onChange({
       id: typeId,
@@ -120,6 +108,22 @@
       valid: isFormValid
     });
   })
+
+  // on select item change, check if default is available
+  $effect(() => {
+    if (!selectedItem) {
+      defaultAvailable = false;
+      return;
+    }
+
+    isDefaultAvailable(selectedItem.id).then((isAvailable) => {
+      defaultAvailable = isAvailable;
+    }).catch((err) => {
+      defaultAvailable = false;
+      console.error('Failed to check if default is available:', err);
+    })
+  });
+
 </script>
 
 <form onsubmit={handleSubmit}>
@@ -168,11 +172,16 @@
     </Autocomplete>
   {/if}
 
-  {#if allowCreateFromDefault && selectedItem}
+  {#if allowCreateFromDefault && !!selectedItem}
     <div style="margin-top: 1em;">
       <FormField align="start">
-        <Checkbox
-          bind:checked={createFromDefault} />
+        <Checkbox bind:checked={createFromDefault} disabled={!defaultAvailable} />
+        {#snippet label()}
+          <span>Create from Default</span>
+          {#if !defaultAvailable}
+            <span style="color: gray; font-size: 0.85rem;"> (No default available for this class)</span>
+          {/if}
+        {/snippet}
       </FormField>
     </div>
   {/if}

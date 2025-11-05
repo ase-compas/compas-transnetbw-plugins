@@ -18,7 +18,7 @@
     host?: HTMLElement | null;
   }
 
-  let { doc = $bindable(null), devMode = false, host = $bindable(null) }: Props = $props();
+  let { doc, devMode = false, host}: Props = $props();
 
   if (import.meta.env.DEV) {
     import("../../../libs/theme/src/lib/theme-light.css")
@@ -49,6 +49,7 @@
 
   $effect(() => {
     if (doc) {
+      console.log(doc)
       initServices(doc, host);
       storeDoc.set(doc);
     }

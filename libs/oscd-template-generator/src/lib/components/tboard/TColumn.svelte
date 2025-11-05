@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import TCardList from './TCardList.svelte';
   import TColumnActionHeader from './columnHeader/TColumnActionHeader.svelte';
   import TColumnSearchHeader from './columnHeader/TColumnSearchHeader.svelte';
   import type { TBoardItemContext, TItem } from './types';
 
-  const dispatch = createEventDispatcher();
 
   interface Props {
     title: string;
@@ -23,6 +21,20 @@
     dropCandidate?: TBoardItemContext | null;
     dragAndDropType: string;
     items?: TItem[];
+
+    // Callbacks
+    onItemDrop?: (event: { targetItem: TItem }) => void;
+    onItemDragChange?: (event: { itemId: string | null; item: TItem | null }) => void;
+    onItemMarkChange?: (event: { itemId: string; item: TItem; marked: boolean }) => void;
+    onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
+    onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
+    onItemSetDefault?: ({itemId: string, item: TItem}) => void;
+    onItemUnlink?: ({itemId: string, item: TItem}) => void;
+    onItemEdit?: ({itemId: string, item: TItem}) => void;
+    onItemClick?: ({itemId: string, item: TItem}) => void;
+    onItemApplyDefaults?: ({itemId: string, item: TItem}) => void;
+    onColumnActionClick?: () => void;
+    onApplyDefaults?: () => void;
   }
 
   let {
@@ -41,11 +53,25 @@
     dropCandidate = null,
     dragAndDropType,
     items = [],
+
+    // Callbacks
+    onItemDrop = () => {},
+    onItemDragChange = () => {},
+    onItemMarkChange = () => {},
+    onItemSelectChange = () => {},
+    onItemReferenceClick = () => {},
+    onItemSetDefault = () => {},
+    onItemUnlink = () => {},
+    onItemEdit = () => {},
+    onItemClick = () => {},
+    onItemApplyDefaults = () => {},
+    onColumnActionClick = () => {},
+    onApplyDefaults = () => {},
   }: Props = $props();
 
   let searchQuery = $state('');
 
-  let filteredItems = $derived(() => filterItems(items, searchQuery));
+  let filteredItems = $derived(filterItems(items, searchQuery));
 
   function matchesQuery(item: TItem, query: string): boolean {
     const q = query.toLowerCase().trim();
@@ -57,9 +83,6 @@
     return itemsToFilter.filter((item) => matchesQuery(item, query));
   }
 
-  function forwardEvent<T>(eventType: string, detail: T) {
-    dispatch(eventType, detail);
-  }
 </script>
 
 <div class="oscd-tcolumn"
@@ -75,7 +98,7 @@
     hasAction={hasAction}
     actionLabel={actionLabel}
     bind:search={searchQuery}
-    on:action={() => dispatch('columnActionClick')}
+    onAction={onColumnActionClick}
   />
   {:else}
     <TColumnActionHeader
@@ -84,8 +107,8 @@
       hasAction={hasAction}
       actionLabel={actionLabel}
       secondaryActionLabel="Apply Defaults"
-      on:action={() => dispatch('columnActionClick')}
-      on:secondaryAction={() => dispatch('applyDefaults')}
+      onAction={onColumnActionClick}
+      onSecondaryAction={onApplyDefaults}
     />
   {/if}
 
@@ -98,16 +121,17 @@
     dropCandidate={dropCandidate}
     showSelectionIndicator={showSelectionIndicator}
     dragAndDropType={dragAndDropType}
-    on:itemClick={(e) => forwardEvent('itemClick', e.detail)}
-    on:itemEdit={(e) => forwardEvent('itemEdit', e.detail)}
-    on:itemApplyDefaults={(e) => forwardEvent('itemApplyDefaults', e.detail)}
-    on:itemUnlink={(e) => forwardEvent('itemUnlink', e.detail)}
-    on:itemMarkChange={(e) => forwardEvent('itemMarkChange', e.detail)}
-    on:itemSelectChange={(e) => forwardEvent('itemSelectChange', e.detail)}
-    on:itemDragChange={(e) => forwardEvent('itemDragChange', e.detail)}
-    on:itemDrop={(e) => forwardEvent('itemDrop', e.detail)}
-    on:itemReferenceClick={(e) => forwardEvent('itemReferenceClick', e.detail)}
-    on:itemSetDefault={(e) => forwardEvent('itemSetDefault', e.detail)}
+
+    onItemClick={(e) => onItemClick(e)}
+    onItemEdit={(e) => onItemEdit(e)}
+    onItemApplyDefaults={(e) => onItemApplyDefaults(e)}
+    onItemUnlink={(e) => onItemUnlink(e)}
+    onItemMarkChange={(e) => onItemMarkChange(e)}
+    onItemSelectChange={(e) => onItemSelectChange(e)}
+    onItemDragChange={(e) => onItemDragChange(e)}
+    onItemDrop={(e) => onItemDrop(e)}
+    onItemReferenceClick={(e) => onItemReferenceClick(e)}
+    onItemSetDefault={(e) => onItemSetDefault(e)}
   />
   </div>
 </div>

@@ -15,7 +15,7 @@ import type { IDataTypeService, IDefaultService } from '../services';
  * @returns {TItem[]} An array of TItem objects mapped from the input types, sorted for display.
  */
 export function getDisplayDataTypeItems(types: BasicType[], canEdit: boolean): TItem[] {
-  return types
+  return [...types]
     .sort((a, b) => {
       // Compare instanceType, treating undefined as greater (so it comes last)
       if (a.instanceType && b.instanceType) {

@@ -15,7 +15,7 @@ import {
  * @returns A Promise that resolves with a `DialogResult<T>` when the dialog is closed.
  */
 export function openDialog<T = any>(
-  component: Component,
+  component: Component<any>,
   props: Record<string, any> = {}
 ): Promise<DialogResult<T>> {
   return new Promise((resolve) => {
