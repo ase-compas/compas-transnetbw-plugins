@@ -1,16 +1,16 @@
 import {
   type BasicType,
   type BasicTypes,
-  type ChildNameFilter, DataTypeKind,
+  type ChildNameFilter,
+  DataTypeKind,
   type DataTypeUpdate,
   type LNodeType,
   type LNodeTypeDetails,
   type ObjectReferenceDetails,
-  type TypeOption
+  type TypeOption,
 } from '../domain';
 import { type IDataTypeRepository } from '../repositories';
 import { type IDataTypeService } from './data-type.service';
-import { type ITypeSpecificationService } from './type-specification.service';
 import { BasicTypeMapper } from '../mappers';
 
 export interface ILNodeTypeService {
@@ -91,8 +91,7 @@ export interface ILNodeTypeService {
 export class LNodeTypeService implements ILNodeTypeService {
   constructor(
     public typeRepo: IDataTypeRepository,
-    public dataTypeService: IDataTypeService,
-    public typeSpecificationService: ITypeSpecificationService,
+    public dataTypeService: IDataTypeService
   ) {}
 
   async getTypeById(id: string): Promise<LNodeTypeDetails> {

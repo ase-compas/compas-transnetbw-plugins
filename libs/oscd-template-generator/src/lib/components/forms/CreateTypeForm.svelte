@@ -2,7 +2,8 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import TextField from "@smui/textfield";
   import Autocomplete from "@smui-extra/autocomplete";
-  import { tick } from 'svelte';
+  import Checkbox from '@smui/checkbox';
+  import FormField from '@smui/form-field';
 
   // --- Types ---
   export interface Option {
@@ -24,6 +25,12 @@
   export let idLabel: string = "Enter ID";
   export let autocompleteLabel: string = "Select";
   let options: Option[] = [];
+
+  // Create from default
+  export let createFromDefault: boolean = false;
+  export let defaultAvailable: boolean = false;
+  export let showCreateFromDefault: boolean = false;
+  export let checkDefaultAvailable: (instanceType: string) => Promise<boolean> = async () => false;
 
   export let getOptions: () => Promise<any[]> = async () => [];
   export let mapOption: (data: any) => Option = (data) => data;
@@ -79,7 +86,17 @@
 
   $: valid = isFormValid;
 
-  $: dispatch('change', { id, selectedItem, valid });
+  $: dispatch('change', { id, selectedItem, createFromDefault, valid });
+
+  $: if (selectedItem) {
+    checkDefaultAvailable(selectedItem.id).then((available) => {
+      defaultAvailable = available;
+      if (!defaultAvailable) createFromDefault = false; // reset if unavailable
+    });
+  } else {
+    defaultAvailable = false;
+    createFromDefault = false;
+  }
 
   // --- Events ---
   const dispatch = createEventDispatcher();
@@ -93,7 +110,7 @@
   function handleSubmit(event: Event) {
     event.preventDefault();
     if (isFormValid) {
-      dispatch('submit', { id, selectedItem });
+      dispatch('submit', { id, selectedItem, createFromDefault });
     }
   }
 </script>
@@ -138,6 +155,21 @@
       </div>
     </svelte:fragment>
   </Autocomplete>
+
+  {#if showCreateFromDefault && selectedItem}
+    <div style="margin-top: 1em;">
+      <FormField align="start">
+        <Checkbox bind:checked={createFromDefault} disabled={!defaultAvailable} />
+        <span slot="label">
+          Create from Default
+          {#if !defaultAvailable}
+            <span style="color: gray; font-size: 0.85rem;"> (No default available for this class)</span>
+          {/if}
+        </span>
+      </FormField>
+    </div>
+  {/if}
+
   <button type="submit" style="display: none"></button>
 </form>
 

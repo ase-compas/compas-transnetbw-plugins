@@ -21,3 +21,6 @@ export {default as NewEnumTypeDialog } from './dialogs/CreateDialogs/NewEnumType
 export {default as LogicalNodeTypeRow} from './tables/LogicalNodeTypeRow.svelte';
 
 export * from './tboard/types';
+
+
+export {default as SetDefaultButton} from './ui/SetDefaultButton.svelte'

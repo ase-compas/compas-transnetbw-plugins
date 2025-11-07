@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IEnumTypeService } from '../../services/enum-type.service';
-  import { getEnumTypeService } from '../../services';
+  import { IEnumTypeService, IDefaultService, IDataTypeService } from '../../services';
+  import { getEnumTypeService, getDefaultTypeService, getDataTypeService } from '../../services';
   import { DataTypeKind, type EnumTypeDetails, Mode } from '../../domain';
   import { onMount } from 'svelte';
   import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
@@ -8,11 +8,14 @@
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
   import TypeHeader from '../TypeHeader.svelte';
-  import { createEditorStore } from '../../stores/editorStore';
+  import { createEditorStore } from '../../stores';
+  import { setTypeAsDefaultWithConfirmation } from '../../utils';
 
 
   // ===== Services =====
   const enumTypeService: IEnumTypeService = getEnumTypeService();
+  const defaultService: IDefaultService = getDefaultTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== Props =====
   export let mode: Mode = 'view';
@@ -20,7 +23,7 @@
   export let instanceTypeId: string | null = null;
 
   // ===== Stores =====
-  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view'});
+  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: mode });
   const { canEdit, isEditModeSwitchState } = editorStore;
 
   // ===== State =====
@@ -30,8 +33,11 @@
   let isLoading = false;
 
   // ===== Derived =====
-  $: filteredItems = enumType?.children.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? [];
+  $: filteredItems = enumType?.children
+    .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())) // filter by name
+    .filter(item => $isEditModeSwitchState ? true : item.meta.isConfigured) // only show configured options in view mode
+    ?? [];
+
   $: if(selected) {
     const dirty = isDirty();
     dirty ? editorStore.makeDirty() : editorStore.makeClean();
@@ -85,7 +91,7 @@
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
     if (reason === 'save') {
-      await editorStore.save();
+      if(isDirty()) await editorStore.save();
       return true;
     } else {
       return editorStore.confirmLeave();
@@ -94,6 +100,7 @@
 
   function isDirty() {
     if(!enumType) return false;
+    if(mode === 'create') return true;
     const configuredNames = enumType.children.filter(item => item.meta.isConfigured).map(a => a.name).sort();
     const selectedSorted = selected.slice().sort();
     return JSON.stringify(configuredNames) !== JSON.stringify(selectedSorted);
@@ -103,12 +110,17 @@
     const ok = await editorStore.switchMode(newMode);
     if(ok) await loadData();
   }
+
+  function handleOnSetAsDefault() {
+    setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
+  }
 </script>
 
 <TypeHeader
   {typeId}
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
+  on:clickDefault={() => handleOnSetAsDefault()}
   bind:isEditMode={$isEditModeSwitchState}
   on:modeChange={(e) => handleModeChange(e.detail)}
   on:instanceTypeChange={(e) => {

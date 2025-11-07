@@ -1,7 +1,10 @@
 import { type ObjectReferenceState } from '../stores';
-import { type TItem } from '../components/tboard/types';
+import { type TItem } from '../components';
 import { mapDataTypeToItem, mapObjectReferenceStateToTItem } from '../mappers';
-import { type BasicType, type ObjectReferenceDetails } from '../domain';
+import { type BasicType, DataTypeKind, type ObjectReferenceDetails } from '../domain';
+import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+import type { IDataTypeService, IDefaultService } from '../services';
 
 /**
  * Converts an array of BasicType objects into TItem objects for display.
@@ -74,6 +77,11 @@ export function canAssignTypeToObjectReference(
  * Function to determine if a type can be assigned to an object reference
  * based only on primitive parameters, not on specific type objects.
  *
+ * Assignment is possible if:
+ *  - The object reference requires a reference,
+ *  - The required type kind matches the candidate type kind,
+ *  - The required instance type is not specified, or the candidate instance type is not specified, or both instance types match.
+ *
  * @param refRequiresReference Whether the object reference requires a reference.
  * @param refRequiredTypeKind The expected type kind for the object reference.
  * @param refRequiredInstanceType The expected instance type for the object reference.
@@ -91,6 +99,32 @@ export function canAssignTypeToObjectReferenceParams(
   return (
     refRequiresReference &&
     refRequiredTypeKind === candidateTypeKind &&
-    (!candidateInstanceType || refRequiredInstanceType === candidateInstanceType)
+    (!refRequiredInstanceType || !candidateInstanceType || refRequiredInstanceType === candidateInstanceType)
   );
+}
+
+export async function setTypeAsDefaultWithConfirmation(
+  defaultTypeService: IDefaultService,
+  dataTypeService: IDataTypeService,
+  kind: DataTypeKind,
+  instanceType: string,
+  id: string
+) {
+  // check if already a type for this kind and instanceType exists to resolve conflict
+  const defaultType = await defaultTypeService.getDefault({kind: kind, instanceType: instanceType});
+  const exists = defaultType !== undefined;
+  if(exists) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Replace Existing Default?',
+      message: `A default type "${defaultType.rootType.id}" is already set for type kind "${kind}" and instance type "${instanceType}". Do you want to replace it with the new default?`,
+      confirmActionText: 'Yes, Replace',
+      cancelActionText: 'No, Keep Existing',
+    });
+    if (result?.type !== 'confirm') return;
+  }
+  await dataTypeService.setDefaultType(kind, id);
+}
+
+export async function setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService: IDefaultService, dataTypeService: IDataTypeService, type: BasicType) {
+  await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, type.typeKind, type.instanceType, type.id);
 }

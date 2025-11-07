@@ -22,6 +22,9 @@ export default defineConfig({
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
   // },
+  optimizeDeps: {
+    exclude: ["@smui"],
+  },
 
   build: {
     outDir: '../../dist/libs/oscd-template-generator',
@@ -34,9 +37,14 @@ export default defineConfig({
   test: {
     globals: true,
     cache: { dir: '../../node_modules/.vitest' },
-    environment: 'jsdom',
+    environment: 'happy-dom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
+    server: {
+      deps: {
+        inline: ["@smui"],
+      },
+    },
     coverage: {
       reportsDirectory: '../../coverage/libs/oscd-template-generator',
       provider: 'v8',

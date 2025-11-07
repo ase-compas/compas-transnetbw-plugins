@@ -17,6 +17,7 @@
   export let canClick: boolean = false;
   export let canUnlink: boolean = true;
   export let canClickReference: boolean = true;
+  export let canSetDefault: boolean = false;
 
   export let selectionEnabled: boolean = false;
   export let selected: boolean = false;
@@ -54,6 +55,7 @@
   function handleOnApplyDefaults() { if (canApplyDefaults) dispatch('applyDefaults'); }
   function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
   function handleOnReferenceClick() { if (canClickReference) dispatch('referenceClick'); }
+  function handleOnSetDefault() { if (canSetDefault) dispatch('setDefault'); }
 
 </script>
 
@@ -99,6 +101,14 @@
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
+            fillColor={onPrimaryColor}
+          />
+        {/if}
+        {#if canSetDefault}
+          <OscdIconActionButton
+            type="star"
+            tooltip="Set as Default"
+            onClick={handleOnSetDefault}
             fillColor={onPrimaryColor}
           />
         {/if}
