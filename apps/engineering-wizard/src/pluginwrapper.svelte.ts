@@ -1,44 +1,45 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
-import { mount } from "svelte";
+import { mount } from 'svelte';
 
 export default class NewOSCDPlugin extends HTMLElement {
-  private plugin?: Plugin;
+  private _doc?: XMLDocument;
+  private _props?: {
+    doc?: XMLDocument;
+    editCount: number;
+    host: NewOSCDPlugin;
+  };
 
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
-    this.plugin = mount(Plugin, {
-          target: this.shadowRoot!,
-          props: {
-            doc: this._doc,
-            editCount: -1,
-            host: this
-          },
-        });
+
+    // reactive props object
+    this._props = $state({
+      doc: this._doc,
+      editCount: -1,
+      host: this as NewOSCDPlugin,
+    });
+
+    mount(Plugin, {
+      target: this.shadowRoot!,
+      props: this._props,
+    });
 
     const linkElement = createStyleLinkElement();
-    this.shadowRoot?.appendChild(linkElement);
+    this.shadowRoot!.appendChild(linkElement);
   }
 
-  private _doc?: XMLDocument;
-  public set doc(newDoc: XMLDocument) {
+  set doc(newDoc: XMLDocument) {
     this._doc = newDoc;
-    if (!this.plugin) {
-      return;
-    }
-
-    this.plugin.$set({ doc: newDoc });
+    if (this._props) this._props.doc = newDoc;
   }
 
-  public get doc(): XMLDocument | undefined {
+  get doc(): XMLDocument | undefined {
     return this._doc;
   }
 
-  public set editCount(newCount: number) {
-    if (!this.plugin) {
-      return;
-    }
-    this.plugin.$set({ editCount: newCount });
+  set editCount(newCount: number) {
+    if (this._props) this._props.editCount = newCount;
   }
 }
 
@@ -51,7 +52,6 @@ function createStyleLinkElement(): HTMLElement {
   linkElement.type = 'text/css';
   linkElement.href = stylePath;
   linkElement.id = id;
-
   return linkElement;
 }
 

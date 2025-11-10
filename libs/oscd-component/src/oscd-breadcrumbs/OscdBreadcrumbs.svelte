@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
 
   export interface Breadcrumb {
     label: string;
@@ -10,27 +9,29 @@
   interface Props {
     breadcrumbs?: Breadcrumb[];
     activeIndex?: number;
+    handleClick?: (index: number) => void;
   }
 
-  let { breadcrumbs = [], activeIndex = 0 }: Props = $props();
+  let {
+    breadcrumbs = [],
+    activeIndex = 0,
+    handleClick,
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher();
-
-
-  const handleClick = (index: number) => {
+  const onClick = (index: number) => {
     if (breadcrumbs[index].enabled && index !== activeIndex) {
-      dispatch('click', { index });
+      handleClick(index);
     }
   };
 </script>
 
 <div class="oscd-breadcrumbs">
-  {#each breadcrumbs as crumb, i}
+  {#each breadcrumbs as crumb, index}
     <div class="breadcrumb-wrapper">
       <span
-        class="breadcrumb {crumb.enabled ? '' : 'br-disabled'} {i === activeIndex ? 'br-active' : ''}"
-        onclick={() => handleClick(i)}
-        aria-current={i === activeIndex ? 'page' : undefined}
+        class="breadcrumb {crumb.enabled ? '' : 'br-disabled'} {index === activeIndex ? 'br-active' : ''}"
+        onclick={() => onClick(index)}
+        aria-current={index === activeIndex ? 'page' : undefined}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
@@ -38,7 +39,7 @@
         {/if}
       </span>
 
-      {#if i < breadcrumbs.length - 1}
+      {#if index < breadcrumbs.length - 1}
         <span class="material-icons separator">chevron_right</span>
       {/if}
     </div>

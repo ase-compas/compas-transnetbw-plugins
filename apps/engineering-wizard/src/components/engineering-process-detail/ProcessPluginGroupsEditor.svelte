@@ -8,16 +8,18 @@
     pluginGroups?: PluginGroup[];
   }
 
-  let { pluginGroups = [] }: Props = $props();
+  let {
+    pluginGroups = [],
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher();
-
-  const removeAllPlugins = () => dispatch('removeAllPlugins');
+  function removeAllPlugins() {
+    // TODO:
+    // Implement the logic to remove all plugins
+  }
 
   const removeOne = (groupIndex: number, pluginIndex: number) => {
     const group = pluginGroups[groupIndex];
     const plugin = group.plugins[pluginIndex];
-    dispatch('removePlugin', { groupIndex, pluginIndex, group, plugin });
   };
 </script>
 

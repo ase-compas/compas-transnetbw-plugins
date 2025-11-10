@@ -1,26 +1,26 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
   import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
   import Button from '@smui/button';
-  import ProcessStepper from '../../components/engineering-process-detail/ProcessStepper.svelte';
+  import ProcessDetailStepper from '../../components/engineering-process-detail/ProcessDetailStepper.svelte';
   import WorkflowBack from '../../components/engineering-workflow/WorkflowBack.svelte';
   import ProcessPluginGroupsView from '../../components/engineering-process-detail/ProcessPluginGroupsView.svelte';
   import { getBreadcrumbs, getPluginGroups } from '../../services/engineering-process-detail.service';
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
+  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { selectedProcessState } from '../../stores/process-store.svelte';
 
   interface Props {
-    currentProcess?: Process | null;
+    handleStart: (process: Process) => void;
   }
 
-  let { currentProcess = null }: Props = $props();
+  let {
+    handleStart,
+  }: Props = $props();
 
   type StepId = 'process-definition' | 'validator-configuration';
   const STEP_IDS: StepId[] = ['process-definition', 'validator-configuration'];
-
-  const dispatch = createEventDispatcher();
 
   let isEditing = $state(false);
 
@@ -29,20 +29,21 @@
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let breadcrumbs = $derived(getBreadcrumbs(currentProcess, { edit: isEditing }));
+  let breadcrumbs = $derived(getBreadcrumbs(selectedProcessState.process, { edit: isEditing }));
 
-  let pluginGroups = $derived(getPluginGroups(currentProcess));
+  let pluginGroups = $derived(getPluginGroups(selectedProcessState.process));
 
   let visitedSteps: StepId[] = $state([]);
 
-  function handleBreadcrumbClick(e: CustomEvent<{ index: number }>) {
-    if (e.detail.index !== 0) return;
+  function handleBreadcrumbClick(index: number) {
+    if (index !== 0) return;
     editorTabsVisible.set(true);
-    dispatch('back');
   }
 
   function startProcess() {
-    if (currentProcess) dispatch('start', currentProcess);
+    if (selectedProcessState.process) {
+      handleStart(selectedProcessState.process);
+    }
   }
 
   function startEditing() {
@@ -55,11 +56,10 @@
   function exitEditing() {
     isEditing = false;
     editorTabsVisible.set(true);
-    dispatch('back');
   }
 
-  function handleStepSelect(e: CustomEvent<StepId>) {
-    const idx = STEP_IDS.indexOf(e.detail);
+  function handleStepSelect(stepId: StepId) {
+    const idx = STEP_IDS.indexOf(stepId);
     if (idx !== -1) currentStepIndex = idx;
   }
 
@@ -71,13 +71,11 @@
     if (isAtLastStep) return;
     markStepVisited(currentStepId);
     currentStepIndex += 1;
-    dispatch('next');
   }
 
   function goToPreviousStep() {
     if (isAtFirstStep) return;
     currentStepIndex -= 1;
-    dispatch('previous');
   }
 
   function handleAddValidationClick() {
@@ -88,9 +86,9 @@
 <div class="page-content">
   {#if isEditing}
     <div class="stepper">
-      <WorkflowBack on:back={exitEditing} />
+      <WorkflowBack onBack={exitEditing} />
 
-      <ProcessStepper currentId={currentStepId} visited={visitedSteps} on:select={handleStepSelect} />
+      <ProcessDetailStepper currentId={currentStepId} visited={visitedSteps} onSelect={handleStepSelect} />
 
       <div class="stepper-navigation">
         <button
@@ -118,18 +116,18 @@
     <div class="step-content">
       {#if currentStepId === 'process-definition'}
         <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} handleClick={handleBreadcrumbClick} />
         </div>
         <ProcessDefinition {pluginGroups} />
       {:else if currentStepId === 'validator-configuration'}
         <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
+          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} handleClick={handleBreadcrumbClick} />
 
           <Button
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-            on:click={handleAddValidationClick}
-            disabled={!currentProcess}
+            onclick={handleAddValidationClick}
+            disabled={!selectedProcessState.process}
             aria-label="Add validation"
           >
             ADD NEW VALIDATION
@@ -137,7 +135,6 @@
         </div>
         <ProcessValidationGroups
           {pluginGroups}
-          {currentProcess}
           {breadcrumbs}
           activeBreadcrumbIndex={2}
           on:addValidation={handleAddValidationClick}
@@ -148,20 +145,20 @@
   {:else}
     <div class="step-content">
       <div class="header">
-        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
+        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} handleClick={handleBreadcrumbClick} />
 
         <Button
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-          on:click={startProcess}
-          disabled={!currentProcess}
+          onclick={startProcess}
+          disabled={!selectedProcessState.process}
           aria-label="Start process"
         >
           START PROCESS
         </Button>
       </div>
 
-      <ProcessPluginGroupsView {pluginGroups} on:editRequested={startEditing} />
+      <ProcessPluginGroupsView {pluginGroups} requestEdit={startEditing} />
     </div>
   {/if}
 </div>

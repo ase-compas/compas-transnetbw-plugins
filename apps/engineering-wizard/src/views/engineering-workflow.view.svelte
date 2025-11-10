@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
   import WorkflowStepper from '../components/engineering-workflow/WorkflowStepper.svelte';
   import type { ViewPlugin } from '../types/view-plugin';
@@ -11,13 +11,15 @@
     editCount?: any;
     host: HTMLElement;
     plugins?: ViewPlugin[];
+    onExit?: () => void;
   }
 
   let {
     doc,
     editCount = -1,
     host,
-    plugins = []
+    plugins = [],
+    onExit,
   }: Props = $props();
 
   type Status = 'check' | 'warning' | 'error';
@@ -26,8 +28,6 @@
   let tagName: string | null = $state(null);
   let visited: string[] = $state([]);
   let pluginStatus: Record<string, Status> = $state({});
-
-  const dispatch = createEventDispatcher<{ exit: void }>();
 
   async function selectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
@@ -74,12 +74,12 @@
 
   function exitWorkflow() {
     editorTabsVisible.set(true);
-    dispatch('exit');
+    onExit();
   }
 </script>
 
 <div class="stepper">
-  <WorkflowBack on:back={exitWorkflow} />
+  <WorkflowBack onBack={exitWorkflow} />
 
   <WorkflowStepper
     {plugins}

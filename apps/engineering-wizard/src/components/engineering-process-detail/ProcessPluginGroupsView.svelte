@@ -1,16 +1,17 @@
 <script lang="ts">
   import Button from '@smui/button';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { createEventDispatcher } from 'svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
+    requestEdit: () => void;
   }
 
-  let { pluginGroups = [] }: Props = $props();
+  let {
+    pluginGroups = [],
+    requestEdit
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher();
-  const requestEdit = () => dispatch('editRequested');
 </script>
 
 <div class="plugins-list">
@@ -20,7 +21,7 @@
       variant="raised"
       style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
       aria-label="Edit process"
-      on:click={requestEdit}
+      onclick={requestEdit}
     >
       EDIT
     </Button>

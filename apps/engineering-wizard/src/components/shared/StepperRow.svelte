@@ -11,6 +11,7 @@
     currentId?: string | null;
     status?: Record<string, 'check' | 'warning' | 'error'>;
     tooltipMap?: Record<string, string>;
+    onSelect?: (itemId: string) => void;
   }
 
   let {
@@ -18,10 +19,9 @@
     visited = [],
     currentId = null,
     status = {},
-    tooltipMap = {}
+    tooltipMap = {},
+    onSelect
   }: Props = $props();
-
-  const dispatch = createEventDispatcher<{ select: string }>();
 </script>
 
 <div class="steps">
@@ -29,7 +29,7 @@
     <div class="step">
       <OscdTooltip content={tooltipMap[item.id] ?? ''} side="bottom">
         <button
-          onclick={() => dispatch('select', item.id)}
+          onclick={() => onSelect(item.id)}
           class:not-visited={!visited.includes(item.id)}
           class:current={item.id === currentId}
           class:visited={visited.includes(item.id) && item.id !== currentId}

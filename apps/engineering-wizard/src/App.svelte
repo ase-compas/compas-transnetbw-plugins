@@ -7,6 +7,7 @@
   import { DialogHost } from '../../../libs/oscd-services/src/dialog';
   import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
+  import { selectedProcessState } from './stores/process-store.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -15,9 +16,7 @@
   }
 
   let { doc, editCount = -1, host }: Props = $props();
-
   let processes: Process[] = $state([]);
-  let selected: Process | null = $state(null);
   let loading = $state(true);
   let errorMsg = $state('');
 
@@ -89,40 +88,40 @@
 
   function startProcess(proc: Process) {
     openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: proc.plugins });
-    selected = null;
+    selectedProcessState.process = null;
   }
 
   $effect(() => {
     updateDialogProps({ editCount, doc });
   });
 
-  function handleView(e: CustomEvent<Process>) {
-    selected = e.detail;
+  function handleView(process: Process) {
+    selectedProcessState.process = process;
   }
 
-  function handleStart(e: CustomEvent<Process>) {
-    startProcess(e.detail);
+  $effect(() => {
+    console.log("selected process state", selectedProcessState.process);
+  })
+
+  function handleStart(process: Process) {
+    startProcess(process);
   }
 
   function goBack() {
-    selected = null;
+    selectedProcessState.process = null;
   }
 </script>
 
 <DialogHost />
 
-{#if selected}
-  <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
+{#if selectedProcessState.process}
+  <EngineeringProcessDetail handleBack={goBack} handleStart={handleStart} />
 {:else}
   <EngineeringProcessesList
     {processes}
     {loading}
     {errorMsg}
-    on:view={handleView}
-    on:start={handleStart}
+    handleView={handleView}
+    handleStart={handleStart}
   />
 {/if}
-
-<style>
-  @import '/material-icon.css';
-</style>
