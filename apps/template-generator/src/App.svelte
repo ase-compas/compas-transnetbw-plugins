@@ -1,9 +1,8 @@
 <script lang="ts">
   import LNodeTypesView from "./views/lNodeTypes/LNodeTypesView.svelte";
   import LNodeTypeDetailView from "./views/lNodeTypeDetails/LNodeTypeDetailView.svelte";
-  import { route, host as storeHost, doc as storeDoc } from "@oscd-transnet-plugins/oscd-template-generator";
+  import { route, pluginStateStore, initServices, pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
-  import { initServices } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
   import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
@@ -13,23 +12,31 @@
   import "../public/smui.css"
 
   interface Props {
-    doc?: XMLDocument | null;
     devMode?: boolean;
-    host?: HTMLElement | null;
   }
 
-  let { doc, devMode = false, host}: Props = $props();
+  const { devMode = false } : Props = $props();
+  let file;
+
+  let setup = $state(false)
 
   if (import.meta.env.DEV) {
     import("../../../libs/theme/src/lib/theme-light.css")
   }
 
   async function handleFileChange(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     const text = await file.text();
     const parser = new DOMParser();
-    doc = parser.parseFromString(text, "application/xml");
+    pluginStateStore.setPluginState({doc: parser.parseFromString(text, "application/xml")})
+    console.log("set")
+  }
+
+  async function setPluginState() {
+    const text = await file.text();
+    const parser = new DOMParser();
+    pluginStateStore.setPluginState({doc: parser.parseFromString(text, "application/xml")})
   }
 
   function createMockHost(): HTMLElement | null {
@@ -42,27 +49,34 @@
     return mockHost;
   }
 
-  onMount(() => {
-    if (devMode) host = createMockHost(); // Create a mock host element in dev mode
-    storeHost.set(host);
+  $effect(() => {
+    console.log("running from new effect", pluginStore.state.doc)
+    console.log("running from new effect", pluginStore.state.host)
   })
 
-  $effect(() => {
-    if (doc) {
-      console.log(doc)
-      initServices(doc, host);
-      storeDoc.set(doc);
-    }
+  onMount(() => {
+    if (devMode) pluginStateStore.setPluginState.host = createMockHost();
   });
+
+  $effect(() => {
+    console.log("effect", pluginStateStore.pluginState.doc)
+    if (pluginStateStore.pluginState.doc !== null && pluginStateStore.setPluginState.host !== null) {
+      console.log(pluginStateStore.pluginState.doc);
+      initServices(pluginStateStore.pluginState.doc, pluginStateStore.pluginState.host)
+      setup = true
+    }
+  })
 </script>
 
+<button onclick={() => pluginStateStore.pluginState.doc = null}>test</button>
 <div class="oscd-app">
-  {#if !doc && devMode}
+  <button onclick={setPluginState}>text</button>
+  <input type="file" accept=".ssd" oninput={handleFileChange} />
+  <p>Please load an XML file to start.</p>
+  {#if !pluginStateStore.pluginState.doc && devMode}
     <!-- Development mode: allow file upload -->
-    <input type="file" accept=".ssd" onchange={handleFileChange} />
-    <p>Please load an XML file to start.</p>
   {:else}
-    {#if $storeDoc}
+    {#if pluginStateStore.pluginState.doc !== null & setup}
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
         <LNodeTypesView/>

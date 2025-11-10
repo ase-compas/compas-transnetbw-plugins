@@ -10,7 +10,7 @@
     type IDataTypeService,
     type ILNodeTypeService,
     LogicalNodeTypeRow, type Mode,
-    NewLNodeTypeDialog,
+    NewLNodeTypeDialog, pluginStateStore,
     type Route,
     route
   } from '@oscd-transnet-plugins/oscd-template-generator';
@@ -46,7 +46,8 @@
 
   // load data on doc change
   $effect(() => {
-    if ($doc) {
+    if (pluginStateStore.pluginState.doc) {
+      console.log("loading")
       loadItems();
     }
   });
@@ -111,7 +112,7 @@
     }
   }
 
-  function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
+  async function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
     route.set({ path: [mode], meta: { lNodeTypeId: lNodeTypeId, lnClass: lnClass } } as Route);
   }
 

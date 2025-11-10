@@ -28,12 +28,13 @@
     openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
     openReferencedTypeDrawer,
+    pluginStateStore,
     route,
     SetDefaultButton,
     setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType,
     TBoard,
-    type TBoardItemContext,
+    type TBoardItemContext
   } from '@oscd-transnet-plugins/oscd-template-generator';
   import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { loadLNodeType, loadTypes } from './dataLoader';
@@ -56,7 +57,7 @@
   const refStore = createObjectReferenceStore(async () => logicalNodeType.children);
   const { markedItems, configuredItems, isDirty: refStoreIsDirty } = refStore;
 
-  const editorStore = createEditorStore({ onSave: async () => handleSaveChanges(), onDiscard: async () => refStore.reset(), initialMode: 'view' });
+  const editorStore = createEditorStore({ onSave: async () => handleSaveChanges(), onDiscard: async () => refStore.reset()});
   const { canEdit, isEditModeSwitchState, mode, dirty, isSavable } = editorStore;
 
   // -----------------------------
@@ -79,13 +80,13 @@
     lNodeTypeId = $route?.meta?.lNodeTypeId;
     lnClass = $route?.meta?.lnClass;
 
-    const unsubscribeDoc = docStore.subscribe(_ => {
-      $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
-    })
+    $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
 
-    return () => {
-      unsubscribeDoc();
-    }
+  });
+
+  $effect(() => {
+    console.log(lNodeTypeId, lnClass, $dirty);
+    $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
   });
 
   // -----------------------------
@@ -109,11 +110,18 @@
     lNodeTypeId = lNodeTypeId;
     lnClass = lnClass;
     if ($mode === "create") {
-      lNodeTypeService.createOrUpdateType({id: lNodeTypeId, instanceType: lnClass, children: []})
-      editorStore.switchMode("edit")
+      console.log("create")
+      try {
+        await editorStore.switchMode("edit")
+        await lNodeTypeService.createOrUpdateType({id: lNodeTypeId, instanceType: lnClass, children: []})
+        console.log("created new LNodeType with id:", lNodeTypeId);
+      } catch (e) {
+        console.error(e);
+      }
       return;
     }
     logicalNodeType = await loadLNodeType($mode, lNodeTypeId, lnClass);
+    console.log(logicalNodeType);
     await refStore.reload();
   }
 
