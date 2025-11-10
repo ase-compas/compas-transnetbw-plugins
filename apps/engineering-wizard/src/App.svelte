@@ -86,8 +86,11 @@
   onMount(loadXml);
   onDestroy(() => controller?.abort());
 
-  function startProcess(proc: Process) {
-    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: proc.plugins });
+  function startProcess(process: Process) {
+    if(!selectedProcessState.process){
+      selectedProcessState.process = process;
+    }
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: selectedProcessState.process.plugins });
     selectedProcessState.process = null;
   }
 
@@ -100,12 +103,8 @@
   }
 
   $effect(() => {
-    console.log("selected process state", selectedProcessState.process);
+    console.log("selected process PLUGINS", selectedProcessState.process);
   })
-
-  function handleStart(process: Process) {
-    startProcess(process);
-  }
 
   function goBack() {
     selectedProcessState.process = null;
@@ -115,13 +114,13 @@
 <DialogHost />
 
 {#if selectedProcessState.process}
-  <EngineeringProcessDetail handleBack={goBack} handleStart={handleStart} />
+  <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
 {:else}
   <EngineeringProcessesList
     {processes}
     {loading}
     {errorMsg}
     handleView={handleView}
-    handleStart={handleStart}
+    handleStart={startProcess}
   />
 {/if}

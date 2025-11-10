@@ -8,8 +8,8 @@
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
-  import type { Process } from '@oscd-transnet-plugins/shared';
   import { selectedProcessState } from '../../stores/process-store.svelte';
+  import type { Process } from '@oscd-transnet-plugins/shared';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -40,12 +40,6 @@
     editorTabsVisible.set(true);
   }
 
-  function startProcess() {
-    if (selectedProcessState.process) {
-      handleStart(selectedProcessState.process);
-    }
-  }
-
   function startEditing() {
     isEditing = true;
     editorTabsVisible.set(false);
@@ -56,6 +50,7 @@
   function exitEditing() {
     isEditing = false;
     editorTabsVisible.set(true);
+    selectedProcessState.process = null;
   }
 
   function handleStepSelect(stepId: StepId) {
@@ -150,7 +145,7 @@
         <Button
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-          onclick={startProcess}
+          onclick={() => handleStart(selectedProcessState.process)}
           disabled={!selectedProcessState.process}
           aria-label="Start process"
         >

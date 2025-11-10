@@ -3,6 +3,19 @@
   import Textfield from '@smui/textfield';
   import Button from '@smui/button';
   import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
+  import type { Process } from '@oscd-transnet-plugins/shared';
+
+  interface Props {
+    processes?: {
+      id: string;
+      name?: string;
+      description?: string;
+    }[];
+    loading?: boolean;
+    errorMsg?: string;
+    handleStart: (process: Process) => void;
+    handleView: (process: Process) => void;
+  }
 
   let {
     processes = [],
@@ -10,7 +23,7 @@
     errorMsg = '',
     handleStart,
     handleView
-  } = $props();
+  }: Props = $props();
 
   let searchQuery = $state('');
 
