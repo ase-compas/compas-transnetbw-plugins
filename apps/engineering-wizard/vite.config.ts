@@ -1,8 +1,9 @@
-/// <reference types='vitest' />
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-export default defineConfig(async () => {
+// Cast defineConfig to any so TS stops complaining about the async config function
+export default (defineConfig as any)(async () => {
   const { svelte } = await import('@sveltejs/vite-plugin-svelte');
 
   return {
@@ -19,7 +20,7 @@ export default defineConfig(async () => {
 
     preview: {
       port: 4301,
-      host: 'localhost'
+      host: 'localhost',
     },
 
     plugins: [svelte(), nxViteTsPaths()],
@@ -36,7 +37,7 @@ export default defineConfig(async () => {
         },
       },
       lib: {
-        entry: 'src/plugin.ts',
+        entry: 'src/pluginwrapper.svelte.ts',
         formats: ['es'],
         fileName: 'index',
       },

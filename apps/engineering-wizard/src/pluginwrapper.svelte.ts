@@ -4,21 +4,26 @@ import { mount } from 'svelte';
 
 export default class NewOSCDPlugin extends HTMLElement {
   private _doc?: XMLDocument;
-  private _props?: {
+  private _props: {
     doc?: XMLDocument;
     editCount: number;
     host: NewOSCDPlugin;
-  };
+  }
 
-  connectedCallback() {
-    this.attachShadow({ mode: 'open' });
+  constructor() {
+    super();
 
-    // reactive props object
     this._props = $state({
       doc: this._doc,
       editCount: -1,
       host: this as NewOSCDPlugin,
     });
+  }
+
+  connectedCallback() {
+    if (this.shadowRoot) return;
+
+    this.attachShadow({ mode: 'open' });
 
     mount(Plugin, {
       target: this.shadowRoot!,
@@ -31,7 +36,7 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   set doc(newDoc: XMLDocument) {
     this._doc = newDoc;
-    if (this._props) this._props.doc = newDoc;
+    this._props.doc = newDoc;
   }
 
   get doc(): XMLDocument | undefined {
@@ -39,7 +44,7 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   set editCount(newCount: number) {
-    if (this._props) this._props.editCount = newCount;
+    this._props.editCount = newCount;
   }
 }
 
