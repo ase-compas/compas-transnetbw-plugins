@@ -97,9 +97,6 @@
 </div>
 
 <style>
-  @import "/material-icon.css";
-  @import "/smui.css";
-
   .processes {
     margin-top: 16px;
     padding: 0 24px;
