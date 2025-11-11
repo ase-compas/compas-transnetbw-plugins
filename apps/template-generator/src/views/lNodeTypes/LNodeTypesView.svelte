@@ -4,13 +4,12 @@
   import {
     type BasicType,
     DataTypeKind,
-    doc,
     getDataTypeService,
     getLNodeTypeService,
     type IDataTypeService,
     type ILNodeTypeService,
     LogicalNodeTypeRow, type Mode,
-    NewLNodeTypeDialog, pluginStateStore,
+    NewLNodeTypeDialog, pluginStore,
     type Route,
     route
   } from '@oscd-transnet-plugins/oscd-template-generator';
@@ -18,6 +17,7 @@
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { onMount } from 'svelte';
 
   // ===== Store and Service Instances =====
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
@@ -44,13 +44,15 @@
       });
   });
 
-  // load data on doc change
-  $effect(() => {
-    if (pluginStateStore.pluginState.doc) {
-      console.log("loading")
+  onMount(() => {
+    const unsubscribe = pluginStore.updates.subscribe(() => {
       loadItems();
+    })
+
+    return () => {
+      unsubscribe();
     }
-  });
+  })
 
   async function loadItems() {
     try {

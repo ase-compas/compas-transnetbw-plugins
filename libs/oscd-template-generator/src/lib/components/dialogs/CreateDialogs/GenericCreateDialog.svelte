@@ -81,7 +81,7 @@
           getOptions={getOptions}
 
           allowCreateFromDefault={showCreateFromDefault}
-          isDefaultAvilable={checkDefaultAvailable}
+          isDefaultAvailable={checkDefaultAvailable}
 
           onSubmit={handleCreate}
           onChange={updateState}

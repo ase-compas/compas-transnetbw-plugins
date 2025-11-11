@@ -12,7 +12,7 @@
     type IDefaultService,
     type IDoTypeService
   } from '../../../services';
-  import { createEditorStore, createObjectReferenceStore, doc } from '../../../stores';
+  import { createEditorStore, createObjectReferenceStore, doc, pluginStore } from '../../../stores';
   import { type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,
@@ -75,7 +75,7 @@
     validateProps()
 
     // Subscribe to doc changes to reload data
-    const unsubscribe = doc.subscribe(async () => {
+    const unsubscribe = pluginStore.updates.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
         dataTypes = await loadTypes(editorStore.getCanEdit(), typeId, cdc, $markedItemIds);
@@ -99,8 +99,8 @@
 
   async function loadData() {
     if(editorStore.isCreateMode()) {
-      doTypeService.createOrUpdateType({id: typeId, instanceType: cdc, children: []})
-      editorStore.switchMode('edit');
+      await editorStore.switchMode('edit');
+      await doTypeService.createOrUpdateType({id: typeId, instanceType: cdc, children: []})
       return
     }
     dataObjectType = await loadDOType(editorStore.isCreateMode(), typeId, cdc);
@@ -245,7 +245,9 @@
     dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   });
+
   let columns = $derived(getColumns($canEdit));
+
   $effect(() => {
     if ($isDirty) editorStore.makeDirty();
     else editorStore.makeClean();
@@ -259,19 +261,19 @@
   instanceType={dataObjectType?.cdc}
   setAsDefaultDisabled={$dirty}
   bind:isEditMode={$isEditModeSwitchState}
-  on:modeChange={e => handleModeChange(e.detail)}
-  on:clickDefault={() => handleClickSetAsDefault()}
+  onModeChange={e => handleModeChange(e)}
+  onClickDefault={() => handleClickSetAsDefault()}
 />
 <TBoard
   {columns}
   data={boardData}
-  on:itemMarkChange={(e) => handleOnMark(e.detail)}
-  on:itemSelectChange={(e) => handleOnSelect(e.detail)}
-  on:itemDrop={(e) => handleItemDrop(e.detail)}
-  on:itemEdit={({ detail: { itemId, columnId } }) => handleOnEdit(itemId, columnId)}
-  on:itemReferenceClick={({ detail: { itemId } }) => handleOnReferenceClick(itemId)}
-  on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
-  on:columnActionClick={({ detail: { columnId } }) => handleActionClick({ columnId })}
-  on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
-  on:itemApplyDefaults={e => handleApplyDefaults(e.detail)}
+  onItemMarkChange={(e) => handleOnMark(e)}
+  onItemSelectChange={(e) => handleOnSelect(e)}
+  onItemDrop={(e) => handleItemDrop(e)}
+  onItemEdit={({ itemId, columnId }) => handleOnEdit(itemId, columnId)}
+  onItemReferenceClick={({ itemId}) => handleOnReferenceClick(itemId)}
+  onItemUnlink={({ itemId }) => refStore.removeTypeReference(itemId)}
+  onColumnActionClick={({ columnId }) => handleActionClick({ columnId })}
+  onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
+  onItemApplyDefaults={e => handleApplyDefaults(e)}
 />

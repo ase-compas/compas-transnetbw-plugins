@@ -30,9 +30,8 @@
   const columns = [
     { header: 'Type', key: 'type'},
     { header: 'Instance', key: 'instance'},
-    { header: 'Version', key: 'version'},
     { header: 'Root-ID', key: 'root'},
-    { header: 'Description', key: 'description'},
+    { header: 'Version', key: 'version'},
     { header: 'Sub-Types', key: 'subtypes'}
   ];
 

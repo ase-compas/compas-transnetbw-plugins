@@ -9,7 +9,7 @@
     createEditorStore,
     createObjectReferenceStore,
     DataTypeKind,
-    doc as docStore, getAlertService,
+    getAlertService,
     getDataTypeService,
     getDefaultTypeService,
     getDisplayDataTypeItems,
@@ -28,7 +28,7 @@
     openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
     openReferencedTypeDrawer,
-    pluginStateStore,
+    pluginStore,
     route,
     SetDefaultButton,
     setTypeAsDefaultWithConfirmation,
@@ -80,13 +80,13 @@
     lNodeTypeId = $route?.meta?.lNodeTypeId;
     lnClass = $route?.meta?.lnClass;
 
-    $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
+    const unsub = pluginStore.updates.subscribe(s => {
+      $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
+    })
 
-  });
-
-  $effect(() => {
-    console.log(lNodeTypeId, lnClass, $dirty);
-    $dirty ? loadDataTypes([]) : loadLogicalNodeType(lNodeTypeId, lnClass)
+    return () => {
+      unsub();
+    }
   });
 
   // -----------------------------
@@ -102,7 +102,6 @@
   }
 
 
-
   // -----------------------------
   // Loaders
   // -----------------------------
@@ -110,7 +109,6 @@
     lNodeTypeId = lNodeTypeId;
     lnClass = lnClass;
     if ($mode === "create") {
-      console.log("create")
       try {
         await editorStore.switchMode("edit")
         await lNodeTypeService.createOrUpdateType({id: lNodeTypeId, instanceType: lnClass, children: []})
@@ -121,7 +119,6 @@
       return;
     }
     logicalNodeType = await loadLNodeType($mode, lNodeTypeId, lnClass);
-    console.log(logicalNodeType);
     await refStore.reload();
   }
 
@@ -288,10 +285,10 @@
 
       {#if $dirty}
         <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
-          <SetDefaultButton on:click={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
+          <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
         </OscdTooltip>
       {:else}
-        <SetDefaultButton on:click={() => handleClickOnSetAsDefault()} />
+        <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} />
       {/if}
 
       <OscdSwitch

@@ -28,7 +28,7 @@
 
   // ===== Stores =====
   const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: mode });
-  const { canEdit, isEditModeSwitchState } = editorStore;
+  const { canEdit, isEditModeSwitchState, mode: currentMode } = editorStore;
 
   // ===== State =====
   let enumType: EnumTypeDetails = $state(null);
@@ -109,8 +109,14 @@
     setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
   }
   // ===== Derived =====
-  let filteredItems = $derived(enumType?.children.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? []);
+  let filteredItems = $derived.by(() => {
+    if (!enumType) return [];
+    const query = searchQuery.toLowerCase();
+    return enumType.children
+      .filter(item => $currentMode === 'view' ? item.meta.isConfigured : true)
+      .filter(item => item.name.toLowerCase().includes(query));
+
+  });
 
   $effect(() => {
     if (!selected) return;
@@ -124,11 +130,11 @@
   {typeId}
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
-  on:clickDefault={() => handleOnSetAsDefault()}
+  onClickDefault={() => handleOnSetAsDefault()}
   bind:isEditMode={$isEditModeSwitchState}
-  on:modeChange={(e) => handleModeChange(e.detail)}
-  on:instanceTypeChange={(e) => {
-    instanceTypeId = e.detail;
+  onModeChange={(e) => handleModeChange(e)}
+  onInstanceTypeChange={(e) => {
+    instanceTypeId = e;
     editorStore.switchMode('create')
     loadData();
     }
