@@ -144,7 +144,7 @@
       onItemEdit={e => onItemEdit({columnId: column.id, ...e})}
       onItemApplyDefaults={e => onItemApplyDefaults({columnId: column.id, ...e})}
       onItemUnlink={e => onItemUnlink({ columnId: column.id, ...e})}
-      onItemMarkChange={e => onItemMarkChange({columndId: column.id, ...e})}
+      onItemMarkChange={e => onItemMarkChange({columnId: column.id, ...e})}
       onItemSelectChange={e => onItemSelectChange({columnId: column.id, ...e})}
       onItemDragChange={e => handleOnItemDrag(column.id, e)}
       onItemDrop={e => handleItemDrop(column.id, e)}
