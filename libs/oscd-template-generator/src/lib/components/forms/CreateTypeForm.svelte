@@ -166,9 +166,6 @@
           {/if}
         </div>
       {/snippet}
-      {#snippet helper()}
-        <span>hehe</span>
-      {/snippet}
     </Autocomplete>
   {/if}
 
