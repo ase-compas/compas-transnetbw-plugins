@@ -4,12 +4,13 @@
   import ProcessDetailStepper from '../../components/engineering-process-detail/ProcessDetailStepper.svelte';
   import WorkflowBack from '../../components/engineering-workflow/WorkflowBack.svelte';
   import ProcessPluginGroupsView from '../../components/engineering-process-detail/ProcessPluginGroupsView.svelte';
-  import { getBreadcrumbs, getPluginGroups } from '../../services/engineering-process-detail.service';
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
   import { selectedProcessState } from '../../stores/process-store.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
+  import { buildProcessBreadcrumbs } from '../../components/engineering-process-detail/breadcrumbs.util';
+  import { getPluginGroups } from '../../services/plugin.service';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -29,7 +30,7 @@
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let breadcrumbs = $derived(getBreadcrumbs(selectedProcessState.process, { edit: isEditing }));
+  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedProcessState.process, { edit: isEditing }));
 
   let pluginGroups = $derived(getPluginGroups(selectedProcessState.process));
 
@@ -41,6 +42,7 @@
   }
 
   function startEditing() {
+    console.log("EDITING");
     isEditing = true;
     editorTabsVisible.set(false);
     currentStepIndex = 0;
