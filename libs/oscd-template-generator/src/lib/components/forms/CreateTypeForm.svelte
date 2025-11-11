@@ -51,7 +51,7 @@
   let createFromDefault = $state<boolean>(false);
 
   // typeId validation state
-  let typeIdTouched = $derived<boolean>(false);
+  let typeIdTouched = $state<boolean>(false);
   let isTypeIdRequiredValid = $derived<boolean>(typeId && typeId.trim().length > 0);
   let isTypeIdFormatValid = $derived<boolean>(/^\S+$/.test(typeId));
   let isTypeIdAvailable = $state<boolean>(false);
