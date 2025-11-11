@@ -353,7 +353,7 @@ export class DataTypeRepository implements IDataTypeRepository {
     // 1. if siblings of same kind exist -> insert before first one
     const ref = root.querySelector(kind);
     if (ref) {
-      return ref as Element;
+      return ref;
     }
 
     // 2️. else -> insert before first element of later kind in canonical order
