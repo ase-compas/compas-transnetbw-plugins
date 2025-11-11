@@ -28,7 +28,6 @@
     const text = await file.text();
     const parser = new DOMParser();
     pluginStore.setPluginState({doc: parser.parseFromString(text, "application/xml")})
-    console.log("set")
   }
 
   async function setPluginState() {
