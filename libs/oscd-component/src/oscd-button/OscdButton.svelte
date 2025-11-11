@@ -14,7 +14,7 @@
 </script>
 
 <Button
-  onclick={callback}
+  onclick={() => callback()}
   {variant}
   disabled={disabled}
   style={isAbortAction ? "background-color: #ff3e00;" : "background-color: " + backgroundColor}
