@@ -2,7 +2,7 @@
   import Button from '@smui/button';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
-  import ProcessPluginGroupsBase from './ProcessPluginGroupsBase.svelte';
+  import PluginBasePanel from './PluginBasePanel.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -12,42 +12,42 @@
     pluginGroups = [],
   }: Props = $props();
 
-  function removeAllPlugins() {
-    alert("REMOVE ALL PLUGINS - Not yet implemented");
-    // TODO:
-    // Implement the logic to remove all plugins
+  function handleRemoveAll() {
+    alert('Remove all plugins - functionality not implemented yet.');
   }
 
-  const removeOne = (groupIndex: number, pluginIndex: number) => {
-    const group = pluginGroups[groupIndex];
-    const plugin = group.plugins[pluginIndex];
-  };
+  function handleRemoveOne(groupIndex: number, pluginIndex: number) {
+    alert(`Remove plugin at group ${groupIndex}, index ${pluginIndex} - functionality not implemented yet.`);
+  }
 </script>
-<ProcessPluginGroupsBase {pluginGroups}>
+
+<PluginBasePanel
+  {pluginGroups}
+  {headerAction}
+  {itemAction}
+/>
+
+{#snippet headerAction()}
   <Button
-    slot="headerAction"
     style="background-color: #FF203A"
     variant="raised"
     aria-label="Remove all plugins"
-    onclick={removeAllPlugins}
+    onclick={handleRemoveAll}
   >
     REMOVE ALL
   </Button>
+{/snippet}
 
+{#snippet itemAction({ plugin, groupIndex, pluginIndex })}
   <button
-    slot="itemAction"
-    let:group
-    let:plugin
-    let:groupIndex
-    let:pluginIndex
     type="button"
     class="plugin-list__removeBtn"
     aria-label={`Remove ${plugin.name}`}
-    onclick={() => removeOne(groupIndex, pluginIndex)}
+    onclick={() => handleRemoveOne(groupIndex, pluginIndex)}
   >
     <OscdRemoveIcon svgStyles="fill: #FF203A" />
   </button>
-</ProcessPluginGroupsBase>
+{/snippet}
 
 <style>
   .plugin-list__removeBtn {

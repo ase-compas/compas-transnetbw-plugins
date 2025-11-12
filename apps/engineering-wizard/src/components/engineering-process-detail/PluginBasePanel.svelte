@@ -1,21 +1,41 @@
 <script lang="ts">
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
+    title?: string;
+
+    headerAction?: Snippet;
+
+    itemAction?: Snippet<
+      [
+        {
+          group: PluginGroup;
+          plugin: PluginGroup['plugins'][number];
+          groupIndex: number;
+          pluginIndex: number;
+        }
+      ]
+    >;
   }
 
   let {
     pluginGroups = [],
+    title = 'Process',
+    headerAction,
+    itemAction,
   }: Props = $props();
 </script>
 
 <OscdPanel class="plugin-list" backgroundColor="var(--brand)">
   {#snippet header()}
     <div class="plugin-list__header">
-      <p class="plugin-list__title">Process</p>
-      <slot name="headerAction" />
+      <p class="plugin-list__title">{title}</p>
+      {#if headerAction}
+        {@render headerAction()}
+      {/if}
     </div>
   {/snippet}
 
@@ -32,13 +52,15 @@
             <OscdListItem variant="secondary">
               <div class="plugin-list__itemRow">
                 <span class="plugin-list__itemName">{plugin.name}</span>
-                <slot
-                  name="itemAction"
-                  {group}
-                  {plugin}
-                  groupIndex={i}
-                  pluginIndex={j}
-                />
+
+                {#if itemAction}
+                  {@render itemAction({
+                    group,
+                    plugin,
+                    groupIndex: i,
+                    pluginIndex: j
+                  })}
+                {/if}
               </div>
             </OscdListItem>
           {/each}
@@ -55,6 +77,7 @@
     justify-content: space-between;
     gap: 1rem;
   }
+
   .plugin-list__title {
     margin: 0;
     font-weight: 500;
@@ -62,10 +85,12 @@
     font-size: 1.25rem;
     line-height: 1.2;
   }
+
   .plugin-list__content {
     display: flex;
     flex-direction: column;
   }
+
   .plugin-list__group {
     display: flex;
     flex-direction: column;
@@ -75,6 +100,7 @@
   .plugin-list__group:last-child {
     margin-bottom: 0;
   }
+
   .plugin-list__groupHeader {
     display: flex;
     align-items: center;
@@ -88,6 +114,7 @@
     font-weight: 500;
     color: #dae3e6;
   }
+
   .plugin-list__itemRow {
     display: flex;
     align-items: center;
@@ -97,8 +124,5 @@
   .plugin-list__itemName {
     font-weight: 500;
     color: var(--brand);
-  }
-  ::slotted([slot='itemAction']) {
-    display: inline-flex;
   }
 </style>

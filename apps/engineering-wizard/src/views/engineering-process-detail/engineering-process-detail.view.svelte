@@ -3,7 +3,7 @@
   import Button from '@smui/button';
   import ProcessDetailStepper from '../../components/engineering-process-detail/ProcessDetailStepper.svelte';
   import WorkflowBack from '../../components/engineering-workflow/WorkflowBack.svelte';
-  import ProcessPluginGroupsView from '../../components/engineering-process-detail/ProcessPluginGroupsView.svelte';
+  import PluginViewPanel from '../../components/engineering-process-detail/PluginViewPanel.svelte';
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
@@ -156,7 +156,7 @@
         </Button>
       </div>
 
-      <ProcessPluginGroupsView {pluginGroups} requestEdit={startEditing} />
+      <PluginViewPanel {pluginGroups} requestEdit={startEditing} />
     </div>
   {/if}
 </div>

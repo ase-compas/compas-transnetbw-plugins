@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ProcessPluginGroupsEditor from '../../components/engineering-process-detail/ProcessPluginGroupsEditor.svelte';
+  import PluginEditorPanel from '../../components/engineering-process-detail/PluginEditorPanel.svelte';
   import { onMount } from 'svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
   import { loadEditorPluginNamesFromLocalStorage, type LocalStoredPlugin } from '../../services/plugin.service';
@@ -34,7 +34,7 @@
 </script>
 
 <div class="process-definition-view">
-  <ProcessPluginGroupsEditor
+  <PluginEditorPanel
     {pluginGroups}
   />
 
