@@ -10,7 +10,7 @@ import {
 } from '../domain';
 import { type IDataTypeRepository } from '../repositories';
 import { type ITypeSpecificationService } from './type-specification.service';
-import { type IDataTypeService } from './common-data-type/data-type.service';
+import { type IDataTypeService } from './common-data-type';
 import { BasicTypeMapper } from '../mappers';
 
 export interface IDaTypeService {
