@@ -10,6 +10,7 @@
   import type { LocalStoredPlugin } from '../../services/plugin.service';
   import { addPluginToProcessStore } from '../../services/engineering-process.svelte';
   import { onMount } from 'svelte';
+  import Textfield from '@smui/textfield';
 
   onMount(() => {
     console.log('plugins in ProcessExternalPluginList:', plugins);
@@ -35,12 +36,17 @@
   <div class="card-header" slot="header">
     <p class="header-info">Add External Plugins</p>
     <div class="search-input">
-      <OscdInput
-        label="Search Plugins"
-        icon="search"
+      <Textfield
         variant="outlined"
+        label="Search Plugins"
         bind:value={searchTerm}
       />
+<!--      <OscdInput-->
+<!--        label="Search Plugins"-->
+<!--        icon="search"-->
+<!--        variant="outlined"-->
+<!--        bind:value={searchTerm}-->
+<!--      />-->
     </div>
   </div>
   <div class="card-parent-content" slot="content">

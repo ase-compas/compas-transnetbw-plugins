@@ -17,7 +17,6 @@
 
   let { doc, editCount = -1, host }: Props = $props();
 
-  // Local reactive mirrors of the store values so we can pass simple props to child components.
   let processes: Process[] = $state([]);
   let loading = $state(false);
   let errorMsg = $state('');
@@ -28,13 +27,14 @@
     });
   });
 
-  // Keep local props in sync with global stores.
   $effect(() => {
     processes = processesStore.processes;
   });
+
   $effect(() => {
     loading = processesLoadingStore.loading;
   });
+
   $effect(() => {
     errorMsg = processesErrorStore.error;
   });
@@ -70,7 +70,6 @@
   <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
 {:else}
   <EngineeringProcessesList
-    {processes}
     {loading}
     {errorMsg}
     handleView={handleView}

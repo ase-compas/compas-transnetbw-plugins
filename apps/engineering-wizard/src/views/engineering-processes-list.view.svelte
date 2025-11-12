@@ -4,23 +4,14 @@
   import Button from '@smui/button';
   import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
   import type { Process } from '@oscd-transnet-plugins/shared';
+  import { processesErrorStore, processesLoadingStore, processesStore } from '../services/engineering-process.svelte';
 
   interface Props {
-    processes?: {
-      id: string;
-      name?: string;
-      description?: string;
-    }[];
-    loading?: boolean;
-    errorMsg?: string;
     handleStart: (process: Process) => void;
     handleView: (process: Process) => void;
   }
 
   let {
-    processes = [],
-    loading = false,
-    errorMsg = '',
     handleStart,
     handleView
   }: Props = $props();
@@ -28,7 +19,7 @@
   let searchQuery = $state('');
 
   let searchLower = $derived(searchQuery.trim().toLowerCase());
-  let rows = $derived((processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id })));
+  let rows = $derived((processesStore.processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id })));
   let filteredRows = $derived(searchLower
     ? rows.filter((p) => (p.displayName ?? '').toLowerCase().includes(searchLower))
     : rows);
@@ -79,8 +70,8 @@
   <OscdBasicDataTable
     items={filteredRows}
     {columns}
-    {loading}
-    errorMsg={errorMsg}
+    loading={processesLoadingStore.loading}
+    errorMsg={processesErrorStore.error}
     emptyText="No processes available."
     hasActions
     headerBg="#DAE3E6"
