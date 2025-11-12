@@ -17,26 +17,10 @@
 
   let { doc, editCount = -1, host }: Props = $props();
 
-  let processes: Process[] = $state([]);
-  let loading = $state(false);
-  let errorMsg = $state('');
-
   onMount(() => {
     getProcesses().catch((e) => {
       console.error('Failed to load processes', e);
     });
-  });
-
-  $effect(() => {
-    processes = processesStore.processes;
-  });
-
-  $effect(() => {
-    loading = processesLoadingStore.loading;
-  });
-
-  $effect(() => {
-    errorMsg = processesErrorStore.error;
   });
 
   function startProcess(process: Process) {
@@ -55,10 +39,6 @@
     selectedProcessState.process = process;
   }
 
-  $effect(() => {
-    console.log('selected process PLUGINS', selectedProcessState.process);
-  });
-
   function goBack() {
     selectedProcessState.process = null;
   }
@@ -70,8 +50,6 @@
   <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
 {:else}
   <EngineeringProcessesList
-    {loading}
-    {errorMsg}
     handleView={handleView}
     handleStart={startProcess}
   />

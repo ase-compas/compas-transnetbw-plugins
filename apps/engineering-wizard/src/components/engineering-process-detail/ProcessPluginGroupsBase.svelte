@@ -1,34 +1,51 @@
 <script lang="ts">
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  export let pluginGroups: PluginGroup[] = [];
+
+  interface Props {
+    pluginGroups?: PluginGroup[];
+  }
+
+  let {
+    pluginGroups = [],
+  }: Props = $props();
 </script>
 
 <OscdPanel class="plugin-list" backgroundColor="var(--brand)">
-  <div slot="header" class="plugin-list__header">
-    <p class="plugin-list__title">Process</p>
-    <slot name="headerAction" />
-  </div>
+  {#snippet header()}
+    <div class="plugin-list__header">
+      <p class="plugin-list__title">Process</p>
+      <slot name="headerAction" />
+    </div>
+  {/snippet}
 
-  <div slot="content" class="plugin-list__content">
-    {#each pluginGroups as group, i}
-      <section class="plugin-list__group">
-        <header class="plugin-list__groupHeader">
-          <span class="plugin-list__groupIndex">{i + 1}.</span>
-          <span class="plugin-list__groupTitle">{group.title}</span>
-        </header>
+  {#snippet content()}
+    <div class="plugin-list__content">
+      {#each pluginGroups as group, i}
+        <section class="plugin-list__group">
+          <header class="plugin-list__groupHeader">
+            <span class="plugin-list__groupIndex">{i + 1}.</span>
+            <span class="plugin-list__groupTitle">{group.title}</span>
+          </header>
 
-        {#each group.plugins as plugin, j}
-          <OscdListItem variant="secondary">
-            <div class="plugin-list__itemRow">
-              <span class="plugin-list__itemName">{plugin.name}</span>
-              <slot name="itemAction" {group} {plugin} groupIndex={i} pluginIndex={j} />
-            </div>
-          </OscdListItem>
-        {/each}
-      </section>
-    {/each}
-  </div>
+          {#each group.plugins as plugin, j}
+            <OscdListItem variant="secondary">
+              <div class="plugin-list__itemRow">
+                <span class="plugin-list__itemName">{plugin.name}</span>
+                <slot
+                  name="itemAction"
+                  {group}
+                  {plugin}
+                  groupIndex={i}
+                  pluginIndex={j}
+                />
+              </div>
+            </OscdListItem>
+          {/each}
+        </section>
+      {/each}
+    </div>
+  {/snippet}
 </OscdPanel>
 
 <style>

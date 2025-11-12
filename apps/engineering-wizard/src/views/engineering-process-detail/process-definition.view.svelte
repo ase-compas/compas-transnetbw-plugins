@@ -36,8 +36,6 @@
 <div class="process-definition-view">
   <ProcessPluginGroupsEditor
     {pluginGroups}
-    on:removeAllPlugins={(e) => console.log('remove all plugins', e)}
-    on:removePlugin={(e) => console.log('remove one', e.detail)}
   />
 
   {#if localStoredPlugins.length}

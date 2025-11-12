@@ -2,20 +2,20 @@
   import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
   import type { Process, Plugin } from '@oscd-transnet-plugins/shared';
 
-  export let plugins: LocalStoredPlugin[];
-  export let searchTerm: string = '';
-  export let selectedProcess: Process;
-
-  import { OscdListItem, OscdPanel, OscdInput } from '../../../../../libs/oscd-component/src';
+  import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   import type { LocalStoredPlugin } from '../../services/plugin.service';
   import { addPluginToProcessStore } from '../../services/engineering-process.svelte';
   import { onMount } from 'svelte';
   import Textfield from '@smui/textfield';
 
+  export let plugins: LocalStoredPlugin[];
+  export let searchTerm: string = '';
+  export let selectedProcess: Process;
+
   onMount(() => {
     console.log('plugins in ProcessExternalPluginList:', plugins);
     console.log('selectedProcess in ProcessExternalPluginList:', selectedProcess);
-  })
+  });
 
   function addPluginToProcess(localPlugin: LocalStoredPlugin, processId: string) {
     const plugin = localStoredPluginToPlugin(localPlugin);
@@ -33,30 +33,36 @@
 </script>
 
 <OscdPanel backgroundColor="#DAE3E6">
-  <div class="card-header" slot="header">
-    <p class="header-info">Add External Plugins</p>
-    <div class="search-input">
-      <Textfield
-        variant="outlined"
-        label="Search Plugins"
-        bind:value={searchTerm}
-      />
+  {#snippet header()}
+    <div class="card-header">
+      <p class="header-info">Add External Plugins</p>
+      <div class="search-input">
+        <Textfield
+          variant="outlined"
+          label="Search Plugins"
+          bind:value={searchTerm}
+        />
+      </div>
     </div>
-  </div>
-  <div class="card-parent-content" slot="content">
-    {#each plugins as plugin}
-      <OscdListItem variant="secondary">
-        <div class="card-item-content">
-          <p class="plugin-name">{plugin.name}</p>
-          <button
-            class="plugin-add-btn"
-            on:click={() => addPluginToProcess(plugin, selectedProcess.id)}>
-            <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
-          </button>
-        </div>
-      </OscdListItem>
-    {/each}
-  </div>
+  {/snippet}
+
+  {#snippet content()}
+    <div class="card-parent-content">
+      {#each plugins as plugin}
+        <OscdListItem variant="secondary">
+          <div class="card-item-content">
+            <p class="plugin-name">{plugin.name}</p>
+            <button
+              class="plugin-add-btn"
+              onclick={() => addPluginToProcess(plugin, selectedProcess.id)}
+            >
+              <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
+            </button>
+          </div>
+        </OscdListItem>
+      {/each}
+    </div>
+  {/snippet}
 </OscdPanel>
 
 <style>

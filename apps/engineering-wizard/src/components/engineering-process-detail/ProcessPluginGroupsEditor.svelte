@@ -13,6 +13,7 @@
   }: Props = $props();
 
   function removeAllPlugins() {
+    alert("REMOVE ALL PLUGINS - Not yet implemented");
     // TODO:
     // Implement the logic to remove all plugins
   }
@@ -28,7 +29,7 @@
     style="background-color: #FF203A"
     variant="raised"
     aria-label="Remove all plugins"
-    on:click={removeAllPlugins}
+    onclick={removeAllPlugins}
   >
     REMOVE ALL
   </Button>

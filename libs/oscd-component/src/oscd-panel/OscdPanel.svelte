@@ -1,5 +1,11 @@
 <script lang="ts">
-  export let backgroundColor: string = "";
+  interface Props {
+    backgroundColor?: string;
+  }
+
+  let {
+    backgroundColor = '',
+  }: Props = $props();
 </script>
 
 <div class="card-parent" style="--bg-color: {backgroundColor}">
