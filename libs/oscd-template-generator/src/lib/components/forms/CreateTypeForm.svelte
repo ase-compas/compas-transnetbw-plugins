@@ -21,8 +21,8 @@
     allowCreateFromDefault?: boolean; // callbacks
     isDefaultAvailable?: (typeId: string) => Promise<boolean>;
 
-    onChange?: (_: ChangeEventDetails) => void;
-    onSubmit?: (_: ChangeEventDetails) => void;
+    onChange?: (event: ChangeEventDetails) => void;
+    onSubmit?: (event: ChangeEventDetails) => void;
   }
 
   let {
