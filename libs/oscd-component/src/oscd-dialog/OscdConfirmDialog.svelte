@@ -29,9 +29,9 @@ function handleCancel() {
   {confirmActionText}
   {cancelActionText}
   {color}
-  on:confirm={() => handleConfirm()}
-  on:cancel={() => handleCancel()}
-  on:close={() => closeDialog('close')}
+  onConfirm={() => handleConfirm()}
+  onCancel={() => handleCancel()}
+  onClose={() => closeDialog('close')}
   width="100%"
   maxWidth="500px"
   height="auto"

@@ -8,7 +8,3 @@ export type Route = {
 export const route = writable<Route>({
   path: ['overview']
 });
-
-export const host = writable<HTMLElement | null>(null);
-
-export const doc = writable<XMLDocument | null>(null);

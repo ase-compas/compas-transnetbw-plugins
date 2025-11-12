@@ -14,7 +14,7 @@ export interface ObjectReference {
   attributes?: Record<string, string>;
 }
 
-export interface DataType {id: string;}
+export interface DataType {id: string; privates?: Record<string, string>; }
 export interface LNodeType extends DataType {lnClass: string; children: ObjectReference[]}
 export interface DOType extends DataType {cdc: string; children: ObjectReference[]}
 export interface DAType extends DataType {instanceType?: string, children: ObjectReference[]}

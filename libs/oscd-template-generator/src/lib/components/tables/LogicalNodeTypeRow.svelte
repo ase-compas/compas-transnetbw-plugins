@@ -1,6 +1,6 @@
 <script lang="ts">
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
-  import DataTable, {Row, Cell} from '@smui/data-table';
+  import {Row, Cell} from '@smui/data-table';
 
   interface Props {
     node: {
@@ -21,7 +21,7 @@
   }: Props = $props();
 </script>
 
-<Row key={node.name} on:click={onClick} class="mdc-data-table__logical-node-row" style="background: white">
+<Row onclick={onClick} class="mdc-data-table__logical-node-row" style="background: white">
   <Cell><div class="node-name-cell"><strong>{node.name}</strong></div></Cell>
   <Cell>{node.class}</Cell>
   <Cell>{node.references}</Cell>

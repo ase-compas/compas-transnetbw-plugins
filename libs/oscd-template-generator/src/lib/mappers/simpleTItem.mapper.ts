@@ -19,8 +19,8 @@ function getTypeKindAbbreviation(typeKind: DataTypeKind) {
 
 export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isEditMode: boolean, acceptDropFn?: (item: TBoardItemContext, objRef: ObjectReferenceState) => boolean): TItem {
   const badgeText = [
-    objRef.meta?.objectType ?? 'Unknown Type',
     objRef.meta.refTypeKind ? getTypeKindAbbreviation(objRef.meta.refTypeKind) : null,
+    objRef.meta?.objectType ?? 'ANY',
   ]
     .filter(Boolean)
     .join(" • ");
@@ -54,7 +54,8 @@ export function mapDataTypeToItem(type: BasicType, canEdit = false): TItem {
     references: type.references,
     badgeText: type?.instanceType ?? 'Unknown Type',
     canEdit: true,
-    canUnlink: false
+    canUnlink: false,
+    canSetDefault: true
   };
 }
 

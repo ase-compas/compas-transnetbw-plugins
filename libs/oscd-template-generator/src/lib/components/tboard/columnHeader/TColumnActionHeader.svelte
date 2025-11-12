@@ -1,9 +1,7 @@
 <script lang="ts">
   import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
-  import { createEventDispatcher } from 'svelte';
   import TColumnHeaderLayout from './TColumnHeaderLayout.svelte';
 
-  const dispatch = createEventDispatcher();
 
   interface Props {
     title: string;
@@ -11,6 +9,8 @@
     actionLabel?: string | null;
     hasAction?: boolean;
     secondaryActionLabel?: string | null;
+
+    onSecondaryAction: () => void;
   }
 
   let {
@@ -18,7 +18,9 @@
     subtitle = null,
     actionLabel = null,
     hasAction = false,
-    secondaryActionLabel = null
+    secondaryActionLabel = null,
+
+    onSecondaryAction = () => {},
   }: Props = $props();
 
 </script>
@@ -30,7 +32,7 @@
   {hasAction}
 >
   {#snippet botAction()}
-    <OscdButton variant="raised" callback={() => dispatch('secondaryAction')}>
+    <OscdButton variant="raised" callback={onSecondaryAction} >
       {secondaryActionLabel}
     </OscdButton>
   {/snippet}

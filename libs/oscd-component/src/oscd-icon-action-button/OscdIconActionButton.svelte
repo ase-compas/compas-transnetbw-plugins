@@ -5,24 +5,24 @@
     OscdEditIcon,
     OscdVisibilityIcon,
     OscdWandStarsIcon,
-    OscdLinkOffIcon, OscdCloseIcon
+    OscdLinkOffIcon, OscdCloseIcon, OscdStarIcon
   } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   // ===== Parameters =====
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
   interface Props {
     /** Tooltip text to display on hover */
     tooltip: string;
     /** Side of the tooltip */
     tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
     /** Type of action button, e.g., 'delete' or 'duplicate' */
-    type: 'delete' | 'duplicate';
+    type: 'delete' | 'duplicate' | 'close' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'star';
     /** Delay in ms before showing the tooltip */
     showDelay?: number;
     /** Fill color for the icon SVG */
@@ -65,6 +65,8 @@
       <OscdLinkOffIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
     {:else if type === 'close'}
       <OscdCloseIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`} />
+    {:else if type === 'star'}
+      <OscdStarIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`} />
     {:else}
       Unsupported supported type: {type}
     {/if}
