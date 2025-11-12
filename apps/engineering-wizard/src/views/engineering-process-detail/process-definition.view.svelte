@@ -4,8 +4,8 @@
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
   import { loadEditorPluginNamesFromLocalStorage, type LocalStoredPlugin } from '../../services/plugin.service';
   import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
-  import ProcessExternalPluginsList
-    from '../../components/engineering-process-detail/ProcessExternalPluginsList.svelte';
+  import PluginExternalPanel
+    from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -44,7 +44,7 @@
       <p>SELECT OR DRAG & DROP PLUGINS</p>
     </div>
 
-    <ProcessExternalPluginsList plugins={filteredPlugins} {selectedProcess} bind:searchTerm />
+    <PluginExternalPanel plugins={filteredPlugins} {selectedProcess} bind:searchTerm />
   {/if}
 </div>
 
