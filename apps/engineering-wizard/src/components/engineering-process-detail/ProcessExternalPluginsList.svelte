@@ -41,12 +41,6 @@
         label="Search Plugins"
         bind:value={searchTerm}
       />
-<!--      <OscdInput-->
-<!--        label="Search Plugins"-->
-<!--        icon="search"-->
-<!--        variant="outlined"-->
-<!--        bind:value={searchTerm}-->
-<!--      />-->
     </div>
   </div>
   <div class="card-parent-content" slot="content">
