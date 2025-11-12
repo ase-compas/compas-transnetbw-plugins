@@ -81,7 +81,6 @@
     }).then(result => {
       if (result.type === 'confirm') {
         defaultTypeService.clearDefault({ kind: item.type, instanceType: item.instance });
-        console.log(item.id)
         data = data.filter(i => i.id !== item.id); // remove cleared item from table
       }
     });
