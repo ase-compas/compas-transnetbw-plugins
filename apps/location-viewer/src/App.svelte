@@ -28,10 +28,14 @@
   import {finalize, take, tap} from "rxjs/operators";
   import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
   import {_, locale} from "svelte-i18n";
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = $state([]);
-  let selectedLocationUUID: string = $state();
+  let selectedLocationUUID: string = $state('');
   let searchOpen = $state(false);
 
   //loading quickfix for css to load
@@ -51,14 +55,9 @@
     })
   })
 
-  interface Props {
-    locationResourceStore?: any;
-    searchResourceStore?: any;
-  }
-
-  let { locationResourceStore = new ResourceStore(), searchResourceStore = new ResourceStore() }: Props = $props();
-
-
+  // Resource stores for the two tables
+  const locationResourceStore = new ResourceStore();
+  const searchResourceStore = new ResourceStore();
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
@@ -211,6 +210,7 @@
     { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ]);
+
   $effect(() => {
     if (!selectedLocationUUID) {
       return;
@@ -240,7 +240,7 @@
       label={$_('location')}
     />
       <div class="search-filter">
-      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
+      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} onclick={toggleSearchPanel}>
         {#snippet content()}
                 <div >
             <div class="filter-box">
@@ -288,10 +288,6 @@
 {/if}
 
 <style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-
   .search-filter {
     margin-top: 1rem;
     margin-bottom: 1rem;
