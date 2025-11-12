@@ -1,5 +1,7 @@
 <script lang="ts">
 
+  import { OscdChevronLeftIcon } from '@oscd-transnet-plugins/oscd-icons';
+
   export interface Breadcrumb {
     label: string;
     secondaryLabel?: string;
@@ -40,7 +42,7 @@
       </span>
 
       {#if index < breadcrumbs.length - 1}
-        <span class="material-icons separator">chevron_right</span>
+        <OscdChevronLeftIcon svgStyles="fill: #004552"></OscdChevronLeftIcon>
       {/if}
     </div>
   {/each}

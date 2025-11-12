@@ -39,6 +39,7 @@
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
     editorTabsVisible.set(true);
+    selectedProcessState.process = null;
   }
 
   function startEditing() {
