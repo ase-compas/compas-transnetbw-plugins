@@ -18,6 +18,10 @@ export const selectedProcessState = $state<{ process: Process }>({
   process: null,
 });
 
+export const processEditModeState = $state<{ isEditing: boolean }>({
+  isEditing: false,
+});
+
 const SOURCE_URL = processesUrl;
 const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
 

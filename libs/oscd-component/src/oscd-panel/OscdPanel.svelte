@@ -1,20 +1,34 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
     backgroundColor?: string;
+    header?: Snippet;
+    content?: Snippet;
+    additional?: Snippet;
   }
 
   let {
     backgroundColor = '',
+    header,
+    content,
+    additional,
   }: Props = $props();
 </script>
 
-<div class="card-parent" style="--bg-color: {backgroundColor}">
-  <slot name="header"></slot>
-  <slot name="content"></slot>
+<div class="panel-parent" style="--bg-color: {backgroundColor}">
+  {#if header}
+    {@render header()}
+  {/if}
+  {#if content}
+    {@render content()}
+    {/if}
+  {#if additional}
+    {@render additional()}
+  {/if}
 </div>
-
 <style>
-  .card-parent {
+  .panel-parent {
     display: flex;
     flex-direction: column;
     height: fit-content;

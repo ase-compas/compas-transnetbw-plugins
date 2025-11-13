@@ -9,7 +9,7 @@
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { buildProcessBreadcrumbs } from '../../components/engineering-process-detail/breadcrumbs.util';
-  import { selectedProcessState } from '../../services/engineering-process.svelte';
+  import { processEditModeState, selectedProcessState } from '../../services/engineering-process.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -22,14 +22,12 @@
   type StepId = 'process-definition' | 'validator-configuration';
   const STEP_IDS: StepId[] = ['process-definition', 'validator-configuration'];
 
-  let isEditing = $state(false);
-
   let currentStepIndex = $state(0);
   let currentStepId = $derived(STEP_IDS[currentStepIndex] ?? STEP_IDS[0]);
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedProcessState.process, { edit: isEditing }));
+  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedProcessState.process, { edit: processEditModeState.isEditing }));
 
   let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
 
@@ -43,14 +41,14 @@
 
   function startEditing() {
     console.log("EDITING");
-    isEditing = true;
+    processEditModeState.isEditing = true;
     editorTabsVisible.set(false);
     currentStepIndex = 0;
     visitedSteps = [];
   }
 
   function exitEditing() {
-    isEditing = false;
+    processEditModeState.isEditing = false;
     editorTabsVisible.set(true);
     selectedProcessState.process = null;
   }
@@ -81,7 +79,7 @@
 </script>
 
 <div class="page-content">
-  {#if isEditing}
+  {#if processEditModeState.isEditing}
     <div class="stepper">
       <WorkflowBack onBack={exitEditing} />
 
@@ -112,14 +110,8 @@
 
     <div class="step-content">
       {#if currentStepId === 'process-definition'}
-        <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} handleClick={handleBreadcrumbClick} />
-        </div>
         <ProcessDefinition {pluginGroups} />
       {:else if currentStepId === 'validator-configuration'}
-        <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} handleClick={handleBreadcrumbClick} />
-
           <Button
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
@@ -129,7 +121,6 @@
           >
             ADD NEW VALIDATION
           </Button>
-        </div>
         <ProcessValidationGroups
           {pluginGroups}
           {breadcrumbs}

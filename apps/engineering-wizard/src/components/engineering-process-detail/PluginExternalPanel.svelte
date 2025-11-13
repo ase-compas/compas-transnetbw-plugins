@@ -42,39 +42,38 @@
   }
 </script>
 
-<OscdPanel backgroundColor="#DAE3E6">
-  {#snippet header()}
-    <div class="card-header">
-      <p class="header-info">Add External Plugins</p>
-      <div class="search-input">
-        <Textfield
-          variant="outlined"
-          label="Search Plugins"
-          bind:value={searchTerm}
-        />
-      </div>
-    </div>
-  {/snippet}
+<OscdPanel backgroundColor="#DAE3E6" {header} {content}></OscdPanel>
 
-  {#snippet content()}
-    <div class="card-parent-content">
-      {#each filteredPlugins as plugin}
-        <OscdListItem variant="secondary">
-          <div class="card-item-content">
-            <p class="plugin-name">{plugin.name}</p>
-            <button
-              class="plugin-add-btn"
-              onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
-            >
-              <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
-            </button>
-          </div>
-        </OscdListItem>
-      {/each}
+{#snippet header()}
+  <div class="card-header">
+    <p class="header-info">Add External Plugins</p>
+    <div class="search-input">
+      <Textfield
+        variant="outlined"
+        label="Search Plugins"
+        bind:value={searchTerm}
+      />
     </div>
-  {/snippet}
-</OscdPanel>
+  </div>
+{/snippet}
 
+{#snippet content()}
+  <div class="card-parent-content">
+    {#each filteredPlugins as plugin}
+      <OscdListItem variant="secondary">
+        <div class="card-item-content">
+          <p class="plugin-name">{plugin.name}</p>
+          <button
+            class="plugin-add-btn"
+            onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
+          >
+            <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
+          </button>
+        </div>
+      </OscdListItem>
+    {/each}
+  </div>
+{/snippet}
 <style>
   .card-header {
     display: flex;

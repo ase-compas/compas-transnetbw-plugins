@@ -1,76 +1,110 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import type { Snippet } from 'svelte';
+  import { OscdAddCircleIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { processEditModeState } from '../../services/engineering-process.svelte';
+
+  type ItemActionContext = {
+    group: PluginGroup;
+    plugin: PluginGroup['plugins'][number];
+    groupIndex: number;
+    pluginIndex: number;
+  };
 
   interface Props {
     pluginGroups?: PluginGroup[];
     title?: string;
 
     headerAction?: Snippet;
-
-    itemAction?: Snippet<
-      [
-        {
-          group: PluginGroup;
-          plugin: PluginGroup['plugins'][number];
-          groupIndex: number;
-          pluginIndex: number;
-        }
-      ]
-    >;
+    itemAction?: Snippet<[ItemActionContext]>;
   }
 
   let {
     pluginGroups = [],
     title = 'Process',
     headerAction,
-    itemAction,
+    itemAction
   }: Props = $props();
 </script>
 
-<OscdPanel class="plugin-list" backgroundColor="var(--brand)">
-  {#snippet header()}
-    <div class="plugin-list__header">
-      <p class="plugin-list__title">{title}</p>
-      {#if headerAction}
+<OscdPanel
+  class="plugin-list"
+  backgroundColor="var(--brand)"
+  {header}
+  {content}
+  {additional}
+/>
+
+{#snippet header()}
+  <header class="plugin-list__header">
+    <p class="plugin-list__title">{title}</p>
+
+    {#if headerAction}
+      <div class="plugin-list__header-action">
         {@render headerAction()}
-      {/if}
-    </div>
-  {/snippet}
+      </div>
+    {/if}
+  </header>
+{/snippet}
 
-  {#snippet content()}
-    <div class="plugin-list__content">
-      {#each pluginGroups as group, i}
-        <section class="plugin-list__group">
-          <header class="plugin-list__groupHeader">
-            <span class="plugin-list__groupIndex">{i + 1}.</span>
-            <span class="plugin-list__groupTitle">{group.title}</span>
-          </header>
+{#snippet content()}
+  <div class="plugin-list__body">
+    {#each pluginGroups as group, groupIndex}
+      <section class="plugin-list__group">
+        <header class="plugin-list__group-header">
+          <span class="plugin-list__group-index">{groupIndex + 1}.</span>
+          <span class="plugin-list__group-title">{group.title}</span>
+        </header>
 
-          {#each group.plugins as plugin, j}
-            <OscdListItem variant="secondary">
-              <div class="plugin-list__itemRow">
-                <span class="plugin-list__itemName">{plugin.name}</span>
+        {#each group.plugins as plugin, pluginIndex}
+          <OscdListItem variant="secondary">
+            <div class="plugin-list__item-row">
+              <span class="plugin-list__item-name">{plugin.name}</span>
 
-                {#if itemAction}
+              {#if itemAction}
+                <div class="plugin-list__item-action">
                   {@render itemAction({
                     group,
                     plugin,
-                    groupIndex: i,
-                    pluginIndex: j
+                    groupIndex,
+                    pluginIndex
                   })}
-                {/if}
-              </div>
-            </OscdListItem>
-          {/each}
-        </section>
-      {/each}
+                </div>
+              {/if}
+            </div>
+          </OscdListItem>
+        {/each}
+      </section>
+    {/each}
+  </div>
+{/snippet}
+
+{#snippet additional()}
+  {#if processEditModeState.isEditing}
+    <div class="plugin-list__footer">
+      <button
+        type="button"
+        class="plugin-list__footer-button plugin-list__footer-button--edit"
+      >
+        <OscdEditIcon aria-hidden="true" />
+        <span>Edit groups</span>
+      </button>
+
+      <button
+        type="button"
+        class="plugin-list__footer-button plugin-list__footer-button--add"
+      >
+        <OscdAddCircleIcon aria-hidden="true" />
+        <span>Add group</span>
+      </button>
     </div>
-  {/snippet}
-</OscdPanel>
+  {/if}
+{/snippet}
 
 <style>
+  /* Header */
+
   .plugin-list__header {
     display: flex;
     align-items: center;
@@ -86,43 +120,107 @@
     line-height: 1.2;
   }
 
-  .plugin-list__content {
+  .plugin-list__header-action {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Body */
+
+  .plugin-list__body {
     display: flex;
     flex-direction: column;
+    gap: 1.5rem;
   }
 
   .plugin-list__group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .plugin-list__group:last-child {
-    margin-bottom: 0;
   }
 
-  .plugin-list__groupHeader {
+  .plugin-list__group-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-  .plugin-list__groupIndex {
+
+  .plugin-list__group-index {
     font-weight: 500;
     color: var(--on-brand);
   }
-  .plugin-list__groupTitle {
+
+  .plugin-list__group-title {
     font-weight: 500;
     color: #dae3e6;
   }
 
-  .plugin-list__itemRow {
+  .plugin-list__item-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    gap: 0.75rem;
   }
-  .plugin-list__itemName {
+
+  .plugin-list__item-name {
     font-weight: 500;
     color: var(--brand);
+  }
+
+  .plugin-list__item-action {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Footer / edit controls */
+
+  .plugin-list__footer {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .plugin-list__footer-button {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 0.75rem 1rem;
+    min-height: 3.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
+    background: transparent;
+
+    font: inherit;
+    font-weight: 500;
+    color: var(--on-brand);
+    margin: 0;
+
+    cursor: pointer;
+    transition:
+      background-color 120ms ease-out,
+      border-color 120ms ease-out,
+      box-shadow 120ms ease-out;
+  }
+
+  .plugin-list__footer-button--edit {
+    border-color: var(--on-brand);
+  }
+
+  .plugin-list__footer-button--add {
+    border-style: dashed;
+    border-color: var(--on-brand);
+  }
+
+  .plugin-list__footer-button:focus-visible {
+    outline: 2px solid var(--on-brand);
+    outline-offset: 2px;
+  }
+
+  .plugin-list__footer-button:hover {
+    background-color: rgba(255, 255, 255, 0.04);
   }
 </style>

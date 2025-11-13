@@ -8,12 +8,10 @@
 
   type Props = {
     pluginGroups?: PluginGroup[];
-    selectedProcess: Process;
   };
 
   let {
     pluginGroups = [],
-    selectedProcess
   }: Props = $props();
 
   let localStoredPlugins = $state<LocalStoredPlugin[]>([]);
