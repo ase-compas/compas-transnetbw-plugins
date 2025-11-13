@@ -6,8 +6,8 @@
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { selectedProcessState } from './stores/process-store.svelte';
-  import { getProcesses, processesStore, processesLoadingStore, processesErrorStore } from './services/engineering-process.svelte.ts';
+  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
+  import { selectedProcessState } from './services/engineering-process.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -17,17 +17,16 @@
 
   let { doc, editCount = -1, host }: Props = $props();
 
-  onMount(() => {
-    getProcesses().catch((e) => {
-      console.error('Failed to load processes', e);
-    });
+  onMount(async () => {
+    await getProcesses();
   });
 
   function startProcess(process: Process) {
     if (!selectedProcessState.process) {
       selectedProcessState.process = process;
     }
-    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: selectedProcessState.process.plugins });
+    const plugins = getPluginsForProcess(selectedProcessState.process);
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins });
     selectedProcessState.process = null;
   }
 

@@ -7,10 +7,9 @@
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
-  import { selectedProcessState } from '../../stores/process-store.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { buildProcessBreadcrumbs } from '../../components/engineering-process-detail/breadcrumbs.util';
-  import { getPluginGroups } from '../../services/plugin.service';
+  import { selectedProcessState } from '../../services/engineering-process.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -32,7 +31,7 @@
 
   let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedProcessState.process, { edit: isEditing }));
 
-  let pluginGroups = $derived(getPluginGroups(selectedProcessState.process));
+  let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
 
   let visitedSteps: StepId[] = $state([]);
 

@@ -1,17 +1,4 @@
-import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
-
-export interface LocalStoredPlugin {
-  name?: string;
-  kind?: string;
-  src?: string;
-  sourceUrl?: string;
-  [key: string]: unknown;
-}
-
-export function getPluginGroups(proc: Process | null): PluginGroup[] {
-  if (proc?.pluginGroups?.length) return proc.pluginGroups as PluginGroup[];
-  return [{ title: 'Process', plugins: proc?.plugins ?? [] }];
-}
+import type { LocalStoredPlugin } from '@oscd-transnet-plugins/shared';
 
 export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): LocalStoredPlugin[] {
   try {
@@ -24,4 +11,19 @@ export function loadEditorPluginNamesFromLocalStorage(storageKey = 'plugins'): L
     console.error('Failed to load plugins from localStorage', err);
     return [];
   }
+}
+
+export function createPluginId(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .slice(0, 32);
+
+  const rand =
+    (crypto.randomUUID?.().split('-')[0])
+    ?? Math.random().toString(36).slice(2, 10);
+
+  return `ext-${slug || 'plugin'}-${rand}`;
 }

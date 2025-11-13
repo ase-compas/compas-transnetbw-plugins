@@ -2,10 +2,9 @@
   import PluginEditorPanel from '../../components/engineering-process-detail/PluginEditorPanel.svelte';
   import { onMount } from 'svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
-  import { loadEditorPluginNamesFromLocalStorage, type LocalStoredPlugin } from '../../services/plugin.service';
-  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
-  import PluginExternalPanel
-    from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
+  import { loadEditorPluginNamesFromLocalStorage } from '../../services/plugin.service';
+  import type { LocalStoredPlugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+  import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -44,7 +43,7 @@
       <p>SELECT OR DRAG & DROP PLUGINS</p>
     </div>
 
-    <PluginExternalPanel plugins={filteredPlugins} {selectedProcess} bind:searchTerm />
+    <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm />
   {/if}
 </div>
 

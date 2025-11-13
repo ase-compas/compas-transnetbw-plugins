@@ -1,22 +1,20 @@
 <script lang="ts">
   import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
-  import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
+  import type { LocalStoredPlugin, Plugin, Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import type { LocalStoredPlugin } from '../../services/plugin.service';
-  import { addPluginToProcessStore } from '../../services/engineering-process.svelte';
+  import { addPluginToProcessStore, selectedProcessState } from '../../services/engineering-process.svelte';
   import Textfield from '@smui/textfield';
+  import { createPluginId } from '../../services/plugin.service';
 
   interface Props {
     plugins: LocalStoredPlugin[];
     searchTerm?: string;
-    selectedProcess: Process;
   }
 
   let {
     plugins,
     searchTerm = '',
-    selectedProcess,
   }: Props = $props();
 
   let filteredPlugins = $derived.by(() => {
@@ -36,8 +34,9 @@
 
   function localStoredPluginToPlugin(localPlugin: LocalStoredPlugin): Plugin {
     return {
-      id: 'test',
+      id: createPluginId(localPlugin.name),
       name: localPlugin.name,
+      src: localPlugin.sourceUrl,
       sourceUrl: localPlugin.sourceUrl,
     };
   }
@@ -65,7 +64,7 @@
             <p class="plugin-name">{plugin.name}</p>
             <button
               class="plugin-add-btn"
-              onclick={() => addPluginToProcess(plugin, selectedProcess.id)}
+              onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
             >
               <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
             </button>
