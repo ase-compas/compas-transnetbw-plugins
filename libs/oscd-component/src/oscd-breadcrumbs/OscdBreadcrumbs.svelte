@@ -1,6 +1,5 @@
 <script lang="ts">
-
-  import { OscdChevronLeftIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import OscdChevronRightIcon from '../../../oscd-icons/src/oscd-chevron-right-icon/OscdChevronRightIcon.svelte';
 
   export interface Breadcrumb {
     label: string;
@@ -20,33 +19,38 @@
     handleClick,
   }: Props = $props();
 
-  const onClick = (index: number) => {
-    if (breadcrumbs[index].enabled && index !== activeIndex) {
-      handleClick(index);
-    }
+  const handleCrumbClick = (index: number) => {
+    const crumb = breadcrumbs[index];
+
+    if (!crumb?.enabled || index === activeIndex) return;
+
+    handleClick?.(index);
   };
 </script>
 
-<div class="oscd-breadcrumbs">
+<nav class="oscd-breadcrumbs" aria-label="Breadcrumb">
   {#each breadcrumbs as crumb, index}
     <div class="breadcrumb-wrapper">
-      <span
-        class="breadcrumb {crumb.enabled ? '' : 'br-disabled'} {index === activeIndex ? 'br-active' : ''}"
-        onclick={() => onClick(index)}
+      <button
+        type="button"
+        class="breadcrumb"
+        class:br-disabled={!crumb.enabled}
+        class:br-active={index === activeIndex}
+        onclick={() => handleCrumbClick(index)}
         aria-current={index === activeIndex ? 'page' : undefined}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
           <span class="secondary-label">{crumb.secondaryLabel}</span>
         {/if}
-      </span>
+      </button>
 
       {#if index < breadcrumbs.length - 1}
-        <OscdChevronLeftIcon svgStyles="fill: #004552"></OscdChevronLeftIcon>
+        <OscdChevronRightIcon svgStyles="fill: #004552" />
       {/if}
     </div>
   {/each}
-</div>
+</nav>
 
 <style>
   .oscd-breadcrumbs {
@@ -58,16 +62,18 @@
   .breadcrumb-wrapper {
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 
   .breadcrumb {
-    cursor: pointer;
-    border: none;
-    font-size: 1.3rem;
     display: flex;
     align-items: baseline;
-    color: var(--mdc-theme-primary);
-    gap: 0.3rem;
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
   }
 
   .breadcrumb:not(.br-disabled):not(.br-active) {
@@ -85,11 +91,7 @@
 
   .secondary-label {
     font-size: 1em;
-    color: var(--mdc-theme-primary);
     opacity: 0.6;
-  }
-
-  .secondary-label, .br-active {
     font-weight: 500;
   }
 
@@ -99,15 +101,6 @@
   }
 
   .br-active {
-    font-weight: bold;
-  }
-
-  .separator {
-    font-size: 1.1rem;
-    color: var(--mdc-theme-primary);
-    opacity: 0.7;
-    margin: 0 0.25rem;
-    display: flex;
-    align-items: center;
+    font-weight: 700;
   }
 </style>
