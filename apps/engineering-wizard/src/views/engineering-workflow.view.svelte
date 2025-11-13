@@ -86,7 +86,7 @@
     visited={visited}
     currentId={tagName}
     {pluginStatus}
-    on:select={(e) => selectPlugin(e.detail)}
+    onSelect={selectPlugin}
   />
 
   <div class="stepper-navigation">

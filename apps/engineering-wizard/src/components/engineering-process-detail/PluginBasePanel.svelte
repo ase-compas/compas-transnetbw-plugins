@@ -131,6 +131,8 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .plugin-list__group {
@@ -179,6 +181,7 @@
     display: flex;
     gap: 1rem;
     width: 100%;
+    flex-shrink: 0;
   }
 
   .plugin-list__footer-button {

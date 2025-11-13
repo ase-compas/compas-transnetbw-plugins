@@ -159,7 +159,6 @@
     --on-brand: #ffffff;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
   }
 
   .header {
