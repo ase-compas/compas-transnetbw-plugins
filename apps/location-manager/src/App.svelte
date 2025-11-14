@@ -71,7 +71,12 @@
   }
 
   function create() {
-    currentSelectLocation = new LocationModel("", "");
+    currentSelectLocation = {
+      key: '',
+      name: '',
+      description: '',
+      assignedResources: 0
+    };
     dialogState = DialogState.Create;
   }
 

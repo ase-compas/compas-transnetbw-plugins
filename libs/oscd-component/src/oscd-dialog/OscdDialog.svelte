@@ -22,8 +22,7 @@
 </Dialog>
 
 <script lang="ts">
-  import Dialog, { Title, Content, Actions } from '@smui/dialog';
-  import {createEventDispatcher} from "svelte";
+  import Dialog, { Actions, Content } from '@smui/dialog';
 
   interface Props {
     open?: boolean;
