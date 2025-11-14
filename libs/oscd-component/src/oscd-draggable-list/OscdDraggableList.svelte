@@ -7,9 +7,6 @@
    */
   import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate'
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
 
   type ListItem = {
     id: string;
