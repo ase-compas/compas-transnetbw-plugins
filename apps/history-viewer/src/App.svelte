@@ -316,19 +316,20 @@
           {/snippet}
     </OscdDialog>
     <div class="search-filter">
+      {#snippet filterControls()}
+        <OscdButton variant="raised" callback={search}>
+          <OscdSearchIcon />
+          <Label>{$_('search')}</Label>
+        </OscdButton>
+      {/snippet}
+
       <OscdFilterBox
+        {filterControls}
         {filterTypes}
         bind:activeFilters={filtersToSearch}
         addFilterLabel={$_('add_filter')}
         selectFilterLabel={$_('filter_types')}
-      >
-        {#snippet filterControls()}
-          <OscdButton variant="raised" callback={search}>
-            <OscdSearchIcon />
-            <Label>{$_('search')}</Label>
-          </OscdButton>
-        {/snippet}
-      </OscdFilterBox>
+      />
     </div>
     <div class="table-container">
       <Card style="padding: 1rem; width: 100%; height: 100%;">

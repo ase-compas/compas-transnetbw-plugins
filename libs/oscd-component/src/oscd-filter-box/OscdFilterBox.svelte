@@ -40,7 +40,7 @@
     }))
   );
 
-  let addFilterDisabled = $derived(() => !selectedFilterType || !inputValue);
+  let addFilterDisabled = $derived.by(() => !selectedFilterType || !inputValue);
 
   let getSelectedFilterType = $derived.by<FilterType | undefined>(() =>
     filterTypes.find((type) => type.label === selectedFilterType)
@@ -143,7 +143,9 @@
       </div>
       <div class="filter-button-controls">
         <OscdButton callback={addFilter} disabled={addFilterDisabled}>{addFilterLabel}</OscdButton>
-        {@render filterControls?.()}
+        {#if filterControls}
+          {@render filterControls?.()}
+        {/if}
       </div>
     </div>
 
