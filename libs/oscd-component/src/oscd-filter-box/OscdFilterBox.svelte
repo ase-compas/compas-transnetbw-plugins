@@ -33,7 +33,7 @@
   let inputValue = $state('');
   let selectedFilterType = $state<string | undefined>(undefined);
 
-  let convertTypeToSelection = $derived(() =>
+  let convertTypeToSelection = $derived.by(() =>
     filterTypes.map((type) => ({
       value: type.label,
       label: type.label,
@@ -42,7 +42,7 @@
 
   let addFilterDisabled = $derived(() => !selectedFilterType || !inputValue);
 
-  let getSelectedFilterType = $derived(() =>
+  let getSelectedFilterType = $derived.by<FilterType | undefined>(() =>
     filterTypes.find((type) => type.label === selectedFilterType)
   );
 
