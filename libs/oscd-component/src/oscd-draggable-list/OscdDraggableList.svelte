@@ -19,9 +19,10 @@
   interface Props {
     canDrag?: boolean;
     items?: ListItem[];
+    onOrderChange?: (items: ListItem[]) => void;
   }
 
-  let { canDrag = true, items = $bindable([]) }: Props = $props();
+  let { canDrag = true, items = $bindable([]), onOrderChange = (_) => {} }: Props = $props();
 
   const flipDurationMs = 100;
 
@@ -38,7 +39,7 @@
     onconsider={handleSort}
     onfinalize={e => {
       handleSort(e);
-      dispatch('orderChange', { items });
+      onOrderChange(items);
     }}
  >
       {#each items as item, index (item.id)}

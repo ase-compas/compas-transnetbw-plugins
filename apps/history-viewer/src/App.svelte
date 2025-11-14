@@ -26,10 +26,14 @@
   } from '@oscd-transnet-plugins/oscd-history-viewer';
   import type { SearchParams } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Label } from '@smui/button';
-  import type { ActiveFilter, FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
-  import { OscdCancelIcon, OscdSearchIcon } from '../../../libs/oscd-icons/src';
+  import type { ActiveFilter, FilterType } from '@oscd-transnet-plugins/oscd-component'
+  import { OscdCancelIcon, OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
   import {onMount} from "svelte";
   import {_, locale} from 'svelte-i18n';
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -289,7 +293,7 @@
   <OscdLoadingSpinner loadingDone={!loading} />
 {:else}
   <div class="version-editor-container">
-    <OscdDialog bind:open={dialogOpen} on:close={onCloseDialog}>
+    <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
       {#snippet title()}
             <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
           {/snippet}

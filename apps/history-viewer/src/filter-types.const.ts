@@ -1,4 +1,4 @@
-import { FilterType } from '../../../libs/oscd-component/src/oscd-filter-box/interfaces';
+import { type FilterType } from '@oscd-transnet-plugins/oscd-component';
 
 const filterTypes: FilterType[] = [
   {
