@@ -1,21 +1,15 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from "svelte";
+import { pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
 
 export default class NewOSCDPlugin extends HTMLElement {
-  private plugin?: Plugin;
+
 
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
-    this.plugin = mount(Plugin, {
-          target: this.shadowRoot!,
-          props: {
-            doc: this._doc,
-            editCount: -1,
-            host: this
-          },
-        });
-
+    mount(Plugin, { target: this.shadowRoot! });
+    pluginStore.setPluginState({host: this, doc: this._doc})
     const linkElement = createStyleLinkElement();
     this.shadowRoot?.appendChild(linkElement);
   }
@@ -23,18 +17,12 @@ export default class NewOSCDPlugin extends HTMLElement {
   private _doc?: XMLDocument;
   public set doc(newDoc: XMLDocument) {
     this._doc = newDoc;
-    if (!this.plugin) {
-      return;
-    }
-
-    this.plugin.$set({ doc: newDoc });
+    pluginStore.setPluginState({ doc: newDoc, host: this });
   }
 
+  private _editCount?: number;
   public set editCount(newCount: number) {
-    if (!this.plugin) {
-      return;
-    }
-    this.plugin.$set({ editCount: newCount });
+    this._editCount = newCount;
   }
 }
 

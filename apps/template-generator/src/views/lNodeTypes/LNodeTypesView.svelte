@@ -1,30 +1,27 @@
 <script lang="ts">
   // ===== Imports =====
-  import {OscdInput, OscdButton, OscdConfirmDialog} from '@oscd-transnet-plugins/oscd-component';
-  import { NewLNodeTypeDialog } from '@oscd-transnet-plugins/oscd-template-generator';
-  import DataTable, { Head, Body, Row, Cell, Label, SortValue } from '@smui/data-table';
+  import { OscdButton, OscdConfirmDialog, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    type BasicType,
+    DataTypeKind,
+    getDataTypeService,
+    getLNodeTypeService,
+    type IDataTypeService,
+    type ILNodeTypeService,
+    LogicalNodeTypeRow, type Mode,
+    NewLNodeTypeDialog, pluginStore,
+    type Route,
+    route
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import DataTable, { Body, Cell, Head, Label, Row, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import { LogicalNodeTypeRow} from '@oscd-transnet-plugins/oscd-template-generator';
-  import { createEventDispatcher } from 'svelte';
-  import {
-    getLNodeTypeService,
-    type ILNodeTypeService,
-    type Route,
-    route,
-    type BasicType
-  } from '@oscd-transnet-plugins/oscd-template-generator';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-
-  interface Props {
-    doc: XMLDocument;
-  }
-
-  let { doc }: Props = $props();
+  import { onMount } from 'svelte';
 
   // ===== Store and Service Instances =====
-  const dispatch = createEventDispatcher();
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== State =====
   let nodeSearchTerm = $state('');
@@ -33,72 +30,8 @@
   let items: BasicType[] = $state([]);
   let isLoading = false;
 
-
-  function loadItems() {
-    lNodeTypeService.getAllTypes().then(data => {
-      items = data;
-    })
-  }
-
-  // ===== Derived Values =====
-
-  // ===== Handlers =====
-  const handleDuplicate = (lNodeTypeId: string) => {
-    lNodeTypeService.duplicateType(lNodeTypeId);
-  };
-
-  const handleDelete = (lNodeTypeId: string) => {
-    openDialog(
-      OscdConfirmDialog,
-      {
-        title: 'Confirm Delete Logical Node Type',
-        message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
-        confirmActionText: 'Delete',
-        cancelActionText: 'Cancel',
-        color: 'red'
-      })
-      .then(result => {
-      if (result.type === 'confirm') {
-        lNodeTypeService.deleteTypeById(lNodeTypeId).then(() => {
-          items = items.filter(item => item.id !== lNodeTypeId);
-        });
-      }
-    })
-  };
-
-  const handleNodeClick = (lNodeTypeId: string) => {
-    route.set({
-      path: ['view'],
-      meta: {
-       lNodeTypeId: lNodeTypeId
-      }
-    } as Route);
-  };
-
-  function openCreateDialog() {
-    openDialog(NewLNodeTypeDialog).then(result => {
-      if (result.type === 'confirm') {
-        handleDialogCreate(result.data);
-      }
-    });
-  }
-
-  function handleDialogCreate({id, lnClass}) {
-    route.set({
-      path: ['create'],
-      meta: {
-        lNodeTypeId: id,
-        lnClass: lnClass
-      }
-    } as Route)
-  }
-  $effect(() => {
-    if (doc && lNodeTypeService) {
-      loadItems();
-    }
-  });
-
-  let filteredAndSortedItems = $derived(() => {
+  // ===== Derived State =====
+  let filteredAndSortedItems = $derived.by(() => {
     const searchTerm = nodeSearchTerm.toLowerCase();
     return items
       .filter((node) => node.id.toLowerCase().includes(searchTerm))
@@ -110,9 +43,85 @@
           : (aVal < bVal ? 1 : -1);
       });
   });
+
+  onMount(() => {
+    const unsubscribe = pluginStore.updates.subscribe(() => {
+      loadItems();
+    })
+
+    return () => {
+      unsubscribe();
+    }
+  })
+
+  async function loadItems() {
+    try {
+      items = await lNodeTypeService.getAllTypes();
+    } catch (e) {
+      console.error('Error loading logical node types:', e);
+    }
+  }
+
+  // ===== Handlers =====
+  function handleDuplicate(lNodeTypeId: string) {
+    try {
+      lNodeTypeService.duplicateType(lNodeTypeId);
+    } catch (e) {
+      console.error(`Error duplicating LNodeType "${lNodeTypeId}": ${e}`);
+    }
+  }
+
+  async function handleDelete(lNodeTypeId: string) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Confirm Delete Logical Node Type',
+      message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
+      confirmActionText: 'Delete',
+      cancelActionText: 'Cancel',
+      color: 'red'
+    });
+
+    if (result.type !== 'confirm') return;
+
+    try {
+      await lNodeTypeService.deleteTypeById(lNodeTypeId);
+      items = items.filter(item => item.id !== lNodeTypeId);
+    } catch (e) {
+      console.error(`Error deleting LNodeType "${lNodeTypeId}": ${e}`);
+    }
+  }
+
+  function handleNodeClick(lNodeTypeId: string) {
+    navigateToLNodeTypeDetail('view', lNodeTypeId);
+  }
+
+  async function openCreateDialog() {
+    const result = await openDialog(NewLNodeTypeDialog);
+    if (result.type === 'confirm') {
+      await handleDialogCreate(result.data);
+    }
+  }
+
+  async function handleDialogCreate({ id, lnClass, createFromDefault }) {
+    if (createFromDefault) {
+      try {
+        await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
+        setTimeout(() => navigateToLNodeTypeDetail('edit', id, lnClass), 50);
+      } catch (e) {
+        console.error(`Error creating LNodeType from default: ${e}`);
+      }
+    } else {
+      navigateToLNodeTypeDetail('create', id, lnClass);
+    }
+  }
+
+  async function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
+    route.set({ path: [mode], meta: { lNodeTypeId: lNodeTypeId, lnClass: lnClass } } as Route);
+  }
+
 </script>
 
 <div class="logical-nodes-overview">
+  <OscdButton callback={() => route.set({path: ["defaults"]})}>Default Types</OscdButton>
 
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">

@@ -181,7 +181,7 @@
             color="primary"
             style="background: white;
             color: var(--mdc-theme-primary, #ff3e00)"
-            on:click={() => closeDrawer('save')}
+            onclick={() => closeDrawer('save')}
           >Save & Close</Button>
           <Button
             variant="unelevated"
@@ -189,7 +189,7 @@
             style="
             background: #6B9197;
             color: white"
-            on:click={() => closeDrawer('cancel')}
+            onclick={() => closeDrawer('cancel')}
           >Cancel</Button>
         </div>
 

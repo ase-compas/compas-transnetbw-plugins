@@ -1,9 +1,6 @@
 <script lang="ts">
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
-  import { createEventDispatcher } from 'svelte';
   import TColumnHeaderLayout from './TColumnHeaderLayout.svelte';
-
-  const dispatch = createEventDispatcher();
 
   interface Props {
     title: string;
@@ -13,6 +10,9 @@
     hasSearch?: boolean;
     searchPlaceHolder?: string;
     hasAction?: boolean;
+
+    onAction: () => void;
+    onSearch(event: { value: string }): void;
   }
 
   let {
@@ -22,7 +22,10 @@
     search = $bindable(''),
     hasSearch = false,
     searchPlaceHolder = 'Search...',
-    hasAction = false
+    hasAction = false,
+
+    onAction = () => {},
+    onSearch = (_) => {},
   }: Props = $props();
 
 </script>
@@ -32,7 +35,7 @@
   {subtitle}
   {actionLabel}
   {hasAction}
-  on:action={() => dispatch('action')}
+  onAction={onAction}
 >
   {#snippet botAction()}
     {#if hasSearch}
@@ -42,7 +45,7 @@
         label={searchPlaceHolder}
         variant="outlined"
         styles="background: var(--oscd-base2,#fff)"
-        on:input={() => dispatch('search', { value: search })}
+        oninput={() => onSearch({ value: search })}
       />
     {/if}
   {/snippet}

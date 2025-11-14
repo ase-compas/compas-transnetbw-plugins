@@ -24,5 +24,6 @@ export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem
 export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte'
 export {default as OscdCallMadeIcon} from './oscd-call-made-icon/OscdCallMadeIcon.svelte'
 export {default as OscdCloseIcon} from './oscd-close-icon/OscdCloseIcon.svelte'
+export {default as OscdStarIcon} from './oscd-star-icon/OscdStarIcon.svelte'
 export { default as OscdAddCircleIcon } from './oscd-add-circle-icon/OscdAddCircleIcon.svelte'
 export { default as OscdCompareArrowsIcon } from './oscd-compare-arrows-icon/OscdCompareArrowsIcon.svelte'

@@ -1,9 +1,7 @@
 <script lang="ts">
   import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
-  import { createEventDispatcher } from 'svelte';
   import type { Snippet } from 'svelte';
 
-  const dispatch = createEventDispatcher();
 
   interface Props {
     title: string;
@@ -11,6 +9,8 @@
     actionLabel?: string | null;
     hasAction?: boolean;
     botAction?: Snippet;
+
+    onAction?: () => void;
   }
 
   let {
@@ -19,6 +19,8 @@
     actionLabel = null,
     hasAction = false,
     botAction,
+
+    onAction = () => {},
   }: Props = $props();
 </script>
 
@@ -33,7 +35,7 @@
 
     <div class:invisible={!hasAction || !actionLabel}>
       <OscdButton
-        callback={() => dispatch('action')}
+        callback={onAction}
         backgroundColor="white"
       >
         {actionLabel}

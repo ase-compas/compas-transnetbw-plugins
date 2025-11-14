@@ -17,6 +17,10 @@
     color?: string;
     showCloseButton?: boolean;
     content?: import('svelte').Snippet;
+
+    onClose?: () => void;
+    onCancel?: () => void;
+    onConfirm?: () => void;
   }
 
   let {
@@ -31,16 +35,18 @@
     confirmDisabled = false,
     color = 'var(--mdc-theme-primary, #ff3e00)',
     showCloseButton = true,
-    content
+    content,
+
+    onClose = () => {},
+    onCancel = () => {},
+    onConfirm = () => {},
   }: Props = $props();
 
-  const dispatch = createEventDispatcher();
-
-  function handleClose(e) {
-    if (e.detail.action === 'cancel') dispatch('cancel');
-    else if (e.detail.action === 'confirm') dispatch('confirm');
-    else if (e.detail.action === 'close') dispatch('close');
-    else dispatch('close');
+  function handleClose(e: CustomEvent<{action: string}>) {
+    if (e.detail.action === 'cancel') onCancel()
+    else if (e.detail.action === 'confirm') onConfirm()
+    else if (e.detail.action === 'close') onClose()
+    else onClose();
   }
 </script>
 
@@ -48,7 +54,7 @@
   bind:open
   aria-labelledby="large-scroll-title"
   aria-describedby="large-scroll-content"
-  on:SMUIDialog:closed={(e) => handleClose(e)}
+  onSMUIDialogClosed={handleClose}
   surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight};`}
 >
 
@@ -59,7 +65,7 @@
       <OscdIconActionButton
         onClick={() => {
           open = false;
-          dispatch('close');
+          onClose();
         }}
         tooltip="Close"
         tooltipSide="left"

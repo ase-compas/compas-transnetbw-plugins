@@ -1,13 +1,9 @@
 <script lang="ts">
-  import { createEventDispatcher} from 'svelte';
   import type { TBoardItemContext, TItem } from './types';
   import TCard from './TCard.svelte';
   import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
   import { isDragTarget, isDroppable } from './utils';
   import { flip } from 'svelte/animate';
-
-  const dispatch = createEventDispatcher();
-
 
 
   // Items of a list can only be dropped on items of another list with the same dragAndDropType.
@@ -18,6 +14,18 @@
     items?: TItem[];
     dropCandidate?: TBoardItemContext | null;
     dragAndDropType: string;
+
+    // Callbacks
+    onItemDrop?: (event: { targetItem: TItem }) => void;
+    onItemDragChange?: (event: { itemId: string | null; item: TItem | null }) => void;
+    onItemMarkChange?: (event: { itemId: string; item: TItem; marked: boolean }) => void;
+    onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
+    onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
+    onItemSetDefault?: (event: {itemId: string, item: TItem}) => void;
+    onItemUnlink?: (event: {itemId: string, item: TItem}) => void;
+    onItemEdit?: (event: {itemId: string, item: TItem}) => void;
+    onItemClick?: (event: {itemId: string, item: TItem}) => void;
+    onItemApplyDefaults?: (event: {itemId: string, item: TItem}) => void;
   }
 
   let {
@@ -26,7 +34,19 @@
     itemsDraggable,
     items = [],
     dropCandidate = null,
-    dragAndDropType
+    dragAndDropType,
+
+    // Callbacks
+    onItemDrop = () => {},
+    onItemDragChange = () => {},
+    onItemMarkChange = () => {},
+    onItemSelectChange = () => {},
+    onItemReferenceClick = () => {},
+    onItemSetDefault = () => {},
+    onItemUnlink = () => {},
+    onItemEdit = () => {},
+    onItemClick = () => {},
+    onItemApplyDefaults = () => {}
   }: Props = $props();
 
   let workItems = $state([...items]);
@@ -37,12 +57,8 @@
 
   let isOverId: string | null = $state(null);
 
-  function forwardEvent(eventType: string, item: TItem) {
-    dispatch(eventType, { itemId: item.id, item: item });
-  }
-
   function dispatchOnDragEvent(draggedItem: TItem) {
-    dispatch("itemDragChange", { itemId: draggedItem?.id ?? null, item: draggedItem ?? null});
+    onItemDragChange({ itemId: draggedItem?.id ?? null, item: draggedItem ?? null });
   }
 
   // ===== D&D Handlers =====
@@ -81,7 +97,7 @@
 
   function handleDropFinalize(e, itemId) {
     const item = items.find(i => i.id === itemId);
-    dispatch('itemDrop', {targetItem: item})
+    onItemDrop({ targetItem: item });
     dispatchOnDragEvent(null);
     isOverId = null;
   }
@@ -120,6 +136,7 @@
       badgeText={item.badgeText}
       canEdit={item.canEdit}
       canMark={item.canMark}
+      canSetDefault={item.canSetDefault}
       selectionEnabled={selectable}
       showSelectionIndicator={showSelectionIndicator}
       canApplyDefaults={item.canApplyDefaults}
@@ -132,13 +149,16 @@
       isMandatory={item.isMandatory}
       referencable={item.referencable}
       bind:selected={item.selected}
-      on:marked={(e) => dispatch('itemMarkChange', {item, itemId: item.id, marked: e.detail})}
-      on:selectChange={() => dispatch('itemSelectChange', {item, itemId: item.id})}
-      on:click={() => forwardEvent('itemClick', item)}
-      on:edit={() => forwardEvent('itemEdit', item)}
-      on:applyDefaults={() => forwardEvent('itemApplyDefaults', item)}
-      on:unlink={() => forwardEvent('itemUnlink', item)}
-      on:referenceClick={(e) => dispatch('itemReferenceClick', {item, itemId: item.id, reference: e.detail})}
+
+
+      onMarked={e => onItemMarkChange({ itemId: item.id, item: item, marked: e})}
+      onSelectChange={() => onItemSelectChange({item, itemId: item.id})}
+      onClick={() => onItemClick({itemId: item.id, item})}
+      onEdit={() => onItemEdit({itemId: item.id, item})}
+      onApplyDefaults={() => onItemApplyDefaults({itemId: item.id, item})}
+      onUnlink={() => onItemUnlink({itemId: item.id, item})}
+      onReferenceClick={(e) => onItemReferenceClick({item, itemId: item.id, reference: e})}
+      onSetDefault={() => onItemSetDefault({itemId: item.id, item})}
     />
     </div>
   {/each}

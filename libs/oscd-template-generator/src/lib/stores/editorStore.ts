@@ -11,7 +11,7 @@ interface EditorStoreOptions {
 export function createEditorStore({ onSave, onDiscard, initialMode = "view" }: EditorStoreOptions) {
 
   const mode = writable<Mode>(initialMode || 'view');
-  const dirty = writable<boolean>();
+  const dirty = writable<boolean>(false);
   const isEditModeSwitchState = writable<boolean>(false);
 
   const canEdit = derived(mode, ($mode) => $mode === 'edit' || $mode === 'create');
