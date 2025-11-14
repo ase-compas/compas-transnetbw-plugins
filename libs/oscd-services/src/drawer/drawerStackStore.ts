@@ -1,4 +1,4 @@
-import type { ComponentType, SvelteComponent } from 'svelte';
+import type { Component, SvelteComponent } from 'svelte';
 import { get, type Readable, writable } from 'svelte/store';
 
 export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
@@ -33,7 +33,7 @@ export type CloseReason = 'esc' | 'backdrop' | 'button' | 'cancel' | 'save';
  */
 export interface Drawer<T = any> {
   title: string;
-  component: ComponentType;
+  component: Component;
   props?: T;
   canClose?: (reason: CloseReason) => boolean | Promise<boolean>;
   ref?: SvelteComponent; // reference to the mounted component
