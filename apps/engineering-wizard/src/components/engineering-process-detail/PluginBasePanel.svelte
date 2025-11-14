@@ -26,6 +26,10 @@
     headerAction,
     itemAction
   }: Props = $props();
+
+  function addGroup() {
+    alert('adding a group');
+  }
 </script>
 
 <OscdPanel
@@ -56,6 +60,12 @@
           <span class="plugin-list__group-index">{groupIndex + 1}.</span>
           <span class="plugin-list__group-title">{group.title}</span>
         </header>
+        {#if group.plugins.length === 0}
+          <OscdListItem variant="dashed">
+            <div class="plugin-list__item-row__dashed">
+            </div>
+          </OscdListItem>
+        {/if}
 
         {#each group.plugins as plugin, pluginIndex}
           <OscdListItem variant="secondary">
@@ -87,15 +97,16 @@
         type="button"
         class="plugin-list__footer-button plugin-list__footer-button--edit"
       >
-        <OscdEditIcon aria-hidden="true" />
+        <OscdEditIcon svgStyles="fill: var(--primary-base);" aria-hidden="true" />
         <span>Edit groups</span>
       </button>
 
       <button
         type="button"
         class="plugin-list__footer-button plugin-list__footer-button--add"
+        onclick={addGroup}
       >
-        <OscdAddCircleIcon aria-hidden="true" />
+        <OscdAddCircleIcon svgStyles="fill: var(--primary-base);" aria-hidden="true" />
         <span>Add group</span>
       </button>
     </div>
@@ -157,6 +168,10 @@
     color: #dae3e6;
   }
 
+  .plugin-list__item-row__dashed {
+    height: 2rem;
+  }
+
   .plugin-list__item-row {
     display: flex;
     align-items: center;
@@ -190,40 +205,14 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-
-    padding: 0.75rem 1rem;
-    min-height: 3.75rem;
-    border-radius: 0.375rem;
+    height: 36px;
+    width: 70px;
+    text-transform: uppercase;
     border: 1px solid transparent;
-    background: transparent;
-
-    font: inherit;
-    font-weight: 500;
-    color: var(--on-brand);
-    margin: 0;
-
+    border-radius: 4px;
     cursor: pointer;
-    transition:
-      background-color 120ms ease-out,
-      border-color 120ms ease-out,
-      box-shadow 120ms ease-out;
-  }
-
-  .plugin-list__footer-button--edit {
-    border-color: var(--on-brand);
-  }
-
-  .plugin-list__footer-button--add {
-    border-style: dashed;
-    border-color: var(--on-brand);
-  }
-
-  .plugin-list__footer-button:focus-visible {
-    outline: 2px solid var(--on-brand);
-    outline-offset: 2px;
-  }
-
-  .plugin-list__footer-button:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    margin: 0;
+    background-color: white;
+    color: var(--primary-base);
   }
 </style>

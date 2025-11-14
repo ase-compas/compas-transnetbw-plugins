@@ -142,7 +142,6 @@ export function addPluginToProcessStore(
   plugin: Plugin,
   groupTitle?: string
 ): void {
-  console.log('Adding plugin to process store', procId, plugin, groupTitle);
   const title = (groupTitle && groupTitle.trim()) || 'Ungrouped';
 
   const process = processesStore.processes.find((p) => p.id === procId);
@@ -153,7 +152,6 @@ export function addPluginToProcessStore(
   let group = groups.find((g) => g.title === title);
 
   if (!group) {
-    console.log('Creating new plugin group:', title);
     group = { title, plugins: [] };
     groups.push(group);
   }
@@ -163,8 +161,58 @@ export function addPluginToProcessStore(
   }
 
   group.plugins.push(plugin);
+}
 
-  console.log('Updated process', process);
+export function removePluginFromProcessStore(
+  procId: string,
+  pluginId: string
+): boolean {
+  const process = processesStore.processes.find((p) => p.id === procId);
+  if (!process || !process.pluginGroups) return false;
+
+  for (const group of process.pluginGroups) {
+    if (!group?.plugins) continue;
+
+    const index = group.plugins.findIndex((pl) => pl.id === pluginId);
+    if (index === -1) continue;
+
+    group.plugins.splice(index, 1);
+
+    if (group.plugins.length === 0) {
+      const groupIndex = process.pluginGroups.indexOf(group);
+      if (groupIndex !== -1) {
+        process.pluginGroups.splice(groupIndex, 1);
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+export function removeAllPluginsFromProcessStore(procId: string): void {
+  const process = processesStore.processes.find((p) => p.id === procId);
+  if (!process || !process.pluginGroups) return;
+
+  for (const group of process.pluginGroups) {
+    if (group.plugins) {
+      group.plugins.length = 0;
+    }
+  }
+}
+
+export function addGroupToProcessStore(
+  procId: string,
+  groupTitle: string
+): void {
+  const process = processesStore.processes.find((p) => p.id === procId);
+  if (!process) return;
+
+  const groups = process.pluginGroups ?? (process.pluginGroups = []);
+  if (!groups.find((g) => g.title === groupTitle)) {
+    groups.push({ title: groupTitle, plugins: [] });
+  }
 }
 
 export function getPluginsForProcess(process: Process): Plugin[] {

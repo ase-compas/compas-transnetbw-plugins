@@ -191,11 +191,12 @@
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
+    margin: 0;
   }
 
   .btn[disabled] { opacity: 0.6; cursor: default; }
   .btn--back { color: #ffffff; background-color: #6b9197; }
   .btn--next { background-color: #ffffff; color: var(--brand); }
 
-  .step-content { padding: 1rem 2rem; }
+  .step-content { padding: 1.5rem 1.5rem; }
 </style>

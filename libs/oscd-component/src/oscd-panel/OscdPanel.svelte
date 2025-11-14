@@ -57,5 +57,23 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+
+    padding-right: 4px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #6B9197 transparent;
+  }
+
+  .panel-parent__body::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .panel-parent__body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .panel-parent__body::-webkit-scrollbar-thumb {
+    background-color: #6B9197;
+    border-radius: 999px;
   }
 </style>

@@ -3,6 +3,11 @@
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
   import PluginBasePanel from './PluginBasePanel.svelte';
+  import {
+    removeAllPluginsFromProcessStore,
+    removePluginFromProcessStore,
+    selectedProcessState
+  } from '../../services/engineering-process.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -13,11 +18,11 @@
   }: Props = $props();
 
   function handleRemoveAll() {
-    alert('Remove all plugins - functionality not implemented yet.');
+    removeAllPluginsFromProcessStore(selectedProcessState.process.id);
   }
 
-  function handleRemoveOne(groupIndex: number, pluginIndex: number) {
-    alert(`Remove plugin at group ${groupIndex}, index ${pluginIndex} - functionality not implemented yet.`);
+  function handleRemoveOne(pluginId: string) {
+    removePluginFromProcessStore(selectedProcessState.process.id, pluginId);
   }
 </script>
 
@@ -43,7 +48,7 @@
     type="button"
     class="plugin-list__removeBtn"
     aria-label={`Remove ${plugin.name}`}
-    onclick={() => handleRemoveOne(groupIndex, pluginIndex)}
+    onclick={() => handleRemoveOne(plugin.id)}
   >
     <OscdRemoveIcon svgStyles="fill: #FF203A" />
   </button>
