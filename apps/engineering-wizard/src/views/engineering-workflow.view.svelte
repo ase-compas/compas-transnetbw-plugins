@@ -125,7 +125,7 @@
     <button
       type="button"
       class="back-button"
-      on:click={previousPlugin}
+      onclick={previousPlugin}
       aria-label="Previous plugin"
       disabled={!hasPlugins}
     >
@@ -135,7 +135,7 @@
     <button
       type="button"
       class="next-button"
-      on:click={nextPlugin}
+      onclick={nextPlugin}
       aria-label="Next plugin"
       disabled={!hasPlugins}
     >
