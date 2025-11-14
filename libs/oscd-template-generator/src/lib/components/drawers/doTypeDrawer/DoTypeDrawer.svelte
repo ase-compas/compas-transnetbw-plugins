@@ -12,7 +12,7 @@
     type IDefaultService,
     type IDoTypeService
   } from '../../../services';
-  import { createEditorStore, createObjectReferenceStore, doc, pluginStore } from '../../../stores';
+  import { createEditorStore, createObjectReferenceStore, pluginStore } from '../../../stores';
   import { type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     canAssignTypeToObjectReference,

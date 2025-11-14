@@ -9,7 +9,7 @@ type Props = {
 
 const {
   disabled = false,
-  onClick = () => {}
+  onClick
 }: Props = $props();
 
 

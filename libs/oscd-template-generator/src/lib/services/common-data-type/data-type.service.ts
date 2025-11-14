@@ -8,141 +8,20 @@ import {
   type EnumType,
   type LNodeType,
   type ObjectReferenceDetails,
-  type ObjectSpecification,
   type SimpleReference,
   type TypeOption
-} from '../domain';
-import { type IDataTypeRepository } from '../repositories';
-import { type ITypeSpecificationService } from './type-specification.service';
-import { lnClassDescriptions } from '../data/lnClassDescriptions';
-import { cdcDescriptions } from '../data/cdcDescriptions';
-import type { DefaultConfig, DefaultKey, DefaultType } from '../domain/default.model';
-import type { IDefaultService } from './default.service';
-import { DefaultTypeMapper } from '../mappers/default-type.mapper';
-import { MAX_ID_LENGTH } from '../constants';
-
-/**
- * Defines operations for working with data types and their specifications.
- *
- * The `IDataTypeService` provides methods to:
- * - Resolve object references and enrich them with metadata from specifications.
- * - Retrieve configured and default reference details.
- * - Query referenced and assignable types for a given type kind and instance.
- */
-export interface IDataTypeService {
-  /**
-   * Retrieves detailed reference information (metadata from specification) for a set of object references of a specific type kind and instance type.
-   * References are set to isConfigured = true and if available the typeRef.
-   * @param typeKind The kind of data type (e.g., LNodeType, DOType, etc.)
-   * @param instanceType The instance type identifier.
-   * @param reference Array of simple references to resolve.
-   * @returns Promise resolving to an array of ObjectReferenceDetails.
-   */
-  getObjectReferenceDetails(
-    typeKind: DataTypeKind,
-    instanceType: string,
-    reference: SimpleReference[]
-  ): Promise<ObjectReferenceDetails[]>;
-
-  /**
-   * Retrieves default reference details (metadata from specification) for all references of a specific type kind and instance type.
-   * @param typeKind The kind of data type.
-   * @param instanceType The instance type identifier.
-   * @returns Promise resolving to an array of ObjectReferenceDetails representing defaults.
-   */
-  getDefaultObjectReferenceDetails(
-    typeKind: DataTypeKind,
-    instanceType: string
-  ): Promise<ObjectReferenceDetails[]>;
-
-  /**
-   * Retrieves reference details for configured references of a specific type kind and instance type.
-   * @param typeKind The kind of data type.
-   * @param instanceType The instance type identifier.
-   * @param references Array of references to resolve.
-   * @returns Promise resolving to an array of ObjectReferenceDetails for configured references.
-   */
-  getConfiguredObjectReferenceDetails(
-    typeKind: DataTypeKind,
-    instanceType: string,
-    references: SimpleReference[]
-  ): Promise<ObjectReferenceDetails[]>;
-
-  /**
-   * Retrieves all referenced types for a given type kind and type ID, optionally filtered by child names.
-   * @param typeKind The kind of data type.
-   * @param typeId The identifier of the type.
-   * @param childNameFilter Optional array of child names to filter results.
-   * @returns Promise resolving to DataTypes containing referenced types.
-   */
-  getReferencedTypes(
-    typeKind: DataTypeKind,
-    typeId: string,
-    childNameFilter?: string[]
-  ): Promise<DataTypes>;
-
-  /**
-   * Retrieves all assignable types for a given type kind and instance type, optionally filtered by child names.
-   * @param typeKind The kind of data type.
-   * @param instanceType The instance type identifier.
-   * @param childNameFilter Optional array of child names to filter results.
-   * @returns Promise resolving to DataTypes containing assignable types.
-   */
-  getAssignableTypes(
-    typeKind: DataTypeKind,
-    instanceType: string,
-    childNameFilter?: string[]
-  ): Promise<DataTypes>;
-
-  /**
-   * Retrieves type options for a given data type kind, including if available.
-   * @param typeKind The kind of data type.
-   * @returns Promise resolving to an array of TypeOption objects.
-   */
-  getTypeOptions(typeKind: DataTypeKind): Promise<TypeOption[]>;
-
-  /**
-   * Sets a type as default type that can be then used for applying this default.
-   *
-   * It stores all referenced types as well.
-   *
-   * @param typeKind type kind  of the root type to set as default
-   * @param id type of the root type to set as default
-   */
-  setDefaultType(typeKind: DataTypeKind,  id: string): Promise<void>;
-
-  /**
-   * Applies the default type to the specified object reference of a data type.
-   * @param typeKind
-   * @param id
-   * @param name
-   * @return root-id of the applied default type
-   */
-  applyDefaultType(typeKind: DataTypeKind, id: string, name: string): Promise<string>;
-
-  /**
-   * Inserts all types of the default type into the repository.
-   * @param typeKind
-   * @param instanceType
-   * @param rootId
-   */
-  createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void>;
-}
-
-function groupObjectTypeByTypeKind(requiredSpecs: ObjectSpecification[]): Map<DataTypeKind, Set<string>> {
-  return requiredSpecs.reduce((acc, spec) => {
-    // skip those without refTypeKind
-    if (!spec.refTypeKind) return acc;
-
-    if (!acc.has(spec.refTypeKind)) {
-      acc.set(spec.refTypeKind, new Set<string>());
-    }
-
-    acc.get(spec.refTypeKind)?.add(spec.objectType);
-
-    return acc;
-  }, new Map<DataTypeKind, Set<string>>());
-}
+} from '../../domain';
+import { type IDataTypeRepository } from '../../repositories';
+import { type ITypeSpecificationService } from '../type-specification.service';
+import { lnClassDescriptions } from '../../data/lnClassDescriptions';
+import { cdcDescriptions } from '../../data/cdcDescriptions';
+import type { DefaultConfig, DefaultKey, DefaultType } from '../../domain/default.model';
+import type { IDefaultService } from '../default.service';
+import { DefaultTypeMapper } from '../../mappers/default-type.mapper';
+import { MAX_ID_LENGTH } from '../../constants';
+import type { IDataTypeService } from './data-type.service.interfance';
+import { groupObjectTypeByTypeKind,
+  specsToObjectReferenceDetails } from './data-type.utils';
 
 type DataTypeWithKind = { kind: DataTypeKind; dataType: LNodeType | DOType | DAType | EnumType };
 
@@ -157,7 +36,7 @@ export class DataTypeService implements IDataTypeService {
   async getObjectReferenceDetails(typeKind: DataTypeKind, instanceType: string, reference: SimpleReference[]): Promise<ObjectReferenceDetails[]> {
     const typeSpec = this.typeSpecificationService.getTypeSpecification(typeKind, instanceType)
     if(!typeSpec) throw new Error(`No type specification found for type ${typeKind} with instanceType ${instanceType}`);
-    return this.specsToObjectReferenceDetails(typeSpec, reference) as ObjectReferenceDetails[];
+    return specsToObjectReferenceDetails(typeSpec, reference) as ObjectReferenceDetails[];
   }
 
   async getConfiguredObjectReferenceDetails(typeKind: DataTypeKind, instanceType: string, references: SimpleReference[]): Promise<ObjectReferenceDetails[]> {
@@ -227,26 +106,6 @@ export class DataTypeService implements IDataTypeService {
     return Promise.resolve(options);
   }
 
-
-  private specsToObjectReferenceDetails(typeSpecification: ObjectSpecification[], references: SimpleReference[]): ObjectReferenceDetails[] {
-    return typeSpecification.map(spec => {
-      const existingRefObj = references.find(objRef => objRef.name === spec.name);
-      return {
-        name: spec.name,
-        tagName: spec.tagName,
-        typeRef: existingRefObj?.typeRef,
-        attributes: spec.attributes,
-        meta: {
-          isMandatory: !!spec.isMandatory,
-          isConfigured: !!spec.isMandatory || !!existingRefObj,
-          requiresReference: !!spec.requiresReference,
-          objectType: spec.objectType,
-          refTypeKind: spec.refTypeKind
-        }
-      } as ObjectReferenceDetails;
-    });
-  }
-
   getInstanceType(typeKind: DataTypeKind, id: string): string | undefined {
     const type = this.typeRepo.findDataTypeById(typeKind, id);
     if (!type) return undefined;
@@ -265,7 +124,7 @@ export class DataTypeService implements IDataTypeService {
     const rootType = this.typeRepo.findDataTypeById(typeKind, id);
     const referencedTypes = await this.getReferencedTypes(typeKind, id);
 
-    const defaultConfig = this.getDefaultConfig(rootType, typeKind, referencedTypes);
+    const defaultConfig = this.toDefaultConfig(rootType, typeKind, referencedTypes);
     const defaultConfigWithVersion = await this.defaultService.setDefault(defaultConfig);
     if (!rootType.privates) rootType.privates = {};
     rootType.privates.defaultVersion = defaultConfigWithVersion.version;
@@ -345,7 +204,7 @@ export class DataTypeService implements IDataTypeService {
       updates,
     });
 
-    return Promise.resolve(refId)
+    return refId
   }
 
   async createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void> {
@@ -453,12 +312,12 @@ export class DataTypeService implements IDataTypeService {
     }
   }
 
-  private async defaultToDataType(defaultType: DefaultType) {
+  private async defaultToDataType(defaultType: DefaultType): Promise<LNodeType | DOType | DAType | EnumType> {
     const objRefDetails = await this.getConfiguredObjectReferenceDetails(defaultType.kind, defaultType.instanceType, defaultType.children);
     return DefaultTypeMapper.mapDefaultTypeToDataType(defaultType, objRefDetails)
   }
 
-  private getDefaultConfig(rootType: DataType, typeKind: DataTypeKind, referencedTypes: DataTypes): DefaultConfig {
+  private toDefaultConfig(rootType: DataType, typeKind: DataTypeKind, referencedTypes: DataTypes): DefaultConfig {
     const rootDefaultType = DefaultTypeMapper.mapDataTypeToDefaultType(rootType, typeKind);
     const referencedDefaultTypes = DefaultTypeMapper.mapDataTypesToDefaultTypes(referencedTypes);
 
