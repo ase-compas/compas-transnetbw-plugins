@@ -31,9 +31,6 @@
     closeDialog(reason);
   };
 
-  const onBackdropClick = () => exit('exit');
-  const onChildExit = () => exit('exit');
-
   $effect(() => {
     if (open !== prevOpen) {
       prevOpen = open;
@@ -57,7 +54,7 @@
     tabindex="-1"
     onclick={(event) => {
       if (event.target === event.currentTarget) {
-        onBackdropClick();
+        exit('exit');
       }
     }}
   >
@@ -68,7 +65,7 @@
         {editCount}
         {host}
         {plugins}
-        on:exit={onChildExit}
+        onExit={() => exit('exit')}
       />
     </div>
   </div>

@@ -8,124 +8,177 @@
 
   let { pluginGroups = [] }: Props = $props();
 
-  let selectedIdx: number | null = $state(null);
-  let activePluginIdx: number | null = $state(null);
+  let selectedGroupIndex: number | null = $state(null);
+  let selectedPluginIndex: number | null = $state(null);
 
-  let currentGroup = $derived(selectedIdx != null ? pluginGroups[selectedIdx] : null);
-  let currentPlugin =
-    $derived(currentGroup && activePluginIdx != null ? currentGroup.plugins[activePluginIdx] : null);
+  const selectedGroup = $derived(
+    selectedGroupIndex !== null ? pluginGroups[selectedGroupIndex] : null
+  );
+
+  const selectedPlugin = $derived(
+    selectedGroup && selectedPluginIndex !== null
+      ? selectedGroup.plugins[selectedPluginIndex]
+      : null
+  );
 
   $effect(() => {
-    if (pluginGroups?.length && (selectedIdx == null || selectedIdx >= pluginGroups.length)) {
-      selectedIdx = 0;
-      activePluginIdx = pluginGroups[0]?.plugins?.length ? 0 : null;
+    if (!pluginGroups?.length) {
+      selectedGroupIndex = null;
+      selectedPluginIndex = null;
+      return;
+    }
+
+    if (selectedGroupIndex === null || selectedGroupIndex >= pluginGroups.length) {
+      selectedGroupIndex = 0;
+    }
+
+    const group = pluginGroups[selectedGroupIndex];
+
+    if (!group?.plugins?.length) {
+      selectedPluginIndex = null;
+      return;
+    }
+
+    if (selectedPluginIndex === null || selectedPluginIndex >= group.plugins.length) {
+      selectedPluginIndex = 0;
     }
   });
 
   let xmlText = $state('');
-  let loadingXml = $state(false);
-  let xmlError = $state('');
-  let xmlAbort: AbortController | null = null;
+  let isLoadingXml = $state(false);
+  let xmlErrorMessage = $state('');
+  let xmlAbortController: AbortController | null = null;
 
-  type ValidationEntry = { name: string; description?: string; xml: string };
+  type ValidationEntry = {
+    name: string;
+    description?: string;
+    xml: string;
+  };
+
   let validationEntries: ValidationEntry[] = $state([]);
-  let openSet: Set<number> = $state(new Set());
+  let expandedValidationEntryIndexes: Set<number> = $state(new Set());
 
-  async function loadXmlFor(pluginId: string) {
-    loadingXml = true;
-    xmlError = '';
+  async function loadXmlForPlugin(pluginId: string) {
+    isLoadingXml = true;
+    xmlErrorMessage = '';
     xmlText = '';
     validationEntries = [];
-    openSet = new Set();
+    expandedValidationEntryIndexes = new Set();
 
-    xmlAbort?.abort();
-    xmlAbort = new AbortController();
+    xmlAbortController?.abort();
+    xmlAbortController = new AbortController();
 
     try {
-      const SRC = new URL(`../../assets/validations/${pluginId}.xml`, import.meta.url).href;
-      const res = await fetch(SRC, { cache: 'no-cache', signal: xmlAbort.signal });
+      const sourceUrl = new URL(`../../assets/validations/${pluginId}.xml`, import.meta.url).href;
+      const response = await fetch(sourceUrl, {
+        cache: 'no-cache',
+        signal: xmlAbortController.signal
+      });
 
-      if (!res.ok) {
-        if (res.status === 404) {
+      if (!response.ok) {
+        if (response.status === 404) {
           xmlText = '(No XML found for this plugin.)';
           return;
         }
-        throw new Error(`HTTP ${res.status}`);
+
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      xmlText = await res.text();
+      xmlText = await response.text();
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlText, 'application/xml');
-      const parseErr = doc.querySelector('parsererror');
-      if (parseErr) throw new Error('Invalid XML format.');
+      const parsedDocument = parser.parseFromString(xmlText, 'application/xml');
+      const parseErrorNode = parsedDocument.querySelector('parsererror');
+
+      if (parseErrorNode) {
+        throw new Error('Invalid XML format.');
+      }
 
       const serializer = new XMLSerializer();
-      const nodes = Array.from(doc.getElementsByTagName('validation'));
-      validationEntries = nodes.map((el, i) => {
-        const name =
-          el.getAttribute('name')?.trim() ||
-          el.getAttribute('id')?.trim() ||
-          el.querySelector('name')?.textContent?.trim() ||
-          `Validation ${i + 1}`;
-        const description =
-          el.getAttribute('description')?.trim() ||
-          el.querySelector('description')?.textContent?.trim() ||
-          undefined;
-        const xml = serializer.serializeToString(el);
+      const validationNodes = Array.from(parsedDocument.getElementsByTagName('validation'));
+
+      validationEntries = validationNodes.map((validationElement, index) => {
+        const attributeName = validationElement.getAttribute('name')?.trim();
+        const attributeId = validationElement.getAttribute('id')?.trim();
+        const nameElement = validationElement.querySelector('name')?.textContent?.trim();
+        const descriptionAttribute = validationElement.getAttribute('description')?.trim();
+        const descriptionElement = validationElement
+          .querySelector('description')
+          ?.textContent?.trim();
+
+        const name = attributeName || attributeId || nameElement || `Validation ${index + 1}`;
+        const description = descriptionAttribute || descriptionElement || undefined;
+        const xml = serializer.serializeToString(validationElement);
+
         return { name, description, xml };
       });
-      openSet = new Set();
-    } catch (e) {
-      if ((e as DOMException)?.name === 'AbortError') return;
-      xmlError = (e as Error)?.message || 'Failed to load XML.';
+
+      expandedValidationEntryIndexes = new Set(validationEntries.map((_, index) => index));
+    } catch (error) {
+      if ((error as DOMException)?.name === 'AbortError') {
+        return;
+      }
+
+      xmlErrorMessage = (error as Error)?.message || 'Failed to load XML.';
     } finally {
-      loadingXml = false;
+      isLoadingXml = false;
     }
   }
 
-  let currentPluginId = $derived(currentPlugin?.id ?? null);
+  let currentPluginId = $derived(selectedPlugin?.id ?? null);
+  let lastLoadedPluginId: string | null = null;
+
   $effect(() => {
-    if (currentPluginId) loadXmlFor(currentPluginId);
+    if (!currentPluginId || currentPluginId === lastLoadedPluginId) {
+      return;
+    }
+
+    lastLoadedPluginId = currentPluginId;
+    loadXmlForPlugin(currentPluginId);
   });
 
-  function selectGroup(gIdx: number) {
-    const group = pluginGroups[gIdx];
-    selectedIdx = gIdx;
-    activePluginIdx = group?.plugins?.length ? 0 : null;
+  function selectGroup(groupIndex: number) {
+    const group = pluginGroups[groupIndex];
+
+    selectedGroupIndex = groupIndex;
+    selectedPluginIndex = group?.plugins?.length ? 0 : null;
   }
 
-  function selectPlugin(gIdx: number, pIdx: number) {
-    selectedIdx = gIdx;
-    activePluginIdx = pIdx;
+  function selectPlugin(groupIndex: number, pluginIndex: number) {
+    selectedGroupIndex = groupIndex;
+    selectedPluginIndex = pluginIndex;
   }
 
-  function toggleEntry(idx: number) {
-    if (openSet.has(idx)) openSet.delete(idx);
-    else openSet.add(idx);
-    openSet = new Set(openSet);
+  function toggleValidationEntry(index: number) {
+    if (expandedValidationEntryIndexes.has(index)) {
+      expandedValidationEntryIndexes.delete(index);
+    } else {
+      expandedValidationEntryIndexes.add(index);
+    }
+
+    expandedValidationEntryIndexes = new Set(expandedValidationEntryIndexes);
   }
 </script>
 
 <div class="validation-groups">
-  {#each pluginGroups as group, gIdx}
-    <div class="validation-groups__group" class:expanded={gIdx === selectedIdx}>
+  {#each pluginGroups as group, groupIndex}
+    <div class="validation-groups__group" class:expanded={groupIndex === selectedGroupIndex}>
       <button
         type="button"
         class="validation-groups__group-title"
-        aria-pressed={gIdx === selectedIdx}
-        onclick={() => selectGroup(gIdx)}
+        aria-pressed={groupIndex === selectedGroupIndex}
+        onclick={() => selectGroup(groupIndex)}
       >
         {group.title}
       </button>
 
-      {#if gIdx === selectedIdx}
-        {#each group.plugins as plugin, idx}
+      {#if groupIndex === selectedGroupIndex}
+        {#each group.plugins as plugin, pluginIndex}
           <button
             type="button"
             class="validation-groups__plugin"
-            class:active={gIdx === selectedIdx && idx === activePluginIdx}
-            onclick={() => selectPlugin(gIdx, idx)}
+            class:active={groupIndex === selectedGroupIndex && pluginIndex === selectedPluginIndex}
+            onclick={() => selectPlugin(groupIndex, pluginIndex)}
           >
             <span>{plugin.name}</span>
           </button>
@@ -135,39 +188,41 @@
   {/each}
 </div>
 
-{#if currentPlugin}
-  {#if loadingXml}
+{#if selectedPlugin}
+  {#if isLoadingXml}
     <p>Loading…</p>
-  {:else if xmlError}
-    <p class="error">{xmlError}</p>
+  {:else if xmlErrorMessage}
+    <p class="error">{xmlErrorMessage}</p>
   {:else}
     {#if validationEntries.length === 0}
       <div class="xml-viewer">
-        <h4 class="xml-viewer__title">XML for: {currentPlugin.name}</h4>
+        <h4 class="xml-viewer__title">XML for: {selectedPlugin.name}</h4>
         <div class="xml-viewer__box">
           <pre>{xmlText}</pre>
         </div>
       </div>
     {:else}
       <div class="validation-xml-list">
-        {#each validationEntries as validationEntry, idx}
+        {#each validationEntries as validationEntry, index}
           <div class="validation-xml-container">
             <div class="validation-xml-container__meta">
               <span class="validation-xml-container__name">{validationEntry.name}</span>
               {#if validationEntry.description}
-                <span class="validation-xml-container__description">{validationEntry.description}</span>
+                <span class="validation-xml-container__description">
+                  {validationEntry.description}
+                </span>
               {/if}
-              <div class="validaton-xml-container__actions">
+              <div class="validation-xml-container__actions">
                 <button type="button" class="delete-btn" title="Remove">
                   <OscdDeleteIcon svgStyles="fill: #FF203A" />
                 </button>
 
-                {#if openSet.has(idx)}
+                {#if expandedValidationEntryIndexes.has(index)}
                   <button
                     type="button"
                     class="toggle-btn"
                     aria-expanded="true"
-                    onclick={() => toggleEntry(idx)}
+                    onclick={() => toggleValidationEntry(index)}
                     title="Collapse"
                   >
                     <OscdArrowUpIcon svgStyles="fill: #004552" />
@@ -177,7 +232,7 @@
                     type="button"
                     class="toggle-btn"
                     aria-expanded="false"
-                    onclick={() => toggleEntry(idx)}
+                    onclick={() => toggleValidationEntry(index)}
                     title="Expand"
                   >
                     <OscdArrowDownIcon svgStyles="fill: #004552" />
@@ -186,7 +241,7 @@
               </div>
             </div>
 
-            {#if openSet.has(idx)}
+            {#if expandedValidationEntryIndexes.has(index)}
               <div class="xml-viewer">
                 <div class="xml-viewer__box">
                   <pre>{validationEntry.xml}</pre>
@@ -261,7 +316,7 @@
   }
 
   .validation-groups__plugin.active {
-    background-color: #D9D800;
+    background-color: #d9d800;
   }
 
   .validation-xml-list {
@@ -271,7 +326,7 @@
     margin-top: 8px;
   }
 
-  .validaton-xml-container__actions {
+  .validation-xml-container__actions {
     display: flex;
     flex-direction: row;
     margin-left: auto;
@@ -298,15 +353,16 @@
   .validation-xml-container__name {
     font-size: 16px;
     font-weight: 500;
-    color: #002B37;
+    color: #002b37;
   }
 
   .validation-xml-container__description {
     font-weight: 400;
-    color: #002B37;
+    color: #002b37;
   }
 
-  .toggle-btn, .delete-btn {
+  .toggle-btn,
+  .delete-btn {
     background: transparent;
     border: none;
     padding: 4px;
@@ -325,7 +381,7 @@
   }
 
   .xml-viewer__box {
-    background: #EDF1F2;
+    background: #edf1f2;
     border-radius: 6px;
     padding: 12px;
     overflow: auto;
