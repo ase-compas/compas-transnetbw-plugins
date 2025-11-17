@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
+      - feature/svelte-smui-upgrade
   pull_request:
     branches:
       - 'main'
-      
+
 permissions:
   contents: write
 
@@ -29,12 +30,12 @@ jobs:
         with:
           name: dist
           path: dist
-      
+
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v4
         with:
           ref: gh-pages
-      
+
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
