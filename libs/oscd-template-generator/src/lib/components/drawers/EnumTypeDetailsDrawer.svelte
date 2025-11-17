@@ -27,7 +27,7 @@
   let { mode = 'view', typeId, instanceTypeId = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
-  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: mode });
+  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view' });
   const { canEdit, isEditModeSwitchState, mode: currentMode } = editorStore;
 
   // ===== State =====
