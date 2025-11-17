@@ -41,7 +41,12 @@
 
   let loadingDone = $state(false);
   let dialogState: DialogState = $state(DialogState.Closed);
-  let currentSelectLocation: Location | null = $state(null);
+  let hasSelection = $state(false);
+  let currentSelectLocation: Location = $state(emptyLocation());
+
+  function emptyLocation(): Location {
+    return { uuid: undefined, key: '', name: '', description: '', assignedResources: undefined };
+  }
 
   let columnDefs = $derived([
     { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
@@ -66,28 +71,26 @@
   ];
 
   function update(row: Location) {
-    currentSelectLocation = row;
+    currentSelectLocation = {...row};
+    hasSelection = true;
     dialogState = DialogState.Update;
   }
 
   function create() {
-    currentSelectLocation = {
-      key: '',
-      name: '',
-      description: '',
-      assignedResources: 0
-    };
+    currentSelectLocation = {...emptyLocation()};
+    hasSelection = true;
     dialogState = DialogState.Create;
   }
 
   function remove(row: Location) {
-    currentSelectLocation = row;
+    currentSelectLocation = {...row};
+    hasSelection = true;
     dialogState = DialogState.Remove;
   }
 
   function onUpdateOrCreateSave() {
     try {
-      const isUpdate = currentSelectLocation?.uuid !== undefined;
+      const isUpdate = currentSelectLocation?.uuid !== undefined && currentSelectLocation.uuid !== '';
       const locationServiceRequest = isUpdate
         ? locationManagerService.updateLocation({ locationId: currentSelectLocation.uuid, location: currentSelectLocation})
         : locationManagerService.createLocation(currentSelectLocation);
@@ -116,7 +119,8 @@
 
   function onCloseDialog() {
     dialogState = DialogState.Closed;
-    currentSelectLocation = null;
+    hasSelection = false;
+    currentSelectLocation = {...emptyLocation()};
   }
 
   function load() {
