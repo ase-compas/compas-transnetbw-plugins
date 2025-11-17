@@ -143,21 +143,21 @@
       </div>
       <div class="filter-button-controls">
         <OscdButton callback={addFilter} disabled={addFilterDisabled}>{addFilterLabel}</OscdButton>
-        {#if filterControls}
-          {@render filterControls?.()}
-        {/if}
+        {@render filterControls?.()}
       </div>
     </div>
 
     <div class="separator"></div>
 
     <div class="chip-section">
-      <Set chips={activeFilters} let:chip>
-        <OscdChip
-          title={chip.text}
-          callback={() => onFilterChipClose(chip.id)}
-          disabled={chip.disabled}
-        />
+      <Set chips={activeFilters} key={(chip) => chip.id}>
+        {#snippet chip(chip)}
+          <OscdChip
+            title={chip.text}
+            callback={() => onFilterChipClose(chip.id)}
+            disabled={chip.disabled}
+          />
+        {/snippet}
       </Set>
     </div>
   </div>
