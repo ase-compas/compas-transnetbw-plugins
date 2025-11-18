@@ -237,7 +237,7 @@ const mockArchivedResources = [
 // API Endpoints
 
 // POST /api/scl/search
-app.post('/api/scl/search', (req, res) => {
+app.post('/compas-scl-data-service/api/scl/search', (req, res) => {
   const { uuid, type, name, author } = req.body;
 
   console.log('Search query:', req.body);
@@ -287,7 +287,7 @@ app.post('/api/scl/search', (req, res) => {
 });
 
 // GET /api/scl/:id/versions
-app.get('/api/scl/:id/versions', (req, res) => {
+app.get('/compas-scl-data-service/api/scl/:id/versions', (req, res) => {
   const { id } = req.params;
   const { type } = req.query;
 
@@ -316,7 +316,7 @@ app.get('/api/scl/:id/versions', (req, res) => {
 });
 
 // GET /api/scl/:id/version/:version
-app.get('/api/scl/:id/version/:version', (req, res) => {
+app.get('/compas-scl-data-service/api/scl/:id/version/:version', (req, res) => {
   const { id, version } = req.params;
   const { type } = req.query;
 

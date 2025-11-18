@@ -126,6 +126,7 @@
     text-overflow: ellipsis;
   }
 
+  /* eslint-disable-next-line svelte/valid-compile */
   .breadcrumb-back {
     background: none;
     border: none;
@@ -154,6 +155,7 @@
   {#if drawerList.length > 0}
     <!-- Single backdrop under the top drawer -->
     <div
+      aria-hidden="true"
       class="drawer-backdrop"
       style="z-index: {zBase + (drawerList.length - 1) * 2};"
       onclick={() => closeDrawer('backdrop')}

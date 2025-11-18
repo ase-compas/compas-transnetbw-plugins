@@ -20,7 +20,7 @@
 <Chip chip={title} nonInteractive disabled class={disabled ? 'disabled' : ''}>
   <Text>{title}</Text>
   {#if closeable && !disabled}
-    <TrailingAction on:click={callback}>
+    <TrailingAction onclick={callback}>
       <OscdCancelIcon svgStyles="margin-left: 0; fill: unset;" />
     </TrailingAction>
   {/if}

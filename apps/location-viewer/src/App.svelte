@@ -1,11 +1,11 @@
 <script module>
-  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
+  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
 
   setupTranslation({
     en,
-    de,
+    de
   });
 </script>
 <script lang="ts">
@@ -13,25 +13,29 @@
     LocationViewerService,
     ResourceStore,
     SclResourceModel
-  } from "@oscd-transnet-plugins/oscd-location-viewer";
-  import type { SearchParams } from "@oscd-transnet-plugins/oscd-location-viewer";
-  import {onMount} from "svelte";
+  } from '@oscd-transnet-plugins/oscd-location-viewer';
+  import type { SearchParams } from '@oscd-transnet-plugins/oscd-location-viewer';
+  import { onMount } from 'svelte';
   import {
     OscdButton,
     OscdDataTable, OscdExpansionPanel,
     OscdFilterBox, OscdLoadingSpinner,
     OscdSelect
-  } from "@oscd-transnet-plugins/oscd-component";
-  import type { ActiveFilter, FilterType } from "@oscd-transnet-plugins/oscd-component";
-  import Card from "@smui/card";
-  import {Label} from "@smui/button";
-  import {finalize, take, tap} from "rxjs/operators";
-  import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
-  import {_, locale} from "svelte-i18n";
+  } from '@oscd-transnet-plugins/oscd-component';
+  import type { ActiveFilter, FilterType } from '@oscd-transnet-plugins/oscd-component';
+  import Card from '@smui/card';
+  import { Label } from '@smui/button';
+  import { finalize, take, tap } from 'rxjs/operators';
+  import { OscdSearchIcon } from '../../../libs/oscd-icons/src';
+  import { _, locale } from 'svelte-i18n';
+  import 'svelte-material-ui/bare.css';
+  import '../public/material-icon.css';
+  import '../public/global.css';
+  import '../public/smui.css';
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = $state([]);
-  let selectedLocationUUID: string = $state();
+  let selectedLocationUUID: string = $state('');
   let searchOpen = $state(false);
 
   //loading quickfix for css to load
@@ -40,36 +44,31 @@
   onMount(() => {
     setTimeout(() => {
       loading = false;
-    }, 1000)
+    }, 1000);
   });
 
   onMount(() => {
     locationViewerService.getLocations().subscribe({
       next: (data) => {
-        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
+        locations = data.map((item) => ({ label: item.name, value: item.uuid }));
       }
-    })
-  })
+    });
+  });
 
-  interface Props {
-    locationResourceStore?: any;
-    searchResourceStore?: any;
-  }
-
-  let { locationResourceStore = new ResourceStore(), searchResourceStore = new ResourceStore() }: Props = $props();
-
-
+  // Resource stores for the two tables
+  const locationResourceStore = new ResourceStore();
+  const searchResourceStore = new ResourceStore();
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
   }
 
   function formatLocation(uuid: string) {
-    if(!locations || !uuid) {
+    if (!locations || !uuid) {
       return uuid || '';
     }
     const foundLocation = locations.find((location) => location.value === uuid);
-    console.log("foundlocation", { foundLocation, bool: foundLocation?.label !== undefined });
+    console.log('foundlocation', { foundLocation, bool: foundLocation?.label !== undefined });
     return foundLocation?.label ? foundLocation.label : uuid;
   }
 
@@ -78,7 +77,7 @@
       id: 1,
       label: $_('uuid'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['='],
+      allowedOperations: ['=']
     },
     {
       id: 2,
@@ -126,7 +125,7 @@
       label: $_('to'),
       inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
-    },
+    }
   ];
 
   const locationRowActions = [
@@ -134,7 +133,7 @@
   ];
 
   const searchRowActions = [
-    { icon: 'add', callback: (row) => assign(row), disabled: () => false },
+    { icon: 'add', callback: (row) => assign(row), disabled: () => false }
   ];
 
   let filtersToSearch: ActiveFilter[] = $state([]);
@@ -143,8 +142,8 @@
     locationViewerService.assignResourceToLocation(selectedLocationUUID, row.uuid).subscribe({
       next: () => {
         searchResourceStore.remove(row.uuid);
-        locationResourceStore.add({...row, location: selectedLocationUUID});
-      },
+        locationResourceStore.add({ ...row, location: selectedLocationUUID });
+      }
     });
   }
 
@@ -152,7 +151,7 @@
     locationViewerService.unassignResourceFromLocation(selectedLocationUUID, row.uuid).subscribe({
       next: () => {
         locationResourceStore.remove(row.uuid);
-      },
+      }
     });
   }
 
@@ -162,7 +161,7 @@
       take(1),
       tap((data: SclResourceModel[]) => {
         searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
-      }),
+      })
     ).subscribe();
   }
 
@@ -174,7 +173,7 @@
       location: null,
       author: null,
       from: null,
-      to: null,
+      to: null
     };
     console.log('Convert filter to search params: ', filters);
     filters.forEach((filter) => {
@@ -211,6 +210,7 @@
     { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ]);
+
   $effect(() => {
     if (!selectedLocationUUID) {
       return;
@@ -239,10 +239,10 @@
       bind:value={selectedLocationUUID}
       label={$_('location')}
     />
-      <div class="search-filter">
-      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
+    <div class="search-filter">
+      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} onclick={toggleSearchPanel}>
         {#snippet content()}
-                <div >
+          <div>
             <div class="filter-box">
               <OscdFilterBox
                 {filterTypes}
@@ -264,11 +264,11 @@
                 <OscdDataTable columnDefs={searchColumnDefs}
                                store={searchResourceStore}
                                rowActions={searchRowActions}
-                               searchInputLabel={$_('search')}/>
+                               searchInputLabel={$_('search')} />
               </Card>
             </div>
           </div>
-              {/snippet}
+        {/snippet}
       </OscdExpansionPanel>
     </div>
     <div class="table-container">
@@ -288,10 +288,6 @@
 {/if}
 
 <style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-
   .search-filter {
     margin-top: 1rem;
     margin-bottom: 1rem;

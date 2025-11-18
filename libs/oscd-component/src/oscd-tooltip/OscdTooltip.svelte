@@ -201,8 +201,9 @@
 <!-- Trigger -->
 <span
   bind:this={triggerEl}
-  tabindex="0"
+  role="tooltip"
   aria-describedby={content ? id : undefined}
+  aria-labelledby="tooltip"
   onmouseenter={handleMouseEnter}
   onmouseleave={handleMouseLeave}
 >

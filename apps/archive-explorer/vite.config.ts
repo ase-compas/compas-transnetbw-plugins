@@ -36,7 +36,7 @@ export default defineConfig(async () => {
         },
       },
       lib: {
-        entry: 'src/plugin.ts',
+        entry: 'src/plugin-wrapper.svelte.ts',
         formats: ['es'],
         fileName: 'index',
       },
