@@ -344,11 +344,6 @@
   </div>
 {/if}
 <style lang="css" global>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-
-
   .version-editor-container {
     height: 100vh;
     width: 100%;
