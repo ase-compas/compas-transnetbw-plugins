@@ -6239,7 +6239,7 @@ function td(t, e) {
 }
 je(["change"]);
 je(["change"]);
-var nd = /* @__PURE__ */ W('<span tabindex="0"><!></span>');
+var nd = /* @__PURE__ */ W('<span role="tooltip" aria-labelledby="tooltip"><!></span>');
 function rd(t, e) {
   ge(e, !0);
   let n = y(e, "content", 3, ""), r = y(e, "side", 3, "top"), a = y(e, "hoverDelay", 3, 0), i = y(e, "transitionDuration", 3, 80);
