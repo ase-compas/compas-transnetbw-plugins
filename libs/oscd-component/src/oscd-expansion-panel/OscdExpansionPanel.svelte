@@ -2,7 +2,7 @@
   import Paper from '@smui/paper';
 
   /** @type {{title?: string, open?: boolean, content?: import('svelte').Snippet}} */
-  let { title = '', open = false, content } = $props();
+  let { title = '', open = $bindable(false), content } = $props();
 </script>
 
 <Paper>

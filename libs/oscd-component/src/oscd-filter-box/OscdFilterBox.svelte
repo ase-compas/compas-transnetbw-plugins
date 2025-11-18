@@ -61,7 +61,7 @@
       ...activeFilters,
       {
         id: uuidv4(),
-        key: getSelectedFilterType.label.toLowerCase(),
+        key: getSelectedFilterType.key,
         value: inputValue,
         operation: '=',
         text: `${selectedFilterType}: ${

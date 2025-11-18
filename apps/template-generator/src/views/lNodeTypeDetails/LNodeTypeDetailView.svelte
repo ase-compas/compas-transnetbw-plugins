@@ -211,7 +211,7 @@
     await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
   }
 
-  async function handleBreadcrumbClick({ index }) {
+  async function handleBreadcrumbClick(index) {
     const ok = await editorStore.confirmLeave();
     if(!ok) return;
     if (index === 0) route.set({ path: ['overview'] });
@@ -279,7 +279,11 @@
 <div class="oscd-details">
   <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
-    <OscdBreadcrumbs activeIndex={1} {breadcrumbs} on:click={e => handleBreadcrumbClick(e.detail)} />
+    <OscdBreadcrumbs 
+    color='var(--primary-base)'
+    activeIndex={1} 
+    {breadcrumbs} 
+    handleClick={clickedItemIndex => handleBreadcrumbClick(clickedItemIndex)} />
 
     <div class="oscd-details-toolbar-right">
 
