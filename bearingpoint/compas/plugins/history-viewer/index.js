@@ -16798,7 +16798,7 @@ function ob(t, e) {
       ...i(),
       {
         id: Vc(),
-        key: s(v).label.toLowerCase(),
+        key: s(v).key,
         value: s(c),
         operation: "=",
         text: `${s(d)}: ${r() && ((S = s(v).inputType.options) != null && S.length) ? (b = s(v).inputType.options[a()]) == null ? void 0 : b.label : s(c)}`,
@@ -19931,18 +19931,21 @@ function ny(t, e) {
   ], x = [
     {
       id: 1,
+      key: "filename",
       label: "Filename",
       inputType: { id: 1, type: "string", validatorFn: () => !0, options: [] },
       allowedOperations: ["="]
     },
     {
       id: 2,
+      key: "uuid",
       label: "UUID",
       inputType: { id: 1, type: "string", validatorFn: () => !0, options: [] },
       allowedOperations: ["="]
     },
     {
       id: 3,
+      key: "type",
       label: "Type",
       inputType: {
         id: 2,
@@ -19963,12 +19966,14 @@ function ny(t, e) {
     },
     {
       id: 4,
+      key: "author",
       label: "Author",
       inputType: { id: 1, type: "string", validatorFn: () => !0, options: [] },
       allowedOperations: ["="]
     },
     {
       id: 5,
+      key: "from",
       label: "From",
       inputType: {
         id: 3,
@@ -19980,6 +19985,7 @@ function ny(t, e) {
     },
     {
       id: 5,
+      key: "to",
       label: "To",
       inputType: {
         id: 3,
