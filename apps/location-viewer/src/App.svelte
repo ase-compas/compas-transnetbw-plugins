@@ -75,12 +75,14 @@
   const filterTypes: FilterType[] = [
     {
       id: 1,
+      key: 'uuid',
       label: $_('uuid'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 2,
+      key: 'type',
       label: $_('type'),
       inputType: {
         id: 2, type: 'select', validatorFn: () => true, options: [
@@ -98,30 +100,35 @@
     },
     {
       id: 3,
+      key: 'name',
       label: $_('name'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 4,
+      key: 'location',
       label: $_('location'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 5,
+      key: 'author',
       label: $_('author'),
       inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 6,
+      key: 'from',
       label: $_('from'),
       inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']
     },
     {
       id: 7,
+      key: 'to',
       label: $_('to'),
       inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
       allowedOperations: ['=']

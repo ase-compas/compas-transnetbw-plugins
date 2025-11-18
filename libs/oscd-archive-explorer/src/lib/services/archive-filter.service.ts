@@ -67,6 +67,7 @@ export class ArchiveFilterService {
           return [
             {
               id: 1,
+              key: 'location',
               label: 'Location',
               inputType: {
                 id: 2,
