@@ -8,14 +8,41 @@
   import 'svelte-material-ui/bare.css';
   import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
   import { selectedProcessState } from './services/engineering-process.svelte';
+  import PluginHost from './components/shared/PluginHost.svelte';
+
+  interface Plugin {
+    src: string;
+  }
 
   interface Props {
-    doc: XMLDocument | undefined;
-    editCount?: any;
+    doc?: XMLDocument;
+    editCount?: number;
+    host?: HTMLElement;
+    plugins?: Plugin[];
+    docId?: string;
+    pluginId?: string;
+    docName?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
     host: HTMLElement;
   }
 
-  let { doc, editCount = -1, host }: Props = $props();
+  let {
+    doc,
+    editCount,
+    plugins,
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
+    host
+  }: Props = $props();
+
+  const plugin = plugins[1];
 
   onMount(async () => {
     await getProcesses();
@@ -53,3 +80,16 @@
     handleStart={startProcess}
   />
 {/if}
+
+<!--<PluginHost-->
+<!--  {plugin}-->
+<!--  {doc}-->
+<!--  {editCount}-->
+<!--  {plugins}-->
+<!--  {nsdoc}-->
+<!--  {docName}-->
+<!--  {docId}-->
+<!--  {docs}-->
+<!--  {locale}-->
+<!--  {oscdApi}-->
+<!--/>-->
