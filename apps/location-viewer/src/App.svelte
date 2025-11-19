@@ -53,6 +53,7 @@
         locations = data.map((item) => ({ label: item.name, value: item.uuid }));
       }
     });
+    search();
   });
 
   // Resource stores for the two tables
