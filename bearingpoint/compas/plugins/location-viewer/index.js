@@ -19211,7 +19211,7 @@ function YI(t, e) {
       next: (M) => {
         ie(o, M.map((Q) => ({ label: Q.name, value: Q.uuid })), !0);
       }
-    });
+    }), b();
   });
   const d = new Rl(), h = new Rl();
   function f(M) {
