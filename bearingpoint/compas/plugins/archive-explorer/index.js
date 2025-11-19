@@ -16011,7 +16011,7 @@ function zg(t, e) {
   He(() => pt(u, n())), xa(a, r), O(t, i), Re();
 }
 fi(["change"]);
-var Xg = /* @__PURE__ */ ve('<div class="filter-box-container"><div class="input-section"><div class="filter-input-controls"><!> <!> <!> <!> <!></div> <div class="filter-button-controls"><!> <!></div></div> <div class="separator"></div> <div class="chip-section"><!></div></div>');
+var Xg = /* @__PURE__ */ ve('<div class="filter-box-container"><div class="input-section"><div class="filter-input-controls svelte-xdvqlf"><!> <!> <!> <!> <!></div> <div class="filter-button-controls"><!> <!></div></div> <div class="separator"></div> <div class="chip-section"><!></div></div>');
 function hu(t, e) {
   Oe(e, !0);
   let n = m(e, "filterTypes", 19, () => []), r = m(e, "activeFilters", 31, () => be([])), i = m(e, "useOptionLabelInChipText", 3, !1), a = m(e, "selectedOptionIndex", 31, () => -1), o = m(e, "disabled", 3, !1), u = m(e, "addFilterLabel", 3, "Add Filter"), l = m(e, "selectFilterLabel", 3, "Filter Types"), c = /* @__PURE__ */ Ae(""), d = /* @__PURE__ */ Ae(void 0), h = /* @__PURE__ */ se(() => n().map((S) => ({ value: S.label, label: S.label }))), f = /* @__PURE__ */ se(() => !s(d) || !s(c)), v = /* @__PURE__ */ se(() => n().find((S) => S.label === s(d)));
