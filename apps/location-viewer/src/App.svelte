@@ -241,11 +241,13 @@
   <OscdLoadingSpinner loadingDone={!loading} />
 {:else}
   <div class="location-viewer-container">
-    <OscdSelect
-      bind:data={locations}
-      bind:value={selectedLocationUUID}
-      label={$_('location')}
-    />
+    <div style="max-width: 600px;">
+      <OscdSelect
+        bind:data={locations}
+        bind:value={selectedLocationUUID}
+        label={$_('location')}
+      />
+    </div>
     <div class="search-filter">
       <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} onclick={toggleSearchPanel}>
         {#snippet content()}
@@ -295,6 +297,10 @@
 {/if}
 
 <style>
+  .location-viewer-container {
+    padding: 1rem;
+  }
+
   .search-filter {
     margin-top: 1rem;
     margin-bottom: 1rem;

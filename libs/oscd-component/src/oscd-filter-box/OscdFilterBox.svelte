@@ -163,4 +163,9 @@
   </div>
 </Paper>
 
-<style lang="css">/*$$__STYLE_CONTENT__$$*/</style>
+<style lang="css">/*$$__STYLE_CONTENT__$$*/
+  .filter-input-controls {
+    max-width: 450px;
+    margin-bottom: 1rem;
+  }
+</style>
