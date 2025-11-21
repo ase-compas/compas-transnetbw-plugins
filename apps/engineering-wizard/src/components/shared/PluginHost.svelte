@@ -55,7 +55,6 @@
 
   $effect(() => {
     if (!container) return;
-    console.log("updating")
 
     container.innerHTML = '';
 
