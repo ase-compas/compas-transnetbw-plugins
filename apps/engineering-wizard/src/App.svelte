@@ -6,7 +6,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { DialogHost } from '../../../libs/oscd-services/src/dialog';
   import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
-  import 'svelte-material-ui/bare.css';
+import 'svelte-material-ui/bare.css';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -109,6 +109,10 @@
   }
 </script>
 
+<svelte:head>
+  <link rel="stylesheet" href="/material-icon.css" />
+</svelte:head>
+
 <DialogHost />
 
 {#if selected}
@@ -122,7 +126,3 @@
     on:start={handleStart}
   />
 {/if}
-
-<style>
-  @import '/material-icon.css';
-</style>

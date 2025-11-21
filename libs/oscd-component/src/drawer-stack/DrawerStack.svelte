@@ -27,6 +27,13 @@
     event.stopPropagation();
   }
 
+function handleBackdropKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    closeDrawer('backdrop');
+  }
+}
+
   onMount(() => {
     window.addEventListener('resize', handleResize);
     window.addEventListener('keydown', handleKeydown);
@@ -126,16 +133,6 @@
     text-overflow: ellipsis;
   }
 
-  .breadcrumb-back {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0;
-    margin-right: 0.5rem;
-  }
-
   .breadcrumb-separator {
     color: rgba(255, 255, 255, 0.5);
   }
@@ -156,7 +153,11 @@
     <div
       class="drawer-backdrop"
       style="z-index: {zBase + (drawerList.length - 1) * 2};"
+      role="button"
+      tabindex="0"
+      aria-label="Close drawer"
       onclick={() => closeDrawer('backdrop')}
+      onkeydown={handleBackdropKeydown}
       onpointerdown={stopEvent}
       onpointerup={stopEvent}
       onpointermove={stopEvent}

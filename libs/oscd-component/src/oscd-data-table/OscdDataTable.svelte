@@ -239,37 +239,37 @@
     flex-direction: column;
   }
 
-  table {
+  :global(.mdc-data-table__table) {
     font-family: 'Roboto', sans-serif;
     border-collapse: collapse;
     width: 100%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
-  thead {
+  :global(.mdc-data-table__table thead) {
     background-color: #f4f4f4;
     text-transform: uppercase;
     font-weight: bold;
     color: #333;
   }
 
-  thead th {
+  :global(.mdc-data-table__table thead th) {
     padding: 12px 15px;
     border-bottom: 2px solid #ddd;
     text-align: left;
     font-size: 0.85rem;
   }
 
-  tbody tr {
+  :global(.mdc-data-table__table tbody tr) {
     border-bottom: 1px solid #ddd;
     transition: background-color 0.3s ease;
   }
 
-  tbody tr:hover {
+  :global(.mdc-data-table__table tbody tr:hover) {
     background-color: #f1f1f1;
   }
 
-  tbody td {
+  :global(.mdc-data-table__table tbody td) {
     padding: 12px 15px;
     text-align: left;
     font-size: 0.9rem;
@@ -277,7 +277,7 @@
     color: #555;
   }
 
-  tbody td.numeric {
+  :global(.mdc-data-table__table tbody td.numeric) {
     text-align: right;
   }
 
@@ -298,7 +298,7 @@
     outline: none;
   }
 
-  button {
+  .cell-actions :global(button) {
     background-color: #007bff;
     color: white;
     padding: 8px 16px;
@@ -309,7 +309,7 @@
     transition: background-color 0.3s ease;
   }
 
-  button:hover {
+  .cell-actions :global(button:hover) {
     background-color: #0056b3;
   }
 
@@ -323,7 +323,7 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-    table {
+    :global(.mdc-data-table__table) {
       font-size: 0.8rem;
     }
 
@@ -331,7 +331,7 @@
       font-size: 0.85rem;
     }
 
-    button {
+    .cell-actions :global(button) {
       font-size: 0.8rem;
     }
   }
@@ -349,7 +349,7 @@
     cursor: pointer;
   }
 
-  .header-title svg {
+  :global(.header-title svg) {
     margin-left: 4px;
   }
 

@@ -27,16 +27,19 @@
 <div class="oscd-breadcrumbs">
   {#each breadcrumbs as crumb, i}
     <div class="breadcrumb-wrapper">
-      <span
+      <button
+        type="button"
         class="breadcrumb {crumb.enabled ? '' : 'br-disabled'} {i === activeIndex ? 'br-active' : ''}"
         onclick={() => handleClick(i)}
         aria-current={i === activeIndex ? 'page' : undefined}
+        aria-disabled={crumb.enabled ? undefined : 'true'}
+        disabled={!crumb.enabled || i === activeIndex}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
           <span class="secondary-label">{crumb.secondaryLabel}</span>
         {/if}
-      </span>
+      </button>
 
       {#if i < breadcrumbs.length - 1}
         <span class="material-icons separator">chevron_right</span>
@@ -58,13 +61,15 @@
   }
 
   .breadcrumb {
-    cursor: pointer;
-    border: none;
     font-size: 1.3rem;
     display: flex;
     align-items: baseline;
     color: var(--mdc-theme-primary);
     gap: 0.3rem;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
   }
 
   .breadcrumb:not(.br-disabled):not(.br-active) {
@@ -90,13 +95,15 @@
     font-weight: 500;
   }
 
-  .br-disabled {
-    cursor: default;
-    pointer-events: none;
-  }
-
   .br-active {
     font-weight: bold;
+  }
+
+  .br-disabled,
+  .breadcrumb:disabled {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.6;
   }
 
   .separator {

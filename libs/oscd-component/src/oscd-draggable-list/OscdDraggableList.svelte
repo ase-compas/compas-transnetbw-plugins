@@ -65,14 +65,14 @@
 </div>
 
 <style>
-  ol {
+  ul {
     counter-reset: item;
     list-style: none;
     padding-left: 0;
     margin-left: 0;
   }
 
-  ol > li {
+  ul > li {
     counter-increment: item;
     position: relative;
     margin-bottom: 0.5rem;
