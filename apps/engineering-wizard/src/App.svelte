@@ -6,9 +6,8 @@
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
+  import { getPluginsForProcess, getProcesses, setInternalPlugins } from './services/engineering-process.svelte.ts';
   import { selectedProcessState } from './services/engineering-process.svelte';
-  import PluginHost from './components/shared/PluginHost.svelte';
 
   interface Plugin {
     src: string;
@@ -26,7 +25,6 @@
     docs?: Record<string, XMLDocument>;
     locale?: string;
     oscdApi?: any;
-    host: HTMLElement;
   }
 
   let {
@@ -46,14 +44,19 @@
 
   onMount(async () => {
     await getProcesses();
+    setInternalPlugins(plugins)
   });
+
+  $effect(() => {
+    console.log("from app: ", doc, editCount)
+  })
 
   function startProcess(process: Process) {
     if (!selectedProcessState.process) {
       selectedProcessState.process = process;
     }
     const plugins = getPluginsForProcess(selectedProcessState.process);
-    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins });
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
     selectedProcessState.process = null;
   }
 
@@ -81,15 +84,3 @@
   />
 {/if}
 
-<!--<PluginHost-->
-<!--  {plugin}-->
-<!--  {doc}-->
-<!--  {editCount}-->
-<!--  {plugins}-->
-<!--  {nsdoc}-->
-<!--  {docName}-->
-<!--  {docId}-->
-<!--  {docs}-->
-<!--  {locale}-->
-<!--  {oscdApi}-->
-<!--/>-->
