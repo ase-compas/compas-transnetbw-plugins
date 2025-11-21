@@ -5,6 +5,7 @@
   import { loadEditorPluginNamesFromLocalStorage } from '../../services/plugin.service';
   import type { LocalStoredPlugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
   import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
+  import { compasPluginsStore } from '../../services/engineering-process.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -14,20 +15,7 @@
     pluginGroups = [],
   }: Props = $props();
 
-  let localStoredPlugins = $state<LocalStoredPlugin[]>([]);
   let searchTerm = $state('');
-
-  let filteredPlugins = $derived(
-    (localStoredPlugins ?? []).filter((plugin) => {
-      const q = searchTerm.trim().toLowerCase();
-      if (!q) return true;
-      return plugin.name.toLowerCase().includes(q);
-    })
-  );
-
-  onMount(() => {
-    localStoredPlugins = loadEditorPluginNamesFromLocalStorage();
-  });
 </script>
 
 <div class="process-definition-view">
@@ -35,13 +23,13 @@
     {pluginGroups}
   />
 
-  {#if localStoredPlugins.length}
+  {#if compasPluginsStore.compasPlugins.length}
     <div class="drag-and-drop-info">
       <OscdCompareArrowsIcon svgStyles="fill: #6B9197"></OscdCompareArrowsIcon>
       <p>SELECT OR DRAG & DROP PLUGINS</p>
     </div>
 
-    <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm />
+    <PluginExternalPanel bind:searchTerm />
   {/if}
 </div>
 

@@ -10,6 +10,7 @@
     editCount?: any;
     host: HTMLElement;
     plugins?: ViewPlugin[];
+
   }
 
   let {

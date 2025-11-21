@@ -1,6 +1,32 @@
-import type { Plugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+import type { Plugin, Process, CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 /* eslint-disable @nx/enforce-module-boundaries */
 import processesUrl from '../assets/processes.xml?url';
+const SOURCE_URL = processesUrl;
+
+type PluginFromXml = {
+  name: string;
+}
+
+type PluginGroupFromXml = {
+  title: string;
+  plugins: PluginFromXml[];
+}
+
+type ProcessFromXML = {
+  id: string;
+  version: string;
+  name: string;
+  description: string;
+  pluginGroups: PluginGroupFromXml[];
+}
+
+export const compasPluginsStore = $state<{ compasPlugins: CoMPASPlugin[] }>({
+  compasPlugins: []
+});
+
+export const processesFromXmlStore = $state<{ processes: ProcessFromXML[] }>({
+  processes: [],
+})
 
 export const processesLoadingStore = $state<{ loading: boolean }>({
   loading: false,
@@ -22,61 +48,19 @@ export const processEditModeState = $state<{ isEditing: boolean }>({
   isEditing: false,
 });
 
-const SOURCE_URL = processesUrl;
-const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
-
-// --- Load from localStorage (SSR-safe) ---
-if (typeof localStorage !== 'undefined') {
-  const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (saved) {
-    try {
-      const parsed: unknown = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        processesStore.processes = parsed as Process[];
-      }
-    } catch {
-      // ignore corrupt data
-    }
-  }
-}
-
-$effect.root(() => {
-  $effect(() => {
-    processesStore.processes.forEach((proc) => {
-      proc.pluginGroups?.forEach((group) => {
-        group.plugins?.length;
-      });
-    });
-
-    const snapshot = $state.snapshot(processesStore.processes);
-    console.log('new value', snapshot);
-
-    if (typeof localStorage === 'undefined') return;
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
-    } catch {
-      // ignore storage errors
-    }
-  });
-});
-
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
 const all = (root: ParentNode, selector: string) =>
   Array.from(root.querySelectorAll(selector));
 
-const parsePlugin = (el: Element): Plugin => ({
-  id:        text(el.querySelector('id')),
+const parsePlugin = (el: Element): PluginFromXml => ({
   name:      text(el.querySelector('name')),
-  src:       text(el.querySelector('src')) || undefined,
-  sourceUrl: text(el.querySelector('sourceUrl')) || undefined,
 });
 
-// Always return Process objects with a concrete `pluginGroups: PluginGroup[]`
-const parseProcessesXml = (xml: XMLDocument): Process[] =>
+const parseProcessesXml = (xml: XMLDocument): ProcessFromXML[] =>
   all(xml, 'process').map((procEl) => {
     const groupEls = all(procEl, ':scope > plugins-sequence > group');
 
-    const pluginGroups: PluginGroup[] = groupEls.length
+    const pluginGroups: PluginGroupFromXml[] = groupEls.length
       ? groupEls.map((g) => ({
         title:   text(g.querySelector(':scope > title')) || 'Untitled',
         plugins: all(g, ':scope > plugin').map(parsePlugin),
@@ -97,10 +81,7 @@ const parseProcessesXml = (xml: XMLDocument): Process[] =>
     };
   });
 
-export async function getProcesses(): Promise<Process[]> {
-  processesLoadingStore.loading = true;
-  processesErrorStore.error = '';
-
+export async function getProcesses(): Promise<ProcessFromXML[]> {
   try {
     const res = await fetch(SOURCE_URL, { cache: 'no-cache' });
     if (!res.ok) {
@@ -121,7 +102,7 @@ export async function getProcesses(): Promise<Process[]> {
     }
 
     const parsed = parseProcessesXml(xml);
-    processesStore.processes = parsed;
+    processesFromXmlStore.processes = parsed;
     return parsed;
   } catch (err) {
     const message =

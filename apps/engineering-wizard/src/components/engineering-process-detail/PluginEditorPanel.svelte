@@ -22,7 +22,7 @@
   }
 
   function handleRemoveOne(pluginId: string) {
-    removePluginFromProcessStore(selectedProcessState.process.id, pluginId);
+    // removePluginFromProcessStore(selectedProcessState.process.id, pluginId);
   }
 </script>
 

@@ -4,4 +4,3 @@ export type Plugin = {
   src?: string;
   sourceUrl?: string;
 };
-

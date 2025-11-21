@@ -6,9 +6,15 @@
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
+  import {
+    compasPluginsStore,
+    getPluginsForProcess,
+    getProcesses,
+    processesFromXmlStore
+  } from './services/engineering-process.svelte.ts';
   import { selectedProcessState } from './services/engineering-process.svelte';
   import PluginHost from './components/shared/PluginHost.svelte';
+  import { derived } from 'svelte/store';
 
   interface Plugin {
     src: string;
@@ -42,7 +48,7 @@
     host
   }: Props = $props();
 
-  const plugin = plugins[1];
+  // const plugin = plugins[0];
 
   onMount(async () => {
     await getProcesses();
@@ -70,16 +76,24 @@
   }
 </script>
 
-<DialogHost />
+{#each processesFromXmlStore.processes as process}
+  <p>{process.name}</p>
 
-{#if selectedProcessState.process}
-  <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
-{:else}
-  <EngineeringProcessesList
-    handleView={handleView}
-    handleStart={startProcess}
-  />
-{/if}
+{/each}
+
+{#each compasPluginsStore.compasPlugins as plugin}
+  <p>{plugin.name}</p>
+{/each}
+<!--<DialogHost />-->
+
+<!--{#if selectedProcessState.process}-->
+<!--  <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />-->
+<!--{:else}-->
+<!--  <EngineeringProcessesList-->
+<!--    handleView={handleView}-->
+<!--    handleStart={startProcess}-->
+<!--  />-->
+<!--{/if}-->
 
 <!--<PluginHost-->
 <!--  {plugin}-->

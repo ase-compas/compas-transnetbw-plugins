@@ -3,42 +3,23 @@
   import type { LocalStoredPlugin, Plugin, Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import { addPluginToProcessStore, selectedProcessState } from '../../services/engineering-process.svelte';
+  import {
+    addPluginToProcessStore, compasPluginsStore,
+    selectedProcessState
+  } from '../../services/engineering-process.svelte';
   import Textfield from '@smui/textfield';
   import { createPluginId } from '../../services/plugin.service';
 
   interface Props {
-    plugins: LocalStoredPlugin[];
     searchTerm?: string;
   }
 
   let {
-    plugins,
     searchTerm = '',
   }: Props = $props();
 
-  let filteredPlugins = $derived.by(() => {
-    const term = searchTerm.toLowerCase().trim();
-
-    if (!term) return plugins;
-    return plugins.filter((plugin) =>
-      plugin.name.toLowerCase().includes(term)
-    );
-  });
-
-  function addPluginToProcess(localPlugin: LocalStoredPlugin, processId: string) {
-    const plugin = localStoredPluginToPlugin(localPlugin);
-    addPluginToProcessStore(processId, plugin);
-    console.log('Add plugin clicked', localPlugin);
-  }
-
-  function localStoredPluginToPlugin(localPlugin: LocalStoredPlugin): Plugin {
-    return {
-      id: createPluginId(localPlugin.name),
-      name: localPlugin.name,
-      src: localPlugin.sourceUrl,
-      sourceUrl: localPlugin.sourceUrl,
-    };
+  function addPluginToProcess(plugin: any) {
+    console.log(plugin);
   }
 </script>
 
@@ -59,13 +40,13 @@
 
 {#snippet content()}
   <div class="card-parent-content">
-    {#each filteredPlugins as plugin}
+    {#each compasPluginsStore.compasPlugins as plugin}
       <OscdListItem variant="secondary">
         <div class="card-item-content">
           <p class="plugin-name">{plugin.name}</p>
           <button
             class="plugin-add-btn"
-            onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
+            onclick={() => addPluginToProcess(plugin)}
           >
             <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
           </button>
