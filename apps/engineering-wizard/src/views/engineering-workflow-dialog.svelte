@@ -10,6 +10,12 @@
     editCount?: any;
     host: HTMLElement;
     plugins?: ViewPlugin[];
+    docName?: string;
+    docId?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
   }
 
   let {
@@ -17,7 +23,13 @@
     doc,
     editCount = -1,
     host,
-    plugins = []
+    plugins = [],
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
   }: Props = $props();
 
   let hasExited = $state(false);
@@ -65,6 +77,12 @@
         {editCount}
         {host}
         {plugins}
+        {docName}
+        {nsdoc}
+        {docs}
+        {docId}
+        {locale}
+        {oscdApi}
         onExit={() => exit('exit')}
       />
     </div>

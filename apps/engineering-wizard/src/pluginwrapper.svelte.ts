@@ -1,6 +1,8 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from 'svelte';
+import { setInternalPlugins } from './services/engineering-process.svelte';
+import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 
 export default class NewOSCDPlugin extends HTMLElement {
   private _doc?: XMLDocument;
@@ -8,7 +10,15 @@ export default class NewOSCDPlugin extends HTMLElement {
     doc?: XMLDocument;
     editCount: number;
     host: NewOSCDPlugin;
-  }
+    plugins: any[];
+    docId?: string;
+    pluginId?: string;
+    docName?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
+  };
 
   constructor() {
     super();
@@ -17,6 +27,14 @@ export default class NewOSCDPlugin extends HTMLElement {
       doc: this._doc,
       editCount: -1,
       host: this as NewOSCDPlugin,
+      plugins: [],
+      docId: null,
+      pluginId: null,
+      docName: null,
+      nsdoc: null,
+      docs: {},
+      locale: navigator.language ?? 'en-US',
+      oscdApi: null,
     });
   }
 
@@ -38,13 +56,49 @@ export default class NewOSCDPlugin extends HTMLElement {
     this._doc = newDoc;
     this._props.doc = newDoc;
   }
-
   get doc(): XMLDocument | undefined {
     return this._doc;
   }
 
+  set plugins(newPlugins: unknown[]) {
+    this._props.plugins = newPlugins as any[];
+
+    const editorPlugins = (newPlugins as CoMPASPlugin[])
+      .filter(p => p.kind === 'editor');
+
+    setInternalPlugins(editorPlugins)
+  }
+
   set editCount(newCount: number) {
     this._props.editCount = newCount;
+  }
+
+  set docId(v: string) {
+    this._props.docId = v;
+  }
+
+  set pluginId(v: string) {
+    this._props.pluginId = v;
+  }
+
+  set docName(v: string) {
+    this._props.docName = v;
+  }
+
+  set nsdoc(v: any) {
+    this._props.nsdoc = v;
+  }
+
+  set docs(v: Record<string, XMLDocument>) {
+    this._props.docs = v;
+  }
+
+  set locale(v: string) {
+    this._props.locale = v;
+  }
+
+  set oscdApi(v: any) {
+    this._props.oscdApi = v;
   }
 }
 

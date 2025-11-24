@@ -15,8 +15,16 @@ export function setEditorTabsVisibility(visible: boolean) {
   );
 }
 
+/**
+ * Ensures that an external plugin is defined as an custom element.
+ * 
+ * This function checks if a custom element with the ID of the plugin
+ * has already been registered in the browser's `customElements` registry.
+ * If not, and if the plugin type is `'external'`, it dynamically imports
+ * the plugin's module and defines the custom element using the module's default export.
+ */
 export async function ensureCustomElementDefined(plugin: ViewPlugin) {
-  if (!customElements.get(plugin.id)) {
+  if (!customElements.get(plugin.id) && plugin.type === 'external') {
     const mod = await import(/* @vite-ignore */ plugin.src);
     customElements.define(plugin.id, (mod as any).default);
   }
@@ -24,7 +32,9 @@ export async function ensureCustomElementDefined(plugin: ViewPlugin) {
 
 export async function preloadAllPlugins(plugins: ViewPlugin[]) {
   await Promise.all(
-    plugins.map(async (p) => {
+    plugins
+    .filter(p => p.type === 'external')
+    .map(async (p) => {
       try {
         if (!customElements.get(p.id)) {
           const mod = await import(/* @vite-ignore */ p.src);

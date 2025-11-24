@@ -1,44 +1,23 @@
 <script lang="ts">
   import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
-  import type { LocalStoredPlugin, Plugin, Process } from '@oscd-transnet-plugins/shared';
+  import type { Plugin } from '@oscd-transnet-plugins/shared';
 
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   import { addPluginToProcessStore, selectedProcessState } from '../../services/engineering-process.svelte';
   import Textfield from '@smui/textfield';
-  import { createPluginId } from '../../services/plugin.service';
 
   interface Props {
-    plugins: LocalStoredPlugin[];
+    plugins: Plugin[];
     searchTerm?: string;
   }
 
   let {
-    plugins,
-    searchTerm = '',
+    plugins = [],
+    searchTerm = $bindable(''),
   }: Props = $props();
 
-  let filteredPlugins = $derived.by(() => {
-    const term = searchTerm.toLowerCase().trim();
-
-    if (!term) return plugins;
-    return plugins.filter((plugin) =>
-      plugin.name.toLowerCase().includes(term)
-    );
-  });
-
-  function addPluginToProcess(localPlugin: LocalStoredPlugin, processId: string) {
-    const plugin = localStoredPluginToPlugin(localPlugin);
+  function addPluginToProcess(plugin: Plugin, processId: string) {
     addPluginToProcessStore(processId, plugin);
-    console.log('Add plugin clicked', localPlugin);
-  }
-
-  function localStoredPluginToPlugin(localPlugin: LocalStoredPlugin): Plugin {
-    return {
-      id: createPluginId(localPlugin.name),
-      name: localPlugin.name,
-      src: localPlugin.sourceUrl,
-      sourceUrl: localPlugin.sourceUrl,
-    };
   }
 </script>
 
@@ -59,7 +38,7 @@
 
 {#snippet content()}
   <div class="card-parent-content">
-    {#each filteredPlugins as plugin}
+    {#each plugins as plugin}
       <OscdListItem variant="secondary">
         <div class="card-item-content">
           <p class="plugin-name">{plugin.name}</p>

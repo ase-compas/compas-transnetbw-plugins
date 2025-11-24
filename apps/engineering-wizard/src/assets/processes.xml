@@ -9,12 +9,32 @@
     </description>
 
     <plugins-sequence>
+      <!--- suggestion -->
+      <group>
+        <title>Demo Plugin Loader</title>
+        <!-- External plugin -->
+        <plugin>
+          <id>substation-explorer-v2</id>
+          <name>Substation</name>
+          <src type="internal">
+           /plugins/src/editors/Substation.js 
+          </src>
+        </plugin>
+
+        <!-- Internal plugin -->
+        <plugin>
+          <id>ied-editor-v2</id>
+          <name>IED</name>
+          <src type="internal">/plugins/src/editors/IED.js</src>
+        </plugin>
+      </group>
+
       <group>
         <title>Data</title>
         <plugin>
           <id>substation-explorer</id>
           <name>Substation</name>
-          <src>
+          <src type="external">
             https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/substation.js
           </src>
         </plugin>

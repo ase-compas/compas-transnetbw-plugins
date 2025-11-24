@@ -1,10 +1,10 @@
 <script lang="ts">
   import PluginEditorPanel from '../../components/engineering-process-detail/PluginEditorPanel.svelte';
-  import { onMount } from 'svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
-  import { loadEditorPluginNamesFromLocalStorage } from '../../services/plugin.service';
-  import type { LocalStoredPlugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+  import { createPluginId } from '../../services/plugin.service';
+  import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
+  import { internalPlugins } from '../../services/engineering-process.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -14,20 +14,24 @@
     pluginGroups = [],
   }: Props = $props();
 
-  let localStoredPlugins = $state<LocalStoredPlugin[]>([]);
   let searchTerm = $state('');
+  let filteredPlugins = $derived.by(() => {
+    const compasPlugins = internalPlugins.plugins;
+    const allPlugins = compasPlugins.map((compasPlugin) => ({
+    id: createPluginId(compasPlugin.name),
+    name: compasPlugin.name,
+    src: compasPlugin.src,
+    type: 'internal'
+  })) as Plugin[];
 
-  let filteredPlugins = $derived(
-    (localStoredPlugins ?? []).filter((plugin) => {
-      const q = searchTerm.trim().toLowerCase();
-      if (!q) return true;
-      return plugin.name.toLowerCase().includes(q);
-    })
+  const term = searchTerm.toLowerCase().trim();
+
+  if (!term) return allPlugins;
+
+  return allPlugins.filter((plugin) =>
+    plugin.name.toLowerCase().includes(term)
   );
-
-  onMount(() => {
-    localStoredPlugins = loadEditorPluginNamesFromLocalStorage();
-  });
+});
 </script>
 
 <div class="process-definition-view">
@@ -35,14 +39,12 @@
     {pluginGroups}
   />
 
-  {#if localStoredPlugins.length}
-    <div class="drag-and-drop-info">
-      <OscdCompareArrowsIcon svgStyles="fill: #6B9197"></OscdCompareArrowsIcon>
-      <p>SELECT OR DRAG & DROP PLUGINS</p>
-    </div>
+  <div class="drag-and-drop-info">
+    <OscdCompareArrowsIcon svgStyles="fill: #6B9197"></OscdCompareArrowsIcon>
+    <p>SELECT OR DRAG & DROP PLUGINS</p>
+  </div>
 
-    <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm />
-  {/if}
+  <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm />
 </div>
 
 <style>

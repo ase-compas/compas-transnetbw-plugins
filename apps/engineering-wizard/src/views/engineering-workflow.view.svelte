@@ -8,6 +8,7 @@
     preloadAllPlugins,
   } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
+  import PluginHost from '../components/shared/PluginHost.svelte';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
@@ -17,25 +18,38 @@
     editCount?: any;
     host: HTMLElement;
     plugins?: ViewPlugin[];
+    docName?: string;
+    docId?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
     onExit?: () => void;
   }
 
   let {
     doc,
     editCount = -1,
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
     host,
     plugins = [],
     onExit,
   }: Props = $props();
 
   let tagName: string | null = $state(null);
+  let selectedPlugin= $state<{plugin: ViewPlugin | null}>({ plugin: null });
   let visited: string[] = $state([]);
   let pluginStatus: Record<string, Status> = $state({});
 
   let hasPlugins = $derived(plugins.length > 0);
 
   let currentIndex = $derived(
-    tagName && hasPlugins ? plugins.findIndex((p) => p.id === tagName) : -1,
+    selectedPlugin.plugin && hasPlugins ? plugins.findIndex((p) => p.id === selectedPlugin.plugin.id) : -1,
   );
 
   async function selectPlugin(plugin?: ViewPlugin) {
@@ -45,6 +59,7 @@
 
     const { id } = plugin;
     tagName = id;
+    selectedPlugin.plugin = plugin;
 
     if (!visited.includes(id)) {
       visited = [...visited, id];
@@ -81,6 +96,7 @@
 
   $effect(() => {
     if (!hasPlugins) {
+      selectedPlugin.plugin = null;
       tagName = null;
       visited = [];
       pluginStatus = {};
@@ -116,7 +132,7 @@
   <WorkflowStepper
     {plugins}
     {visited}
-    currentId={tagName}
+    currentId={selectedPlugin?.plugin?.id ?? null}
     {pluginStatus}
     onSelect={selectPlugin}
   />
@@ -144,9 +160,26 @@
   </div>
 </div>
 
-{#if tagName}
+{#if selectedPlugin.plugin}
   <div class="plugin-container">
-    <svelte:element this={tagName} use:setProps={{ doc, editCount }} />
+    {#if selectedPlugin.plugin.type === 'internal'}
+      <!-- render internal plugin -->
+      <PluginHost
+        plugin={selectedPlugin.plugin}
+        doc={doc}
+        {editCount}
+        {plugins}
+        {nsdoc}
+        {docName}
+        {docId}
+        {docs}
+        {locale}
+        {oscdApi}
+      />
+    {:else}
+      <!-- render external plugin -->
+      <svelte:element this={selectedPlugin.plugin.id} use:setProps={{ doc, editCount }} />
+    {/if}
   </div>
 {/if}
 
