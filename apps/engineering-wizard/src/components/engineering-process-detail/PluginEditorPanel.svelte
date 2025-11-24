@@ -8,6 +8,8 @@
     removePluginFromProcessStore,
     selectedProcessState
   } from '../../services/engineering-process.svelte';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -17,8 +19,18 @@
     pluginGroups = [],
   }: Props = $props();
 
-  function handleRemoveAll() {
-    removeAllPluginsFromProcessStore(selectedProcessState.process.id);
+  async function handleRemoveAll() {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Remove all entries?',
+      message: 'This action cannot be undone. You will need to manually search for and re-add each item, and rearrange them again.',
+      confirmActionText: 'Remove All',
+      cancelActionText: 'Cancel',
+      confirmActionColor: 'danger'
+    });
+
+    if(result.type === 'confirm') {
+      removeAllPluginsFromProcessStore(selectedProcessState.process.id);
+    }
   }
 
   function handleRemoveOne(pluginId: string) {
@@ -33,14 +45,16 @@
 />
 
 {#snippet headerAction()}
-  <Button
-    style="background-color: #FF203A"
-    variant="raised"
-    aria-label="Remove all plugins"
-    onclick={handleRemoveAll}
-  >
-    REMOVE ALL
-  </Button>
+  {#if pluginGroups.length > 0}
+    <Button
+      style="background-color: #FF203A"
+      variant="raised"
+      aria-label="Remove all plugins"
+      onclick={handleRemoveAll}
+    >
+      REMOVE ALL
+    </Button>
+  {/if}
 {/snippet}
 
 {#snippet itemAction({ plugin, groupIndex, pluginIndex })}

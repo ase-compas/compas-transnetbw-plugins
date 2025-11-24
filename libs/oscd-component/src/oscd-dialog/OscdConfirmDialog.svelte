@@ -1,18 +1,28 @@
-<script>
+<script lang="ts">
 import {OscdBaseDialog} from "@oscd-transnet-plugins/oscd-component";
 import {Content} from "@smui/dialog";
 import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
 
 
-  /** @type {{open?: boolean, title?: string, message?: string, confirmActionText?: string, cancelActionText?: string, color?: string}} */
+  interface Props {
+    open: boolean;
+    title?: string;
+    message?: string;
+    confirmActionText?: string;
+    confirmActionColor?: 'primary' | 'danger';
+    cancelActionText?: string;
+    color?: string;
+  }
+
   let {
     open = $bindable(false),
     title = '',
     message = '',
     confirmActionText = 'OK',
+    confirmActionColor = 'primary',
     cancelActionText = 'Cancel',
     color = 'var(--mdc-theme-primary, #ff3e00)'
-  } = $props();
+  }: Props = $props();
 
 function handleConfirm() {
   closeDialog('confirm');
@@ -27,11 +37,12 @@ function handleCancel() {
   bind:open
   {title}
   {confirmActionText}
+  {confirmActionColor}
   {cancelActionText}
   {color}
   onConfirm={() => handleConfirm()}
   onCancel={() => handleCancel()}
-  onClose={() => closeDialog('close')}
+  onClose={() => closeDialog('cancel')}
   width="100%"
   maxWidth="500px"
   height="auto"
