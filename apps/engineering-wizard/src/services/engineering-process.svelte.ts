@@ -221,16 +221,32 @@ export function removeAllPluginsFromProcessStore(procId: string): void {
   }
 }
 
+/**
+ * Adds a plugin group to a process.
+ * @param procId - ID of the process
+ * @param groupTitle - Title of the new group
+ * @param position - 1-based position to insert the group (optional, defaults to last)
+ */
 export function addGroupToProcessStore(
   procId: string,
-  groupTitle: string
+  groupTitle: string,
+  position?: number
 ): void {
   const process = processesStore.processes.find((p) => p.id === procId);
   if (!process) return;
 
   const groups = process.pluginGroups ?? (process.pluginGroups = []);
-  if (!groups.find((g) => g.title === groupTitle)) {
-    groups.push({ title: groupTitle, plugins: [] });
+  if (groups.find((g) => g.title === groupTitle)) return;
+
+  const newGroup = { title: groupTitle, plugins: [] };
+
+  if(position === undefined) {
+    // add last
+    groups.push(newGroup);
+  } else {
+    // add at position
+    const idx = Math.max(0, position - 1);
+    groups.splice(idx, 0, newGroup);
   }
 }
 

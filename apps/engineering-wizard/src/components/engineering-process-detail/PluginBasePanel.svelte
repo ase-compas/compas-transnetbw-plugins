@@ -4,6 +4,8 @@
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   import { OscdAddCircleIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { processEditModeState } from '../../services/engineering-process.svelte';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import AddGroupDialog from './AddGroupDialog.svelte';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -18,18 +20,25 @@
 
     headerAction?: Snippet;
     itemAction?: Snippet<[ItemActionContext]>;
+
+    onAddGroup?: (name: string, position: number) => void;
   }
 
   let {
     pluginGroups = [],
     title = 'Process',
     headerAction,
-    itemAction
+    itemAction,
+
+    onAddGroup = () => {}
   }: Props = $props();
 
-  function addGroup() {
-    alert('adding a group');
+  async function addGroup() {
+    const result = await openDialog(AddGroupDialog, {groups: pluginGroups.length})
+    if (result.type !== 'confirm') return;
+    onAddGroup(result.data.name, result.data.position);
   }
+
 </script>
 
 <OscdPanel

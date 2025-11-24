@@ -4,6 +4,7 @@
   import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
   import PluginBasePanel from './PluginBasePanel.svelte';
   import {
+  addGroupToProcessStore,
     removeAllPluginsFromProcessStore,
     removePluginFromProcessStore,
     selectedProcessState
@@ -36,12 +37,19 @@
   function handleRemoveOne(pluginId: string) {
     removePluginFromProcessStore(selectedProcessState.process.id, pluginId);
   }
+
+  function handleAddGroup(name: string, position: number) {
+    addGroupToProcessStore(selectedProcessState.process.id, name, position);
+  }
+
 </script>
 
 <PluginBasePanel
   {pluginGroups}
   {headerAction}
   {itemAction}
+
+  onAddGroup={(name, position) => handleAddGroup(name, position)}
 />
 
 {#snippet headerAction()}

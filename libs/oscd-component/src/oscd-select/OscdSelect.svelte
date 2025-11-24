@@ -1,7 +1,7 @@
 <script>
   import Select, { Option } from '@smui/select';
 
-  /** @type {{data?: any, placeholder?: string, label?: string, description?: string, value?: string, required?: boolean, size?: string, selectedOptionIndex?: any, disabled?: boolean}} */
+  /** @type {{data?: any, placeholder?: string, label?: string, description?: string, value?: string, required?: boolean, size?: string, selectedOptionIndex?: any, disabled?: boolean, variant?: string}} */
   let {
     data = [],
     placeholder = '',
@@ -10,6 +10,7 @@
     value = $bindable(),
     required = false,
     size = 'sm',
+    variant = 'standard',
     selectedOptionIndex = $bindable(-1),
     disabled = false
   } = $props();
@@ -25,6 +26,7 @@
   bind:value
   {label}
   style="width: 100%;"
+  {variant}
   required={required}>
   {#each data as d, index}
     <Option onclick={setSelectedIndex(index)} value={d.value}>{d.label}</Option>
