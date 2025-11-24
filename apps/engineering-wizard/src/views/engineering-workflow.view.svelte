@@ -9,7 +9,6 @@
   } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
   import PluginHost from '../components/shared/PluginHost.svelte';
-  import { pluginWrapperStore } from '@oscd-transnet-plugins/oscd-services';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
