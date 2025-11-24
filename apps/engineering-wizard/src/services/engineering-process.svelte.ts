@@ -1,4 +1,4 @@
-import type { Plugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+import type { Plugin, PluginGroup, PluginType, Process } from '@oscd-transnet-plugins/shared';
 /* eslint-disable @nx/enforce-module-boundaries */
 import processesUrl from '../assets/processes.xml?url';
 
@@ -22,8 +22,14 @@ export const processEditModeState = $state<{ isEditing: boolean }>({
   isEditing: false,
 });
 
+// Plugins that are available from the OSCD core
+export const internalPlugins = $state<{plugins: any[]}>({
+  plugins: []
+});
+
 const SOURCE_URL = processesUrl;
 const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
+const DEFAULT_SRC_TYPE: PluginType = 'external';
 
 // --- Load from localStorage (SSR-safe) ---
 if (typeof localStorage !== 'undefined') {
@@ -61,6 +67,19 @@ $effect.root(() => {
 });
 
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
+const attr = (el: Element | null, attrKey: string) => el?.getAttribute(attrKey) ?? undefined;
+/**
+ * Parses the `type` attribute of a <src> tag within the given element.
+ * Returns 'internal', 'external', or a default type if the attribute is missing or invalid.
+ */
+const parseSrcType = (el: Element | null): PluginType => {
+  const value = attr(el?.querySelector('src'), 'type') ?? '';
+  if( value === 'internal' || value === 'external') {
+    return value;
+  }
+
+  return DEFAULT_SRC_TYPE;
+}
 const all = (root: ParentNode, selector: string) =>
   Array.from(root.querySelectorAll(selector));
 
@@ -69,6 +88,7 @@ const parsePlugin = (el: Element): Plugin => ({
   name:      text(el.querySelector('name')),
   src:       text(el.querySelector('src')) || undefined,
   sourceUrl: text(el.querySelector('sourceUrl')) || undefined,
+  type:      parseSrcType(el)
 });
 
 // Always return Process objects with a concrete `pluginGroups: PluginGroup[]`
@@ -213,6 +233,10 @@ export function addGroupToProcessStore(
   if (!groups.find((g) => g.title === groupTitle)) {
     groups.push({ title: groupTitle, plugins: [] });
   }
+}
+
+export function setInternalPlugins(plugins :any[]) {
+  internalPlugins.plugins = [...plugins]
 }
 
 export function getPluginsForProcess(process: Process): Plugin[] {
