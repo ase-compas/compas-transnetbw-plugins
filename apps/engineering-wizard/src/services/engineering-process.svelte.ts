@@ -1,4 +1,4 @@
-import type { Plugin, PluginGroup, PluginType, Process } from '@oscd-transnet-plugins/shared';
+import type { CoMPASPlugin, Plugin, PluginGroup, PluginType, Process } from '@oscd-transnet-plugins/shared';
 /* eslint-disable @nx/enforce-module-boundaries */
 import processesUrl from '../assets/processes.xml?url';
 
@@ -23,7 +23,7 @@ export const processEditModeState = $state<{ isEditing: boolean }>({
 });
 
 // Plugins that are available from the OSCD core
-export const internalPlugins = $state<{plugins: any[]}>({
+export const internalPlugins = $state<{plugins: CoMPASPlugin[]}>({
   plugins: []
 });
 
@@ -235,7 +235,7 @@ export function addGroupToProcessStore(
   }
 }
 
-export function setInternalPlugins(plugins :any[]) {
+export function setInternalPlugins(plugins :CoMPASPlugin[]) {
   internalPlugins.plugins = [...plugins]
 }
 

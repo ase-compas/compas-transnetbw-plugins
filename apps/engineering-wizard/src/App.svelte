@@ -44,7 +44,6 @@
 
   onMount(async () => {
     await getProcesses();
-    setInternalPlugins(plugins)
   });
 
   $effect(() => {

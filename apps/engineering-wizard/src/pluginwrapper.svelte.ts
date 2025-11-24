@@ -1,6 +1,8 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from 'svelte';
+import { setInternalPlugins } from './services/engineering-process.svelte';
+import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 
 export default class NewOSCDPlugin extends HTMLElement {
   private _doc?: XMLDocument;
@@ -60,6 +62,11 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   set plugins(newPlugins: unknown[]) {
     this._props.plugins = newPlugins as any[];
+
+    const editorPlugins = (newPlugins as CoMPASPlugin[])
+      .filter(p => p.kind === 'editor');
+
+    setInternalPlugins(editorPlugins)
   }
 
   set editCount(newCount: number) {
