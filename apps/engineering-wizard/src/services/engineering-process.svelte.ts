@@ -55,7 +55,6 @@ $effect.root(() => {
     });
 
     const snapshot = $state.snapshot(processesStore.processes);
-    console.log('new value', snapshot);
 
     if (typeof localStorage === 'undefined') return;
     try {

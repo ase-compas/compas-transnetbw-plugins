@@ -46,10 +46,6 @@
     await getProcesses();
   });
 
-  $effect(() => {
-    console.log("from app: ", doc, editCount)
-  })
-
   function startProcess(process: Process) {
     if (!selectedProcessState.process) {
       selectedProcessState.process = process;
