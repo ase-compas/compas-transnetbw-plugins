@@ -34,7 +34,7 @@
 
   let formState = $state<ChangeEventDetails | undefined>();
 
-  let valid = $derived(() => {
+  let valid = $derived.by(() => {
     return formState?.valid ?? false;
   });
 
