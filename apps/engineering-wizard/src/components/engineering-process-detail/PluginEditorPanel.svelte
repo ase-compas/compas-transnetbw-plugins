@@ -42,6 +42,8 @@
     addGroupToProcessStore(selectedProcessState.process.id, name, position);
   }
 
+  let showRemoveAll = $derived(pluginGroups.flatMap(g => g.plugins).length > 0)
+
 </script>
 
 <PluginBasePanel
@@ -53,7 +55,7 @@
 />
 
 {#snippet headerAction()}
-  {#if pluginGroups.length > 0}
+  {#if showRemoveAll}
     <Button
       style="background-color: #FF203A"
       variant="raised"
