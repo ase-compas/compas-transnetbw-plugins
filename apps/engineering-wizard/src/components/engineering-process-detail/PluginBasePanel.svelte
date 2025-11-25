@@ -2,11 +2,13 @@
   import type { Snippet } from 'svelte';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import { OscdAddCircleIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { processEditModeState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddGroupDialog from './AddGroupDialog.svelte';
   import EditGroupsDialog from './EditGroupsDialog.svelte';
+  import { dragHandle, dragHandleZone, TRIGGERS } from 'svelte-dnd-action';
+  import { flip } from 'svelte/animate';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -55,6 +57,20 @@
 
     onUpdateGroups(updatedGroups);
   }
+
+  function handleSort(e, group) {
+    group.plugins = e.detail.items;
+  }
+
+  function handleFinalize(e, group) {
+    if(e.detail.info.trigger === TRIGGERS.DROPPED_OUTSIDE_OF_ANY) {
+     // discard plugin from configuration
+     group.plugins = e.detail.items.filter(item => e.detail.info.id !== item.id);
+    } else {
+      group.plugins = e.detail.items;
+    }
+    onUpdateGroups(pluginGroups)
+  }
 </script>
 
 <OscdPanel
@@ -85,31 +101,51 @@
           <span class="plugin-list__group-index">{groupIndex + 1}.</span>
           <span class="plugin-list__group-title">{group.title}</span>
         </header>
-        {#if group.plugins.length === 0}
-          <OscdListItem variant="dashed">
-            <div class="plugin-list__item-row__dashed">
-            </div>
-          </OscdListItem>
-        {/if}
 
-        {#each group.plugins as plugin, pluginIndex}
-          <OscdListItem variant="secondary">
-            <div class="plugin-list__item-row">
-              <span class="plugin-list__item-name">{plugin.name}</span>
+        <div
+          class="plugin-list__group-plugins"
+          class:plugin_list__group-plugins--dashed={processEditModeState.isEditing}
+          use:dragHandleZone={{
+            items: group.plugins,
+            flipDurationMs: 100,
+            dropTargetStyle: {},
+          }}
+          onconsider={(e) => handleSort(e, group)}
+          onfinalize={(e) => handleFinalize(e, group)}
+        >
+          {#each group.plugins as plugin, pluginIndex (plugin.id)}
+            <div
+              data-id={plugin.id}
+              animate:flip={{duration: 100}}
+            >
+              <OscdListItem variant="secondary">
+                <div class="plugin-list__item-row">
 
-              {#if itemAction}
-                <div class="plugin-list__item-action">
-                  {@render itemAction({
-                    group,
-                    plugin,
-                    groupIndex,
-                    pluginIndex
-                  })}
+                  <div class="plugin-list__item-row__left">
+                    {#if processEditModeState.isEditing}
+                      <div use:dragHandle aria-label="drag-handle">
+                        <OscdDragIndicatorIcon/>
+                      </div>
+                    {/if}
+
+                    <span class="plugin-list__item-name">{plugin.name}</span>
+                  </div>
+
+                  {#if itemAction}
+                    <div class="plugin-list__item-action">
+                      {@render itemAction({
+                        group,
+                        plugin,
+                        groupIndex,
+                        pluginIndex
+                      })}
+                    </div>
+                  {/if}
                 </div>
-              {/if}
+              </OscdListItem>
             </div>
-          </OscdListItem>
-        {/each}
+          {/each}
+        </div>
       </section>
     {/each}
   </div>
@@ -178,6 +214,12 @@
     gap: 0.5rem;
   }
 
+  .plugin-list__group-plugins {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .plugin-list__group-header {
     display: flex;
     align-items: center;
@@ -194,16 +236,25 @@
     color: #dae3e6;
   }
 
-  .plugin-list__item-row__dashed {
-    height: 2rem;
-  }
-
   .plugin-list__item-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     gap: 0.75rem;
+  }
+
+  .plugin-list__item-row__left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .plugin_list__group-plugins--dashed {
+    padding: 0.8rem;
+    min-height: 2rem;
+    border-radius: 12px;
+    border: 2px dashed rgba(255, 255, 255, 0.4);
   }
 
   .plugin-list__item-name {
