@@ -4,10 +4,11 @@
   import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
   import PluginBasePanel from './PluginBasePanel.svelte';
   import {
-  addGroupToProcessStore,
+    addGroupToProcessStore,
+    updateGroupsOfProcessStore,
     removeAllPluginsFromProcessStore,
     removePluginFromProcessStore,
-    selectedProcessState
+    selectedProcessState,
   } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -42,6 +43,10 @@
     addGroupToProcessStore(selectedProcessState.process.id, name, position);
   }
 
+  function handleUpdateGroups(updatedGroups: PluginGroup[]) {
+    updateGroupsOfProcessStore(selectedProcessState.process.id, updatedGroups)
+  }
+
   let showRemoveAll = $derived(pluginGroups.flatMap(g => g.plugins).length > 0)
 
 </script>
@@ -52,6 +57,7 @@
   {itemAction}
 
   onAddGroup={(name, position) => handleAddGroup(name, position)}
+  onUpdateGroups={(updatedGroups) => handleUpdateGroups(updatedGroups)}
 />
 
 {#snippet headerAction()}

@@ -21,5 +21,5 @@
       {/snippet}
   </Textfield>
 {:else}
-  <Textfield bind:value={value} label={label} placeholder={placeholder} style="width: 100%" variant={variant}></Textfield>
+  <Textfield bind:value={value} label={label} placeholder={placeholder} style="width: 100%" variant={variant} {required}></Textfield>
 {/if}

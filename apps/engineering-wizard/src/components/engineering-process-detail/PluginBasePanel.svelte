@@ -6,6 +6,7 @@
   import { processEditModeState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddGroupDialog from './AddGroupDialog.svelte';
+  import EditGroupsDialog from './EditGroupsDialog.svelte';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -22,6 +23,7 @@
     itemAction?: Snippet<[ItemActionContext]>;
 
     onAddGroup?: (name: string, position: number) => void;
+    onUpdateGroups?: (updatedGroups: PluginGroup[]) => void;
   }
 
   let {
@@ -30,7 +32,8 @@
     headerAction,
     itemAction,
 
-    onAddGroup = () => {}
+    onAddGroup = () => {},
+    onUpdateGroups = (updatedGroups: PluginGroup[]) => {}
   }: Props = $props();
 
   async function addGroup() {
@@ -39,6 +42,19 @@
     onAddGroup(result.data.name, result.data.position);
   }
 
+
+  async function editGroups() {
+    const currentGroups = pluginGroups.map((g, idx) => ({ id: idx.toString(), title: g.title }));
+    const result = await openDialog(EditGroupsDialog, { groups: currentGroups });
+    if (result.type !== 'confirm') return;
+
+    const updatedGroups: PluginGroup[] = result.data.groups.map((g: { id: string; title: string }) => {
+      const originalIndex = parseInt(g.id, 10);
+      return { ...pluginGroups[originalIndex], title: g.title };
+    });
+
+    onUpdateGroups(updatedGroups);
+  }
 </script>
 
 <OscdPanel
@@ -105,6 +121,7 @@
       <button
         type="button"
         class="plugin-list__footer-button plugin-list__footer-button--edit"
+        onclick={editGroups}
       >
         <OscdEditIcon svgStyles="fill: var(--primary-base);" aria-hidden="true" />
         <span>Edit groups</span>

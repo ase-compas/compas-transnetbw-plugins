@@ -250,6 +250,22 @@ export function addGroupToProcessStore(
   }
 }
 
+/**
+ * Updates the plugin groups of a process.
+ * @param procId
+ * @param newGroups
+ */
+export function updateGroupsOfProcessStore(
+  procId: string,
+  newGroups: PluginGroup[]
+): void {
+  const process = processesStore.processes.find((p) => p.id === procId);
+  if (!process) return;
+
+  // Replace the entire plugin groups array with the new groups
+  process.pluginGroups.splice(0, process.pluginGroups.length, ...newGroups);
+}
+
 export function setInternalPlugins(plugins :CoMPASPlugin[]) {
   internalPlugins.plugins = [...plugins]
 }
