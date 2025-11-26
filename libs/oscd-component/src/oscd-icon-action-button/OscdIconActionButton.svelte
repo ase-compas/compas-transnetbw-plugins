@@ -10,12 +10,6 @@
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   // ===== Parameters =====
-
-
-
-
-
-
   interface Props {
     /** Tooltip text to display on hover */
     tooltip: string;
@@ -29,6 +23,8 @@
     fillColor?: string;
     /** Click event handler for the button */
     onClick: (e: MouseEvent) => void;
+    /** Size of the icon button */
+    size?: string;
   }
 
   let {
@@ -37,9 +33,11 @@
     type,
     showDelay = 1000,
     fillColor = 'var(--mdc-theme-primary)',
+    size = '25px',
     onClick
   }: Props = $props();
 
+  let styles = $derived(`fill: ${fillColor}; margin: 0; width: ${size}; height: ${size};`);
 </script>
  <OscdTooltip content={tooltip} hoverDelay={showDelay} side={tooltipSide}>
 
@@ -52,21 +50,21 @@
     }}
   >
     {#if type === 'delete'}
-      <OscdDeleteIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
+      <OscdDeleteIcon svgStyles={styles} />
     {:else if type === 'duplicate'}
-      <OscdControlPointDuplicateIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
+      <OscdControlPointDuplicateIcon svgStyles={styles} />
     {:else if type === 'edit'}
-      <OscdEditIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
+      <OscdEditIcon svgStyles={styles} />
     {:else if type === 'visibility'}
-      <OscdVisibilityIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
+      <OscdVisibilityIcon svgStyles={styles} />
     {:else if type === 'wand-stars'}
-      <OscdWandStarsIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
+      <OscdWandStarsIcon svgStyles={styles} />
     {:else if type === 'link-off'}
-      <OscdLinkOffIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 20px; height: 20px;`} />
+      <OscdLinkOffIcon svgStyles={styles} />
     {:else if type === 'close'}
-      <OscdCloseIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`} />
+      <OscdCloseIcon svgStyles={styles} />
     {:else if type === 'star'}
-      <OscdStarIcon svgStyles={`fill: ${fillColor}; margin: 0; width: 25px; height: 25px;`} />
+      <OscdStarIcon svgStyles={styles} />
     {:else}
       Unsupported supported type: {type}
     {/if}
