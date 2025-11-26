@@ -59,6 +59,9 @@
       "@oscd-transnet-plugins/oscd-services/alert": [
         "libs/oscd-services/src/alert/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-services/toast": [
+        "libs/oscd-services/src/toast/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-template-generator": [
         "libs/oscd-template-generator/src/index.ts"
       ],
