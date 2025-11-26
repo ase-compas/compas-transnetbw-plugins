@@ -10110,31 +10110,34 @@ function jv(e, t) {
 }
 function Da(e, t) {
   Te(t, !0);
-  let n = b(t, "placeholder", 3, ""), r = b(t, "label", 3, ""), i = b(t, "icon", 3, ""), a = b(t, "value", 15, ""), o = b(t, "variant", 3, "standard"), l = b(t, "styles", 3, "");
-  var s = X(), u = V(s);
+  let n = b(t, "placeholder", 3, ""), r = b(t, "label", 3, ""), i = b(t, "icon", 3, ""), a = b(t, "value", 15, ""), o = b(t, "variant", 3, "standard"), l = b(t, "styles", 3, ""), s = b(t, "required", 3, !1);
+  var u = X(), c = V(u);
   {
-    var c = (v) => {
+    var f = (h) => {
       {
-        const h = (m) => {
-          jv(m, {
+        const g = (E) => {
+          jv(E, {
             class: "material-icons",
-            children: (E, y) => {
-              var T = St();
-              Ce(() => nt(T, i())), I(E, T);
+            children: (y, T) => {
+              var x = St();
+              Ce(() => nt(x, i())), I(y, x);
             },
             $$slots: { default: !0 }
           });
         };
-        let g = /* @__PURE__ */ me(() => `width: 100%; ${l()}`);
-        As(v, {
+        let m = /* @__PURE__ */ me(() => `width: 100%; ${l()}`);
+        As(h, {
           get label() {
             return r();
+          },
+          get required() {
+            return s();
           },
           get placeholder() {
             return n();
           },
           get style() {
-            return d(g);
+            return d(m);
           },
           get variant() {
             return o();
@@ -10142,15 +10145,15 @@ function Da(e, t) {
           get value() {
             return a();
           },
-          set value(m) {
-            a(m);
+          set value(E) {
+            a(E);
           },
-          leadingIcon: h,
+          leadingIcon: g,
           $$slots: { leadingIcon: !0 }
         });
       }
-    }, f = (v) => {
-      As(v, {
+    }, v = (h) => {
+      As(h, {
         get label() {
           return r();
         },
@@ -10161,19 +10164,22 @@ function Da(e, t) {
         get variant() {
           return o();
         },
+        get required() {
+          return s();
+        },
         get value() {
           return a();
         },
-        set value(h) {
-          a(h);
+        set value(g) {
+          a(g);
         }
       });
     };
-    re(u, (v) => {
-      i() ? v(c) : v(f, !1);
+    re(c, (h) => {
+      i() ? h(f) : h(v, !1);
     });
   }
-  I(e, s), Oe();
+  I(e, u), Oe();
 }
 /**
  * @license

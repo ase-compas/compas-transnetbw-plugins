@@ -10388,31 +10388,34 @@ function mp(t, e) {
 }
 function pp(t, e) {
   we(e, !0);
-  let n = m(e, "placeholder", 3, ""), r = m(e, "label", 3, ""), i = m(e, "icon", 3, ""), a = m(e, "value", 15, ""), o = m(e, "variant", 3, "standard"), u = m(e, "styles", 3, "");
-  var l = ae(), c = J(l);
+  let n = m(e, "placeholder", 3, ""), r = m(e, "label", 3, ""), i = m(e, "icon", 3, ""), a = m(e, "value", 15, ""), o = m(e, "variant", 3, "standard"), u = m(e, "styles", 3, ""), l = m(e, "required", 3, !1);
+  var c = ae(), d = J(c);
   {
-    var d = (f) => {
+    var h = (v) => {
       {
-        const v = (g) => {
-          mp(g, {
+        const p = (_) => {
+          mp(_, {
             class: "material-icons",
-            children: (_, C) => {
-              var x = Bt();
-              ke(() => ft(x, i())), w(_, x);
+            children: (C, x) => {
+              var S = Bt();
+              ke(() => ft(S, i())), w(C, S);
             },
             $$slots: { default: !0 }
           });
         };
-        let p = /* @__PURE__ */ ve(() => `width: 100%; ${u()}`);
-        Vl(f, {
+        let g = /* @__PURE__ */ ve(() => `width: 100%; ${u()}`);
+        Vl(v, {
           get label() {
             return r();
+          },
+          get required() {
+            return l();
           },
           get placeholder() {
             return n();
           },
           get style() {
-            return s(p);
+            return s(g);
           },
           get variant() {
             return o();
@@ -10420,15 +10423,15 @@ function pp(t, e) {
           get value() {
             return a();
           },
-          set value(g) {
-            a(g);
+          set value(_) {
+            a(_);
           },
-          leadingIcon: v,
+          leadingIcon: p,
           $$slots: { leadingIcon: !0 }
         });
       }
-    }, h = (f) => {
-      Vl(f, {
+    }, f = (v) => {
+      Vl(v, {
         get label() {
           return r();
         },
@@ -10439,19 +10442,22 @@ function pp(t, e) {
         get variant() {
           return o();
         },
+        get required() {
+          return l();
+        },
         get value() {
           return a();
         },
-        set value(v) {
-          a(v);
+        set value(p) {
+          a(p);
         }
       });
     };
-    fe(c, (f) => {
-      i() ? f(d) : f(h, !1);
+    fe(d, (v) => {
+      i() ? v(h) : v(f, !1);
     });
   }
-  w(t, l), Re();
+  w(t, c), Re();
 }
 /**
  * @license
@@ -13859,48 +13865,51 @@ function ql(t, e) {
   m(e, "description", 3, "");
   let i = m(e, "value", 15), a = m(e, "required", 3, !1);
   m(e, "size", 3, "sm");
-  let o = m(e, "selectedOptionIndex", 31, () => -1), u = m(e, "disabled", 3, !1);
-  function l(c) {
-    return () => o(c);
+  let o = m(e, "variant", 3, "standard"), u = m(e, "selectedOptionIndex", 31, () => -1), l = m(e, "disabled", 3, !1);
+  function c(d) {
+    return () => u(d);
   }
   Xp(t, {
     get disabled() {
-      return u();
+      return l();
     },
-    key: (c) => `${c ?? ""}`,
+    key: (d) => `${d ?? ""}`,
     get label() {
       return r();
     },
     style: "width: 100%;",
+    get variant() {
+      return o();
+    },
     get required() {
       return a();
     },
     get value() {
       return i();
     },
-    set value(c) {
-      i(c);
+    set value(d) {
+      i(d);
     },
-    children: (c, d) => {
-      var h = ae(), f = J(h);
-      _i(f, 17, n, Xa, (v, p, g) => {
+    children: (d, h) => {
+      var f = ae(), v = J(f);
+      _i(v, 17, n, Xa, (p, g, _) => {
         {
-          let _ = /* @__PURE__ */ ve(() => l(g));
-          Yp(v, {
+          let C = /* @__PURE__ */ ve(() => c(_));
+          Yp(p, {
             get onclick() {
-              return s(_);
+              return s(C);
             },
             get value() {
-              return s(p).value;
+              return s(g).value;
             },
-            children: (C, x) => {
-              var S = Bt();
-              ke(() => ft(S, s(p).label)), w(C, S);
+            children: (x, S) => {
+              var b = Bt();
+              ke(() => ft(b, s(g).label)), w(x, b);
             },
             $$slots: { default: !0 }
           });
         }
-      }), w(c, h);
+      }), w(d, f);
     },
     $$slots: { default: !0 }
   }), Re();
