@@ -42,6 +42,7 @@
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
   import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
+  import { toastService} from '@oscd-transnet-plugins/oscd-services/toast';
 
   // -----------------------------
   // Service instances
@@ -200,15 +201,29 @@
 
     try {
       await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      toastService.success(
+        "Default Set",
+        `Type "${type.id}" is now the default for ${type.typeKind}:${type.instanceType}.`,
+         5000
+      );
     } catch (e) {
       console.error(e);
-      alertService.error(e.message);
+      toastService.error(
+        "Set Default Failed",
+        `Could not set "${type?.id}" as the default. ${e?.message ?? ""}`
+      );
     }
   }
 
   async function handleClickOnSetAsDefault() {
     if(!logicalNodeType) return;
-    await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+    try {
+      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+      toastService.success("Default Set", `LNodeType "${logicalNodeType.id}" is now the default for LNClass "${logicalNodeType.lnClass}".`, 5000);
+    } catch (e) {
+      toastService.error("Set Default Failed", `Could not set "${logicalNodeType?.id}" as the default.`);
+      console.error(e);
+    }
   }
 
   async function handleBreadcrumbClick(index) {
@@ -238,7 +253,11 @@
       const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
       refStore.setTypeReference(itemId, defaultRootId);
     } catch (e: any) {
-      alertService.error(e.message);
+      toastService.warn(
+        "Apply Default Failed",
+        `Could not apply default type. ${e?.message ?? ""}`,
+        6000
+      );
     }
     // Set the reference to the newly created to reflect the change in the UI
   }
@@ -279,10 +298,10 @@
 <div class="oscd-details">
   <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
-    <OscdBreadcrumbs 
+    <OscdBreadcrumbs
     color='var(--primary-base)'
-    activeIndex={1} 
-    {breadcrumbs} 
+    activeIndex={1}
+    {breadcrumbs}
     handleClick={clickedItemIndex => handleBreadcrumbClick(clickedItemIndex)} />
 
     <div class="oscd-details-toolbar-right">

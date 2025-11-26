@@ -18,6 +18,7 @@
   import IconButton from '@smui/icon-button';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { onMount } from 'svelte';
+  import { toastService} from '@oscd-transnet-plugins/oscd-services/toast';
 
   // ===== Store and Service Instances =====
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
@@ -66,8 +67,18 @@
   function handleDuplicate(lNodeTypeId: string) {
     try {
       lNodeTypeService.duplicateType(lNodeTypeId);
+
+      toastService.success(
+        "Duplicated",
+        `Logical Node Type "${lNodeTypeId}" was duplicated successfully.`
+      );
     } catch (e) {
       console.error(`Error duplicating LNodeType "${lNodeTypeId}": ${e}`);
+
+      toastService.error(
+        "Duplicate Failed",
+        `Could not duplicate Logical Node Type "${lNodeTypeId}". Please try again.`
+      );
     }
   }
 
@@ -85,8 +96,16 @@
     try {
       await lNodeTypeService.deleteTypeById(lNodeTypeId);
       items = items.filter(item => item.id !== lNodeTypeId);
+      toastService.success(
+        "Deleted",
+        `Logical Node Type "${lNodeTypeId}" was deleted successfully.`
+      );
     } catch (e) {
       console.error(`Error deleting LNodeType "${lNodeTypeId}": ${e}`);
+      toastService.error(
+        "Delete Failed",
+        `Could not delete Logical Node Type "${lNodeTypeId}".`
+      );
     }
   }
 
