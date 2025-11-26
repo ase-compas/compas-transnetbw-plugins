@@ -5,6 +5,9 @@
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   import { addPluginToProcessStore, selectedProcessState } from '../../services/engineering-process.svelte';
   import Textfield from '@smui/textfield';
+  import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { dragHandle, dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
+  import { flip } from 'svelte/animate';
 
   interface Props {
     plugins: Plugin[];
@@ -18,6 +21,30 @@
 
   function addPluginToProcess(plugin: Plugin, processId: string) {
     addPluginToProcessStore(processId, plugin);
+  }
+
+  const handleDNDFinalize = (event) => {
+    plugins = event.detail.items;
+  };
+
+  /**
+   * Handles the consider event for the drag-and-drop zone.
+   * Create a shadow element so the actual plugin never leaves this list.
+   * @param e
+   */
+  const handleDNDConsider = (e) => {
+    const { detail } = e;
+    const { trigger, id } = detail.info;
+
+    if (trigger === TRIGGERS.DRAG_STARTED) {
+      const idx = plugins.findIndex(i => i.id === id);
+      const newId = `${id}_copy`;
+      e.detail.items = e.detail.items.filter(item => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+      e.detail.items.splice(idx, 0, { ...plugins[idx], id: newId });
+      plugins = e.detail.items;
+    } else {
+      plugins = [...plugins];
+    }
   }
 </script>
 
@@ -37,19 +64,41 @@
 {/snippet}
 
 {#snippet content()}
-  <div class="card-parent-content">
-    {#each plugins as plugin}
-      <OscdListItem variant="secondary">
-        <div class="card-item-content">
-          <p class="plugin-name">{plugin.name}</p>
-          <button
-            class="plugin-add-btn"
-            onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
-          >
-            <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
-          </button>
-        </div>
-      </OscdListItem>
+  <div
+    class="card-parent-content"
+    use:dragHandleZone={{
+      items: plugins,
+      flipDurationMs: 100,
+      dropTargetStyle: {},
+      dropFromOthersDisabled: true
+    }}
+    onconsider={handleDNDConsider}
+    onfinalize={handleDNDFinalize}
+  >
+    {#each plugins as plugin (plugin.id)}
+      <div
+        data-id={plugin.id}
+        animate:flip={{duration: 100}}
+      >
+        <OscdListItem variant="secondary">
+          <div class="card-item-content">
+
+            <div class="card-item-content__left">
+              <div use:dragHandle aria-label="drag-handle">
+                <OscdDragIndicatorIcon/>
+              </div>
+
+              <p class="plugin-name">{plugin.name}</p>
+            </div>
+            <button
+              class="plugin-add-btn"
+              onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
+            >
+              <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
+            </button>
+          </div>
+        </OscdListItem>
+      </div>
     {/each}
   </div>
 {/snippet}
@@ -86,6 +135,12 @@
     align-items: center;
     gap: 8px;
     width: 100%;
+  }
+
+  .card-item-content__left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .plugin-name {
