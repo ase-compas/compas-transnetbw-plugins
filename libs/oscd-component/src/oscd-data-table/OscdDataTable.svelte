@@ -87,7 +87,15 @@
           </Cell>
         {:else}
           <Cell numeric={col.numeric} style={col.cellStyle}>
-            {#if col.valueFormatter}
+            {#if col.cellRenderer}
+              {@const CellRenderer = col.cellRenderer}
+              <CellRenderer
+                row={row}
+                value={row[col.field]}
+                col={col}
+                {...(col.cellRendererProps ?? {})}
+              />
+            {:else if col.valueFormatter}
               {col.valueFormatter(row[col.field])}
             {:else}
               {row[col.field] ?? ''}
@@ -105,7 +113,7 @@
       indeterminate
       bind:closed={loadingDone}
       aria-label="Data is being loaded..."
-      
+
     />
   {/snippet}
 </DataTable>
@@ -167,7 +175,7 @@
     let filtered = rowData.filter(row => {
       return columnDefs.every(col => {
         const filterValue = filters[col.field];
-        const fieldValue = row[col.field];
+        const fieldValue = col.filterValueGetter ? col.filterValueGetter(row) : row[col.field];
         if (!filterValue) {
           return true;
         }
@@ -272,7 +280,6 @@
   tbody td {
     padding: 12px 15px;
     text-align: left;
-    font-size: 0.9rem;
     font-size: 0.9rem;
     color: #555;
   }
