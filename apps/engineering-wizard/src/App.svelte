@@ -6,16 +6,41 @@
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
+  import { getPluginsForProcess, getProcesses, setInternalPlugins } from './services/engineering-process.svelte.ts';
   import { selectedProcessState } from './services/engineering-process.svelte';
 
-  interface Props {
-    doc: XMLDocument | undefined;
-    editCount?: any;
-    host: HTMLElement;
+  interface Plugin {
+    src: string;
   }
 
-  let { doc, editCount = -1, host }: Props = $props();
+  interface Props {
+    doc?: XMLDocument;
+    editCount?: number;
+    host?: HTMLElement;
+    plugins?: Plugin[];
+    docId?: string;
+    pluginId?: string;
+    docName?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
+  }
+
+  let {
+    doc,
+    editCount,
+    plugins,
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
+    host
+  }: Props = $props();
+
+  const plugin = plugins[1];
 
   onMount(async () => {
     await getProcesses();
@@ -26,7 +51,7 @@
       selectedProcessState.process = process;
     }
     const plugins = getPluginsForProcess(selectedProcessState.process);
-    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins });
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
     selectedProcessState.process = null;
   }
 
@@ -53,3 +78,4 @@
     handleStart={startProcess}
   />
 {/if}
+

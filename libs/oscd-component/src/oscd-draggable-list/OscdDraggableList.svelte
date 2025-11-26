@@ -7,9 +7,6 @@
    */
   import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate'
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
 
   type ListItem = {
     id: string;
@@ -19,9 +16,10 @@
   interface Props {
     canDrag?: boolean;
     items?: ListItem[];
+    onOrderChange?: (items: ListItem[]) => void;
   }
 
-  let { canDrag = true, items = $bindable([]) }: Props = $props();
+  let { canDrag = true, items = $bindable([]), onOrderChange = (_) => {} }: Props = $props();
 
   const flipDurationMs = 100;
 
@@ -38,7 +36,7 @@
     onconsider={handleSort}
     onfinalize={e => {
       handleSort(e);
-      dispatch('orderChange', { items });
+      onOrderChange(items);
     }}
  >
       {#each items as item, index (item.id)}

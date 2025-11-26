@@ -7,7 +7,7 @@
     placeholder = '',
     label = '',
     description = '',
-    value = $bindable(''),
+    value = $bindable(),
     required = false,
     size = 'sm',
     selectedOptionIndex = $bindable(-1),
@@ -27,6 +27,6 @@
   style="width: 100%;"
   required={required}>
   {#each data as d, index}
-    <Option on:click={setSelectedIndex(index)} value={d.value}>{d.label}</Option>
+    <Option onclick={setSelectedIndex(index)} value={d.value}>{d.label}</Option>
   {/each}
 </Select>

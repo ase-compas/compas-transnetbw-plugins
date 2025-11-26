@@ -33,16 +33,16 @@
   let inputValue = $state('');
   let selectedFilterType = $state<string | undefined>(undefined);
 
-  let convertTypeToSelection = $derived(() =>
+  let convertTypeToSelection = $derived.by(() =>
     filterTypes.map((type) => ({
       value: type.label,
       label: type.label,
     }))
   );
 
-  let addFilterDisabled = $derived(() => !selectedFilterType || !inputValue);
+  let addFilterDisabled = $derived.by(() => !selectedFilterType || !inputValue);
 
-  let getSelectedFilterType = $derived(() =>
+  let getSelectedFilterType = $derived.by<FilterType | undefined>(() =>
     filterTypes.find((type) => type.label === selectedFilterType)
   );
 
@@ -61,7 +61,7 @@
       ...activeFilters,
       {
         id: uuidv4(),
-        key: getSelectedFilterType.label.toLowerCase(),
+        key: getSelectedFilterType.key,
         value: inputValue,
         operation: '=',
         text: `${selectedFilterType}: ${
@@ -150,15 +150,22 @@
     <div class="separator"></div>
 
     <div class="chip-section">
-      <Set chips={activeFilters} let:chip>
-        <OscdChip
-          title={chip.text}
-          callback={() => onFilterChipClose(chip.id)}
-          disabled={chip.disabled}
-        />
+      <Set chips={activeFilters} key={(chip) => chip.id}>
+        {#snippet chip(chip)}
+          <OscdChip
+            title={chip.text}
+            callback={() => onFilterChipClose(chip.id)}
+            disabled={chip.disabled}
+          />
+        {/snippet}
       </Set>
     </div>
   </div>
 </Paper>
 
-<style lang="css">/*$$__STYLE_CONTENT__$$*/</style>
+<style lang="css">/*$$__STYLE_CONTENT__$$*/
+  .filter-input-controls {
+    max-width: 450px;
+    margin-bottom: 1rem;
+  }
+</style>

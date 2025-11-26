@@ -6,13 +6,47 @@
     doc?: XMLDocument;
     dev?: boolean;
     editCount?: number;
+    plugins?: any[];
+    docId?: string;
+    pluginId?: string;
+    docName?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
+    host?: HTMLElement;
   }
 
-  let { doc, dev = false, editCount = 0 }: Props = $props();
+  let {
+    doc,
+    dev = false,
+    editCount = 0,
+    plugins = [],
+    docId,
+    pluginId,
+    docName,
+    nsdoc,
+    docs,
+    locale,
+    oscdApi,
+    host,
+  }: Props = $props();
 </script>
 
 {#if doc || dev}
-  <App {doc} {editCount} />
+  <App
+    {doc}
+    {editCount}
+    {plugins}
+    {docId}
+    {pluginId}
+    {docName}
+    {nsdoc}
+    {docs}
+    {locale}
+    {oscdApi}
+    {host}
+  />
 {/if}
 
 <input type="hidden" name="package-name" value={pckg.name} />

@@ -31,6 +31,10 @@
   import { OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ArchivedResources from './search-result/ArchivedResources.svelte';
   import {_} from "svelte-i18n";
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
   const archiveExplorerService = ArchiveExplorerService.getInstance();
   const archiveFilterService = ArchiveFilterService.getInstance();
@@ -155,9 +159,6 @@
   </div>
 {/if}
 <style>
-  @import "/global.css";
-  @import '/smui.css';
-
   .archive-explorer-container {
     min-height: 100%;
     height: fit-content;

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import Button, { Icon, Label } from '@smui/button';
 
   /** @type {{callback?: any, disabled?: boolean, variant?: string, isAbortAction?: boolean, backgroundColor?: any, children?: import('svelte').Snippet}} */

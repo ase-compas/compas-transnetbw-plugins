@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import Paper from '@smui/paper';
 
   /** @type {{title?: string, open?: boolean, content?: import('svelte').Snippet}} */
-  let { title = '', open = false, content } = $props();
+  let { title = '', open = $bindable(false), content } = $props();
 </script>
 
 <Paper>
@@ -14,7 +14,7 @@
   </details>
 </Paper>
 
-<style type="text/css">
+<style>
   details {
     width: 100%;
     background: transparent;
