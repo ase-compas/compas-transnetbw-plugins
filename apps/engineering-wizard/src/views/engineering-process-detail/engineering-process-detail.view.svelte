@@ -112,6 +112,7 @@
       {#if currentStepId === 'process-definition'}
         <ProcessDefinition {pluginGroups} />
       {:else if currentStepId === 'validator-configuration'}
+        <div class="header header--right">
           <Button
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
@@ -121,6 +122,7 @@
           >
             ADD NEW VALIDATION
           </Button>
+        </div>
         <ProcessValidationGroups
           {pluginGroups}
           {breadcrumbs}
@@ -166,6 +168,10 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
+  }
+
+  .header--right {
+    justify-content: flex-end;
   }
 
   .stepper {
