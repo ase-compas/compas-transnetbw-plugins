@@ -52,7 +52,6 @@
     }
     const plugins = getPluginsForProcess(selectedProcessState.process);
     openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
-    selectedProcessState.process = null;
   }
 
   $effect(() => {

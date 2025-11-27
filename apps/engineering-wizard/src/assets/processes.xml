@@ -13,7 +13,7 @@
         <title>Types</title>
         <plugin>
           <id>template-generator-xyz</id>
-          <name>Template Generator (New)</name>
+          <name>Template Generator</name>
           <src type="external">
             https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/template-generator/index.js
           </src>
@@ -61,7 +61,7 @@
         </plugin>
         <plugin>
           <id>subscribe-later-binding-xyz</id>
-          <name>Subscribe (Later Binding)</name>
+          <name>Subscribe</name>
           <src type="internal">
             /external-plugins/oscd-subscriber-later-binding/oscd-subscriber-later-binding.js
           </src>
