@@ -9,7 +9,8 @@
   import Checkbox from '@smui/checkbox';
   import TypeHeader from '../TypeHeader.svelte';
   import { createEditorStore } from '../../stores';
-  import { setTypeAsDefaultWithConfirmation } from '../../utils';
+  import { setDefaultTypeErrorNotification, setDefaultTypeSuccessNotification, setTypeAsDefaultWithConfirmation } from '../../utils';
+  import { error } from 'console';
 
 
   // ===== Services =====
@@ -105,8 +106,13 @@
     if(ok) await loadData();
   }
 
-  function handleOnSetAsDefault() {
-    setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
+  async function handleOnSetAsDefault() {
+    try {
+      await setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
+      setDefaultTypeSuccessNotification(enumType.id, DataTypeKind.EnumType, enumType.instanceType);
+    } catch (e) {
+      setDefaultTypeErrorNotification(enumType.id, e?.message);
+    }
   }
   // ===== Derived =====
   let filteredItems = $derived.by(() => {

@@ -3,6 +3,7 @@
   // Components
   // Services & utils
   import {
+  applyDefaultWarningNotification,
     type BasicType,
     type BasicTypes,
     canAssignTypeToObjectReference,
@@ -31,6 +32,8 @@
     pluginStore,
     route,
     SetDefaultButton,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
     setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType,
     TBoard,
@@ -41,7 +44,6 @@
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
-  import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
   import { toastService} from '@oscd-transnet-plugins/oscd-services/toast';
 
   // -----------------------------
@@ -50,7 +52,6 @@
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
   const dataTypeService: IDataTypeService = getDataTypeService()
   const defaultTypeService: IDefaultService = getDefaultTypeService();
-  const alertService: OscdAlertService = getAlertService();
 
   // -----------------------------
   // Stores
@@ -201,17 +202,10 @@
 
     try {
       await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
-      toastService.success(
-        "Default Set",
-        `Type "${type.id}" is now the default for ${type.typeKind}:${type.instanceType}.`,
-         5000
-      );
+      setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
     } catch (e) {
       console.error(e);
-      toastService.error(
-        "Set Default Failed",
-        `Could not set "${type?.id}" as the default. ${e?.message ?? ""}`
-      );
+      setDefaultTypeErrorNotification(type.id, e?.message ?? "")
     }
   }
 
@@ -219,10 +213,10 @@
     if(!logicalNodeType) return;
     try {
       await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
-      toastService.success("Default Set", `LNodeType "${logicalNodeType.id}" is now the default for LNClass "${logicalNodeType.lnClass}".`, 5000);
+      setDefaultTypeSuccessNotification(logicalNodeType.id, DataTypeKind.LNodeType, logicalNodeType.lnClass)
     } catch (e) {
-      toastService.error("Set Default Failed", `Could not set "${logicalNodeType?.id}" as the default.`);
       console.error(e);
+      setDefaultTypeErrorNotification(logicalNodeType.id, e?.message ?? "")
     }
   }
 
@@ -253,11 +247,7 @@
       const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
       refStore.setTypeReference(itemId, defaultRootId);
     } catch (e: any) {
-      toastService.warn(
-        "Apply Default Failed",
-        `Could not apply default type. ${e?.message ?? ""}`,
-        6000
-      );
+      applyDefaultWarningNotification(e?.message)
     }
     // Set the reference to the newly created to reflect the change in the UI
   }

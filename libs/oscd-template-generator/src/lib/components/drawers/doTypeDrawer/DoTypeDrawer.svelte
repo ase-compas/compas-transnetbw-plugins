@@ -15,6 +15,7 @@
   import { createEditorStore, createObjectReferenceStore, pluginStore } from '../../../stores';
   import { type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
+  applyDefaultWarningNotification,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
@@ -24,7 +25,7 @@
     openDataAttributeTypeDrawer,
     openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
-    openReferencedTypeDrawer, setTypeAsDefaultWithConfirmation,
+    openReferencedTypeDrawer, setDefaultTypeErrorNotification, setDefaultTypeSuccessNotification, setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType
   } from '../../../utils';
 
@@ -39,6 +40,7 @@
   } from '../../../domain';
   import { type ItemDropOnItemEventDetail, type TBoardItemContext } from '../../tboard/types';
   import TypeHeader from '../../TypeHeader.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -183,17 +185,32 @@
     const type = types.find(t => t.id === itemId);
     if(!type) return;
 
-    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type);
+    try {
+      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type);
+      setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
+    } catch (e) {
+      console.error(e);
+      setDefaultTypeErrorNotification(type.id, e?.message ?? "")
+    }
   }
 
   async function handleApplyDefaults(detail) {
     const {itemId} = detail;
-    const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
-    refStore.setTypeReference(itemId, defaultRootId);
+    try {
+      const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
+      refStore.setTypeReference(itemId, defaultRootId);
+    } catch (e) {
+      applyDefaultWarningNotification(e?.message)
+    }
   }
 
-  function handleClickSetAsDefault() {
-    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
+  async function handleClickSetAsDefault() {
+    try {
+      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
+      setDefaultTypeSuccessNotification(typeId, DataTypeKind.DOType, cdc)
+    } catch (e) {
+      setDefaultTypeErrorNotification(typeId, e?.message)
+    }
   }
 
   function handleOnReferenceClick(itemId: string) {

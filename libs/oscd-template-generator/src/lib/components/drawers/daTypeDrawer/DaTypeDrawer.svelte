@@ -9,9 +9,12 @@
   import { createObjectReferenceStore, pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
+  applyDefaultWarningNotification,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
     setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType
   } from '../../../utils';
@@ -175,17 +178,32 @@
     const type = types.find(t => t.id === itemId);
     if(!type) return;
 
-    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+    try {
+      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType);
+    } catch (e) {
+      console.error(e);
+      setDefaultTypeErrorNotification(type.id, e?.message ?? "")
+    }
   }
 
   async function handleApplyDefaults(detail) {
     const {itemId} = detail;
-    const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DAType, typeId, itemId);
-    refStore.setTypeReference(itemId, defaultRootId);
+    try {
+      const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DAType, typeId, itemId);
+      refStore.setTypeReference(itemId, defaultRootId);
+    } catch (e) {
+      applyDefaultWarningNotification(e?.message)
+    }
   }
 
-  function handleClickSetAsDefault() {
-    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DAType, instanceType, typeId);
+  async function handleClickSetAsDefault() {
+    try {
+      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DAType, instanceType, typeId);
+      setDefaultTypeSuccessNotification(typeId, DataTypeKind.DAType, instanceType);
+    } catch (e) {
+      setDefaultTypeErrorNotification(typeId, e?.message);
+    }
   }
 
   function handleOnReferenceClick(itemId: string) {
