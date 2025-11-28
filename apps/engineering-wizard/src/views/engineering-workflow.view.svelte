@@ -205,7 +205,10 @@
         {oscdApi}
       />
     {:else}
-      <svelte:element this={selectedPlugin.plugin.id} use:setProps={{ doc, editCount }} />
+      <svelte:element
+        this={selectedPlugin.plugin.id}
+        use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
+      />
     {/if}
   </div>
 {/if}
