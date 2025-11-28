@@ -15482,7 +15482,17 @@ function jb(n, e) {
         }, W = (N) => {
           var H = se(), ee = q(H);
           mo(ee, () => a.plugin.id, !1, (fe, O) => {
-            De(fe, (J, $) => _ == null ? void 0 : _(J, $), () => ({ doc: e.doc, editCount: r() })), _r(fe, 0, "svelte-1xkxjkz");
+            De(fe, (J, $) => _ == null ? void 0 : _(J, $), () => ({
+              doc: e.doc,
+              editCount: r(),
+              docs: e.docs,
+              nsdoc: e.nsdoc,
+              docName: e.docName,
+              docId: e.docId,
+              locale: e.locale,
+              oscdApi: e.oscdApi,
+              host: e.host
+            })), _r(fe, 0, "svelte-1xkxjkz");
           }), x(N, H);
         };
         ne(P, (N) => {
