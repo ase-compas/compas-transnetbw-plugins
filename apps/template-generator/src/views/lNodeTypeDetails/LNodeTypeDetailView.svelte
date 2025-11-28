@@ -44,7 +44,6 @@
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
-  import { toastService} from '@oscd-transnet-plugins/oscd-services/toast';
 
   // -----------------------------
   // Service instances
@@ -60,7 +59,7 @@
   const { markedItems, configuredItems, isDirty: refStoreIsDirty } = refStore;
 
   const editorStore = createEditorStore({ onSave: async () => handleSaveChanges(), onDiscard: async () => refStore.reset()});
-  const { canEdit, isEditModeSwitchState, mode, dirty, isSavable } = editorStore;
+  const { canEdit, isEditModeSwitchState, mode, dirty, isSavable, isCreateMode } = editorStore;
 
   // -----------------------------
   // Component state
@@ -266,7 +265,7 @@
   });
 
   // Breadcrumbs
-  let breadcrumbs = $derived(createBreadcrumbs($mode === 'create', logicalNodeType));
+  let breadcrumbs = $derived(createBreadcrumbs(isCreateMode(), logicalNodeType));
   let referenceDataObjects = $derived(
     getDisplayReferenceItems($refStore, $canEdit, acceptDrop)
   );

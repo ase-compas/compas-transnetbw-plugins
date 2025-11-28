@@ -124,7 +124,7 @@
     if (createFromDefault) {
       try {
         await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
-        setTimeout(() => navigateToLNodeTypeDetail('edit', id, lnClass), 50);
+        setTimeout(() => navigateToLNodeTypeDetail('edit', id, lnClass), 300);
       } catch (e) {
         console.error(`Error creating LNodeType from default: ${e}`);
       }
