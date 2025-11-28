@@ -40,7 +40,6 @@
   } from '../../../domain';
   import { type ItemDropOnItemEventDetail, type TBoardItemContext } from '../../tboard/types';
   import TypeHeader from '../../TypeHeader.svelte';
-  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
