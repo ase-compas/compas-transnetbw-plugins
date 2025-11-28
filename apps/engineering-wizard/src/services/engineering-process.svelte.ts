@@ -140,6 +140,17 @@ export async function getProcesses(): Promise<Process[]> {
     }
 
     const parsed = parseProcessesXml(xml);
+
+    const localSnapshot = $state.snapshot(processesStore.processes) as Process[];
+    if (Array.isArray(localSnapshot) && localSnapshot.length) {
+      const byId = new Map<string, Process>();
+      for (const p of parsed) byId.set(p.id, p);
+      for (const p of localSnapshot) byId.set(p.id, p);
+      const merged = Array.from(byId.values());
+      processesStore.processes = merged;
+      return merged;
+    }
+
     processesStore.processes = parsed;
     return parsed;
   } catch (err) {
@@ -151,6 +162,41 @@ export async function getProcesses(): Promise<Process[]> {
     processesLoadingStore.loading = false;
   }
 }
+
+function ensureUniqueProcessId(base: string): string {
+  const normalized = (base || '').trim() || 'process';
+  const existing = new Set((processesStore.processes ?? []).map(p => p.id));
+  if (!existing.has(normalized)) return normalized;
+
+  let i = 2;
+  let candidate = `${normalized}-${i}`;
+  while (existing.has(candidate)) {
+    i += 1;
+    candidate = `${normalized}-${i}`;
+  }
+  return candidate;
+}
+
+export function addProcessToStore(process: Process): Process {
+  const snap = $state.snapshot(process) as Process;
+
+  const baseId = (snap.id || snap.name || 'process').trim();
+  const id = ensureUniqueProcessId(baseId);
+
+  const toInsert: Process = {
+    id,
+    version: snap.version || '1.0.0',
+    name: snap.name || id,
+    description: snap.description || '',
+    pluginGroups: (snap.pluginGroups?.length ? snap.pluginGroups : [{ title: 'Ungrouped', plugins: [] }]),
+  };
+
+  // assign a new array for clean reactivity
+  processesStore.processes = [...(processesStore.processes ?? []), toInsert];
+
+  return toInsert;
+}
+
 
 /**
  * Add a plugin to the given process, creating the group if necessary.

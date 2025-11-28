@@ -9,11 +9,13 @@
   interface Props {
     handleStart: (process: Process) => void;
     handleView: (process: Process) => void;
+    handleAddNew: () => void;
   }
 
   let {
     handleStart,
-    handleView
+    handleView,
+    handleAddNew,
   }: Props = $props();
 
   let searchQuery = $state('');
@@ -28,10 +30,6 @@
     { key: 'displayName', header: 'Name' },
     { key: 'description', header: 'Description' },
   ];
-
-  const handleAddNew = () => {
-    console.log('Add new process clicked');
-  };
 </script>
 
 <div class="processes">
@@ -61,7 +59,7 @@
     <Button
       variant="raised"
       style="--mdc-theme-primary: #004552; --mdc-theme-on-primary: #ffffff"
-      on:click={handleAddNew}
+      onclick={handleAddNew}
     >
       ADD NEW PROCESS
     </Button>

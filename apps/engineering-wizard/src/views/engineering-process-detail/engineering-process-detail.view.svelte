@@ -8,7 +8,7 @@
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
-  import { buildProcessBreadcrumbs } from '../../components/engineering-process-detail/breadcrumbs.util';
+  import { buildProcessBreadcrumbs } from '../../utils/breadcrumbs.util';
   import { processEditModeState, selectedProcessState } from '../../services/engineering-process.svelte';
 
   interface Props {

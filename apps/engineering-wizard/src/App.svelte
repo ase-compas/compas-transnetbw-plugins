@@ -2,12 +2,13 @@
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
   import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
+  import AddNewProcess from './views/add-new-process/add-new-process.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { getPluginsForProcess, getProcesses, setInternalPlugins } from './services/engineering-process.svelte.ts';
-  import { selectedProcessState } from './services/engineering-process.svelte';
+  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
+  import { processEditModeState, selectedProcessState } from './services/engineering-process.svelte';
 
   interface Plugin {
     src: string;
@@ -40,7 +41,7 @@
     host
   }: Props = $props();
 
-  const plugin = plugins[1];
+  let isCreatingProcess = $state(false);
 
   onMount(async () => {
     await getProcesses();
@@ -65,16 +66,34 @@
   function goBack() {
     selectedProcessState.process = null;
   }
+
+  function addNewProcess() {
+    processEditModeState.isEditing = false;
+    selectedProcessState.process = null;
+    isCreatingProcess = true;
+  }
+
+  function cancelCreate() {
+    processEditModeState.isEditing = false;
+    isCreatingProcess = false;
+  }
+
+  function handleCreated(proc: Process) {
+    isCreatingProcess = false;
+    selectedProcessState.process = proc;
+  }
 </script>
 
 <DialogHost />
 
-{#if selectedProcessState.process}
+{#if isCreatingProcess}
+  <AddNewProcess handleCancel={cancelCreate} handleSaved={handleCreated} />
+{:else if selectedProcessState.process}
   <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
 {:else}
   <EngineeringProcessesList
     handleView={handleView}
     handleStart={startProcess}
+    handleAddNew={addNewProcess}
   />
 {/if}
-
