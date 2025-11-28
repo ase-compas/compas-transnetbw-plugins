@@ -42,15 +42,15 @@
     onExit,
   }: Props = $props();
 
-  let tagName: string | null = $state(null);
-  let selectedPlugin= $state<{plugin: ViewPlugin | null}>({ plugin: null });
+  let selectedPlugin = $state<{ plugin: ViewPlugin | null }>({ plugin: null });
   let visited: string[] = $state([]);
   let pluginStatus: Record<string, Status> = $state({});
 
   let hasPlugins = $derived(plugins.length > 0);
-
   let currentIndex = $derived(
-    selectedPlugin.plugin && hasPlugins ? plugins.findIndex((p) => p.id === selectedPlugin.plugin.id) : -1,
+    selectedPlugin.plugin && hasPlugins
+      ? plugins.findIndex((p) => p.id === selectedPlugin.plugin!.id)
+      : -1,
   );
 
   let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
@@ -58,14 +58,28 @@
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
 
+  let tagName: string | null = $state(null);
+
+  // One stable tag name per plugin. No random hashes.
+  // If your plugin metadata already has `tagName`, prefer that.
+  function getPluginTagName(plugin: ViewPlugin) {
+    const raw = (plugin as any).tagName ?? plugin.id;
+    const lower = String(raw).toLowerCase();
+    return lower.includes('-') ? lower : `plg-${lower}`;
+  }
+
+  let activeTagName = $derived(
+    selectedPlugin.plugin && selectedPlugin.plugin.type !== 'internal'
+      ? getPluginTagName(selectedPlugin.plugin)
+      : null,
+  );
+
   function findGroupAndPluginIndexById(id: string): { groupIndex: number | null; pluginIndex: number | null } {
     if (!pluginGroups?.length) return { groupIndex: null, pluginIndex: null };
     for (let gi = 0; gi < pluginGroups.length; gi++) {
       const group = pluginGroups[gi];
       const pi = group.plugins?.findIndex((plg) => plg.id === id) ?? -1;
-      if (pi >= 0) {
-        return { groupIndex: gi, pluginIndex: pi };
-      }
+      if (pi >= 0) return { groupIndex: gi, pluginIndex: pi };
     }
     return { groupIndex: null, pluginIndex: null };
   }
@@ -73,33 +87,28 @@
   async function selectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
 
-    await ensureCustomElementDefined(plugin);
-
-    const { id } = plugin;
-    tagName = id;
+    tagName = await ensureCustomElementDefined(plugin);
     selectedPlugin.plugin = plugin;
 
-    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(id);
+    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
-    if (!visited.includes(id)) {
-      visited = [...visited, id];
+    if (!visited.includes(plugin.id)) {
+      visited = [...visited, plugin.id];
 
-      const index = plugins.findIndex((p) => p.id === id);
+      const index = plugins.findIndex((p) => p.id === plugin.id);
       if (index !== -1) {
         const status = STATUSES[index % STATUSES.length];
-        pluginStatus = { ...pluginStatus, [id]: status };
+        pluginStatus = { ...pluginStatus, [plugin.id]: status };
       }
     }
   }
 
   function advance(step: number) {
     if (!hasPlugins) return;
-
     const baseIndex = currentIndex < 0 ? 0 : currentIndex;
     const nextIndex = (baseIndex + step + plugins.length) % plugins.length;
-
     void selectPlugin(plugins[nextIndex]);
   }
 
@@ -108,7 +117,6 @@
 
   function setProps(node: HTMLElement, props: Record<string, unknown>) {
     Object.assign(node, props);
-
     return {
       update(newProps: Record<string, unknown>) {
         Object.assign(node, newProps);
@@ -116,31 +124,28 @@
     };
   }
 
+  // Keep selection in sync with stepper
   $effect(() => {
     if (selectedGroupIndex === null || selectedPluginIndex === null) return;
     const group = pluginGroups?.[selectedGroupIndex];
     const pluginMeta = group?.plugins?.[selectedPluginIndex];
     if (!pluginMeta) return;
+
     const plugin = plugins.find((p) => p.id === pluginMeta.id);
-    if (plugin && selectedPlugin.plugin?.id !== plugin.id) {
-      void selectPlugin(plugin);
-    }
+    if (plugin && selectedPlugin.plugin?.id !== plugin.id) void selectPlugin(plugin);
   });
 
+  // Initial selection / reset
   $effect(() => {
     if (!hasPlugins) {
       selectedPlugin.plugin = null;
-      tagName = null;
       visited = [];
       pluginStatus = {};
       selectedGroupIndex = null;
       selectedPluginIndex = null;
       return;
     }
-
-    if (currentIndex === -1) {
-      void selectPlugin(plugins[0]);
-    }
+    if (currentIndex === -1) void selectPlugin(plugins[0]);
   });
 
   onMount(() => {
@@ -149,15 +154,12 @@
     }
 
     editorTabsVisible.set(false);
-
-    return () => {
-      editorTabsVisible.set(true);
-    };
+    return () => editorTabsVisible.set(true);
   });
 
   function exitWorkflow() {
     editorTabsVisible.set(true);
-    onExit();
+    onExit?.();
   }
 </script>
 
@@ -176,7 +178,7 @@
     <button
       type="button"
       class="back-button"
-      onclick={previousPlugin}
+      on:click={previousPlugin}
       aria-label="Previous plugin"
       disabled={!hasPlugins}
     >
@@ -186,7 +188,7 @@
     <button
       type="button"
       class="next-button"
-      onclick={nextPlugin}
+      on:click={nextPlugin}
       aria-label="Next plugin"
       disabled={!hasPlugins}
     >
@@ -210,8 +212,8 @@
         {locale}
         {oscdApi}
       />
-    {:else}
-      <svelte:element this={selectedPlugin.plugin.id} use:setProps={{ doc, editCount }} />
+    {:else if tagName}
+      <svelte:element this={tagName} use:setProps={{ doc, editCount }} />
     {/if}
   </div>
 {/if}
@@ -226,9 +228,7 @@
     background-color: var(--primary-base);
     --brand: var(--primary-base);
     --on-brand: #fff;
-  }
 
-  .stepper {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
