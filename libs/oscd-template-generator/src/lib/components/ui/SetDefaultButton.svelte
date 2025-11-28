@@ -16,8 +16,8 @@ const {
 
 let iconStyles = $derived.by(() => {
   return disabled
-    ? 'fill: var(--mdc-outlined-button-disabled-label-text-color, rgba(0, 0, 0, .38)); width: 100%; height: 100%;'
-    : 'fill: var(--primary-base); width: 100%; height: 100%;'
+    ? 'fill: var(--mdc-outlined-button-disabled-label-text-color, rgba(0, 0, 0, .38)); width: 1.3em; height: 1.3em; verticla-align: middle;'
+    : 'fill: var(--primary-base); width: 1.3em; height: 1.3em; vertical-align: middle;'
     ;
 })
 </script>
@@ -26,5 +26,5 @@ let iconStyles = $derived.by(() => {
   color="primary"
   variant="outlined"
   onclick={onClick}>
-  <OscdStarIcon svgStyles={iconStyles}/> Set as Default
+  <div style="margin-right: 0.2rem;"><OscdStarIcon svgStyles={iconStyles}/></div> Set as Default
 </Button>

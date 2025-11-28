@@ -124,6 +124,8 @@ export class DataTypeService implements IDataTypeService {
     const rootType = this.typeRepo.findDataTypeById(typeKind, id);
     const referencedTypes = await this.getReferencedTypes(typeKind, id);
 
+    this.validateInstanceTypePresentOrElseThrow(rootType, typeKind, referencedTypes);
+
     const defaultConfig = this.toDefaultConfig(rootType, typeKind, referencedTypes);
     const defaultConfigWithVersion = await this.defaultService.setDefault(defaultConfig);
     if (!rootType.privates) rootType.privates = {};
@@ -325,6 +327,37 @@ export class DataTypeService implements IDataTypeService {
       key: { kind: rootDefaultType.kind, instanceType: rootDefaultType.instanceType },
       rootType: rootDefaultType,
       referencedTypes: referencedDefaultTypes
+    }
+  }
+
+  private validateInstanceTypePresentOrElseThrow(rootType: LNodeType | DOType | DAType | EnumType, rootKind: DataTypeKind, referencedTypes: DataTypes) {
+    this.validateInstanceTypePresentOrElseThow(rootType, rootKind);
+
+    referencedTypes.lNodeTypes.forEach(d => this.validateInstanceTypePresentOrElseThow(d, DataTypeKind.LNodeType))
+    referencedTypes.dataObjectTypes.forEach(d => this.validateInstanceTypePresentOrElseThow(d, DataTypeKind.DOType))
+    referencedTypes.dataAttributeTypes.forEach(d => this.validateInstanceTypePresentOrElseThow(d, DataTypeKind.DAType))
+    referencedTypes.enumTypes.forEach(d => this.validateInstanceTypePresentOrElseThow(d, DataTypeKind.EnumType))
+  }
+
+  private validateInstanceTypePresentOrElseThow(type: LNodeType | DOType | DAType | EnumType, kind: DataTypeKind) {
+    if(!this.extractInstnaceType(type, kind)) {
+      throw new Error(`Missing instance type: ${kind} '${type.id}'. All referenced types must specify their instance type.`)
+    }
+  }
+
+
+  private extractInstnaceType(type: LNodeType | DOType | DAType | EnumType, kind: DataTypeKind): string | undefined {
+    switch (kind) {
+      case DataTypeKind.LNodeType:
+        return (type as LNodeType).lnClass;
+      case DataTypeKind.DOType:
+        return (type as DOType).cdc;
+      case DataTypeKind.DAType:
+        return (type as DAType).instanceType;
+      case DataTypeKind.EnumType:
+        return (type as EnumType).instanceType;
+      default:
+        undefined;
     }
   }
 }
