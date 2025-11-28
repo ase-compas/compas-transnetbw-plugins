@@ -10,7 +10,6 @@
   import TypeHeader from '../TypeHeader.svelte';
   import { createEditorStore } from '../../stores';
   import { setDefaultTypeErrorNotification, setDefaultTypeSuccessNotification, setTypeAsDefaultWithConfirmation } from '../../utils';
-  import { error } from 'console';
 
 
   // ===== Services =====
@@ -29,7 +28,7 @@
 
   // ===== Stores =====
   const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view' });
-  const { canEdit, isEditModeSwitchState, mode: currentMode } = editorStore;
+  const { canEdit, isEditModeSwitchState, mode: currentMode, dirty } = editorStore;
 
   // ===== State =====
   let enumType: EnumTypeDetails = $state(null);
@@ -137,6 +136,7 @@
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
   onClickDefault={() => handleOnSetAsDefault()}
+  setAsDefaultDisabled={$dirty}
   bind:isEditMode={$isEditModeSwitchState}
   onModeChange={(e) => handleModeChange(e)}
   onInstanceTypeChange={(e) => {
