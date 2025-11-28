@@ -128,7 +128,7 @@ export async function openSelectInstanceTypeDialog(typeKind: DataTypeKind, text?
 export function setDefaultTypeSuccessNotification(id: string, typeKind: DataTypeKind, instanceType: string) {
   toastService.success(
         "Default Set",
-        `Type "${id}" is now the default for ${typeKind}:${instanceType}.`,
+        `“${id}” has been set as the default for ${typeKind}:${instanceType}.`,
          5000
       );
 }
@@ -136,7 +136,8 @@ export function setDefaultTypeSuccessNotification(id: string, typeKind: DataType
 export function setDefaultTypeErrorNotification(id: string, errMsg?: string) {
   toastService.error(
     "Set Default Failed",
-    `Could not set "${id}" as the default. ${errMsg ?? ""}`
+    `Failed to set “${id}” as the default. ${errMsg ?? ""}`,
+    8000
   );
 }
 

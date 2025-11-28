@@ -67,8 +67,8 @@
     border-radius: 8px;
 
     padding: 0.75rem 1rem;
-    width: 300px;;
-    max-width: 350px;
+    width: 400px;;
+    max-width: 400px;
 
     box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
