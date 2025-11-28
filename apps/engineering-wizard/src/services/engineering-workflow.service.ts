@@ -1,8 +1,6 @@
 import type { ViewPlugin } from '../types/view-plugin';
 
-// Cache to track constructors that have already been registered to avoid
-// "this constructor has already been used with this registry" errors.
-const definedConstructors = new WeakSet<CustomElementConstructor>();
+// ---- layout helpers (kept) ----
 
 export function getLayoutContainer(): HTMLElement | null {
   const openScd = document.querySelector('open-scd');
@@ -19,42 +17,66 @@ export function setEditorTabsVisibility(visible: boolean) {
   );
 }
 
-/**
- * Ensures that an external plugin is defined as an custom element.
- *
- * This function checks if a custom element with the ID of the plugin
- * has already been registered in the browser's `customElements` registry.
- * If not, and if the plugin type is `'external'`, it dynamically imports
- * the plugin's module and defines the custom element using the module's default export.
- */
-export async function ensureCustomElementDefined(plugin: ViewPlugin) {
-  if (!customElements.get(plugin.id) && plugin.type === 'external') {
-    const mod = await import(/* @vite-ignore */ plugin.src);
-    const ctor = (mod as any).default as CustomElementConstructor;
+const inFlight = new Map<string, Promise<void>>();
 
-    // Avoid defining the same constructor twice under different tags.
-    if (!definedConstructors.has(ctor)) {
-      customElements.define(plugin.id, ctor);
-      definedConstructors.add(ctor);
-    }
+function isDefined(tag: string) {
+  return !!customElements.get(tag);
+}
+
+function assertValidCustomElementName(tag: string) {
+  if (!tag.includes('-')) {
+    throw new Error(`Invalid custom element name "${tag}". Custom element names must contain a dash.`);
   }
+}
+
+export async function ensureCustomElementDefined(plugin: ViewPlugin): Promise<void> {
+  if (plugin.type !== 'external') return;
+
+  const tag = plugin.id;
+  assertValidCustomElementName(tag);
+
+  if (isDefined(tag)) return;
+
+  const existing = inFlight.get(tag);
+  if (existing) return existing;
+
+  const p = (async () => {
+    const mod = await import(/* @vite-ignore */ plugin.src);
+    const ctor = (mod?.default ?? mod?.element) as CustomElementConstructor | undefined;
+
+    if (!ctor) {
+      throw new Error(`Plugin "${plugin.id}" did not export a custom element constructor.`);
+    }
+
+    // Always wrap => always a fresh constructor
+    const Base = ctor as unknown as { new (): HTMLElement };
+    const Wrapped: CustomElementConstructor = class extends Base {};
+
+    if (!isDefined(tag)) {
+      try {
+        customElements.define(tag, Wrapped);
+      } catch (e) {
+        // tolerate races where it was defined between check and define
+        if (!isDefined(tag)) throw e;
+      }
+    }
+
+    await customElements.whenDefined(tag);
+  })().finally(() => {
+    inFlight.delete(tag);
+  });
+
+  inFlight.set(tag, p);
+  return p;
 }
 
 export async function preloadAllPlugins(plugins: ViewPlugin[]) {
   await Promise.all(
     plugins
-      .filter(p => p.type === 'external')
+      .filter((p) => p.type === 'external')
       .map(async (p) => {
         try {
-          if (!customElements.get(p.id)) {
-            const mod = await import(/* @vite-ignore */ p.src);
-            const ctor = (mod as any).default as CustomElementConstructor;
-
-            if (!definedConstructors.has(ctor)) {
-              customElements.define(p.id, ctor);
-              definedConstructors.add(ctor);
-            }
-          }
+          await ensureCustomElementDefined(p);
         } catch (e) {
           console.error('Failed to preload plugin', p.id, e);
         }

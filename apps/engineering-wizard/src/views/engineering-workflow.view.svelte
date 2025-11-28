@@ -2,10 +2,7 @@
   import { onMount } from 'svelte';
   import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
   import type { ViewPlugin } from '../types/view-plugin';
-  import {
-    ensureCustomElementDefined,
-    preloadAllPlugins,
-  } from '../services/engineering-workflow.service';
+  import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
   import PluginHost from '../components/shared/PluginHost.svelte';
   import { selectedProcessState } from '../services/engineering-process.svelte';
@@ -42,15 +39,16 @@
     onExit,
   }: Props = $props();
 
-  let tagName: string | null = $state(null);
-  let selectedPlugin= $state<{plugin: ViewPlugin | null}>({ plugin: null });
+  let selectedPlugin = $state<{ plugin: ViewPlugin | null }>({ plugin: null });
   let visited: string[] = $state([]);
   let pluginStatus: Record<string, Status> = $state({});
 
   let hasPlugins = $derived(plugins.length > 0);
 
   let currentIndex = $derived(
-    selectedPlugin.plugin && hasPlugins ? plugins.findIndex((p) => p.id === selectedPlugin.plugin.id) : -1,
+    selectedPlugin.plugin && hasPlugins
+      ? plugins.findIndex((p) => p.id === selectedPlugin.plugin!.id)
+      : -1,
   );
 
   let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
@@ -58,14 +56,15 @@
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
 
-  function findGroupAndPluginIndexById(id: string): { groupIndex: number | null; pluginIndex: number | null } {
+  function findGroupAndPluginIndexById(id: string): {
+    groupIndex: number | null;
+    pluginIndex: number | null;
+  } {
     if (!pluginGroups?.length) return { groupIndex: null, pluginIndex: null };
     for (let gi = 0; gi < pluginGroups.length; gi++) {
       const group = pluginGroups[gi];
       const pi = group.plugins?.findIndex((plg) => plg.id === id) ?? -1;
-      if (pi >= 0) {
-        return { groupIndex: gi, pluginIndex: pi };
-      }
+      if (pi >= 0) return { groupIndex: gi, pluginIndex: pi };
     }
     return { groupIndex: null, pluginIndex: null };
   }
@@ -75,21 +74,19 @@
 
     await ensureCustomElementDefined(plugin);
 
-    const { id } = plugin;
-    tagName = id;
     selectedPlugin.plugin = plugin;
 
-    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(id);
+    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
-    if (!visited.includes(id)) {
-      visited = [...visited, id];
+    if (!visited.includes(plugin.id)) {
+      visited = [...visited, plugin.id];
 
-      const index = plugins.findIndex((p) => p.id === id);
+      const index = plugins.findIndex((p) => p.id === plugin.id);
       if (index !== -1) {
         const status = STATUSES[index % STATUSES.length];
-        pluginStatus = { ...pluginStatus, [id]: status };
+        pluginStatus = { ...pluginStatus, [plugin.id]: status };
       }
     }
   }
@@ -116,7 +113,6 @@
     };
   }
 
-
   $effect(() => {
     if (selectedGroupIndex === null || selectedPluginIndex === null) return;
     const group = pluginGroups?.[selectedGroupIndex];
@@ -129,11 +125,9 @@
     }
   });
 
-
   $effect(() => {
     if (!hasPlugins) {
       selectedPlugin.plugin = null;
-      tagName = null;
       visited = [];
       pluginStatus = {};
       selectedGroupIndex = null;
@@ -152,15 +146,12 @@
     }
 
     editorTabsVisible.set(false);
-
-    return () => {
-      editorTabsVisible.set(true);
-    };
+    return () => editorTabsVisible.set(true);
   });
 
   function exitWorkflow() {
     editorTabsVisible.set(true);
-    onExit();
+    onExit?.();
   }
 </script>
 
@@ -229,9 +220,7 @@
     background-color: var(--primary-base);
     --brand: var(--primary-base);
     --on-brand: #fff;
-  }
 
-  .stepper {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
