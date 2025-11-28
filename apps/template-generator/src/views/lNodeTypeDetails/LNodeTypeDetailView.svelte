@@ -3,6 +3,7 @@
   // Components
   // Services & utils
   import {
+  applyDefaultWarningNotification,
     type BasicType,
     type BasicTypes,
     canAssignTypeToObjectReference,
@@ -31,6 +32,8 @@
     pluginStore,
     route,
     SetDefaultButton,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
     setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType,
     TBoard,
@@ -41,7 +44,6 @@
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
-  import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
 
   // -----------------------------
   // Service instances
@@ -49,7 +51,6 @@
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
   const dataTypeService: IDataTypeService = getDataTypeService()
   const defaultTypeService: IDefaultService = getDefaultTypeService();
-  const alertService: OscdAlertService = getAlertService();
 
   // -----------------------------
   // Stores
@@ -58,7 +59,7 @@
   const { markedItems, configuredItems, isDirty: refStoreIsDirty } = refStore;
 
   const editorStore = createEditorStore({ onSave: async () => handleSaveChanges(), onDiscard: async () => refStore.reset()});
-  const { canEdit, isEditModeSwitchState, mode, dirty, isSavable } = editorStore;
+  const { canEdit, isEditModeSwitchState, mode, dirty, isSavable, isCreateMode } = editorStore;
 
   // -----------------------------
   // Component state
@@ -200,15 +201,22 @@
 
     try {
       await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
     } catch (e) {
       console.error(e);
-      alertService.error(e.message);
+      setDefaultTypeErrorNotification(type.id, e?.message ?? "")
     }
   }
 
   async function handleClickOnSetAsDefault() {
     if(!logicalNodeType) return;
-    await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+    try {
+      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+      setDefaultTypeSuccessNotification(logicalNodeType.id, DataTypeKind.LNodeType, logicalNodeType.lnClass)
+    } catch (e) {
+      console.error(e);
+      setDefaultTypeErrorNotification(logicalNodeType.id, e?.message ?? "")
+    }
   }
 
   async function handleBreadcrumbClick(index) {
@@ -238,7 +246,7 @@
       const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.LNodeType, lNodeTypeId, itemId)
       refStore.setTypeReference(itemId, defaultRootId);
     } catch (e: any) {
-      alertService.error(e.message);
+      applyDefaultWarningNotification(e?.message)
     }
     // Set the reference to the newly created to reflect the change in the UI
   }
@@ -257,7 +265,7 @@
   });
 
   // Breadcrumbs
-  let breadcrumbs = $derived(createBreadcrumbs($mode === 'create', logicalNodeType));
+  let breadcrumbs = $derived(createBreadcrumbs(isCreateMode(), logicalNodeType));
   let referenceDataObjects = $derived(
     getDisplayReferenceItems($refStore, $canEdit, acceptDrop)
   );
@@ -279,10 +287,10 @@
 <div class="oscd-details">
   <!-- START: Toolbar -->
   <div class="oscd-details-toolbar">
-    <OscdBreadcrumbs 
+    <OscdBreadcrumbs
     color='var(--primary-base)'
-    activeIndex={1} 
-    {breadcrumbs} 
+    activeIndex={1}
+    {breadcrumbs}
     handleClick={clickedItemIndex => handleBreadcrumbClick(clickedItemIndex)} />
 
     <div class="oscd-details-toolbar-right">

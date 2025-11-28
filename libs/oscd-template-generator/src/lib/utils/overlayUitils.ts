@@ -9,6 +9,7 @@ import DaTypeDrawer from '../components/drawers/daTypeDrawer/DaTypeDrawer.svelte
 import EnumTypeDetailsDrawer from '../components/drawers/EnumTypeDetailsDrawer.svelte';
 import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 import ChooseInstanceTypeDialog from '../components/dialogs/ChooseInstanceTypeDialog.svelte';
+import { toastService } from '@oscd-transnet-plugins/oscd-services/toast'
 
 export function openDataObjectTypeDrawer(
   mode: Mode,
@@ -121,4 +122,29 @@ export async function openSelectInstanceTypeDialog(typeKind: DataTypeKind, text?
   if(result.type === 'confirm') {
     return result.data.instanceType;
   }
+}
+
+
+export function setDefaultTypeSuccessNotification(id: string, typeKind: DataTypeKind, instanceType: string) {
+  toastService.success(
+        "Default Set",
+        `“${id}” has been set as the default for ${typeKind}:${instanceType}.`,
+         5000
+      );
+}
+
+export function setDefaultTypeErrorNotification(id: string, errMsg?: string) {
+  toastService.error(
+    "Set Default Failed",
+    `Failed to set “${id}” as the default. ${errMsg ?? ""}`,
+    8000
+  );
+}
+
+export function applyDefaultWarningNotification(errMsg?: string) {
+  toastService.warn(
+    "Apply Default Failed",
+    `Could not apply default type. ${errMsg ?? ""}`,
+    6000
+  );
 }

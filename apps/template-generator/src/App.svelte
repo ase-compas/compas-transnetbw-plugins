@@ -4,7 +4,7 @@
   import { route, pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
+  import { DrawerStack, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
   import "svelte-material-ui/bare.css"
   import "../public/material-icon.css"
@@ -71,6 +71,7 @@
 </div>
 <DialogHost/>
 <DrawerStack/>
+<OscdToastHost/>
 
 <style>
   .template-generator-container {
