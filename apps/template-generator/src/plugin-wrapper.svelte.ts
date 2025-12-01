@@ -1,28 +1,33 @@
-import Plugin from './plugin.svelte';
-import * as pkg from '../package.json';
-import { mount } from "svelte";
+import Plugin from './plugin.svelte'; import * as pkg from '../package.json';
+import { mount, unmount } from 'svelte';
 import { pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
 
 export default class NewOSCDPlugin extends HTMLElement {
 
+  private app;
 
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
-    mount(Plugin, { target: this.shadowRoot! });
+    this.app = mount(Plugin, { target: this.shadowRoot! });
     pluginStore.setPluginState({host: this, doc: this._doc})
     const linkElement = createStyleLinkElement();
     this.shadowRoot?.appendChild(linkElement);
   }
 
+  disconnectedCallback() {
+    console.log("unmounting plugin");
+    if (this.app) unmount(this.app);
+  }
+
   private _doc?: XMLDocument;
   public set doc(newDoc: XMLDocument) {
     this._doc = newDoc;
-    pluginStore.setPluginState({ doc: newDoc, host: this });
   }
 
   private _editCount?: number;
   public set editCount(newCount: number) {
     this._editCount = newCount;
+    pluginStore.setPluginState({ doc: this._doc, host: this });
   }
 }
 

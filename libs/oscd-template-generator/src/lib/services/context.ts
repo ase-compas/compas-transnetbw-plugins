@@ -37,6 +37,7 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
 
   if (dataTypeRepo) {
     dataTypeRepo.setDocument(xmlDoc);
+    dataTypeRepo.setHost(host)
   } else {
     dataTypeRepo = new DataTypeRepository(xmlDoc, hostElement);
   }
