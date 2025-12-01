@@ -1,6 +1,6 @@
 import { findElementByTagAndId } from '../utils/scdUtils';
 import {
-  type ChildNameFilter, type DataType,
+  type ChildNameFilter,
   DataTypeKind,
   type DataTypeMap,
   type DataTypes,
@@ -242,6 +242,10 @@ export class DataTypeRepository implements IDataTypeRepository {
   /** Sets a new XML document. */
   public setDocument(doc: XMLDocument): void {
     this.doc = doc;
+  }
+
+  public setHost(host: HTMLElement): void {
+    this.hostElement = host;
   }
 
   // ==== Edit API Builders ====

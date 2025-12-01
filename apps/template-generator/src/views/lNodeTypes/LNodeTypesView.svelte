@@ -64,9 +64,9 @@
   }
 
   // ===== Handlers =====
-  function handleDuplicate(lNodeTypeId: string) {
+  async function handleDuplicate(lNodeTypeId: string) {
     try {
-      lNodeTypeService.duplicateType(lNodeTypeId);
+      await lNodeTypeService.duplicateType(lNodeTypeId);
 
       toastService.success(
         "Duplicated",
@@ -77,7 +77,7 @@
 
       toastService.error(
         "Duplicate Failed",
-        `Could not duplicate Logical Node Type "${lNodeTypeId}". Please try again.`
+        `Could not duplicate Logical Node Type "${lNodeTypeId}".`
       );
     }
   }
@@ -133,7 +133,7 @@
     }
   }
 
-  async function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
+  function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
     route.set({ path: [mode], meta: { lNodeTypeId: lNodeTypeId, lnClass: lnClass } } as Route);
   }
 

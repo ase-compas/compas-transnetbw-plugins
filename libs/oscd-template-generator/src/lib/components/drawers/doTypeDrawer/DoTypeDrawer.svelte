@@ -185,8 +185,8 @@
     if(!type) return;
 
     try {
-      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type);
-      setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
+      const success = await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type);
+      if(success) setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
     } catch (e) {
       console.error(e);
       setDefaultTypeErrorNotification(type.id, e?.message ?? "")
@@ -205,8 +205,8 @@
 
   async function handleClickSetAsDefault() {
     try {
-      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
-      setDefaultTypeSuccessNotification(typeId, DataTypeKind.DOType, cdc)
+      const success = await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, cdc, typeId);
+      if (success) setDefaultTypeSuccessNotification(typeId, DataTypeKind.DOType, cdc)
     } catch (e) {
       setDefaultTypeErrorNotification(typeId, e?.message)
     }
