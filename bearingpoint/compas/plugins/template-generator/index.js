@@ -16483,7 +16483,7 @@ function rA(n, e) {
   const B = async (ne) => ne === "save" ? (g() && await D.save(), !0) : D.confirmLeave();
   function g() {
     if (!d(f)) return !1;
-    if (m() === "create") return !0;
+    if (t() === "create") return !0;
     const ne = d(f).children.filter((le) => le.meta.isConfigured).map((le) => le.name).sort(), J = d(A).slice().sort();
     return JSON.stringify(ne) !== JSON.stringify(J);
   }
