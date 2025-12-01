@@ -48,32 +48,57 @@
     docId,
     docs,
     locale,
-    oscdApi,
+    oscdApi
   }: Props = $props();
 
   let container: HTMLDivElement | null = null;
+  let el: any = null;
+  let currentTag = '';
 
   $effect(() => {
     if (!container) return;
 
-    container.innerHTML = '';
+    if (!plugin?.src) {
+      container.innerHTML = '';
+      el = null;
+      currentTag = '';
+      return;
+    }
 
-    if (!plugin || !plugin.src) return;
+    const newTag = pluginTag(plugin.src);
 
-    const tag = pluginTag(plugin.src);
-    const el = document.createElement(tag) as any;
+    if (newTag !== currentTag) {
+      // Recreate element
+      currentTag = newTag;
 
-    el.doc = doc;
-    el.editCount = editCount;
-    el.plugins = plugins;
-    el.nsdoc = nsdoc;
-    el.docName = docName;
-    el.docId = docId;
-    el.docs = docs;
-    el.locale = locale;
-    if (oscdApi) el.oscdApi = oscdApi;
+      container.innerHTML = '';
+      el = document.createElement(newTag);
 
-    container.appendChild(el);
+      el.doc = doc;
+      el.editCount = editCount;
+      el.plugins = plugins;
+      el.nsdoc = nsdoc;
+      el.docName = docName;
+      el.docId = docId;
+      el.docs = docs;
+      el.locale = locale;
+      if (oscdApi) el.oscdApi = oscdApi;
+
+      container.appendChild(el);
+    } else {
+      // Update attributes regardless
+      if (el) {
+        el.doc = doc;
+        el.editCount = editCount;
+        el.plugins = plugins;
+        el.nsdoc = nsdoc;
+        el.docName = docName;
+        el.docId = docId;
+        el.docs = docs;
+        el.locale = locale;
+        if (oscdApi) el.oscdApi = oscdApi;
+      }
+    }
   });
 </script>
 
