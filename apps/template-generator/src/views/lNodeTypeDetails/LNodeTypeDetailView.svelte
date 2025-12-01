@@ -59,7 +59,7 @@
   const { markedItems, configuredItems, isDirty: refStoreIsDirty } = refStore;
 
   const editorStore = createEditorStore({ onSave: async () => handleSaveChanges(), onDiscard: async () => refStore.reset()});
-  const { canEdit, isEditModeSwitchState, mode, dirty, isSavable, isCreateMode } = editorStore;
+  const { canEdit, isEditModeSwitchState, dirty, isSavable, mode } = editorStore;
 
   // -----------------------------
   // Component state
@@ -109,14 +109,9 @@
   async function loadLogicalNodeType(lNodeTypeId: string, lnClass?: string) {
     lNodeTypeId = lNodeTypeId;
     lnClass = lnClass;
-    if ($mode === "create") {
-      try {
+    if (editorStore.isCreateMode()) {
         await editorStore.switchMode("edit")
         await lNodeTypeService.createOrUpdateType({id: lNodeTypeId, instanceType: lnClass, children: []})
-        console.log("created new LNodeType with id:", lNodeTypeId);
-      } catch (e) {
-        console.error(e);
-      }
       return;
     }
     logicalNodeType = await loadLNodeType($mode, lNodeTypeId, lnClass);
@@ -200,8 +195,8 @@
     if(!type) return;
 
     try {
-      await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
-      setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
+      const success = await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      if(success) setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType)
     } catch (e) {
       console.error(e);
       setDefaultTypeErrorNotification(type.id, e?.message ?? "")
@@ -211,8 +206,8 @@
   async function handleClickOnSetAsDefault() {
     if(!logicalNodeType) return;
     try {
-      await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
-      setDefaultTypeSuccessNotification(logicalNodeType.id, DataTypeKind.LNodeType, logicalNodeType.lnClass)
+      const success = await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.LNodeType, logicalNodeType.lnClass, logicalNodeType.id);
+      if (success) setDefaultTypeSuccessNotification(logicalNodeType.id, DataTypeKind.LNodeType, logicalNodeType.lnClass)
     } catch (e) {
       console.error(e);
       setDefaultTypeErrorNotification(logicalNodeType.id, e?.message ?? "")
@@ -265,7 +260,7 @@
   });
 
   // Breadcrumbs
-  let breadcrumbs = $derived(createBreadcrumbs(isCreateMode(), logicalNodeType));
+  let breadcrumbs = $derived(createBreadcrumbs(editorStore.isCreateMode(), logicalNodeType));
   let referenceDataObjects = $derived(
     getDisplayReferenceItems($refStore, $canEdit, acceptDrop)
   );

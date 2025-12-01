@@ -107,8 +107,8 @@
 
   async function handleOnSetAsDefault() {
     try {
-      await setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
-      setDefaultTypeSuccessNotification(enumType.id, DataTypeKind.EnumType, enumType.instanceType);
+      const success = await setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
+      if (success) setDefaultTypeSuccessNotification(enumType.id, DataTypeKind.EnumType, enumType.instanceType);
     } catch (e) {
       setDefaultTypeErrorNotification(enumType.id, e?.message);
     }

@@ -103,13 +103,18 @@ export function canAssignTypeToObjectReferenceParams(
   );
 }
 
+/**
+ * Set given type with id and kind as default. Asks for confirmation if a default type is already set for (kind, instanceType).
+ * @returns true if the default type was set, if the user cancelled the action.
+ * @throws error if defualt type throws an error
+ */
 export async function setTypeAsDefaultWithConfirmation(
   defaultTypeService: IDefaultService,
   dataTypeService: IDataTypeService,
   kind: DataTypeKind,
   instanceType: string,
   id: string
-) {
+): Promise<boolean> {
   // check if already a type for this kind and instanceType exists to resolve conflict
   const defaultType = await defaultTypeService.getDefault({kind: kind, instanceType: instanceType});
   const exists = defaultType !== undefined;
@@ -120,11 +125,12 @@ export async function setTypeAsDefaultWithConfirmation(
       confirmActionText: 'Yes, Replace',
       cancelActionText: 'No, Keep Existing',
     });
-    if (result?.type !== 'confirm') return;
+    if (result?.type !== 'confirm') return false;
   }
-  await dataTypeService.setDefaultType(kind, id);
+  await dataTypeService.setDefaultType(kind, id); // throws error
+  return true;
 }
 
-export async function setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService: IDefaultService, dataTypeService: IDataTypeService, type: BasicType) {
-  await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, type.typeKind, type.instanceType, type.id);
+export async function setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService: IDefaultService, dataTypeService: IDataTypeService, type: BasicType): Promise<boolean> {
+  return await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, type.typeKind, type.instanceType, type.id);
 }
