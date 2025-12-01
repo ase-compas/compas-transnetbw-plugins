@@ -20,12 +20,11 @@
 
     const cancel = () => closeDialog('cancel');
     const addGroup = () => closeDialog('confirm', {name,  position: Number(position)})
-    
+
     // select values from 1..groups+1
-    let groupPositions = $derived.by(() => 
+    let groupPositions = $derived.by(() =>
   [
-    ...Array.from({length: groups}, (_, i) => ({ value: (i+1).toString(), label: (i+1).toString() })), // iterate from 1..groups
-    { value: (groups+1).toString(), label: 'End' } // add option end
+    ...Array.from({length: groups+1}, (_, i) => ({ value: (i+1).toString(), label: (i+1).toString() })), // iterate from 1..groups+1
   ]
 )
 let valid = $derived(name && position)
@@ -44,10 +43,10 @@ let valid = $derived(name && position)
 >
     {#snippet content()}
         <div class="add-group-form">
-            <OscdInput 
-                label="Name" 
-                placeholder="Group 1" 
-                variant="outlined" 
+            <OscdInput
+                label="Name"
+                placeholder="Group 1"
+                variant="outlined"
                 bind:value={name}
                 required
                 />
