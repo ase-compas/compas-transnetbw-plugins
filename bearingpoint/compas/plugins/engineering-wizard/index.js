@@ -14410,10 +14410,8 @@ function Dp(n, e) {
   let t = m(e, "open", 15, !1), r = /* @__PURE__ */ le(""), i = /* @__PURE__ */ le(Ee((e.groups + 1).toString()));
   const a = () => Nr("cancel"), s = () => Nr("confirm", { name: o(r), position: Number(o(i)) });
   let u = /* @__PURE__ */ oe(() => [
-    ...Array.from({ length: e.groups }, (c, d) => ({ value: (d + 1).toString(), label: (d + 1).toString() })),
-    // iterate from 1..groups
-    { value: (e.groups + 1).toString(), label: "End" }
-    // add option end
+    ...Array.from({ length: e.groups + 1 }, (c, d) => ({ value: (d + 1).toString(), label: (d + 1).toString() }))
+    // iterate from 1..groups+1
   ]), l = /* @__PURE__ */ oe(() => o(r) && o(i));
   {
     const c = (v) => {
