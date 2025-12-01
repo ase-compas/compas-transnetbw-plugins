@@ -15,7 +15,6 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   disconnectedCallback() {
-    console.log("unmounting plugin");
     if (this.app) unmount(this.app);
   }
 
