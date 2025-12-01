@@ -94,7 +94,7 @@
 
   function isDirty() {
     if(!enumType) return false;
-    if(mode === 'create') return true;
+    if($currentMode === 'create') return true;
     const configuredNames = enumType.children.filter(item => item.meta.isConfigured).map(a => a.name).sort();
     const selectedSorted = selected.slice().sort();
     return JSON.stringify(configuredNames) !== JSON.stringify(selectedSorted);
