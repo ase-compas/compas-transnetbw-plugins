@@ -10,6 +10,7 @@
   import { dragHandle, dragHandleZone } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import StepCircle from '../shared/StepCircle.svelte';
 
   const FLIP_DURATION_MS = 100;
 
@@ -42,6 +43,14 @@
     editGroup = event.detail.items;
   };
 
+  function transformDraggedElement(draggedEl, data, index) {
+    // updates the position of the dragged item
+    const stepCircle = draggedEl.querySelector('.step-circle');
+    if (stepCircle) {
+      stepCircle.innerHTML = index + 1;
+    }
+  }
+
   // Validation: All group names must be non-empty
   let valid = $derived(editGroup.every(g => g.title.trim().length > 0));
 </script>
@@ -60,16 +69,17 @@
     <div class="edit-groups-form">
       <h3>Drag & Drop to change Order</h3>
       <div
-        use:dragHandleZone={{ items: editGroup, flipDurationMs: FLIP_DURATION_MS, dropTargetStyle: {} }}
+        use:dragHandleZone={{ items: editGroup, flipDurationMs: FLIP_DURATION_MS, dropTargetStyle: {}, transformDraggedElement}}
         onconsider={handleSort}
         onfinalize={handleSort}
       >
-        {#each editGroup as group (group.id)}
+        {#each editGroup as group, idx (group.id)}
           <div
             class="group-list-item"
             data-id={group.id}
             animate:flip={{ duration: FLIP_DURATION_MS }}
           >
+            <div><StepCircle number={idx + 1}/></div>
 
             <div use:dragHandle>
               <OscdDragIndicatorIcon />
