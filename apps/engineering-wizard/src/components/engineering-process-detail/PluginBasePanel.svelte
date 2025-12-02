@@ -110,7 +110,10 @@
 
         <div class="plugin-list__group-plugins-section">
           <div class="plugin-list__group-plugins__indicator">
-            <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/>
+            {#if groupIndex < pluginGroups.length - 1}
+              <!-- Show arrow except for last group -->
+              <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/>
+            {/if}
           </div>
           <div
             class="plugin-list__group-plugins"
