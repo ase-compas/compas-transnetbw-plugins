@@ -30,3 +30,5 @@ export { default as OscdCompareArrowsIcon } from './oscd-compare-arrows-icon/Osc
 export { default as OscdDragHandleIcon } from './oscd-drag-handle-icon/OscdDragHandleIcon.svelte'
 export { default as OscdDragIndicatorIcon } from './oscd-drag-indicator-icon/OscdDragIndicatorIcon.svelte'
 export { default as OscdArrowSouthIcon } from './oscd-arrow-south-icon/OscdArrowSouthIcon.svelte'
+export { default as OscdArrowForwardIcon } from './oscd-arrow-forward-icon/OscdArrowForwardIcon.svelte'
+export { default as OscdArrowBackIcon } from './oscd-arrow-back-icon/OscdArrowBackIcon.svelte'

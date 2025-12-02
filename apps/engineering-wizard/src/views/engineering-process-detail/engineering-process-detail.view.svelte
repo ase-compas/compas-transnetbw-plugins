@@ -2,7 +2,6 @@
   import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
   import Button from '@smui/button';
   import ProcessDetailStepper from '../../components/engineering-process-detail/ProcessDetailStepper.svelte';
-  import WorkflowBack from '../../components/engineering-workflow/WorkflowBack.svelte';
   import PluginViewPanel from '../../components/engineering-process-detail/PluginViewPanel.svelte';
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
@@ -10,6 +9,8 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { buildProcessBreadcrumbs } from '../../utils/breadcrumbs.util';
   import { processEditModeState, selectedProcessState } from '../../services/engineering-process.svelte';
+  import WorkflowActions from '../../components/engineering-workflow/WorkflowActions.svelte';
+  import WorkflowTitle from '../../components/engineering-workflow/WorkflowTitle.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -81,31 +82,19 @@
 <div class="page-content">
   {#if processEditModeState.isEditing}
     <div class="stepper">
-      <WorkflowBack onBack={exitEditing} />
+
+      <WorkflowTitle onClick={exitEditing} />
 
       <ProcessDetailStepper currentId={currentStepId} visited={visitedSteps} onSelect={handleStepSelect} />
 
-      <div class="stepper-navigation">
-        <button
-          type="button"
-          class="btn btn--back"
-          onclick={goToPreviousStep}
-          disabled={isAtFirstStep}
-          aria-label="Previous step"
-        >
-          Back
-        </button>
+      <WorkflowActions
+        onGoToPreviousStep={goToPreviousStep}
+        onGoToNextStep={goToNextStep}
+        onDone={exitEditing}
 
-        <button
-          type="button"
-          class="btn btn--next"
-          onclick={goToNextStep}
-          disabled={isAtLastStep}
-          aria-label="Next step"
-        >
-          Next
-        </button>
-      </div>
+        isAtFirstStep={isAtFirstStep}
+        isAtLastStep={isAtLastStep}
+      />
     </div>
 
     <div class="step-content">
@@ -182,27 +171,6 @@
     align-items: center;
     background-color: var(--brand);
   }
-
-  .stepper-navigation {
-    display: flex;
-    gap: 0.8rem;
-    justify-self: end;
-  }
-
-  .btn {
-    height: 36px;
-    min-width: 70px;
-    padding: 0 12px;
-    text-transform: uppercase;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0;
-  }
-
-  .btn[disabled] { opacity: 0.6; cursor: default; }
-  .btn--back { color: #ffffff; background-color: #6b9197; }
-  .btn--next { background-color: #ffffff; color: var(--brand); }
 
   .step-content { padding: 1.5rem 1.5rem; }
 </style>
