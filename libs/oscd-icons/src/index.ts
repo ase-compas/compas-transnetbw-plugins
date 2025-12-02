@@ -29,3 +29,4 @@ export { default as OscdAddCircleIcon } from './oscd-add-circle-icon/OscdAddCirc
 export { default as OscdCompareArrowsIcon } from './oscd-compare-arrows-icon/OscdCompareArrowsIcon.svelte'
 export { default as OscdDragHandleIcon } from './oscd-drag-handle-icon/OscdDragHandleIcon.svelte'
 export { default as OscdDragIndicatorIcon } from './oscd-drag-indicator-icon/OscdDragIndicatorIcon.svelte'
+export { default as OscdArrowSouthIcon } from './oscd-arrow-south-icon/OscdArrowSouthIcon.svelte'
