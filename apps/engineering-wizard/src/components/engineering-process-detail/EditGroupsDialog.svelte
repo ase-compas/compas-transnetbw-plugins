@@ -69,7 +69,7 @@
     <div class="edit-groups-form">
       <h3>Drag & Drop to change Order</h3>
       <div
-        use:dragHandleZone={{ items: editGroup, flipDurationMs: FLIP_DURATION_MS, dropTargetStyle: {}, transformDraggedElement}}
+        use:dragHandleZone={{ items: editGroup, flipDurationMs: FLIP_DURATION_MS, dropTargetStyle: {}, transformDraggedElement, type: 'order-ew-groups-zone'}}
         onconsider={handleSort}
         onfinalize={handleSort}
       >
