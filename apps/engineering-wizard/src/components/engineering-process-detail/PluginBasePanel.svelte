@@ -112,7 +112,13 @@
           <div class="plugin-list__group-plugins__indicator">
             {#if groupIndex < pluginGroups.length - 1}
               <!-- Show arrow except for last group -->
-              <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/>
+              <!-- <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/> -->
+
+              <!--
+              <div class="step-line-container">
+                <div class="step-line"></div>
+              </div>
+              -->
             {/if}
           </div>
           <div
@@ -160,6 +166,11 @@
             {/each}
           </div>
         </div>
+        {#if groupIndex < pluginGroups.length - 1}
+          <div style="display: flex; justify-content: center; margin-top: 0.4rem;">
+            <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/>
+          </div>
+        {/if}
       </section>
     {/each}
   </div>
@@ -217,7 +228,7 @@
   .plugin-list__body {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    /*gap: 1.5rem;*/
     flex: 1 1 auto;
     min-height: 0;
   }
@@ -248,9 +259,6 @@
   }
 
   .plugin-list__group-plugins__indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 40px;
   }
 
@@ -314,5 +322,19 @@
     margin: 0;
     background-color: white;
     color: var(--primary-base);
+  }
+
+  .step-line-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* center it under the circle */
+    flex: 1; /* take full vertical height of the space */
+  }
+
+  .step-line {
+    width: 1px; /* line thickness */
+    background-color: #6B9197; /* line color */
+    flex-grow: 1; /* stretch vertically */
+    border-radius: 2px;
   }
 </style>
