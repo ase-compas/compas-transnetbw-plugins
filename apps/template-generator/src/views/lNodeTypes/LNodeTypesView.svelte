@@ -1,15 +1,18 @@
 <script lang="ts">
   // ===== Imports =====
-  import { OscdButton, OscdConfirmDialog, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdButton, OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import {
     type BasicType,
     DataTypeKind,
     getDataTypeService,
     getLNodeTypeService,
+    handleDeleteTypeWorkflow,
     type IDataTypeService,
     type ILNodeTypeService,
-    LogicalNodeTypeRow, type Mode,
-    NewLNodeTypeDialog, pluginStore,
+    LogicalNodeTypeRow,
+    type Mode,
+    NewLNodeTypeDialog,
+    pluginStore,
     type Route,
     route
   } from '@oscd-transnet-plugins/oscd-template-generator';
@@ -18,7 +21,7 @@
   import IconButton from '@smui/icon-button';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { onMount } from 'svelte';
-  import { toastService} from '@oscd-transnet-plugins/oscd-services/toast';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   // ===== Store and Service Instances =====
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
@@ -83,30 +86,9 @@
   }
 
   async function handleDelete(lNodeTypeId: string) {
-    const result = await openDialog(OscdConfirmDialog, {
-      title: 'Confirm Delete Logical Node Type',
-      message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
-      confirmActionText: 'Delete',
-      cancelActionText: 'Cancel',
-      color: 'red'
-    });
-
-    if (result.type !== 'confirm') return;
-
-    try {
-      await lNodeTypeService.deleteTypeById(lNodeTypeId);
-      items = items.filter(item => item.id !== lNodeTypeId);
-      toastService.success(
-        "Deleted",
-        `Logical Node Type "${lNodeTypeId}" was deleted successfully.`
-      );
-    } catch (e) {
-      console.error(`Error deleting LNodeType "${lNodeTypeId}": ${e}`);
-      toastService.error(
-        "Delete Failed",
-        `Could not delete Logical Node Type "${lNodeTypeId}".`
-      );
-    }
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
+    if (!success) return;
+    items = items.filter(item => item.id !== lNodeTypeId);
   }
 
   function handleNodeClick(lNodeTypeId: string) {

@@ -24,3 +24,5 @@ export * from './tboard/types';
 
 
 export {default as SetDefaultButton} from './ui/SetDefaultButton.svelte'
+
+export {default as TypeActionMenu } from './ui/TypeActionMenu.svelte'

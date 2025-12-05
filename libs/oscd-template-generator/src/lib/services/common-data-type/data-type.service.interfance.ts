@@ -110,5 +110,12 @@ export interface IDataTypeService {
    * @param rootId
    */
   createDefaultType(typeKind: DataTypeKind, instanceType: string, rootId?: string): Promise<void>;
+
+  /**
+   * Deletes the data type. All references to this type will be removed.
+   * @param typeKind data type kind of the type to remove
+   * @param id id of the type remove
+   */
+  deleteType(typeKind: DataTypeKind, id: string): Promise<boolean>;
 }
 

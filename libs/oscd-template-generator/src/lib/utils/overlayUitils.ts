@@ -1,6 +1,10 @@
 import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import NewDataObjectTypeDialog from '../components/dialogs/CreateDialogs/NewDataObjectTypeDialog.svelte';
-import { DataTypeKind, type Mode, type ObjectReferenceDetails } from '../domain';
+import {
+  DataTypeKind,
+  type Mode,
+  type ObjectReferenceDetails,
+} from '../domain';
 import { openDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
 import DoTypeDrawer from '../components/drawers/doTypeDrawer/DoTypeDrawer.svelte';
 import NewDataAttributeTypeDialog from '../components/dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
@@ -9,12 +13,13 @@ import DaTypeDrawer from '../components/drawers/daTypeDrawer/DaTypeDrawer.svelte
 import EnumTypeDetailsDrawer from '../components/drawers/EnumTypeDetailsDrawer.svelte';
 import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 import ChooseInstanceTypeDialog from '../components/dialogs/ChooseInstanceTypeDialog.svelte';
-import { toastService } from '@oscd-transnet-plugins/oscd-services/toast'
+import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+import { getDataTypeService } from '../services';
 
 export function openDataObjectTypeDrawer(
   mode: Mode,
   typeId: string,
-  cdc?: string
+  cdc?: string,
 ) {
   openDrawer({
     component: DoTypeDrawer,
@@ -23,19 +28,18 @@ export function openDataObjectTypeDrawer(
   });
 }
 
-
 export type UnsavedChangesResult =
   | { action: 'save' }
   | { action: 'discard' }
-  | { action: 'cancel' }
+  | { action: 'cancel' };
 
 export async function confirmUnsavedChanges(): Promise<UnsavedChangesResult> {
   const result = await openDialog(OscdConfirmDialog, {
     title: 'Unsaved Changes',
     message: 'You have unsaved changes. Do you want to save them?',
     confirmActionText: 'Save',
-    cancelActionText: 'Discard'
-  })
+    cancelActionText: 'Discard',
+  });
   if (result.type === 'confirm') {
     return { action: 'save' };
   } else if (result.type === 'cancel') {
@@ -45,10 +49,59 @@ export async function confirmUnsavedChanges(): Promise<UnsavedChangesResult> {
   }
 }
 
+export async function handleDeleteTypeWorkflow(kind: DataTypeKind, id: string): Promise<boolean> {
+  const confirmed = await confirmDeleteType(kind, id);
+  if(!confirmed) return false;
+
+  try {
+    await getDataTypeService().deleteType(kind, id);
+    deleteTypeSuccessNotification(kind, id);
+    return true;
+  }
+  catch (error) {
+    deleteTypeErrorNotification(kind, id);
+    return false;
+  }
+}
+
+export async function confirmDeleteType(
+  kind: DataTypeKind,
+  id: string,
+): Promise<boolean> {
+  const typeText = dataTypeKindToText(kind);
+
+  const result = await openDialog(OscdConfirmDialog, {
+    title: `Confirm Delete ${typeText}`,
+    message: `Are you sure you want to delete this type "${id}"? This action cannot be undone. All references to this type will be removed.`,
+    confirmActionText: 'Delete',
+    cancelActionText: 'Cancel',
+    confirmActionColor: 'danger'
+  });
+
+  return result.type === 'confirm';
+}
+
+export function deleteTypeSuccessNotification(typeKind: DataTypeKind, id: string) {
+  const typeText = dataTypeKindToText(typeKind);
+  toastService.success(
+    "Deleted",
+    `${typeText} "${id}" was deleted successfully.`
+  );
+}
+
+export function deleteTypeErrorNotification(typeKind: DataTypeKind, id: string) {
+  const typeText = dataTypeKindToText(typeKind);
+  toastService.error(
+    "Delete Failed",
+    `Failed to delete ${typeText} "${id}".`,
+    8000
+  );
+}
+
 export function openDataAttributeTypeDrawer(
   mode: Mode,
   typeId: string,
-  instanceType?: string
+  instanceType?: string,
 ) {
   openDrawer({
     component: DaTypeDrawer,
@@ -60,7 +113,7 @@ export function openDataAttributeTypeDrawer(
 export function openDataEnumTypeDrawer(
   mode: Mode,
   typeId: string,
-  instanceType?: string
+  instanceType?: string,
 ) {
   openDrawer({
     component: EnumTypeDetailsDrawer,
@@ -83,7 +136,7 @@ export function openCreateDataAttributeTypeDialog() {
       openDataAttributeTypeDrawer(
         'create',
         result.data.id,
-        result.data.instanceType
+        result.data.instanceType,
       );
     }
   });
@@ -103,7 +156,7 @@ export function openCreateEnumTypeDialog() {
 
 export function openReferencedTypeDrawer(
   objRef: ObjectReferenceDetails,
-  mode: Mode
+  mode: Mode,
 ) {
   if (!objRef || !objRef.typeRef || objRef.typeRef === '') return;
   const refId = objRef.typeRef;
@@ -117,34 +170,64 @@ export function openReferencedTypeDrawer(
   }
 }
 
-export async function openSelectInstanceTypeDialog(typeKind: DataTypeKind, text?: string): Promise<string> {
-  const result = await openDialog(ChooseInstanceTypeDialog, {type: typeKind, text: text});
-  if(result.type === 'confirm') {
+export async function openSelectInstanceTypeDialog(
+  typeKind: DataTypeKind,
+  text?: string,
+): Promise<string> {
+  const result = await openDialog(ChooseInstanceTypeDialog, {
+    type: typeKind,
+    text: text,
+  });
+  if (result.type === 'confirm') {
     return result.data.instanceType;
   }
 }
 
-
-export function setDefaultTypeSuccessNotification(id: string, typeKind: DataTypeKind, instanceType: string) {
+export function setDefaultTypeSuccessNotification(
+  id: string,
+  typeKind: DataTypeKind,
+  instanceType: string,
+) {
   toastService.success(
-        "Default Set",
-        `“${id}” has been set as the default for ${typeKind}:${instanceType}.`,
-         5000
-      );
+    'Default Set',
+    `“${id}” has been set as the default for ${typeKind}:${instanceType}.`,
+    5000,
+  );
 }
 
 export function setDefaultTypeErrorNotification(id: string, errMsg?: string) {
   toastService.error(
-    "Set Default Failed",
-    `Failed to set “${id}” as the default. ${errMsg ?? ""}`,
-    8000
+    'Set Default Failed',
+    `Failed to set “${id}” as the default. ${errMsg ?? ''}`,
+    8000,
   );
 }
 
 export function applyDefaultWarningNotification(errMsg?: string) {
   toastService.warn(
-    "Apply Default Failed",
-    `Could not apply default type. ${errMsg ?? ""}`,
-    6000
+    'Apply Default Failed',
+    `Could not apply default type. ${errMsg ?? ''}`,
+    6000,
   );
+}
+
+function dataTypeKindToText(kind: DataTypeKind): string {
+  let typeText: string;
+  switch (kind) {
+    case DataTypeKind.DOType:
+      typeText = 'Data Object Type';
+      break;
+    case DataTypeKind.DAType:
+      typeText = 'Data Attribute Type';
+      break;
+    case DataTypeKind.EnumType:
+      typeText = 'Enum Type';
+      break;
+    case DataTypeKind.LNodeType:
+      typeText = 'Logical Node Type';
+      break;
+    default:
+      typeText = 'Type';
+  }
+  return typeText;
 }

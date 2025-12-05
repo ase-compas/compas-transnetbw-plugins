@@ -7,7 +7,7 @@ import {
   type DAType,
   type DOType,
   type EnumType,
-  type LNodeType
+  type LNodeType,
 } from '../domain';
 import {
   buildInsert,
@@ -15,6 +15,7 @@ import {
   createAndDispatchEditEvent,
   dispatchEditEvent,
   type EditV2,
+  type SetAttributesV2,
 } from '@oscd-transnet-plugins/oscd-event-api';
 import {
   DATypeMapperV,
@@ -66,7 +67,8 @@ export interface IDataTypeRepository {
   ): DataTypeMap[K][];
 
   /**
-   * Deletes a data type by ID. Returns true if deleted, false if not found.
+   * Deletes a data type by ID. All references to this type will be set to "".
+   * Returns true if deleted, false if not found.
    * @param dataTypeKind The type of data to delete.
    * @param id The ID of the data type.
    * @returns True if deleted, false if not found.
@@ -169,8 +171,28 @@ export class DataTypeRepository implements IDataTypeRepository {
     const el = findElementByTagAndId(this.doc, dataTypeKind, id);
     if (!el) return false;
 
-    const edit = buildRemove(el);
-    createAndDispatchEditEvent(this.hostElement, edit);
+    const root: Element = this.doc.querySelector(DataTypeRepository.rootElementTagName);
+    if(!root) return false;
+
+    // get all elements referencing to type to delete
+    const editEvents: EditV2[] = []
+    const refEls = root.querySelectorAll(`[type="${id}"]`);
+
+    // set their type attribute to empty
+    refEls.forEach(refEl => {
+      refEl.setAttribute('type', '');
+      const edit: SetAttributesV2 = {
+        element: refEl,
+        attributes: { type: '' },
+        attributesNS: {},
+      };
+      editEvents.push(edit);
+    });
+
+
+    const removeEvent = buildRemove(el);
+    editEvents.push(removeEvent);
+    createAndDispatchEditEvent(this.hostElement, editEvents);
     return true;
   }
 

@@ -6,8 +6,12 @@
 
   // ===== Services & Utils =====
   import { getColumns } from './columns.config';
-  import { createObjectReferenceStore, pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
-  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import {
+    createObjectReferenceStore,
+    handleDeleteTypeWorkflow,
+    pluginStore
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
   applyDefaultWarningNotification,
     canAssignTypeToObjectReference,
@@ -105,6 +109,10 @@
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
     if (reason === 'save' && $isDirty) {
       await editorStore.save();
+      return true;
+    }
+
+    if (reason === 'force') {
       return true;
     }
 
@@ -221,6 +229,11 @@
     refStore.setTypeReference(target.itemId, source.itemId);
   }
 
+  async function handleOnDelete() {
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.DAType, typeId);
+    if(success) await closeDrawer('force');
+  }
+
   // ===== Helpers =====
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const sourceType: BasicType = dataTypes[source.columnId].find(type => type.id === source.itemId);
@@ -277,6 +290,7 @@
   bind:isEditMode={$isEditModeSwitchState}
   onModeChange={e => handleModeChange(e)}
   onClickDefault={() => handleClickSetAsDefault()}
+  onDelete={handleOnDelete}
   onInstanceTypeChange={(e) => {
     instanceType = e;
     editorStore.switchMode('create');

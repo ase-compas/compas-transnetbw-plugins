@@ -234,6 +234,10 @@ export class DataTypeService implements IDataTypeService {
     this.typeRepo.applyDataTypeChanges({creates: [defaultDataTypes.root, ...defaultDataTypes.references]})
   }
 
+  async deleteType(typeKind: DataTypeKind, id: string): Promise<boolean> {
+    return this.typeRepo.deleteDataTypeById(typeKind, id);
+  }
+
   /**
    * Converts a DefaultConfig into DataTypeWithKind objects for root and referenced types.
    * Resolves ID conflicts before conversion.

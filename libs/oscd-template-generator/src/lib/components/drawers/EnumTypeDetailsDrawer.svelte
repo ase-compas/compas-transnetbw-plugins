@@ -3,13 +3,18 @@
   import { getEnumTypeService, getDefaultTypeService, getDataTypeService } from '../../services';
   import { DataTypeKind, type EnumTypeDetails, type Mode } from '../../domain';
   import { onMount } from 'svelte';
-  import { type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
   import TypeHeader from '../TypeHeader.svelte';
   import { createEditorStore } from '../../stores';
-  import { setDefaultTypeErrorNotification, setDefaultTypeSuccessNotification, setTypeAsDefaultWithConfirmation } from '../../utils';
+  import {
+    handleDeleteTypeWorkflow,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
+    setTypeAsDefaultWithConfirmation
+  } from '../../utils';
 
 
   // ===== Services =====
@@ -82,10 +87,17 @@
     });
   }
 
+  async function handleOnDelete() {
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.EnumType, typeId);
+    if(success) await closeDrawer('force');
+  }
+
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
     if (reason === 'save') {
       if(isDirty()) await editorStore.save();
+      return true;
+    } else if (reason === 'force') {
       return true;
     } else {
       return editorStore.confirmLeave();
@@ -138,6 +150,7 @@
   onClickDefault={() => handleOnSetAsDefault()}
   setAsDefaultDisabled={$dirty}
   bind:isEditMode={$isEditModeSwitchState}
+  onDelete={handleOnDelete}
   onModeChange={(e) => handleModeChange(e)}
   onInstanceTypeChange={(e) => {
     instanceTypeId = e;
