@@ -26,7 +26,7 @@
   idLabel="Logical Node ID"
   autocompleteLabel="Logical Node Class"
   getOptions={() => service.getTypeOptions()}
-  isIdTaken={(id) => service.isLNodeIdTaken(id)}
+  typeKind={DataTypeKind.LNodeType}
   showCreateFromDefault={true}
   checkDefaultAvailable={async (instanceType) => {
     const result = await defaultTypeService.getDefault({instanceType, kind: DataTypeKind.LNodeType});

@@ -1,17 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import TextField from '@smui/textfield';
   import Autocomplete from '@smui-extra/autocomplete';
   import Checkbox from '@smui/checkbox';
   import FormField from '@smui/form-field';
-  import HelperText from '@smui/textfield/helper-text';
-  import CharacterCounter from '@smui/textfield/character-counter';
   import type { ChangeEventDetails, Option } from './types';
+  import TypeIdInput from '../ui/TypeIdInput.svelte';
+  import type { DataTypeKind } from '../../domain';
 
   interface Props {
     // id settings
     idLabel?: string;
-    isIdTaken?: (id: string) => Promise<boolean>;
+    typeKind: DataTypeKind
 
     // auto complete settings
     autocompleteLabel?: string;
@@ -27,7 +26,7 @@
 
   let {
     idLabel = 'Enter Id',
-    isIdTaken = async (_: string) => false,
+    typeKind,
 
     autocompleteLabel = 'Select Option',
     getOptions = async () => [],
@@ -41,6 +40,8 @@
     }
   }: Props = $props();
 
+  let inputEl;
+
   // --- State ---
   let loading = $state<boolean>(false);
   let options = $state<Option[]>([]);
@@ -50,12 +51,7 @@
   let selectedItem = $state<Option | undefined>(undefined);
   let createFromDefault = $state<boolean>(false);
 
-  // typeId validation state
-  let typeIdTouched = $state<boolean>(false);
-  let isTypeIdRequiredValid = $derived<boolean>(typeId && typeId.trim().length > 0);
-  let isTypeIdFormatValid = $derived<boolean>(/^\S+$/.test(typeId));
-  let isTypeIdAvailable = $state<boolean>(false);
-  let isTypeIdValid = $derived<boolean>(isTypeIdRequiredValid && isTypeIdFormatValid && isTypeIdAvailable);
+  let isTypeIdValid = $state<boolean>(false);
 
   // form is valid
   let isFormValid = $derived<boolean>(isTypeIdValid && !!selectedItem);
@@ -65,6 +61,9 @@
 
   onMount(() => {
     loadOptions();
+     setTimeout(() => {
+      inputEl.focus();
+    }, 350)
   });
 
   function loadOptions() {
@@ -88,16 +87,6 @@
       valid: isFormValid
     });
   }
-
-  // check if typeId is taken available whenever it changes
-  $effect(() => {
-    if (!typeId) return;
-    isIdTaken(typeId).then((isTaken) => {
-      isTypeIdAvailable = !isTaken;
-    }).catch((err) => {
-      console.error('Failed to check if ID is taken:', err);
-    })
-  });
 
   // dispatch if any input changes
   $effect(() => {
@@ -127,28 +116,14 @@
 </script>
 
 <form onsubmit={handleSubmit}>
-  <TextField
-    bind:value={typeId}
-    label={idLabel}
-    required
-    style="width: 100%;"
-    invalid={typeIdTouched && !isTypeIdValid}
-    input$maxlength={64}
-    onblur={() => typeIdTouched = true}
-    >
-    {#snippet helper()}
-      <HelperText validationMsg persitent>
-        {#if !isTypeIdRequiredValid}
-          Please enter an ID.
-        {:else if !isTypeIdFormatValid}
-          ID must contain no spaces.
-        {:else if !isTypeIdAvailable}
-          That ID is already in use. Please choose a different one.
-        {/if}
-      </HelperText>
-    <CharacterCounter>0 / 64</CharacterCounter>
-    {/snippet}
-  </TextField>
+  <TypeIdInput
+    bind:typeId={typeId}
+    bind:valid={isTypeIdValid}
+    bind:this={inputEl}
+    {typeKind}
+    idLabel={idLabel}
+    showErrorsOnInput={false}
+  />
 
   {#if !loading}
     <Autocomplete

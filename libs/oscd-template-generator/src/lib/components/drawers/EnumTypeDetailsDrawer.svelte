@@ -95,7 +95,6 @@
 
   async function handleRename() {
    const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.EnumType, typeId);
-   console.log(newTypeId);
    if(newTypeId) {
      typeId = newTypeId;
      loadData();
