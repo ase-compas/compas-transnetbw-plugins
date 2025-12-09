@@ -117,5 +117,20 @@ export interface IDataTypeService {
    * @param id id of the type remove
    */
   deleteType(typeKind: DataTypeKind, id: string): Promise<boolean>;
+
+  /**
+   * Checks if a data type exists.
+   * @param typeKind data type kind
+   * @param id type id
+   */
+  dataTypeExists(typeKind: DataTypeKind, id: string): Promise<boolean>;
+
+  /**
+   * Renames a data type and updates all type references to this type.
+   * @param typeKind data type kind
+   * @param oldId old id
+   * @param newId new id, must be unique
+   */
+  renameType(typeKind: DataTypeKind, oldId: string, newId: string): Promise<void>;
 }
 

@@ -11,6 +11,7 @@
   import { createEditorStore } from '../../stores';
   import {
     handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
     setDefaultTypeErrorNotification,
     setDefaultTypeSuccessNotification,
     setTypeAsDefaultWithConfirmation
@@ -92,6 +93,15 @@
     if(success) await closeDrawer('force');
   }
 
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.EnumType, typeId);
+   console.log(newTypeId);
+   if(newTypeId) {
+     typeId = newTypeId;
+     loadData();
+   }
+  }
+
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
     if (reason === 'save') {
@@ -151,6 +161,7 @@
   setAsDefaultDisabled={$dirty}
   bind:isEditMode={$isEditModeSwitchState}
   onDelete={handleOnDelete}
+  onRename={handleRename}
   onModeChange={(e) => handleModeChange(e)}
   onInstanceTypeChange={(e) => {
     instanceTypeId = e;

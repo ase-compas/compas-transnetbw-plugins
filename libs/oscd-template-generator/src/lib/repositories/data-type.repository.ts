@@ -92,6 +92,8 @@ export interface IDataTypeRepository {
       updates?: { kind: K; dataType: DataTypeMap[K] }[]
     }
   ): boolean;
+
+  renameDataTypeById(dataTypeKind: DataTypeKind, id: string, newName: string): boolean;
 }
 
 
@@ -194,6 +196,41 @@ export class DataTypeRepository implements IDataTypeRepository {
     editEvents.push(removeEvent);
     createAndDispatchEditEvent(this.hostElement, editEvents);
     return true;
+  }
+
+
+  renameDataTypeById(dataTypeKind: DataTypeKind, id: string, newName: string): boolean {
+    const el = findElementByTagAndId(this.doc, dataTypeKind, id);
+    if (!el) return false;
+
+    const root: Element = this.doc.querySelector(DataTypeRepository.rootElementTagName);
+    if(!root) return false;
+    const editEvents: EditV2[] = []
+
+    const typeElementRenameEvent : SetAttributesV2 = {
+      element: el,
+      attributes: { id: newName },
+      attributesNS: {},
+    }
+    editEvents.push(typeElementRenameEvent);
+
+    // update id for references
+    const refEls = root.querySelectorAll(`[type="${id}"]`);
+
+    // set their type attribute to empty
+    refEls.forEach(refEl => {
+      refEl.setAttribute('type', newName);
+      const edit: SetAttributesV2 = {
+        element: refEl,
+        attributes: { type: newName },
+        attributesNS: {},
+      };
+      editEvents.push(edit);
+    });
+
+    createAndDispatchEditEvent(this.hostElement, editEvents);
+    return true;
+
   }
 
   upsertDataType<K extends DataTypeKind>(dataTypeKind: K, data: DataTypeMap[K]): DataTypeMap[K] {

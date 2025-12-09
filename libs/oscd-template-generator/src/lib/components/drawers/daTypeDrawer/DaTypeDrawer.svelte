@@ -17,6 +17,7 @@
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
+    handleRenameTypeWorkflow,
     setDefaultTypeErrorNotification,
     setDefaultTypeSuccessNotification,
     setTypeAsDefaultWithConfirmation,
@@ -234,6 +235,16 @@
     if(success) await closeDrawer('force');
   }
 
+
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.DAType, typeId);
+   console.log(newTypeId);
+   if(newTypeId) {
+     typeId = newTypeId;
+     loadData();
+   }
+  }
+
   // ===== Helpers =====
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const sourceType: BasicType = dataTypes[source.columnId].find(type => type.id === source.itemId);
@@ -291,6 +302,7 @@
   onModeChange={e => handleModeChange(e)}
   onClickDefault={() => handleClickSetAsDefault()}
   onDelete={handleOnDelete}
+  onRename={handleRename}
   onInstanceTypeChange={(e) => {
     instanceType = e;
     editorStore.switchMode('create');

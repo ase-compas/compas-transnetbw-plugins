@@ -7,6 +7,7 @@
     getDataTypeService,
     getLNodeTypeService,
     handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
     type IDataTypeService,
     type ILNodeTypeService,
     LogicalNodeTypeRow,
@@ -89,6 +90,10 @@
     const success = await handleDeleteTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
     if (!success) return;
     items = items.filter(item => item.id !== lNodeTypeId);
+  }
+
+  async function handleRename(lNodeTypeId: string) {
+    await handleRenameTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
   }
 
   function handleNodeClick(lNodeTypeId: string) {
@@ -189,6 +194,7 @@
           onDuplicate={() => handleDuplicate(node.id)}
           onDelete={() => handleDelete(node.id)}
           onClick={() => handleNodeClick(node.id)}
+          onRename={() => handleRename(node.id)}
         />
       {/each}
       </Body>

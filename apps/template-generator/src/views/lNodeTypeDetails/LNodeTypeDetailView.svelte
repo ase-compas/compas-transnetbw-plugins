@@ -16,6 +16,7 @@
     getDisplayReferenceItems,
     getLNodeTypeService,
     handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
     type IDataTypeService,
     type IDefaultService,
     type ILNodeTypeService,
@@ -38,7 +39,7 @@
     setTypeAsDefaultWithConfirmationForBasicType,
     TBoard,
     type TBoardItemContext,
-    TypeActionMenu
+    TypeActionMenu,
   } from '@oscd-transnet-plugins/oscd-template-generator';
   import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { loadLNodeType, loadTypes } from './dataLoader';
@@ -252,6 +253,15 @@
     if (success) route.set({ path: ['overview'] });
   }
 
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
+   console.log(newTypeId);
+   if(newTypeId) {
+     lNodeTypeId = newTypeId;
+     loadLogicalNodeType(lNodeTypeId, lnClass)
+   }
+  }
+
   // -----------------------------
   // Utils
   // -----------------------------
@@ -321,6 +331,7 @@
       <OscdTooltip content="Type Actions" side="bottom" hoverDelay={2000}>
         <TypeActionMenu
           onDelete={handleOnDeleteType}
+          onRename={handleRename}
         />
       </OscdTooltip>
     </div>

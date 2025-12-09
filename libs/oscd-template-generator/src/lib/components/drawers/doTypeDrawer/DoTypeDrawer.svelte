@@ -20,6 +20,7 @@
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
     handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
     openCreateDataAttributeTypeDialog,
     openCreateDataObjectTypeDialog,
     openCreateEnumTypeDialog,
@@ -245,6 +246,15 @@
     if(success) await closeDrawer('force');
   }
 
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.DOType, typeId);
+   console.log(newTypeId);
+   if(newTypeId) {
+     typeId = newTypeId;
+     loadData();
+   }
+  }
+
   // ===== Helpers =====
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const sourceType: BasicType = dataTypes[source.columnId].find(
@@ -292,6 +302,7 @@
   onModeChange={e => handleModeChange(e)}
   onClickDefault={() => handleClickSetAsDefault()}
   onDelete={handleOnDelete}
+  onRename={handleRename}
 />
 <TBoard
   {columns}
