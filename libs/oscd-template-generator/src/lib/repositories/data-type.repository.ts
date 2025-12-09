@@ -182,7 +182,6 @@ export class DataTypeRepository implements IDataTypeRepository {
 
     // set their type attribute to empty
     refEls.forEach(refEl => {
-      refEl.setAttribute('type', '');
       const edit: SetAttributesV2 = {
         element: refEl,
         attributes: { type: '' },
@@ -219,7 +218,6 @@ export class DataTypeRepository implements IDataTypeRepository {
 
     // set their type attribute to empty
     refEls.forEach(refEl => {
-      refEl.setAttribute('type', newName);
       const edit: SetAttributesV2 = {
         element: refEl,
         attributes: { type: newName },
