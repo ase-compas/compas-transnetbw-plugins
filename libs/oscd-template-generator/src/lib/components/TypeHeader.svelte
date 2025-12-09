@@ -3,19 +3,36 @@
   import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openSelectInstanceTypeDialog } from '../utils/overlayUitils';
-  import { createEventDispatcher } from 'svelte';
   import { SetDefaultButton } from '@oscd-transnet-plugins/oscd-template-generator';
 
-  const dispatch = createEventDispatcher();
+  interface Props {
+    type: DataTypeKind;
+    typeId: string;
+    instanceType?: string | null;
+    isEditMode?: boolean;
+    showSetAsDefault?: boolean;
+    setAsDefaultDisabled?: boolean;
 
-  export let type: DataTypeKind;
-  export let typeId: string;
-  export let instanceType: string | null = null;
-  export let isEditMode = false;
-  export let showSetAsDefault = true;
-  export let setAsDefaultDisabled = false;
+    onModeChange?: (mode: 'edit' | 'view') => void;
+    onInstanceTypeChange?: (instanceType: string) => void;
+    onClickDefault?: () => void;
+  }
 
-  const handleChange = (checked) => dispatch('modeChange', checked ? 'edit' : 'view');
+  let {
+    type,
+    typeId,
+    instanceType = null,
+    isEditMode = $bindable(false),
+    showSetAsDefault = true,
+    setAsDefaultDisabled = false,
+
+    onModeChange = (_: 'edit' | 'view') => {},
+    onInstanceTypeChange = (_: string) => {},
+    onClickDefault = () => {}
+
+  }: Props = $props();
+
+  const handleChange = (checked) => onModeChange(checked ? 'edit' : 'view');
 
   function getTypeText(type: DataTypeKind): string {
     switch (type) {
@@ -39,7 +56,7 @@
   function handleInstanceTypeSelect() {
     openSelectInstanceTypeDialog(type, `The type of ${typeId} is unknown. To edit this type a ${getTypeText(type)} must be chosen. Existing changes will be overwritten.`).then((result) => {
       if (result) {
-        dispatch('instanceTypeChange', result);
+        onInstanceTypeChange(result)
       }
     });
   }
@@ -78,22 +95,22 @@
       {#if showSetAsDefault}
         {#if setAsDefaultDisabled}
           <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
-            <SetDefaultButton on:click={() => dispatch('clickDefault')} disabled={setAsDefaultDisabled}/>
+            <SetDefaultButton onClick={onClickDefault} disabled={setAsDefaultDisabled}/>
           </OscdTooltip>
         {:else}
-          <SetDefaultButton on:click={() => dispatch('clickDefault')} />
+          <SetDefaultButton onClick={onClickDefault} />
         {/if}
       {/if}
     <OscdSwitch
       bind:checked={isEditMode}
-      on:change={e => handleChange(e.detail)}
+      onChange={e => handleChange(e)}
       preventToggleOnClick={true}
       id={`edit-mode-switch-${typeId}`}
       label="Edit Mode"
       labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
     />
     {:else}
-      <Button variant="unelevated" color="primary" on:click={handleInstanceTypeSelect}>Choose {getInstanceText(type)} to Edit</Button>
+      <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose {getInstanceText(type)} to Edit</Button>
     {/if}
   </div>
 </div>

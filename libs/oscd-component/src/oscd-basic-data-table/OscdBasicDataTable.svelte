@@ -7,21 +7,36 @@
     width?: string;
   };
 
-  export let items: any[] = [];
-  export let columns: Column[] = [];
-  export let loading = false;
-  export let errorMsg = '';
-  export let emptyText = 'Nothing to show.';
-  export let getRowId: (item: any, index: number) => string | number = (item, i) =>
-    (item && (item.id ?? item.key)) ?? i;
 
-  export let headerBg: string | null = null;
-  export let rowBg: string | null = null;
-  let hoveredRow: string | number | null = null;
+  let hoveredRow: string | number | null = $state(null);
 
-  const slots: any = $$slots;
-  export let hasActions = false;
-  $: slotHasActions = hasActions || !!slots?.actions;
+  interface Props {
+    items?: any[];
+    columns?: Column[];
+    loading?: boolean;
+    errorMsg?: string;
+    emptyText?: string;
+    getRowId?: (item: any, index: number) => string | number;
+    headerBg?: string | null;
+    rowBg?: string | null;
+    hasActions?: boolean;
+    actions?: import('svelte').Snippet<[any]>;
+  }
+
+  let {
+    items = [],
+    columns = [],
+    loading = false,
+    errorMsg = '',
+    emptyText = 'Nothing to show.',
+    getRowId = (item, i) =>
+    (item && (item.id ?? item.key)) ?? i,
+    headerBg = null,
+    rowBg = null,
+    hasActions = false,
+    actions
+  }: Props = $props();
+  let showActions = $derived(hasActions || !!actions);
 </script>
 
 {#if loading}
@@ -45,7 +60,7 @@
             {col.header}
           </Cell>
         {/each}
-        {#if slotHasActions}
+        {#if showActions}
           <Cell header style={headerBg ? `background-color:${headerBg}` : undefined}></Cell>
         {/if}
       </Row>
@@ -64,8 +79,8 @@
         {#each columns as col}
           <Cell>{item?.[col.key] ?? ''}</Cell>
         {/each}
-        {#if slotHasActions}
-          <Cell numeric><slot name="actions" {item} /></Cell>
+        {#if showActions}
+          <Cell numeric>{@render actions?.({ item, })}</Cell>
         {/if}
       </Row>
     {/each}

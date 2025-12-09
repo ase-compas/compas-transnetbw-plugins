@@ -1,7 +1,23 @@
+<script>
+  /** @type {{children?: import('svelte').Snippet}} */
+  let { children } = $props();
+</script>
+
 <span class="oscd-icon">
-  <slot></slot>
+  {@render children?.()}
 </span>
 
-<style lang="css">
-  @import "../style/icon-styles.css";
+<style>
+  :global(.oscd-icon svg) {
+    width: 18px;
+    height: 18px;
+    fill: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  :global(button[disabled] .oscd-icon svg) {
+    fill: rgba(0, 0, 0, 0.38);
+  }
 </style>

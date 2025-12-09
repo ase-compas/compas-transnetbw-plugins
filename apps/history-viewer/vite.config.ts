@@ -1,45 +1,48 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-export default defineConfig({
-  root: __dirname,
-  cacheDir: '../../node_modules/.vite/apps/version-editor',
+export default defineConfig(async () => {
+  const { svelte } = await import('@sveltejs/vite-plugin-svelte');
 
-  server: {
-    port: 4200,
-    host: 'localhost',
-    fs: {
-      allow: ['..']
-    },
-  },
+  return {
+    root: __dirname,
+    cacheDir: '../../node_modules/.vite/apps/version-editor',
 
-  preview: {
-    port: 4300,
-    host: 'localhost',
-  },
-
-  plugins: [svelte(), nxViteTsPaths()],
-
-  build: {
-    outDir: '../../dist/apps/version-editor',
-    reportCompressedSize: true,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
-    rollupOptions: {
-      output: {
-        entryFileNames: 'index.js',
+    server: {
+      port: 4200,
+      host: 'localhost',
+      fs: {
+        allow: ['..']
       },
     },
-    lib: {
-      entry: 'src/plugin.ts',
-      formats: ['es'],
-      fileName: 'index',
+
+    preview: {
+      port: 4300,
+      host: 'localhost',
     },
-  },
-  optimizeDeps: {
-    exclude: ['@smui/select'],
-  }
+
+    plugins: [svelte(), nxViteTsPaths()],
+
+    build: {
+      outDir: '../../dist/apps/version-editor',
+      reportCompressedSize: true,
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+      rollupOptions: {
+        output: {
+          entryFileNames: 'index.js',
+        },
+      },
+      lib: {
+        entry: 'src/plugin-wrapper.svelte.ts',
+        formats: ['es'],
+        fileName: 'index',
+      },
+    },
+    optimizeDeps: {
+      exclude: ['@smui/select'],
+    }
+  };
 });

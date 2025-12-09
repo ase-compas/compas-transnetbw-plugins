@@ -1,19 +1,32 @@
 <script lang="ts">
   import Switch from '@smui/switch';
   import FormField from '@smui/form-field';
-  import { createEventDispatcher } from 'svelte';
 
-  export let checked = false;
-  export let label = 'Toggle';
-  export let id = 'toggle-switch';
-  export let labelStyle = '';
-  export let switchClass = '';
-  export let formFieldClass = '';
-  export let icons = false;
+  interface Props {
+    checked?: boolean;
+    label?: string;
+    id?: string;
+    labelStyle?: string;
+    switchClass?: string;
+    formFieldClass?: string;
+    icons?: boolean;
+    preventToggleOnClick?: boolean;
 
-  export let preventToggleOnClick = false;
+    onChange?: (newChecked: boolean) => void;
+  }
 
-  const dispatch = createEventDispatcher();
+  let {
+    checked = $bindable(false),
+    label = 'Toggle',
+    id = 'toggle-switch',
+    labelStyle = '',
+    switchClass = '',
+    formFieldClass = '',
+    icons = false,
+    preventToggleOnClick = false,
+
+    onChange = (_) => {},
+  }: Props = $props();
 
   function handleChange(newChecked: boolean) {
 
@@ -21,7 +34,7 @@
       checked = !newChecked;
     }
 
-    dispatch('change', newChecked);
+    onChange(newChecked);
   }
 </script>
 
@@ -31,7 +44,7 @@
     class={switchClass}
     bind:checked
     {icons}
-    on:SMUISwitch:change={e => handleChange(e.detail.selected)}
+    onSMUISwitchChange={e => handleChange(e.detail.selected)}
   />
   {#if label}
   <label for={id} style={labelStyle} class="oscd-switch-label">

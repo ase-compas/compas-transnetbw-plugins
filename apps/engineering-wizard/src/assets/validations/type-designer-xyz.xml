@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validations>
+  <validation>
+    <id>comm-subnet-001</id>
+    <name>Subnet Address Validity</name>
+    <description>Validates IP subnet addresses and CIDR/netmask are properly formatted and meet project constraints.</description>
+    <validator>check-subnet-address</validator>
+  </validation>
+  <validation>
+    <id>gse-config-002</id>
+    <name>GSE Control Blocks Configuration</name>
+    <description>Ensures GSE control blocks reference valid datasets and have correct MAC/VLAN/network parameters.</description>
+    <validator>check-gse-config</validator>
+  </validation>
+  <validation>
+    <id>smv-config-003</id>
+    <name>SMV Control Blocks Configuration</name>
+    <description>Checks SMV control blocks for valid datasets, sample rates, and compliant network settings.</description>
+    <validator>check-smv-config</validator>
+  </validation>
+</validations>
+

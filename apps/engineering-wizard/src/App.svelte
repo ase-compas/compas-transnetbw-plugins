@@ -2,120 +2,98 @@
   import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
   import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
   import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
-  import type { Process, Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { onMount, onDestroy } from 'svelte';
-  import { DialogHost } from '../../../libs/oscd-services/src/dialog';
-  import { openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
+  import AddNewProcess from './views/add-new-process/add-new-process.svelte';
+  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { onMount } from 'svelte';
+  import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
+  import 'svelte-material-ui/bare.css';
+  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
+  import { processEditModeState, selectedProcessState } from './services/engineering-process.svelte';
 
-  export let doc: XMLDocument | undefined;
-  export let editCount = -1;
-  export let host: HTMLElement;
+  interface Plugin {
+    src: string;
+  }
 
-  let processes: Process[] = [];
-  let selected: Process | null = null;
-  let loading = true;
-  let errorMsg = '';
+  interface Props {
+    doc?: XMLDocument;
+    editCount?: number;
+    host?: HTMLElement;
+    plugins?: Plugin[];
+    docId?: string;
+    pluginId?: string;
+    docName?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
+  }
 
-  const SOURCE_URL = new URL('./assets/processes.xml', import.meta.url).href;
-  const txt = (el: Element | null | undefined) => el?.textContent?.trim() ?? '';
+  let {
+    doc,
+    editCount,
+    plugins,
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
+    host
+  }: Props = $props();
 
-  const parsePlugin = (pl: Element): Plugin => ({
-    id:   txt(pl.querySelector('id')),
-    name: txt(pl.querySelector('name')),
-    src:  txt(pl.querySelector('src')),
+  let isCreatingProcess = $state(false);
+
+  onMount(async () => {
+    await getProcesses();
   });
 
-  const parseProcessesFromXml = (xml: XMLDocument): Process[] =>
-    Array.from(xml.querySelectorAll('process')).map((p) => {
-      const groups = Array.from(p.querySelectorAll('plugins-sequence > group'));
-
-      const pluginGroups: PluginGroup[] | undefined = groups.length
-        ? groups.map((g) => ({
-          title: txt(g.querySelector(':scope > title')),
-          plugins: Array.from(g.querySelectorAll(':scope > plugin')).map(parsePlugin),
-        }))
-        : undefined;
-
-      const flatPlugins: Plugin[] = pluginGroups
-        ? pluginGroups.flatMap((g) => g.plugins)
-        : Array.from(p.querySelectorAll('plugins-sequence > plugin')).map(parsePlugin);
-
-      return {
-        id:          txt(p.querySelector(':scope > id')),
-        version:     txt(p.querySelector(':scope > version')),
-        name:        txt(p.querySelector(':scope > name')),
-        description: txt(p.querySelector(':scope > description')),
-        plugins:     flatPlugins,
-        pluginGroups,
-      };
-    });
-
-  let controller: AbortController | null = null;
-
-  async function loadXml() {
-    loading = true;
-    errorMsg = '';
-
-    const current = new AbortController();
-    controller?.abort();
-    controller = current;
-
-    try {
-      const res = await fetch(SOURCE_URL, { cache: 'no-cache', signal: current.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const text = await res.text();
-      const xml = new DOMParser().parseFromString(text, 'application/xml');
-
-      if (xml.querySelector('parsererror')) throw new Error('Invalid XML file format.');
-      if (current !== controller) return;
-      processes = parseProcessesFromXml(xml);
-    } catch (e) {
-      if ((e as DOMException)?.name === 'AbortError') return;
-      processes = [];
-      errorMsg = (e as Error).message || 'Failed to load processes.';
-    } finally {
-      if (current === controller) loading = false;
+  function startProcess(process: Process) {
+    if (!selectedProcessState.process) {
+      selectedProcessState.process = process;
     }
+    const plugins = getPluginsForProcess(selectedProcessState.process);
+    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
   }
 
-  onMount(loadXml);
-  onDestroy(() => controller?.abort());
+  $effect(() => {
+    updateDialogProps({ editCount, doc });
+  });
 
-  function startProcess(proc: Process) {
-    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins: proc.plugins });
-    selected = null;
-  }
-
-  $: updateDialogProps({ editCount, doc });
-
-  function handleView(e: CustomEvent<Process>) {
-    selected = e.detail;
-  }
-
-  function handleStart(e: CustomEvent<Process>) {
-    startProcess(e.detail);
+  function handleView(process: Process) {
+    selectedProcessState.process = process;
   }
 
   function goBack() {
-    selected = null;
+    selectedProcessState.process = null;
+  }
+
+  function addNewProcess() {
+    processEditModeState.isEditing = false;
+    selectedProcessState.process = null;
+    isCreatingProcess = true;
+  }
+
+  function cancelCreate() {
+    processEditModeState.isEditing = false;
+    isCreatingProcess = false;
+  }
+
+  function handleCreated(proc: Process) {
+    isCreatingProcess = false;
+    selectedProcessState.process = proc;
   }
 </script>
 
 <DialogHost />
 
-{#if selected}
-  <EngineeringProcessDetail currentProcess={selected} on:back={goBack} on:start={handleStart} />
+{#if isCreatingProcess}
+  <AddNewProcess handleCancel={cancelCreate} handleSaved={handleCreated} />
+{:else if selectedProcessState.process}
+  <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
 {:else}
   <EngineeringProcessesList
-    {processes}
-    {loading}
-    {errorMsg}
-    on:view={handleView}
-    on:start={handleStart}
+    handleView={handleView}
+    handleStart={startProcess}
+    handleAddNew={addNewProcess}
   />
 {/if}
-
-<style>
-  @import '/material-icon.css';
-</style>

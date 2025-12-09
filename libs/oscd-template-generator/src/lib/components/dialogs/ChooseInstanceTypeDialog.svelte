@@ -4,44 +4,48 @@
   import { DataTypeKind } from '../../domain';
   import { onMount } from 'svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import {
+    getDATypeService,
+    getDOTypeService, getEnumTypeService,
+    getLNodeTypeService,
+    type IDoTypeService, type IEnumTypeService,
+    type ILNodeTypeService
+  } from '../../services';
+  import type { IDaTypeService } from '../../services/da-type.service';
 
+  interface Props {
+    type: DataTypeKind;
+    text?: string | undefined;
+    open?: boolean;
+  }
 
-  export let type: DataTypeKind;
-  export let text: string | undefined = undefined;
-  export let open: boolean = false;
+  let { type, text = undefined, open = $bindable(false) }: Props = $props();
 
-  let selectedItem = null;
-  let options = [];
+  let selectedItem = $state(null);
+  let options = $state([]);
   let getOptionLabel: (opt) => string = (opt) => opt?.id ?? '';
 
+  let lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
+  let doTypeService: IDoTypeService = getDOTypeService();
+  let daTypeService: IDaTypeService = getDATypeService();
+  let enumTypeService: IEnumTypeService = getEnumTypeService();
 
-  $: isValid = selectedItem !== null;
+
+  let isValid = $derived(selectedItem !== null);
 
   onMount(() => {
     switch (type) {
       case DataTypeKind.LNodeType:
-        import('../../services').then(({ getLNodeTypeService }) => {
-          const service = getLNodeTypeService();
-          service.getTypeOptions().then(data => options = data);
-        });
+          lNodeTypeService.getTypeOptions().then(data => options = data);
         break;
       case DataTypeKind.DOType:
-        import('../../services').then(({ getDOTypeService }) => {
-          const service = getDOTypeService();
-          service.getTypeOptions().then(data => options = data);
-        });
+          doTypeService.getTypeOptions().then(data => options = data);
         break;
       case DataTypeKind.DAType:
-        import('../../services').then(({ getDATypeService }) => {
-          const service = getDATypeService();
-          service.getTypeOptions().then(data => options = data);
-        });
+          daTypeService.getTypeOptions().then(data => options = data);
         break;
       case DataTypeKind.EnumType:
-        import('../../services').then(({ getEnumTypeService }) => {
-          const service = getEnumTypeService();
-          service.getTypeOptions().then(data => options = data);
-        });
+          enumTypeService.getTypeOptions().then(data => options = data);
         break;
       default:
         throw new Error(`Unsupported type: ${type}`);
@@ -72,30 +76,34 @@
   title={`Select ${typeToInstanceText(type)}`}
   maxWidth="800px"
   bind:open
-  on:confirm={handleConfirm}
+  onConfirm={handleConfirm}
   confirmDisabled={!isValid}
 >
-  <div slot="content">
-    <p>{text}</p>
+  {#snippet content()}
+    <div >
+      <p>{text}</p>
 
-    <Autocomplete
-      label={`Select ${typeToInstanceText(type)}`}
-      bind:value={selectedItem}
-      {options}
-      {getOptionLabel}
-      textfield$required
-      menu$style="max-height: 500px;"
-    >
-      <svelte:fragment slot="match" let:match>
-        <div class="custom-item">
-          <div class="title">{match.id}</div>
-          {#if match.id}
-            <div class="subtitle">{match.description}</div>
-          {/if}
-        </div>
-      </svelte:fragment>
-    </Autocomplete>
-  </div>
+      <Autocomplete
+        label={`Select ${typeToInstanceText(type)}`}
+        bind:value={selectedItem}
+        {options}
+        {getOptionLabel}
+        textfield$required
+        menu$style="max-height: 500px;"
+      >
+        {#snippet match(item)}
+
+            <div class="custom-item">
+              <div class="title">{item.id}</div>
+              {#if item.id}
+                <div class="subtitle">{item.description}</div>
+              {/if}
+            </div>
+
+          {/snippet}
+      </Autocomplete>
+    </div>
+  {/snippet}
 
 
 </OscdBaseDialog>

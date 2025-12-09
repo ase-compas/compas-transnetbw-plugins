@@ -1,7 +1,7 @@
 import { DataTypeRepository } from '../repositories';
 import { type ITypeSpecificationService, NsdSpecificationService } from './type-specification.service';
 import { type ILNodeTypeService, LNodeTypeService } from './l-node-type.service';
-import { DataTypeService, type IDataTypeService } from './data-type.service';
+import { DataTypeService, type IDataTypeService } from './common-data-type';
 import { DoTypeService, type IDoTypeService } from './do-type.service';
 import { DaTypeService, type IDaTypeService } from './da-type.service';
 import { EnumTypeService, type IEnumTypeService } from './enum-type.service';
@@ -37,6 +37,7 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
 
   if (dataTypeRepo) {
     dataTypeRepo.setDocument(xmlDoc);
+    dataTypeRepo.setHost(host)
   } else {
     dataTypeRepo = new DataTypeRepository(xmlDoc, hostElement);
   }

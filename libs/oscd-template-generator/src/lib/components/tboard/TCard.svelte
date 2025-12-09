@@ -1,41 +1,74 @@
 <script lang="ts">
   import { OscdIconActionButton, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
-  import { createEventDispatcher } from 'svelte';
   import Checkbox from '@smui/checkbox';
   import { OscdWarningIcon, OscdLockIcon, OscdCallMadeIcon } from '@oscd-transnet-plugins/oscd-icons';
 
-  const dispatch = createEventDispatcher();
+  interface Props {
+    title: string;
+    subtitle?: string | null;
+    references?: number | null;
+    badgeText?: string | null;
+    canEdit?: boolean;
+    canMark?: boolean;
+    canApplyDefaults?: boolean;
+    canClick?: boolean;
+    canUnlink?: boolean;
+    canClickReference?: boolean;
+    canSetDefault: boolean;
+    selectionEnabled?: boolean;
+    selected?: boolean;
+    isMandatory?: boolean;
+    showSelectionIndicator: boolean;
+    marked?: boolean;
+    isDragTarget?: boolean;
+    canDrop?: boolean;
+    isOver?: boolean;
+    canDrag?: boolean;
+    referencable?: boolean;
 
-  export let title: string;
-  export let subtitle: string | null = null;
-  export let references: number | null = null;
-  export let badgeText: string | null = null;
+    // Callbacks
+    onClick?: () => void;
+    onMarked?: (marked: boolean) => void;
+    onEdit?: () => void;
+    onApplyDefaults?: () => void;
+    onUnlink?: () => void;
+    onReferenceClick?: () => void;
+    onSetDefault?: () => void;
+    onSelectChange?: () => void;
+  }
 
-  export let canEdit: boolean = false;
-  export let canMark: boolean = false;
-  export let canApplyDefaults: boolean = false;
-  export let canClick: boolean = false;
-  export let canUnlink: boolean = true;
-  export let canClickReference: boolean = true;
-  export let canSetDefault: boolean = false;
+  let {
+    title,
+    subtitle = null,
+    references = null,
+    badgeText = null,
+    canEdit = false,
+    canMark = false,
+    canApplyDefaults = false,
+    canClick = false,
+    canUnlink = true,
+    canClickReference = true,
+    canSetDefault = false,
+    selectionEnabled = false,
+    selected = false,
+    isMandatory = false,
+    showSelectionIndicator,
+    marked = false,
+    isDragTarget = false,
+    canDrop = false,
+    isOver = false,
+    canDrag = false,
+    referencable = false,
+    onClick = () => {},
+    onMarked = (_: boolean) => {},
+    onEdit = () => {},
+    onApplyDefaults = () => {},
+    onUnlink = () => {},
+    onReferenceClick = () => {},
+    onSetDefault = () => {},
+    onSelectChange = () => {},
+  }: Props = $props();
 
-  export let selectionEnabled: boolean = false;
-  export let selected: boolean = false;
-  export let isMandatory: boolean = false;
-  export let showSelectionIndicator: boolean
-
-  export let marked: boolean = false;
-
-  export let isDragTarget: boolean = false; // Indicates if the card is a valid drop target
-  export let canDrop: boolean = false; // Indicates if the card can accept a drop of the dragged card
-  export let isOver: boolean = false; // Indicates if the card is currently being hovered over by a dragged card
-  export let canDrag: boolean = false; // Indicates if the card can be dragged
-
-
-  export let referencable: boolean = false;
-
-  $: cardState= getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected);
-  $: onPrimaryColor = ((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)';
 
   function getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected): 'drag-can-drop' | 'drag-cannot-drop' | 'mandatory' | 'selected' | 'unselected' | 'default' {
     if (isDragTarget) return canDrop ? 'drag-can-drop' : 'drag-cannot-drop';
@@ -46,17 +79,17 @@
     return 'default'
   }
 
-
-
   // ==== Event Handlers ====
-  function handleOnClick() { if (canClick) dispatch('click'); }
-  function toggleMark() { if(canMark) dispatch('marked', !marked); }
-  function handleOnEdit() { if (canEdit) dispatch('edit'); }
-  function handleOnApplyDefaults() { if (canApplyDefaults) dispatch('applyDefaults'); }
-  function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
-  function handleOnReferenceClick() { if (canClickReference) dispatch('referenceClick'); }
-  function handleOnSetDefault() { if (canSetDefault) dispatch('setDefault'); }
+  function handleOnClick() { if (canClick) onClick(); }
+  function toggleMark() { if(canMark) onMarked(!marked); }
+  function handleOnEdit() { if (canEdit) onEdit(); }
+  function handleOnApplyDefaults() { if (canApplyDefaults) onApplyDefaults(); }
+  function handleOnUnlink() { if (canUnlink) onUnlink(); }
+  function handleOnReferenceClick() { if (canClickReference) onReferenceClick(); }
+  function handleOnSetDefault() { if (canSetDefault) onSetDefault(); }
 
+  let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
+  let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
 </script>
 
 <div
@@ -66,7 +99,7 @@
   class:error={(isMandatory || selected) && referencable && !subtitle && !isDragTarget}
   class:draggable={canDrag}
   role={canClick ? 'button' : 'undefined'}
-  on:click={handleOnClick}
+  onclick={handleOnClick}
 >
 
   <!-- Selection Checkbox: Start -->
@@ -78,7 +111,7 @@
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
-          <Checkbox checked={selected} on:change={() => dispatch('selectChange')}/>
+          <Checkbox checked={selected} onchange={onSelectChange}/>
         </OscdTooltip>
       {/if}
     </div>
@@ -151,8 +184,8 @@
     class:drop={isDragTarget && canDrop}
   >
     {#if subtitle}
-      <OscdTooltip content="{subtitle}" hoverDelay={500} side="right">
-        <button class="oscd-card-subtitle--with-tooltip" on:click={handleOnReferenceClick} class:pointer={canClickReference}>
+      <OscdTooltip content={subtitle} hoverDelay={500} side="right">
+        <button class="oscd-card-subtitle--with-tooltip" onclick={handleOnReferenceClick} class:pointer={canClickReference}>
           {#if canClickReference}
             <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />
           {/if}

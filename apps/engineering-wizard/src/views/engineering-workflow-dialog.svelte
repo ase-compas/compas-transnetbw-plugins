@@ -3,36 +3,59 @@
   import { closeDialog } from '../../../../libs/oscd-services/src/dialog';
   import type { ViewPlugin } from '../types/view-plugin';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
+  import { selectedProcessState } from '../services/engineering-process.svelte';
 
-  export let open: boolean;
-  export let doc: XMLDocument | undefined;
-  export let editCount = -1;
-  export let host: HTMLElement;
-  export let plugins: ViewPlugin[] = [];
+  interface Props {
+    open: boolean;
+    doc: XMLDocument | undefined;
+    editCount?: any;
+    host: HTMLElement;
+    plugins?: ViewPlugin[];
+    docName?: string;
+    docId?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
+  }
 
-  let hasExited = false;
-  let prevOpen: boolean | undefined;
-  let backdropEl: HTMLDivElement | null = null;
+  let {
+    open,
+    doc,
+    editCount = -1,
+    host,
+    plugins = [],
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
+  }: Props = $props();
+
+  let hasExited = $state(false);
+  let prevOpen: boolean | undefined = $state();
+  let backdropEl: HTMLDivElement | null = $state(null);
 
   const exit = (reason: 'cancel' | 'exit') => {
     if (hasExited) return;
     hasExited = true;
+    selectedProcessState.process = null;
     editorTabsVisible.set(true);
     closeDialog(reason);
   };
 
-  const onBackdropClick = () => exit('exit');
-  const onChildExit = () => exit('exit');
-
-  $: if (open !== prevOpen) {
-    prevOpen = open;
-    if (open) {
-      hasExited = false;
-      backdropEl?.focus();
-    } else {
-      exit('cancel');
+  $effect(() => {
+    if (open !== prevOpen) {
+      prevOpen = open;
+      if (open) {
+        hasExited = false;
+        backdropEl?.focus();
+      } else {
+        exit('cancel');
+      }
     }
-  }
+  });
 </script>
 
 {#if open}
@@ -43,7 +66,11 @@
     aria-modal="true"
     aria-labelledby="ewf-title"
     tabindex="-1"
-    on:click|self={onBackdropClick}
+    onclick={(event) => {
+      if (event.target === event.currentTarget) {
+        exit('exit');
+      }
+    }}
   >
     <div class="ewf-dialog-panel" role="document">
       <h2 id="ewf-title" class="sr-only">Engineering Workflow</h2>
@@ -52,7 +79,13 @@
         {editCount}
         {host}
         {plugins}
-        on:exit={onChildExit}
+        {docName}
+        {nsdoc}
+        {docs}
+        {docId}
+        {locale}
+        {oscdApi}
+        onExit={() => exit('exit')}
       />
     </div>
   </div>

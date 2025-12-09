@@ -1,20 +1,20 @@
-<script>
+<script lang="ts">
   import Paper from '@smui/paper';
 
-  export let title = '';
-  export let open = false;
+  /** @type {{title?: string, open?: boolean, content?: import('svelte').Snippet}} */
+  let { title = '', open = $bindable(false), content } = $props();
 </script>
 
 <Paper>
   <details {open}>
     <summary>{title}</summary>
     <div class="expandable-content">
-      <slot name="content" />
+      {@render content?.()}
     </div>
   </details>
 </Paper>
 
-<style type="text/css">
+<style>
   details {
     width: 100%;
     background: transparent;

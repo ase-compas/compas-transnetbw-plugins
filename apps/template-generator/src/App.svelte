@@ -1,27 +1,39 @@
 <script lang="ts">
   import LNodeTypesView from "./views/lNodeTypes/LNodeTypesView.svelte";
   import LNodeTypeDetailView from "./views/lNodeTypeDetails/LNodeTypeDetailView.svelte";
-  import { route, host as storeHost, doc as storeDoc } from "@oscd-transnet-plugins/oscd-template-generator";
+  import { route, pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { onMount } from 'svelte';
-  import { initServices } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { DrawerStack } from '@oscd-transnet-plugins/oscd-component';
+  import { DrawerStack, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
-  export let doc: XMLDocument | null = null;
-  export let devMode: boolean = false;
-  export let host: HTMLElement | null = null;
+  interface Props {
+    devMode?: boolean;
+  }
+
+  const { devMode = false } : Props = $props();
+  let file;
 
   if (import.meta.env.DEV) {
     import("../../../libs/theme/src/lib/theme-light.css")
   }
 
   async function handleFileChange(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     const text = await file.text();
     const parser = new DOMParser();
-    doc = parser.parseFromString(text, "application/xml");
+    pluginStore.setPluginState({doc: parser.parseFromString(text, "application/xml")})
+  }
+
+  async function setPluginState() {
+    const text = await file.text();
+    const parser = new DOMParser();
+    pluginStore.setPluginState({doc: parser.parseFromString(text, "application/xml")})
   }
 
   function createMockHost(): HTMLElement | null {
@@ -35,41 +47,33 @@
   }
 
   onMount(() => {
-    if (devMode) host = createMockHost(); // Create a mock host element in dev mode
-    storeHost.set(host);
-  })
-
-  $: if(doc) {
-    initServices(doc, host);
-    storeDoc.set(doc);
-  }
+    if (devMode) pluginStore.state.host = createMockHost();
+  });
 </script>
 
 <div class="oscd-app">
-  {#if !doc && devMode}
-    <!-- Development mode: allow file upload -->
-    <input type="file" accept=".ssd" on:change={handleFileChange} />
+  {#if !pluginStore.state.doc && devMode}
+    <input type="file" accept=".ssd" oninput={handleFileChange} />
     <p>Please load an XML file to start.</p>
   {:else}
+    {#if pluginStore.state.doc !== null && pluginStore.ready}
     <div class="template-generator-container">
       {#if $route.path[0] === 'overview'}
-        <LNodeTypesView {doc}/>
+        <LNodeTypesView/>
       {:else if $route.path[0] === 'defaults'}
         <DefaultTypeView/>
       {:else}
-        <LNodeTypeDetailView {doc}/>
+        <LNodeTypeDetailView/>
       {/if}
     </div>
+    {/if}
   {/if}
 </div>
 <DialogHost/>
 <DrawerStack/>
+<OscdToastHost/>
 
 <style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-
   .template-generator-container {
     padding: 1rem 2rem;
   }

@@ -1,27 +1,17 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  plugins: ['svelte3', '@typescript-eslint'],
-  extends: ['../../.eslintrc.json'],
+  extends: ['../../.eslintrc.json', 'plugin:svelte/recommended'],
   ignorePatterns: ['!**/*', 'vite.config.ts'],
   overrides: [
     {
-      files: ['*.ts', '*.js', '*.svelte'],
-      rules: {},
-    },
-    {
-      files: ['*.ts', '*.tsx'],
-      rules: {},
-    },
-    {
-      files: ['*.js', '*.jsx'],
-      rules: {},
-    },
-    {
       files: ['*.svelte'],
-      processor: 'svelte3/svelte3',
+      parser: 'svelte-eslint-parser',
+      parserOptions: {
+        parser: {
+          ts: '@typescript-eslint/parser',
+        },
+        extraFileExtensions: ['.svelte'],
+      },
+      rules: {},
     },
   ],
-  settings: {
-    'svelte3/typescript': require('typescript'),
-  },
 };

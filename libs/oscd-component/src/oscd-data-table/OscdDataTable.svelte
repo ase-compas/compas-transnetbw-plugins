@@ -5,7 +5,7 @@
   <Head>
     <Row class="header-row">
       {#each columnDefs as col}
-        <Cell on:click={() => col.sortable && sortColumnBy(col.field)} style="{col.headerStyle}">
+        <Cell on:click={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
             <div class="cell-header">
               <span class="header-title">{col.headerName}</span>
@@ -33,7 +33,7 @@
                   type="text"
                   placeholder={`${searchInputLabel} ${col.headerName}`}
                   bind:value={filters[col.field]}
-                  on:input={() => filterAndSortTable()}
+                  oninput={() => filterAndSortTable()}
                 />
               {/if}
               {#if col.filterType === 'number'}
@@ -41,7 +41,7 @@
                   type="number"
                   placeholder={`${searchInputLabel} ${col.headerName}`}
                   bind:value={filters[col.field]}
-                  on:input={() => filterAndSortTable()}
+                  oninput={() => filterAndSortTable()}
                 />
               {/if}
             {/if}
@@ -60,25 +60,25 @@
             <div class="cell-actions">
               {#each rowActions as action}
                 {#if action.iconComponent}
-                  <OscdIconButton iconComponent="{action.iconComponent}" iconStyles="{action.iconStyles}" callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                  <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
                 {:else}
                   <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
                     {#if action.icon === "add"}
-                      <OscdAddIcon svgStyles="{'margin: unset'}" />
+                      <OscdAddIcon svgStyles="margin: unset" />
                     {:else if action.icon === "cancel"}
-                      <OscdCancelIcon svgStyles="{'margin: unset'}" />
+                      <OscdCancelIcon svgStyles="margin: unset" />
                     {:else if action.icon === "download"}
-                      <OscdDownloadIcon svgStyles="{'margin: unset'}" />
+                      <OscdDownloadIcon svgStyles="margin: unset" />
                     {:else if action.icon === "find-in-page"}
-                      <OscdFindInPageIcon svgStyles="{'margin: unset'}" />
+                      <OscdFindInPageIcon svgStyles="margin: unset" />
                     {:else if action.icon === "remove"}
-                      <OscdRemoveIcon svgStyles="{'margin: unset'}" />
+                      <OscdRemoveIcon svgStyles="margin: unset" />
                     {:else if action.icon === "edit"}
-                      <OscdEditIcon svgStyles="{'margin: unset'}" />
+                      <OscdEditIcon svgStyles="margin: unset" />
                     {:else if action.icon === "delete"}
-                      <OscdDeleteIcon svgStyles="{'margin: unset'}" />
+                      <OscdDeleteIcon svgStyles="margin: unset" />
                     {:else}
-                      <OscdRefreshIcon svgStyles="{'margin: unset'}" />
+                      <OscdRefreshIcon svgStyles="margin: unset" />
                     {/if}
                   </OscdButton>
                 {/if}
@@ -86,8 +86,16 @@
             </div>
           </Cell>
         {:else}
-          <Cell numeric={col.numeric} style="{col.cellStyle}">
-            {#if col.valueFormatter}
+          <Cell numeric={col.numeric} style={col.cellStyle}>
+            {#if col.cellRenderer}
+              {@const CellRenderer = col.cellRenderer}
+              <CellRenderer
+                row={row}
+                value={row[col.field]}
+                col={col}
+                {...(col.cellRendererProps ?? {})}
+              />
+            {:else if col.valueFormatter}
               {col.valueFormatter(row[col.field])}
             {:else}
               {row[col.field] ?? ''}
@@ -100,12 +108,14 @@
   {/each}
   </Body>
 
-  <LinearProgress
-    indeterminate
-    bind:closed={loadingDone}
-    aria-label="Data is being loaded..."
-    slot="progress"
-  />
+  {#snippet progress()}
+    <LinearProgress
+      indeterminate
+      bind:closed={loadingDone}
+      aria-label="Data is being loaded..."
+
+    />
+  {/snippet}
 </DataTable>
 
 <script lang="ts">
@@ -126,19 +136,31 @@
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
   import { v4 as uuidv4 } from 'uuid';
 
-  export let loadingDone = true;
-  export let label = uuidv4();
-  export let columnDefs = [];
-  export let rowData = [];
-  export let store;
-  export let rowActions: RowAction[] = [];
-  export let searchInputLabel: string = 'Search';
+  interface Props {
+    loadingDone?: boolean;
+    label?: any;
+    columnDefs?: any;
+    rowData?: any;
+    store: any;
+    rowActions?: RowAction[];
+    searchInputLabel?: string;
+  }
 
-  let filters = {
+  let {
+    loadingDone = $bindable(true),
+    label = uuidv4(),
+    columnDefs = [],
+    rowData = $bindable([]),
+    store,
+    rowActions = [],
+    searchInputLabel = 'Search'
+  }: Props = $props();
+
+  let filters = $state({
     name: '',
     color: '',
     number: ''
-  };
+  });
 
   let filteredData = writable<any[]>([]);
   let sortColumn = writable<string | null>(null);
@@ -153,7 +175,7 @@
     let filtered = rowData.filter(row => {
       return columnDefs.every(col => {
         const filterValue = filters[col.field];
-        const fieldValue = row[col.field];
+        const fieldValue = col.filterValueGetter ? col.filterValueGetter(row) : row[col.field];
         if (!filterValue) {
           return true;
         }
@@ -258,7 +280,6 @@
   tbody td {
     padding: 12px 15px;
     text-align: left;
-    font-size: 0.9rem;
     font-size: 0.9rem;
     color: #555;
   }

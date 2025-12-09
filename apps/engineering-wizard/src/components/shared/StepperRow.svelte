@@ -5,13 +5,23 @@
 
   export type StepItem = { id: string; label: string };
 
-  export let items: StepItem[] = [];
-  export let visited: string[] = [];
-  export let currentId: string | null = null;
-  export let status: Record<string, 'check' | 'warning' | 'error'> = {};
-  export let tooltipMap: Record<string, string> = {};
+  interface Props {
+    items?: StepItem[];
+    visited?: string[];
+    currentId?: string | null;
+    status?: Record<string, 'check' | 'warning' | 'error'>;
+    tooltipMap?: Record<string, string>;
+    onSelect?: (itemId: string) => void;
+  }
 
-  const dispatch = createEventDispatcher<{ select: string }>();
+  let {
+    items = [],
+    visited = [],
+    currentId = null,
+    status = {},
+    tooltipMap = {},
+    onSelect
+  }: Props = $props();
 </script>
 
 <div class="steps">
@@ -19,7 +29,7 @@
     <div class="step">
       <OscdTooltip content={tooltipMap[item.id] ?? ''} side="bottom">
         <button
-          on:click={() => dispatch('select', item.id)}
+          onclick={() => onSelect(item.id)}
           class:not-visited={!visited.includes(item.id)}
           class:current={item.id === currentId}
           class:visited={visited.includes(item.id) && item.id !== currentId}

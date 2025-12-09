@@ -1,42 +1,46 @@
-/// <reference types='vitest' />
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-export default defineConfig({
-  root: __dirname,
-  cacheDir: '../../node_modules/.vite/apps/engineering-wizard',
+// Cast defineConfig to any so TS stops complaining about the async config function
+export default (defineConfig as any)(async () => {
+  const { svelte } = await import('@sveltejs/vite-plugin-svelte');
 
-  server: {
-    port: 4201,
-    host: 'localhost',
-    fs: {
-      allow: ['..'],
-    },
-  },
+  return {
+    root: __dirname,
+    cacheDir: '../../node_modules/.vite/apps/engineering-wizard',
 
-  preview: {
-    port: 4301,
-    host: 'localhost'
-  },
-
-  plugins: [svelte(), nxViteTsPaths()],
-
-  build: {
-    outDir: '../../dist/apps/engineering-wizard',
-    reportCompressedSize: true,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
-    rollupOptions: {
-      output: {
-        entryFileNames: 'index.js',
+    server: {
+      port: 4201,
+      host: 'localhost',
+      fs: {
+        allow: ['..'],
       },
     },
-    lib: {
-      entry: 'src/plugin.ts',
-      formats: ['es'],
-      fileName: 'index',
+
+    preview: {
+      port: 4301,
+      host: 'localhost',
     },
-  },
+
+    plugins: [svelte(), nxViteTsPaths()],
+
+    build: {
+      outDir: '../../dist/apps/engineering-wizard',
+      reportCompressedSize: true,
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+      rollupOptions: {
+        output: {
+          entryFileNames: 'index.js',
+        },
+      },
+      lib: {
+        entry: 'src/pluginwrapper.svelte.ts',
+        formats: ['es'],
+        fileName: 'index',
+      },
+    },
+  };
 });

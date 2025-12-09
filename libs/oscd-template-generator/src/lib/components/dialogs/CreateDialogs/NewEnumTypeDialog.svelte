@@ -5,7 +5,11 @@
 
   const service = getEnumTypeService();
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+  }
+
+  let { open = $bindable(false) }: Props = $props();
 
   const handleConfirm = (id: string, optionId: string) => {
     closeDialog('confirm', { id, instanceType: optionId});

@@ -1,14 +1,19 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { OscdChevronLeftIcon } from '../../../../../libs/oscd-icons/src';
 
-  export let title = 'Engineering Wizard';
-  const dispatch = createEventDispatcher();
-  function onBack() { dispatch('back'); }
+  interface Props {
+    title?: string;
+    onBack: () => void;
+  }
+
+  let {
+    title = 'Engineering Wizard',
+    onBack,
+  }: Props = $props();
 </script>
 
 <div style="display:flex;align-items:center;gap:0.5rem;">
-  <button type="button" class="back-container" on:click={onBack}>
+  <button type="button" class="back-container" onclick={onBack}>
     <OscdChevronLeftIcon></OscdChevronLeftIcon>
     <span>Back to Overview</span>
     <span class="back-container__title">{title}</span>

@@ -1,13 +1,27 @@
 <script lang="ts">
-  import { OscdButton, OscdInput } from '@oscd-transnet-plugins/oscd-component';
-  import { createEventDispatcher } from 'svelte';
+  import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
+  import type { Snippet } from 'svelte';
 
-  const dispatch = createEventDispatcher();
 
-  export let title: string;
-  export let subtitle: string | null = null;
-  export let actionLabel: string | null = null;
-  export let hasAction: boolean = false;
+  interface Props {
+    title: string;
+    subtitle?: string | null;
+    actionLabel?: string | null;
+    hasAction?: boolean;
+    botAction?: Snippet;
+
+    onAction?: () => void;
+  }
+
+  let {
+    title,
+    subtitle = null,
+    actionLabel = null,
+    hasAction = false,
+    botAction,
+
+    onAction = () => {},
+  }: Props = $props();
 </script>
 
 <div class="header-container">
@@ -21,7 +35,7 @@
 
     <div class:invisible={!hasAction || !actionLabel}>
       <OscdButton
-        callback={() => dispatch('action')}
+        callback={onAction}
         backgroundColor="white"
       >
         {actionLabel}
@@ -30,7 +44,7 @@
   </div>
 
   <div class="search-container">
-    <slot name="bot-action"/>
+    {@render botAction?.()}
   </div>
 </div>
 

@@ -1,35 +1,35 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { Process } from '@oscd-transnet-plugins/shared';
   import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
   import Textfield from '@smui/textfield';
   import Button from '@smui/button';
   import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
+  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { processesErrorStore, processesLoadingStore, processesStore } from '../services/engineering-process.svelte';
 
-  export let processes: Process[] = [];
-  export let loading = false;
-  export let errorMsg = '';
+  interface Props {
+    handleStart: (process: Process) => void;
+    handleView: (process: Process) => void;
+    handleAddNew: () => void;
+  }
 
-  const dispatch = createEventDispatcher<{ view: Process; start: Process }>();
-  const handleStart = (p: Process) => dispatch('start', p);
-  const handleView = (p: Process) => dispatch('view', p);
+  let {
+    handleStart,
+    handleView,
+    handleAddNew,
+  }: Props = $props();
 
-  let searchQuery = '';
+  let searchQuery = $state('');
 
-  $: searchLower = searchQuery.trim().toLowerCase();
-  $: rows = (processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id }));
-  $: filteredRows = searchLower
+  let searchLower = $derived(searchQuery.trim().toLowerCase());
+  let rows = $derived((processesStore.processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id })));
+  let filteredRows = $derived(searchLower
     ? rows.filter((p) => (p.displayName ?? '').toLowerCase().includes(searchLower))
-    : rows;
+    : rows);
 
   const columns: { key: string; header: string }[] = [
     { key: 'displayName', header: 'Name' },
     { key: 'description', header: 'Description' },
   ];
-
-  const handleAddNew = () => {
-    console.log('Add new process clicked');
-  };
 </script>
 
 <div class="processes">
@@ -59,7 +59,7 @@
     <Button
       variant="raised"
       style="--mdc-theme-primary: #004552; --mdc-theme-on-primary: #ffffff"
-      on:click={handleAddNew}
+      onclick={handleAddNew}
     >
       ADD NEW PROCESS
     </Button>
@@ -68,38 +68,37 @@
   <OscdBasicDataTable
     items={filteredRows}
     {columns}
-    {loading}
-    errorMsg={errorMsg}
+    loading={processesLoadingStore.loading}
+    errorMsg={processesErrorStore.error}
     emptyText="No processes available."
     hasActions
     headerBg="#DAE3E6"
     rowBg="#ffffff"
   >
-    <svelte:fragment slot="actions" let:item>
-      <button
-        type="button"
-        class="icon"
-        aria-label="View process"
-        on:click={() => handleView(item)}
-      >
-        <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-      </button>
-      <button
-        type="button"
-        class="icon"
-        aria-label="Start process"
-        on:click={() => handleStart(item)}
-      >
-        <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-      </button>
-    </svelte:fragment>
+    {#snippet actions({ item })}
+
+        <button
+          type="button"
+          class="icon"
+          aria-label="View process"
+          onclick={() => handleView(item)}
+        >
+          <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+        </button>
+        <button
+          type="button"
+          class="icon"
+          aria-label="Start process"
+          onclick={() => handleStart(item)}
+        >
+          <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+        </button>
+
+      {/snippet}
   </OscdBasicDataTable>
 </div>
 
 <style>
-  @import "/material-icon.css";
-  @import "/smui.css";
-
   .processes {
     margin-top: 16px;
     padding: 0 24px;

@@ -2,128 +2,141 @@
   // ===== Imports =====
   import { OscdButton, OscdConfirmDialog, OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import {
-    BasicType,
+    type BasicType,
     DataTypeKind,
     getDataTypeService,
     getLNodeTypeService,
-    IDataTypeService,
-    ILNodeTypeService,
-    LogicalNodeTypeRow,
-    NewLNodeTypeDialog,
+    type IDataTypeService,
+    type ILNodeTypeService,
+    LogicalNodeTypeRow, type Mode,
+    NewLNodeTypeDialog, pluginStore,
     type Route,
     route
   } from '@oscd-transnet-plugins/oscd-template-generator';
   import DataTable, { Body, Cell, Head, Label, Row, SortValue } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import IconButton from '@smui/icon-button';
-  import { createEventDispatcher } from 'svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-
-  export let doc: XMLDocument;
+  import { onMount } from 'svelte';
+  import { toastService} from '@oscd-transnet-plugins/oscd-services/toast';
 
   // ===== Store and Service Instances =====
-  const dispatch = createEventDispatcher();
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
   const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== State =====
-  let nodeSearchTerm = '';
-  let sort: 'id' | 'lnClass' = 'id';
-  let sortDirection: Lowercase<keyof typeof SortValue> = 'ascending';
-  let items: BasicType[] = [];
+  let nodeSearchTerm = $state('');
+  let sort: 'id' | 'lnClass' = $state('id');
+  let sortDirection: Lowercase<keyof typeof SortValue> = $state('ascending');
+  let items: BasicType[] = $state([]);
   let isLoading = false;
 
-  $: if(doc) {
-    if(lNodeTypeService) loadItems()
-  }
+  // ===== Derived State =====
+  let filteredAndSortedItems = $derived.by(() => {
+    const searchTerm = nodeSearchTerm.toLowerCase();
+    return items
+      .filter((node) => node.id.toLowerCase().includes(searchTerm))
+      .sort((a, b) => {
+        const aVal = a[sort];
+        const bVal = b[sort];
+        return sortDirection === 'ascending'
+          ? (aVal > bVal ? 1 : -1)
+          : (aVal < bVal ? 1 : -1);
+      });
+  });
 
-  function loadItems() {
-    lNodeTypeService.getAllTypes().then(data => {
-      items = data;
+  onMount(() => {
+    const unsubscribe = pluginStore.updates.subscribe(() => {
+      loadItems();
     })
+
+    return () => {
+      unsubscribe();
+    }
+  })
+
+  async function loadItems() {
+    try {
+      items = await lNodeTypeService.getAllTypes();
+    } catch (e) {
+      console.error('Error loading logical node types:', e);
+    }
   }
-
-  // ===== Derived Values =====
-
-  let filteredAndSortedItems: BasicType[] = [];
-  $: filteredAndSortedItems = items
-    .filter(node => node.id.toLowerCase().includes(nodeSearchTerm.toLowerCase()))
-    .sort((a, b) => {
-      const aVal = a[sort];
-      const bVal = b[sort];
-      return sortDirection === 'ascending'
-        ? (aVal > bVal ? 1 : -1)
-        : (aVal < bVal ? 1 : -1);
-    });
 
   // ===== Handlers =====
-  const handleDuplicate = (lNodeTypeId: string) => {
-    lNodeTypeService.duplicateType(lNodeTypeId);
-  };
+  async function handleDuplicate(lNodeTypeId: string) {
+    try {
+      await lNodeTypeService.duplicateType(lNodeTypeId);
 
-  const handleDelete = (lNodeTypeId: string) => {
-    openDialog(
-      OscdConfirmDialog,
-      {
-        title: 'Confirm Delete Logical Node Type',
-        message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
-        confirmActionText: 'Delete',
-        cancelActionText: 'Cancel',
-        color: 'red'
-      })
-      .then(result => {
-      if (result.type === 'confirm') {
-        lNodeTypeService.deleteTypeById(lNodeTypeId).then(() => {
-          items = items.filter(item => item.id !== lNodeTypeId);
-        });
-      }
-    })
-  };
+      toastService.success(
+        "Duplicated",
+        `Logical Node Type "${lNodeTypeId}" was duplicated successfully.`
+      );
+    } catch (e) {
+      console.error(`Error duplicating LNodeType "${lNodeTypeId}": ${e}`);
 
-  const handleNodeClick = (lNodeTypeId: string) => {
-    route.set({
-      path: ['view'],
-      meta: {
-       lNodeTypeId: lNodeTypeId
-      }
-    } as Route);
-  };
-
-  function openCreateDialog() {
-    openDialog(NewLNodeTypeDialog).then(result => {
-      if (result.type === 'confirm') {
-        handleDialogCreate(result.data);
-      }
-    });
+      toastService.error(
+        "Duplicate Failed",
+        `Could not duplicate Logical Node Type "${lNodeTypeId}".`
+      );
+    }
   }
 
-  async function handleDialogCreate({id, lnClass, createFromDefault}) {
-    if(createFromDefault) {
+  async function handleDelete(lNodeTypeId: string) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Confirm Delete Logical Node Type',
+      message: `Are you sure you want to delete the logical node type "${lNodeTypeId}"? This action cannot be undone.`,
+      confirmActionText: 'Delete',
+      cancelActionText: 'Cancel',
+      color: 'red'
+    });
+
+    if (result.type !== 'confirm') return;
+
+    try {
+      await lNodeTypeService.deleteTypeById(lNodeTypeId);
+      items = items.filter(item => item.id !== lNodeTypeId);
+      toastService.success(
+        "Deleted",
+        `Logical Node Type "${lNodeTypeId}" was deleted successfully.`
+      );
+    } catch (e) {
+      console.error(`Error deleting LNodeType "${lNodeTypeId}": ${e}`);
+      toastService.error(
+        "Delete Failed",
+        `Could not delete Logical Node Type "${lNodeTypeId}".`
+      );
+    }
+  }
+
+  function handleNodeClick(lNodeTypeId: string) {
+    navigateToLNodeTypeDetail('view', lNodeTypeId);
+  }
+
+  async function openCreateDialog() {
+    const result = await openDialog(NewLNodeTypeDialog);
+    if (result.type === 'confirm') {
+      await handleDialogCreate(result.data);
+    }
+  }
+
+  async function handleDialogCreate({ id, lnClass, createFromDefault }) {
+    if (createFromDefault) {
       try {
         await dataTypeService.createDefaultType(DataTypeKind.LNodeType, lnClass, id);
-        setTimeout(() => {
-          route.set({
-            path: ['edit'],
-            meta: {
-              lNodeTypeId: id,
-              lnClass: lnClass
-            }
-          } as Route)
-        }, 50);
+        setTimeout(() => navigateToLNodeTypeDetail('edit', id, lnClass), 300);
       } catch (e) {
         console.error(`Error creating LNodeType from default: ${e}`);
       }
-      return;
+    } else {
+      navigateToLNodeTypeDetail('create', id, lnClass);
     }
-
-    route.set({
-      path: ['create'],
-      meta: {
-        lNodeTypeId: id,
-        lnClass: lnClass
-      }
-    } as Route)
   }
+
+  function navigateToLNodeTypeDetail(mode: Mode, lNodeTypeId: string, lnClass?: string) {
+    route.set({ path: [mode], meta: { lNodeTypeId: lNodeTypeId, lnClass: lnClass } } as Route);
+  }
+
 </script>
 
 <div class="logical-nodes-overview">

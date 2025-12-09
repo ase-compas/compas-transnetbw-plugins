@@ -1,176 +1,73 @@
-<script context="module">
-  import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
+<script module>
+  import { setupTranslation } from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
 
   setupTranslation({
     en,
-    de,
+    de
   });
 </script>
 <script lang="ts">
   import {
     LocationViewerService,
     ResourceStore,
-    SclResourceModel,
-    SearchParams
-  } from "@oscd-transnet-plugins/oscd-location-viewer";
-  import {onMount} from "svelte";
+    SclResourceModel
+  } from '@oscd-transnet-plugins/oscd-location-viewer';
+  import type { SearchParams } from '@oscd-transnet-plugins/oscd-location-viewer';
+  import { onMount } from 'svelte';
   import {
-    ActiveFilter,
-    FilterType,
-    OscdButton,
-    OscdDataTable, OscdExpansionPanel,
-    OscdFilterBox, OscdLoadingSpinner,
+    OscdDataTable,
+    OscdLoadingSpinner,
     OscdSelect
-  } from "@oscd-transnet-plugins/oscd-component";
-  import Card from "@smui/card";
-  import {Label} from "@smui/button";
-  import {finalize, take, tap} from "rxjs/operators";
-  import {OscdSearchIcon} from "../../../libs/oscd-icons/src";
-  import {_, locale} from "svelte-i18n";
+  } from '@oscd-transnet-plugins/oscd-component';
+  import type { ActiveFilter, FilterType } from '@oscd-transnet-plugins/oscd-component';
+  import Card from '@smui/card';
+  import { take, tap } from 'rxjs/operators';
+  import { _ } from 'svelte-i18n';
+  import 'svelte-material-ui/bare.css';
+  import '../public/material-icon.css';
+  import '../public/global.css';
+  import '../public/smui.css';
+  import LocationCell from './LocationCell.svelte';
 
   const locationViewerService = LocationViewerService.getInstance();
-  let locations: { label: string, value: string }[] = [];
-  let selectedLocationUUID: string;
-  let searchOpen = false;
+  let locations: { label: string, value: string }[] = $state([]);
+  let selectedLocationUUID: string = $state('');
 
   //loading quickfix for css to load
-  let loading = true;
+  let loading = $state(true);
 
   onMount(() => {
     setTimeout(() => {
       loading = false;
-    }, 1000)
+    }, 200);
   });
 
   onMount(() => {
     locationViewerService.getLocations().subscribe({
       next: (data) => {
-        locations = data.map((item) => ({ label: item.name, value: item.uuid }))
+        locations = data.map((item) => ({ label: item.name, value: item.uuid }));
       }
-    })
-  })
+    });
+    search();
+  });
 
-  export let locationResourceStore = new ResourceStore();
-  export let searchResourceStore = new ResourceStore();
-
-  $: searchColumnDefs = [
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('location'), field: 'location', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatLocation },
-    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
-  ];
-
-  $: locationColumnDefs = [
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
-    { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
-  ];
+  // Resource stores for the two tables
+  const locationResourceStore = new ResourceStore();
+  const searchResourceStore = new ResourceStore();
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
   }
 
   function formatLocation(uuid: string) {
-    if(!locations || !uuid) {
-      return uuid || '';
-    }
-    const foundLocation = locations.find((location) => location.value === uuid);
-    console.log("foundlocation", { foundLocation, bool: foundLocation?.label !== undefined });
-    return foundLocation?.label ? foundLocation.label : uuid;
+    if (!locations || !uuid) return uuid || '';
+    return locations.find(l => l.value === uuid)?.label ?? uuid;
   }
 
-  const filterTypes: FilterType[] = [
-    {
-      id: 1,
-      label: $_('uuid'),
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['='],
-    },
-    {
-      id: 2,
-      label: $_('type'),
-      inputType: {
-        id: 2, type: 'select', validatorFn: () => true, options: [
-          { value: 'SSD', label: 'SSD' },
-          { value: 'IID', label: 'IID' },
-          { value: 'ICD', label: 'ICD' },
-          { value: 'SCD', label: 'SCD' },
-          { value: 'CID', label: 'CID' },
-          { value: 'SED', label: 'SED' },
-          { value: 'ISD', label: 'ISD' },
-          { value: 'STD', label: 'STD' }
-        ]
-      },
-      allowedOperations: ['=']
-    },
-    {
-      id: 3,
-      label: $_('name'),
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 4,
-      label: $_('location'),
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 5,
-      label: $_('author'),
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 6,
-      label: $_('from'),
-      inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 7,
-      label: $_('to'),
-      inputType: { id: 1, type: 'datepicker', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-  ];
 
-  const locationRowActions = [
-    { icon: 'remove', callback: (row) => unassign(row), disabled: () => false }
-  ];
-
-  const searchRowActions = [
-    { icon: 'add', callback: (row) => assign(row), disabled: () => false },
-  ];
-
-  let filtersToSearch: ActiveFilter[] = [];
-
-  function assign(row: SclResourceModel) {
-    locationViewerService.assignResourceToLocation(selectedLocationUUID, row.uuid).subscribe({
-      next: () => {
-        searchResourceStore.remove(row.uuid);
-        locationResourceStore.add({...row, location: selectedLocationUUID});
-      },
-    });
-  }
-
-  function unassign(row: SclResourceModel) {
-    locationViewerService.unassignResourceFromLocation(selectedLocationUUID, row.uuid).subscribe({
-      next: () => {
-        locationResourceStore.remove(row.uuid);
-      },
-    });
-  }
+  let filtersToSearch: ActiveFilter[] = $state([]);
 
   function search() {
     const searchParams = convertFilterToSearchParams(filtersToSearch);
@@ -178,7 +75,7 @@
       take(1),
       tap((data: SclResourceModel[]) => {
         searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
-      }),
+      })
     ).subscribe();
   }
 
@@ -190,7 +87,7 @@
       location: null,
       author: null,
       from: null,
-      to: null,
+      to: null
     };
     console.log('Convert filter to search params: ', filters);
     filters.forEach((filter) => {
@@ -204,86 +101,112 @@
     return searchParams;
   }
 
-  function toggleSearchPanel() {
-    searchOpen = !searchOpen;
+  function handleRowLocationChange(row: SclResourceModel, newLocationUuid: string) {
+    const prev = row.location;
+    const next = newLocationUuid || null;
+
+    if (prev === next) {
+      return;
+    }
+
+    // optimistic UI update
+    const updatedRow = { ...row, location: next };
+
+    // Update search store: ensure row reflects new location so it may move out of search list if equals selected
+    searchResourceStore.update(updatedRow);
+    // Update location store depending on selected filter
+    if (selectedLocationUUID) {
+      if (next === selectedLocationUUID) {
+        // moved into selected location
+        locationResourceStore.add(updatedRow);
+      } else {
+        // moved away from selected location
+        locationResourceStore.remove(row.uuid);
+      }
+    }
+
+    // server-side update
+    const obs = next
+      ? locationViewerService.assignResourceToLocation(next, row.uuid)
+      : locationViewerService.unassignResourceFromLocation(prev ?? '', row.uuid);
+
+    obs.subscribe({
+      next: () => {
+        // refresh search to keep in sync
+        search();
+      },
+      error: () => {
+        // revert on error
+        const revertRow = { ...row, location: prev };
+        searchResourceStore.update(revertRow);
+        if (selectedLocationUUID) {
+          if (prev === selectedLocationUUID) {
+            locationResourceStore.add(revertRow);
+          } else {
+            locationResourceStore.remove(row.uuid);
+          }
+        }
+      }
+    });
   }
 
-  $: if (selectedLocationUUID) {
-    locationViewerService.searchResources({}).subscribe({
+  let searchColumnDefs = $derived([
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    {
+      headerName: $_('location'),
+      field: 'location',
+      numeric: false,
+      filter: true,
+      filterType: 'text',
+      sortable: true,
+      cellRenderer: LocationCell,
+      cellRendererProps: { locations, onChange: handleRowLocationChange },
+
+      filterValueGetter: (row: SclResourceModel) => formatLocation(row.location)
+    },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+  ]);
+
+  $effect(() => {
+    if (!selectedLocationUUID) {
+      return;
+    }
+
+    const subscription = locationViewerService.searchResources({}).subscribe({
       next: (data) => {
-        console.log({data, selectedLocation: selectedLocationUUID});
+        console.log({ data, selectedLocation: selectedLocationUUID });
         locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
       },
       error: (err) => {
         console.error('Error loading resources:', err);
       }
     });
-  }
+
+    return () => subscription.unsubscribe();
+  });
 </script>
 
 {#if loading}
   <OscdLoadingSpinner loadingDone={!loading} />
 {:else}
-  <div class="location-viewer-container">
-    <OscdSelect
-      bind:data={locations}
-      bind:value={selectedLocationUUID}
-      label={$_('location')}
-    />
-      <div class="search-filter">
-      <OscdExpansionPanel title={$_('search')} bind:open={searchOpen} on:click={toggleSearchPanel}>
-        <div slot="content">
-          <div class="filter-box">
-            <OscdFilterBox {filterTypes}
-                           addFilterLabel={$_('add_filter')}
-                           selectFilterLabel={$_('filter_types')}
-                           bind:activeFilters={filtersToSearch}
-            >
-              <OscdButton slot="filter-controls" variant="raised" callback={search}>
-                <OscdSearchIcon />
-                <Label>{$_('search')}</Label>
-              </OscdButton>
-            </OscdFilterBox>
-          </div>
-          <div class="table-container">
-            <Card style="padding: 1rem; width: 100%; height: 100%;">
-              <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
-              <OscdDataTable columnDefs="{searchColumnDefs}"
-                             store={searchResourceStore}
-                             rowActions={searchRowActions}
-                             searchInputLabel={$_('search')}/>
-            </Card>
-          </div>
-        </div>
-      </OscdExpansionPanel>
-    </div>
-    <div class="table-container">
-      <Card style="padding: 1rem; width: 100%; height: 100%;">
-        <h3 style="margin-bottom: 1rem;">
-          {selectedLocationUUID
-            ? `${$_('location')}: ${locations.find((item) => item.value === selectedLocationUUID)?.label}`
-            : $_('select_location')}
-        </h3>
-        <OscdDataTable columnDefs="{locationColumnDefs}"
-                       store={locationResourceStore}
-                       rowActions={locationRowActions}
-                       searchInputLabel={$_('search')} />
-      </Card>
-    </div>
+  <div class="app-container">
+    <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
+    <OscdDataTable columnDefs={searchColumnDefs}
+                   store={searchResourceStore}
+                   searchInputLabel={$_('search')} />
   </div>
 {/if}
 
 <style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-
-  .search-filter {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+  .app-container {
+    padding: 2rem;
   }
 
-  .filter-box {
-    margin-bottom: 1rem;
+  h3 {
+    margin-top: 0;
   }
 </style>

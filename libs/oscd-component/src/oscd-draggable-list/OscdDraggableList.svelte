@@ -7,17 +7,19 @@
    */
   import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate'
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
 
   type ListItem = {
     id: string;
     label: string;
   }
 
-  export let canDrag: boolean = true;
-  export let items: ListItem[] = [];
+  interface Props {
+    canDrag?: boolean;
+    items?: ListItem[];
+    onOrderChange?: (items: ListItem[]) => void;
+  }
+
+  let { canDrag = true, items = $bindable([]), onOrderChange = (_) => {} }: Props = $props();
 
   const flipDurationMs = 100;
 
@@ -29,16 +31,16 @@
 
 <div class="draggable-list">
   {#if items.length > 0}
-    <ol
-    use:dragHandleZone="{{ items, flipDurationMs, dropTargetStyle: {}}}"
-    on:consider={handleSort}
-    on:finalize={e => {
+    <ul
+    use:dragHandleZone={{ items, flipDurationMs, dropTargetStyle: {} }}
+    onconsider={handleSort}
+    onfinalize={e => {
       handleSort(e);
-      dispatch('orderChange', { items });
+      onOrderChange(items);
     }}
  >
       {#each items as item, index (item.id)}
-        <li  data-id={item.id} style:cursor={canDrag ? 'move' : 'default'} animate:flip="{{ duration: flipDurationMs }}">
+        <li  data-id={item.id} style:cursor={canDrag ? 'move' : 'default'} animate:flip={{ duration: flipDurationMs }}>
 
           <div class="draggable-item">
 
@@ -56,7 +58,7 @@
           </div>
         </li>
       {/each}
-    </ol>
+    </ul>
   {/if}
 </div>
 

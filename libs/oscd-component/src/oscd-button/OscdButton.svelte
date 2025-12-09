@@ -1,19 +1,23 @@
-<script>
+<script lang="ts">
   import Button, { Icon, Label } from '@smui/button';
 
-  export let callback = () => {};
-  export let disabled = false;
-  export let variant = 'default';
-  export let isAbortAction = false;
-  export let backgroundColor = undefined;
+  /** @type {{callback?: any, disabled?: boolean, variant?: string, isAbortAction?: boolean, backgroundColor?: any, children?: import('svelte').Snippet}} */
+  let {
+    callback = () => {},
+    disabled = false,
+    variant = 'default',
+    isAbortAction = false,
+    backgroundColor = undefined,
+    children
+  } = $props();
 
 </script>
 
 <Button
-  on:click={callback()}
+  onclick={() => callback()}
   {variant}
-  disabled="{disabled}"
+  disabled={disabled}
   style={isAbortAction ? "background-color: #ff3e00;" : "background-color: " + backgroundColor}
 >
-  <slot></slot>
+  {@render children?.()}
 </Button>

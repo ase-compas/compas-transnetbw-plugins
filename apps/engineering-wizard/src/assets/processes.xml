@@ -10,42 +10,87 @@
 
     <plugins-sequence>
       <group>
-        <title>Data</title>
+        <title>Types</title>
         <plugin>
-          <id>substation-explorer</id>
-          <name>Substation</name>
-          <src>
-            https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/substation.js
-          </src>
-        </plugin>
-      </group>
-
-      <group>
-        <title>Connection</title>
-        <plugin>
-          <id>ied-editor</id>
-          <name>IED</name>
-          <src>
-            https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/ied.js
-          </src>
-        </plugin>
-
-        <plugin>
-          <id>template-generator</id>
+          <id>template-generator-xyz</id>
           <name>Template Generator</name>
-          <src>
+          <src type="external">
             https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/template-generator/index.js
           </src>
         </plugin>
-
-      </group>
-      <group>
-        <title>Communication</title>
         <plugin>
-          <id>communication-explorer</id>
-          <name>Communication Explorer</name>
-          <src>
-            https://philippilievskibearingpointcom.github.io/oscd-official-plugins-test/plugins/editors/communication.js
+          <id>type-designer-xyz</id>
+          <name>Type Designer</name>
+          <src type="external">
+            https://sprinteins.github.io/oscd-plugins/type-designer/index.js
+          </src>
+        </plugin>
+
+        <plugin>
+          <id>type-distributor-xyz</id>
+          <name>Type Distributor</name>
+          <src type="external">
+            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/type-distributor/index.js
+          </src>
+        </plugin>
+      </group>
+
+      <group>
+        <title>Configuration</title>
+        <plugin>
+          <id>communication-xyz</id>
+          <name>Communication</name>
+          <src type="internal">
+            /plugins/src/editors/Communication.js
+          </src>
+        </plugin>
+
+        <plugin>
+          <id>substation-xyz</id>
+          <name>Substation</name>
+          <src type="internal">
+            /plugins/src/editors/Substation.js
+          </src>
+        </plugin>
+        <plugin>
+          <id>publisher-xyz</id>
+          <name>Publisher</name>
+          <src type="internal">
+            /external-plugins/oscd-publisher/oscd-publisher.js
+          </src>
+        </plugin>
+        <plugin>
+          <id>subscribe-later-binding-xyz</id>
+          <name>Subscribe</name>
+          <src type="internal">
+            /external-plugins/oscd-subscriber-later-binding/oscd-subscriber-later-binding.js
+          </src>
+        </plugin>
+      </group>
+
+      <group>
+        <title>Documentation</title>
+        <plugin>
+          <id>autodoc-xyz</id>
+          <name>AutoDoc</name>
+          <src type="external">
+            https://sprinteins.github.io/oscd-plugins/auto-doc/index.js
+          </src>
+        </plugin>
+
+        <plugin>
+          <id>location-manager-xyz</id>
+          <name>Location Manager</name>
+          <src type="external">
+            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/location-manager/index.js
+          </src>
+        </plugin>
+
+        <plugin>
+          <id>history-viewer-xyz</id>
+          <name>History Viewer</name>
+          <src type="external">
+            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/history-viewer/index.js
           </src>
         </plugin>
       </group>

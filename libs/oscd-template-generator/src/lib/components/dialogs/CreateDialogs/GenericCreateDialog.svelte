@@ -2,46 +2,60 @@
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
-  import { TypeOption } from '../../../domain';
-  import { onMount } from 'svelte';
+  import type { TypeOption } from '../../../domain';
+  import type { ChangeEventDetails } from '../../forms/types';
 
   // ===== Props =====
-  export let open: boolean = false;
-  export let dialogTitle: string;
-  export let confirmText: string = 'Confirm';
-  export let idLabel: string = 'ID';
-  export let autocompleteLabel: string = 'Select Option';
+  interface Props {
+    open?: boolean;
+    dialogTitle: string;
+    confirmText?: string;
+    idLabel?: string;
+    autocompleteLabel?: string;
+    getOptions?: () => Promise<TypeOption[]>;
+    isIdTaken?: (id: string) => Promise<boolean>;
+    onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
+    checkDefaultAvailable: (instanceType: string) => Promise<boolean>;
+    showCreateFromDefault: boolean;
+  }
 
-  export let getOptions: () => Promise<TypeOption[]> = async () => [];
-  export let isIdTaken: (id: string) => Promise<boolean> = async () => false;
-  export let onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
-  export let checkDefaultAvailable: (instanceType: string) => Promise<boolean> = async () => false;
-  export let showCreateFromDefault: boolean = false;
+  let {
+    open = $bindable(false),
+    dialogTitle,
+    confirmText = 'Confirm',
+    idLabel = 'ID',
+    autocompleteLabel = 'Select Option',
+    getOptions = async () => [],
+    isIdTaken = async () => false,
+    onConfirm,
+    checkDefaultAvailable =  async () => false,
+    showCreateFromDefault = false
+  }: Props = $props();
 
-  let id;
-  let valid = false;
-  let selectedItem;
-  let createFromDefault;
-  let formEl;
+  let formState = $state<ChangeEventDetails | undefined>();
+
+  let valid = $derived.by(() => {
+    return formState?.valid ?? false;
+  });
+
+  function updateState(details: ChangeEventDetails) {
+    formState = details;
+  }
 
   // ===== Event Handlers =====
-  const handleCreate = () => {
-    onConfirm(id, selectedItem.id, createFromDefault);
-  };
+  function handleCreate() {
+    if(!formState) return;
+    if(!formState.valid) return;
+    onConfirm(formState.id, formState.selectedItem.id, formState.createFromDefault);
+  }
 
-  const handleCancel = () => {
+  function handleCancel() {
     closeDialog('cancel');
-  };
+  }
 
-  const handleClose = () => {
-    closeDialog('close');
-  };
-
-  onMount(() => {
-    setTimeout(() => {
-      formEl.focus();
-    }, 300)
-  })
+  function handleClose ()  {
+    closeDialog('exit');
+  }
 
   // ===== Util Functions =====
 </script>
@@ -52,26 +66,27 @@
     confirmActionText={confirmText}
     maxWidth="800px"
     bind:open
-    on:confirm={handleCreate}
-    on:cancel={handleCancel}
-    on:close={handleClose}
+    onConfirm={handleCreate}
+    onCancel={handleCancel}
+    onClose={handleClose}
     confirmDisabled={!valid}
   >
-    <div style="padding: 1rem;" slot="content">
-      <CreateTypeForm
-        bind:this={formEl}
-        {idLabel}
-        {autocompleteLabel}
-        getOptions={getOptions}
-        isIdTakenFn={isIdTaken}
-        bind:id
-        bind:selectedItem
-        bind:createFromDefault
-        bind:valid
-        on:submit={handleCreate}
-        showCreateFromDefault={showCreateFromDefault}
-        checkDefaultAvailable={checkDefaultAvailable}
-      />
-    </div>
+    {#snippet content()}
+        <div style="padding: 1rem;" >
+        <CreateTypeForm
+          {idLabel}
+          isIdTaken={isIdTaken}
+
+          {autocompleteLabel}
+          getOptions={getOptions}
+
+          allowCreateFromDefault={showCreateFromDefault}
+          isDefaultAvailable={checkDefaultAvailable}
+
+          onSubmit={handleCreate}
+          onChange={updateState}
+        />
+      </div>
+      {/snippet}
   </OscdBaseDialog>
 </div>

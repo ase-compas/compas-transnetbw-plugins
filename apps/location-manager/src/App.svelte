@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   import {setupTranslation} from '@oscd-transnet-plugins/oscd-localization';
   import de from './i18n/de.json';
   import en from './i18n/en.json';
@@ -17,38 +17,47 @@
   } from "@oscd-transnet-plugins/oscd-component";
   import Card from "@smui/card";
   import {OscdAddIcon, OscdRefreshIcon, OscdSaveIcon, OscdCancelIcon} from '@oscd-transnet-plugins/oscd-icons';
-  import {LocationManagerService, type Location, LocationModel, LocationStore} from "@oscd-transnet-plugins/oscd-location-manager";
+  import {LocationManagerService, LocationModel, LocationStore} from "@oscd-transnet-plugins/oscd-location-manager";
+  import { type Location } from "@oscd-transnet-plugins/oscd-archiving-api-client"
   import {take} from "rxjs";
   import {finalize, tap} from "rxjs/operators";
   import {onMount} from "svelte";
   import {_} from "svelte-i18n";
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
   const locationManagerService = LocationManagerService.getInstance();
-  export let locationStore = new LocationStore();
+  const locationStore = new LocationStore()
 
-  enum DialogState {
-    Closed = 'closed',
-    Update = 'update',
-    Create = 'create',
-    Remove = 'remove'
+  const DialogState = {
+    Closed: 'closed',
+    Update: 'update',
+    Create: 'create',
+    Remove: 'remove'
+  } as const;
+  type DialogState = (typeof DialogState)[keyof typeof DialogState];
+
+  let loadingDone = $state(false);
+  let dialogState: DialogState = $state(DialogState.Closed);
+  let hasSelection = $state(false);
+  let currentSelectLocation: Location = $state(emptyLocation());
+
+  function emptyLocation(): Location {
+    return { uuid: undefined, key: '', name: '', description: '', assignedResources: undefined };
   }
 
-  let loadingDone = false;
-  let dialogState: DialogState = DialogState.Closed;
-  let currentSelectLocation: Location | null = null;
-
-  $: console.log("Dialogstate:", dialogState);
-
-  $: columnDefs = [
+  let columnDefs = $derived([
     { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('key'), field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('description'), field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
-  ];
+  ]);
   //loading quickfix for css to load
-  let loading = true;
+  let loading = $state(true);
 
   onMount(() => {
     setTimeout(() => {
@@ -62,23 +71,26 @@
   ];
 
   function update(row: Location) {
-    currentSelectLocation = row;
+    currentSelectLocation = {...row};
+    hasSelection = true;
     dialogState = DialogState.Update;
   }
 
   function create() {
-    currentSelectLocation = new LocationModel("", "");
+    currentSelectLocation = {...emptyLocation()};
+    hasSelection = true;
     dialogState = DialogState.Create;
   }
 
   function remove(row: Location) {
-    currentSelectLocation = row;
+    currentSelectLocation = {...row};
+    hasSelection = true;
     dialogState = DialogState.Remove;
   }
 
   function onUpdateOrCreateSave() {
     try {
-      const isUpdate = currentSelectLocation?.uuid !== undefined;
+      const isUpdate = currentSelectLocation?.uuid !== undefined && currentSelectLocation.uuid !== '';
       const locationServiceRequest = isUpdate
         ? locationManagerService.updateLocation({ locationId: currentSelectLocation.uuid, location: currentSelectLocation})
         : locationManagerService.createLocation(currentSelectLocation);
@@ -107,7 +119,8 @@
 
   function onCloseDialog() {
     dialogState = DialogState.Closed;
-    currentSelectLocation = null;
+    hasSelection = false;
+    currentSelectLocation = {...emptyLocation()};
   }
 
   function load() {
@@ -134,41 +147,51 @@
 {:else}
   <div class="location-manager-container">
     <OscdLoadingSpinner {loadingDone} />
-    <OscdDialog open="{dialogState === DialogState.Remove}" on:close={onCloseDialog}>
-      <h3 slot="title">{$_('delete_location', { values: { name: currentSelectLocation?.name }})}</h3>
-      <div slot="actions">
-        <OscdButton callback={onRemoveConfirm} variant="raised">
-          <OscdSaveIcon />
-          <Label>{$_('confirm')}</Label>
-        </OscdButton>
-        <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
-          <OscdCancelIcon />
-          <Label>{$_('cancel')}</Label>
-        </OscdButton>
-      </div>
+    <OscdDialog open={dialogState === DialogState.Remove} onClose={onCloseDialog}>
+      {#snippet title()}
+            <h3 >{$_('delete_location', { values: { name: currentSelectLocation?.name }})}</h3>
+          {/snippet}
+      {#snippet actions()}
+            <div >
+          <OscdButton callback={onRemoveConfirm} variant="raised">
+            <OscdSaveIcon />
+            <Label>{$_('confirm')}</Label>
+          </OscdButton>
+          <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
+            <OscdCancelIcon />
+            <Label>{$_('cancel')}</Label>
+          </OscdButton>
+        </div>
+          {/snippet}
     </OscdDialog>
-    <OscdDialog open="{dialogState === DialogState.Update || dialogState === DialogState.Create}" on:close={onCloseDialog}>
-      <h3 slot="title">{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
-      <div slot="content">
-        {#if currentSelectLocation}
-          {#if dialogState === DialogState.Update}
-            <Label>{currentSelectLocation.uuid}</Label>
+    <OscdDialog open={dialogState === DialogState.Update || dialogState === DialogState.Create} onClose={onCloseDialog}>
+      {#snippet title()}
+            <h3 >{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
+          {/snippet}
+      {#snippet content()}
+            <div >
+          {#if currentSelectLocation}
+            {#if dialogState === DialogState.Update}
+              <Label>{currentSelectLocation.uuid}</Label>
+            {/if}
+            <OscdInput label={$_('name')} bind:value={currentSelectLocation.name}></OscdInput>
+            <OscdInput label={$_('key')} bind:value={currentSelectLocation.key}></OscdInput>
+            <OscdInput label={$_('description')} bind:value={currentSelectLocation.description}></OscdInput>
           {/if}
-          <OscdInput label={$_('name')} bind:value={currentSelectLocation.name}></OscdInput>
-          <OscdInput label={$_('key')} bind:value={currentSelectLocation.key}></OscdInput>
-          <OscdInput label={$_('description')} bind:value={currentSelectLocation.description}></OscdInput>
-        {/if}
-      </div>
-      <div slot="actions">
-        <OscdButton callback={onUpdateOrCreateSave} variant="raised">
-          <OscdSaveIcon />
-          <Label>{$_('save')}</Label>
-        </OscdButton>
-        <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
-          <OscdCancelIcon />
-          <Label>{$_('cancel')}</Label>
-        </OscdButton>
-      </div>
+        </div>
+          {/snippet}
+      {#snippet actions()}
+            <div >
+          <OscdButton callback={onUpdateOrCreateSave} variant="raised">
+            <OscdSaveIcon />
+            <Label>{$_('save')}</Label>
+          </OscdButton>
+          <OscdButton callback={onCloseDialog} variant="raised" isAbortAction>
+            <OscdCancelIcon />
+            <Label>{$_('cancel')}</Label>
+          </OscdButton>
+        </div>
+          {/snippet}
     </OscdDialog>
     <div style="margin-top: 10px; margin-bottom: 10px">
       <OscdButton class="button" callback={create} variant="raised">
@@ -192,9 +215,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-</style>

@@ -7,7 +7,11 @@
   const service = getLNodeTypeService();
   const defaultTypeService = getDefaultTypeService();
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+  }
+
+  let { open = $bindable(false) }: Props = $props();
 
   const handleConfirm = (id: string, optionId: string, createFromDefault?: boolean) => {
     closeDialog('confirm', { id, lnClass: optionId, createFromDefault: createFromDefault ? createFromDefault : false });

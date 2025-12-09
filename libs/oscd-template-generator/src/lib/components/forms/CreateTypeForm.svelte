@@ -1,179 +1,198 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import TextField from "@smui/textfield";
-  import Autocomplete from "@smui-extra/autocomplete";
+  import { onMount } from 'svelte';
+  import TextField from '@smui/textfield';
+  import Autocomplete from '@smui-extra/autocomplete';
   import Checkbox from '@smui/checkbox';
   import FormField from '@smui/form-field';
+  import HelperText from '@smui/textfield/helper-text';
+  import CharacterCounter from '@smui/textfield/character-counter';
+  import type { ChangeEventDetails, Option } from './types';
 
-  // --- Types ---
-  export interface Option {
-    id: string;
-    description?: string;
+  interface Props {
+    // id settings
+    idLabel?: string;
+    isIdTaken?: (id: string) => Promise<boolean>;
+
+    // auto complete settings
+    autocompleteLabel?: string;
+    getOptions?: () => Promise<Option[]>;
+
+    // create from default settings
+    allowCreateFromDefault?: boolean; // callbacks
+    isDefaultAvailable?: (typeId: string) => Promise<boolean>;
+
+    onChange?: (event: ChangeEventDetails) => void;
+    onSubmit?: (event: ChangeEventDetails) => void;
   }
 
-  export interface ChangeEventDetail {
-    id: string;
-    selectedItem: Option | null;
-    valid: boolean;
+  let {
+    idLabel = 'Enter Id',
+    isIdTaken = async (_: string) => false,
+
+    autocompleteLabel = 'Select Option',
+    getOptions = async () => [],
+
+    allowCreateFromDefault = false,
+    isDefaultAvailable = async (_: string) => false,
+
+    onChange = (_: ChangeEventDetails) => {
+    },
+    onSubmit = (_: ChangeEventDetails) => {
+    }
+  }: Props = $props();
+
+  // --- State ---
+  let loading = $state<boolean>(false);
+  let options = $state<Option[]>([]);
+
+  // from fields
+  let typeId = $state<string>('');
+  let selectedItem = $state<Option | undefined>(undefined);
+  let createFromDefault = $state<boolean>(false);
+
+  // typeId validation state
+  let typeIdTouched = $state<boolean>(false);
+  let isTypeIdRequiredValid = $derived<boolean>(typeId && typeId.trim().length > 0);
+  let isTypeIdFormatValid = $derived<boolean>(/^\S+$/.test(typeId));
+  let isTypeIdAvailable = $state<boolean>(false);
+  let isTypeIdValid = $derived<boolean>(isTypeIdRequiredValid && isTypeIdFormatValid && isTypeIdAvailable);
+
+  // form is valid
+  let isFormValid = $derived<boolean>(isTypeIdValid && !!selectedItem);
+
+  // default available for selected item
+  let defaultAvailable = $state<boolean>(false);
+
+  onMount(() => {
+    loadOptions();
+  });
+
+  function loadOptions() {
+    loading = true;
+    getOptions().then((data) => {
+      options = data;
+      loading = false;
+    }).catch((err) => {
+      console.log('Error loading options:', err);
+    });
   }
-
-  // --- Props ---
-  export let id: string = "";
-  export let selectedItem: Option | null = null;
-  export let valid: boolean = false;
-
-  export let idLabel: string = "Enter ID";
-  export let autocompleteLabel: string = "Select";
-  let options: Option[] = [];
-
-  // Create from default
-  export let createFromDefault: boolean = false;
-  export let defaultAvailable: boolean = false;
-  export let showCreateFromDefault: boolean = false;
-  export let checkDefaultAvailable: (instanceType: string) => Promise<boolean> = async () => false;
-
-  export let getOptions: () => Promise<any[]> = async () => [];
-  export let mapOption: (data: any) => Option = (data) => data;
-  export let isIdTakenFn : (id: string) => Promise<boolean> = async (id: string) => false;
-
 
   let getOptionLabel: (opt: Option) => string = (opt) => opt?.id ?? '';
 
-  // --- State ---
-  let idTouched: boolean = false;
+  function handleSubmit(event: Event) {
+    event.preventDefault();
+    onSubmit({
+      id: typeId,
+      selectedItem: selectedItem,
+      createFromDefault: createFromDefault,
+      valid: isFormValid
+    });
+  }
 
-  let isIdValid: boolean = false;
-  let isIdTaken: boolean = false;
-  let isIdTakenLoading = false;
-  let isFormValid: boolean = false;
+  // check if typeId is taken available whenever it changes
+  $effect(() => {
+    if (!typeId) return;
+    isIdTaken(typeId).then((isTaken) => {
+      isTypeIdAvailable = !isTaken;
+    }).catch((err) => {
+      console.error('Failed to check if ID is taken:', err);
+    })
+  });
 
-  onMount(() => {
-    getOptions().then(data => {
-      options = data.map(mapOption);
+  // dispatch if any input changes
+  $effect(() => {
+    onChange({
+      id: typeId,
+      selectedItem: selectedItem,
+      createFromDefault: createFromDefault,
+      valid: isFormValid
     });
   })
 
-
-  function validateId(id: string): boolean {
-    return /^[^\s]+$/.test(id);
-  }
-
-  async function validateIdTaken(id: string, selectedItem) {
-    isIdTakenLoading = true;
-    const currentId = id;
-    const taken = await isIdTakenFn(id);
-    // Only update if the id hasn't changed since the check started
-    if (currentId === id) {
-      isIdTaken = taken;
-      isIdTakenLoading = false;
-      updateFormValid(selectedItem);
+  // on select item change, check if default is available
+  $effect(() => {
+    if (!selectedItem) {
+      defaultAvailable = false;
+      return;
     }
-  }
 
-  function updateFormValid(selectedItem) {
-    isIdValid = validateId(id);
-    isFormValid = isIdValid && !isIdTaken && id && selectedItem !== null;
-  }
+    isDefaultAvailable(selectedItem.id).then((isAvailable) => {
+      defaultAvailable = isAvailable;
+    }).catch((err) => {
+      defaultAvailable = false;
+      console.error('Failed to check if default is available:', err);
+    })
+  });
 
-  $: if (id) {
-    isIdValid = validateId(id);
-    validateIdTaken(id, selectedItem);
-  } else {
-    isIdTaken = false;
-    isIdTakenLoading = false;
-    updateFormValid(selectedItem);
-  }
-
-  $: valid = isFormValid;
-
-  $: dispatch('change', { id, selectedItem, createFromDefault, valid });
-
-  $: if (selectedItem) {
-    checkDefaultAvailable(selectedItem.id).then((available) => {
-      defaultAvailable = available;
-      if (!defaultAvailable) createFromDefault = false; // reset if unavailable
-    });
-  } else {
-    defaultAvailable = false;
-    createFromDefault = false;
-  }
-
-  // --- Events ---
-  const dispatch = createEventDispatcher();
-
-  let idTextField;
-
-  export function focus() {
-     idTextField?.focus?.();
-  }
-
-  function handleSubmit(event: Event) {
-    event.preventDefault();
-    if (isFormValid) {
-      dispatch('submit', { id, selectedItem, createFromDefault });
-    }
-  }
 </script>
 
-<form on:submit={handleSubmit}>
+<form onsubmit={handleSubmit}>
   <TextField
-    bind:this={idTextField}
+    bind:value={typeId}
     label={idLabel}
-    bind:value={id}
     required
     style="width: 100%;"
-    invalid={idTouched && (!isIdValid || isIdTaken)}
-    on:input={() => (idTouched = true)}
-  >
-    <svelte:fragment slot="helper">
-      {#if idTouched && !isIdValid}
-        <span style="color: var(--mdc-theme-error, #b71c1c);">
-          Invalid ID
-        </span>
-      {:else if idTouched && isIdTaken}
-        <span style="color: var(--mdc-theme-error, #b71c1c);">
-          This ID is already taken.
-        </span>
-      {/if}
-    </svelte:fragment>
+    invalid={typeIdTouched && !isTypeIdValid}
+    input$maxlength={64}
+    onblur={() => typeIdTouched = true}
+    >
+    {#snippet helper()}
+      <HelperText validationMsg persitent>
+        {#if !isTypeIdRequiredValid}
+          Please enter an ID.
+        {:else if !isTypeIdFormatValid}
+          ID must contain no spaces.
+        {:else if !isTypeIdAvailable}
+          That ID is already in use. Please choose a different one.
+        {/if}
+      </HelperText>
+    <CharacterCounter>0 / 64</CharacterCounter>
+    {/snippet}
   </TextField>
 
-  <Autocomplete
-    label={autocompleteLabel}
-    bind:value={selectedItem}
-    {options}
-    {getOptionLabel}
-    textfield$required
-    menu$style="max-height: 500px;"
-  >
-    <svelte:fragment slot="match" let:match>
-      <div class="custom-item">
-        <div class="title">{match.id}</div>
-        {#if match.id}
-          <div class="subtitle">{match.description}</div>
-        {/if}
-      </div>
-    </svelte:fragment>
-  </Autocomplete>
+  {#if !loading}
+    <Autocomplete
+      label={autocompleteLabel}
+      bind:value={selectedItem}
+      {options}
+      {getOptionLabel}
+      textfield$required
+      menu$style="max-height: 500px;">
+      {#snippet match(item: Option)}
+        <div class="custom-item">
+          <div class="title">{item.id}</div>
+          {#if item.id}
+            <div class="subtitle">{item.description}</div>
+          {/if}
+        </div>
+      {/snippet}
+    </Autocomplete>
+  {/if}
 
-  {#if showCreateFromDefault && selectedItem}
+  {#if allowCreateFromDefault && !!selectedItem}
     <div style="margin-top: 1em;">
       <FormField align="start">
         <Checkbox bind:checked={createFromDefault} disabled={!defaultAvailable} />
-        <span slot="label">
-          Create from Default
+        {#snippet label()}
+          <span>Create from Default</span>
           {#if !defaultAvailable}
             <span style="color: gray; font-size: 0.85rem;"> (No default available for this class)</span>
           {/if}
-        </span>
+        {/snippet}
       </FormField>
     </div>
   {/if}
 
-  <button type="submit" style="display: none"></button>
+  <button type="submit" style="display: none" aria-label="submit button"></button>
 </form>
 
 <style>
+  form {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
   .title {
     font-weight: bold;
   }

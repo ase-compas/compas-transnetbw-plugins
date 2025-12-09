@@ -6,12 +6,15 @@
 
   // ===== Services & Utils =====
   import { getColumns } from './columns.config';
-  import { createObjectReferenceStore, doc } from '../../../stores';
-  import { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { createObjectReferenceStore, pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
+  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
+  applyDefaultWarningNotification,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
     setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType
   } from '../../../utils';
@@ -25,7 +28,14 @@
 
   // ===== Types =====
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TItem } from '../../tboard/types';
-  import { BasicType, BasicTypes, ObjectReferenceDetails, DATypeDetails, DataTypeKind, Mode } from '../../../domain';
+  import {
+    type BasicType,
+    type BasicTypes,
+    type ObjectReferenceDetails,
+    type DATypeDetails,
+    DataTypeKind,
+    type Mode
+  } from '../../../domain';
   import type { IDaTypeService } from '../../../services/da-type.service';
   import {
     getDataTypeService,
@@ -43,9 +53,13 @@
   const defaultTypeService: IDefaultService = getDefaultTypeService();
 
   // ===== Props =====
-  export let mode: 'view' | 'edit' | 'create' = 'view';
-  export let typeId: string;
-  export let instanceType: string | null = null;
+  interface Props {
+    mode?: Mode
+    typeId: string;
+    instanceType?: string | null;
+  }
+
+  let { mode = 'view', typeId = $bindable(), instanceType = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
   const refStore = createObjectReferenceStore(async () => dataAttributeTypes.children);
@@ -54,31 +68,20 @@
   const editorStore = createEditorStore({
     onSave: async () => saveChanges(),
     onDiscard: async () => refStore.reset(),
-    initialMode: instanceType ? mode : 'view',
+    initialMode: instanceType ? mode : 'view'
   });
-  const { canEdit, isEditModeSwitchState } = editorStore;
+  const { canEdit, isEditModeSwitchState, dirty } = editorStore;
 
   // ===== State =====
-  let dataAttributeTypes: DATypeDetails | null = null;
-  let dataTypes: BasicTypes = {
+  let dataAttributeTypes: DATypeDetails | null = $state(null);
+  let dataTypes: BasicTypes = $state({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
     enumTypes: [],
-  };
+  });
 
-  let referenceDataObjects: TItem[] = [];
-  $: referenceDataObjects = getDisplayReferenceItems($refStore, editorStore.getCanEdit(), acceptDrop);
 
-  $: boardData = {
-    refs: referenceDataObjects,
-    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
-    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
-    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
-  };
-
-  $: columns = getColumns($canEdit);
-  $: $isDirty ? editorStore.makeDirty() : editorStore.makeClean();
 
 
   // ===== Lifecycle =====
@@ -86,7 +89,7 @@
     validateProps();
 
     // Subscribe to doc changes to reload data
-    const unsubscribe = doc.subscribe(async () => {
+    const unsubscribe = pluginStore.updates.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
         dataTypes = await loadTypes(editorStore.getCanEdit(), typeId, instanceType, $markedItemIds);
@@ -110,20 +113,17 @@
 
   async function loadData() {
     if(editorStore.isCreateMode()) {
-      daTypeService.createOrUpdateType({id: typeId, instanceType: instanceType, children: []})
-      editorStore.switchMode('edit')
+      await editorStore.switchMode('edit')
+      await daTypeService.createOrUpdateType({id: typeId, instanceType: instanceType, children: []})
       return
     }
     const result = await loadDAType(editorStore.isCreateMode(), typeId, instanceType);
-    if (!result?.instanceType || result.instanceType === '') mode = 'view'
+    typeId = result.id
+    instanceType = result.instanceType;
     dataAttributeTypes = result;
     await refStore.reload();
   }
 
-  $: if (dataAttributeTypes) {
-    loadTypes(editorStore.getCanEdit(), dataAttributeTypes.id, dataAttributeTypes.instanceType, $markedItemIds)
-      .then(types => dataTypes = types);
-  }
 
   async function loadDAType(isCreateMode: boolean, typeId: string, instanceType: string | null) {
     if (isCreateMode) {
@@ -178,17 +178,32 @@
     const type = types.find(t => t.id === itemId);
     if(!type) return;
 
-    await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+    try {
+      const success = await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      if (success) setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType);
+    } catch (e) {
+      console.error(e);
+      setDefaultTypeErrorNotification(type.id, e?.message ?? "")
+    }
   }
 
   async function handleApplyDefaults(detail) {
     const {itemId} = detail;
-    const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DOType, typeId, itemId);
-    refStore.setTypeReference(itemId, defaultRootId);
+    try {
+      const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DAType, typeId, itemId);
+      refStore.setTypeReference(itemId, defaultRootId);
+    } catch (e) {
+      applyDefaultWarningNotification(e?.message)
+    }
   }
 
-  function handleClickSetAsDefault() {
-    setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DOType, instanceType, typeId);
+  async function handleClickSetAsDefault() {
+    try {
+      const success = await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DAType, instanceType, typeId);
+      if(success) setDefaultTypeSuccessNotification(typeId, DataTypeKind.DAType, instanceType);
+    } catch (e) {
+      setDefaultTypeErrorNotification(typeId, e?.message);
+    }
   }
 
   function handleOnReferenceClick(itemId: string) {
@@ -220,21 +235,50 @@
     }
   }
 
-  function handleModeChange(newMode: 'view' | 'edit') {
-    editorStore.switchMode(newMode);
-    loadData();
+  async function handleModeChange(newMode: 'view' | 'edit') {
+    const ok = await editorStore.switchMode(newMode);
+    if (ok) await loadData();
   }
+  let referenceDataObjects = $derived(
+    getDisplayReferenceItems($refStore, editorStore.getCanEdit(), acceptDrop)
+  );
+
+  $effect(() => {
+    if (dataAttributeTypes) {
+      loadTypes(
+        editorStore.getCanEdit(),
+        dataAttributeTypes.id,
+        dataAttributeTypes.instanceType,
+        $markedItemIds
+      ).then((types) => (dataTypes = types));
+    }
+  });
+
+  let boardData = $derived({
+    refs: referenceDataObjects,
+    dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
+    dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
+    enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
+  });
+
+  let columns = $derived(getColumns($canEdit));
+
+  $effect(() => {
+    if ($isDirty) editorStore.makeDirty();
+    else editorStore.makeClean();
+  });
 </script>
 
 <TypeHeader
   {typeId}
   type={DataTypeKind.DAType}
   instanceType={dataAttributeTypes?.instanceType}
-  isEditMode={$isEditModeSwitchState}
-  on:modeChange={e => handleModeChange(e.detail)}
-  on:clickDefault={() => handleClickSetAsDefault()}
-  on:instanceTypeChange={(e) => {
-    instanceType = e.detail;
+  setAsDefaultDisabled={$dirty}
+  bind:isEditMode={$isEditModeSwitchState}
+  onModeChange={e => handleModeChange(e)}
+  onClickDefault={() => handleClickSetAsDefault()}
+  onInstanceTypeChange={(e) => {
+    instanceType = e;
     editorStore.switchMode('create');
     loadData();
     }
@@ -243,13 +287,13 @@
 <TBoard
   {columns}
   data={boardData}
-  on:itemMarkChange={e => handleOnMark(e.detail)}
-  on:itemSelectChange={e => handleOnSelect(e.detail)}
-  on:itemDrop={e => handleItemDrop(e.detail)}
-  on:columnActionClick={e => handleActionClick(e.detail)}
-  on:itemEdit={e => handleOnEdit(e.detail.itemId, e.detail.columnId)}
-  on:itemReferenceClick={e => handleOnReferenceClick(e.detail.itemId)}
-  on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
-  on:itemSetDefault={({detail: {itemId, columnId}})  => handleOnSetAsDefault(itemId, columnId)}
-  on:itemApplyDefaults={e => handleApplyDefaults(e.detail)}
+  onItemMarkChange={e => handleOnMark(e)}
+  onItemSelectChange={e => handleOnSelect(e)}
+  onItemDrop={e => handleItemDrop(e)}
+  onColumnActionClick={e => handleActionClick(e)}
+  onItemEdit={e => handleOnEdit(e.itemId, e.columnId)}
+  onItemReferenceClick={e => handleOnReferenceClick(e.itemId)}
+  onItemUnlink={({ itemId }) => refStore.removeTypeReference(itemId)}
+  onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
+  onItemApplyDefaults={e => handleApplyDefaults(e)}
 />
