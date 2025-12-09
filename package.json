@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run generate:history-api-client && npm run generate:archiving-api-client && npm run build:history-viewer && npm run build:archive-explorer && npm run build:location-viewer && npm run build:location-manager && npm run build:engineering-wizard && npm run build:template-generator && npm run build:type-distributor",
+    "test:all": "nx run-many --target=test --projects='oscd-template-generator'",
     "mock-server": "node mocks/server.js",
     "clean:history-viewer": "rm -rf dist/apps/history-viewer",
     "run:history-viewer": "nx run history-viewer:serve",
