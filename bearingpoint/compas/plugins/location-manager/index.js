@@ -12336,11 +12336,9 @@ function nm(e, t) {
               var ve = X(), R = V(ve);
               Hi(R, 17, u, ya, (D, O) => {
                 Ba(D, {
+                  onclick: () => d(O).sortable && x(d(O).field),
                   get style() {
                     return d(O).headerStyle;
-                  },
-                  $$events: {
-                    click: () => d(O).sortable && x(d(O).field)
                   },
                   children: (N, Y) => {
                     var U = $g(), C = ce(U), j = ce(C), ge = ce(j), de = ie(j, 2);

@@ -18283,11 +18283,9 @@ function nu(t, e) {
               var K = ae(), U = J(K);
               _i(U, 17, c, Xa, (N, M) => {
                 Xo(N, {
+                  onclick: () => s(M).sortable && S(s(M).field),
                   get style() {
                     return s(M).headerStyle;
-                  },
-                  $$events: {
-                    click: () => s(M).sortable && S(s(M).field)
                   },
                   children: (z, ie) => {
                     var B = Vb(), I = _e(B), L = _e(I), $ = _e(L), R = ye(L, 2);

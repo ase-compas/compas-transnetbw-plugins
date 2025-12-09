@@ -10552,11 +10552,9 @@ function Fp(e, t) {
               var ge = K(), B = z(ge);
               gn(B, 17, u, Si, (se, D) => {
                 ki(se, {
+                  onclick: () => p(D).sortable && x(p(D).field),
                   get style() {
                     return p(D).headerStyle;
-                  },
-                  $$events: {
-                    click: () => p(D).sortable && x(p(D).field)
                   },
                   children: (G, Q) => {
                     var M = Np(), A = oe(M), P = oe(A), xe = oe(P), Ee = Le(P, 2);

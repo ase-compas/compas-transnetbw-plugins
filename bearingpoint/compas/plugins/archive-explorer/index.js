@@ -17528,11 +17528,9 @@ function Mb(t, e) {
               var ye = ie(), k = Z(ye);
               _r(k, 17, c, no, (F, D) => {
                 is(F, {
+                  onclick: () => s(D).sortable && C(s(D).field),
                   get style() {
                     return s(D).headerStyle;
-                  },
-                  $$events: {
-                    click: () => s(D).sortable && C(s(D).field)
                   },
                   children: (j, ee) => {
                     var P = wb(), I = Ie(P), w = Ie(I), te = Ie(w), N = _e(w, 2);
