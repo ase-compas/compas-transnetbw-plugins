@@ -31,7 +31,7 @@
 
 <div class="draggable-list">
   {#if items.length > 0}
-    <ul
+    <ol
     use:dragHandleZone={{ items, flipDurationMs, dropTargetStyle: {} }}
     onconsider={handleSort}
     onfinalize={e => {
@@ -58,7 +58,7 @@
           </div>
         </li>
       {/each}
-    </ul>
+    </ol>
   {/if}
 </div>
 

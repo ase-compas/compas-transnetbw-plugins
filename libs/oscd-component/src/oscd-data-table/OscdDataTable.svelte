@@ -5,7 +5,7 @@
   <Head>
     <Row class="header-row">
       {#each columnDefs as col}
-        <Cell on:click={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
+        <Cell onclick={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
             <div class="cell-header">
               <span class="header-title">{col.headerName}</span>
@@ -247,7 +247,8 @@
     flex-direction: column;
   }
 
-  table {
+  /*
+  .mdc-data-table {
     font-family: 'Roboto', sans-serif;
     border-collapse: collapse;
     width: 100%;
@@ -287,6 +288,7 @@
   tbody td.numeric {
     text-align: right;
   }
+  */
 
   input[type="text"], input[type="number"] {
     padding: 5px 8px;
@@ -305,6 +307,7 @@
     outline: none;
   }
 
+  /*
   button {
     background-color: #007bff;
     color: white;
@@ -319,6 +322,7 @@
   button:hover {
     background-color: #0056b3;
   }
+  */
 
   .cell-actions {
     display: flex;
@@ -330,17 +334,21 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
+    /*
     table {
       font-size: 0.8rem;
     }
+    */
 
     input[type="text"], input[type="number"] {
       font-size: 0.85rem;
     }
 
+    /*
     button {
       font-size: 0.8rem;
     }
+    */
   }
 
   svg {
@@ -356,9 +364,11 @@
     cursor: pointer;
   }
 
+  /*
   .header-title svg {
     margin-left: 4px;
   }
+  */
 
   .cell-header {
     display: flex;

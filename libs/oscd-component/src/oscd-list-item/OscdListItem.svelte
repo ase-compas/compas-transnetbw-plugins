@@ -1,15 +1,18 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   export type CardVariant = 'primary' | 'secondary' | 'dashed';
 
   type Props = {
     variant?: CardVariant;
+    children: Snippet<[any]>;
   };
 
-  let { variant = 'secondary' }: Props = $props();
+  let { variant = 'secondary', children }: Props = $props();
 </script>
 
 <div class={`osc-card osc-card--${variant}`}>
-  <slot />
+  {@render children?.() }
 </div>
 <style>
   .osc-card {
