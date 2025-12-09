@@ -2,6 +2,7 @@
   import GenericCreateDialog from './GenericCreateDialog.svelte';
   import { getDATypeService } from '../../../services';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { DataTypeKind } from '../../../domain';
 
   const service = getDATypeService();
 
@@ -24,6 +25,6 @@
   idLabel="Data Attribute Type ID"
   autocompleteLabel="Data Attribute Instance"
   getOptions={() => service.getTypeOptions()}
-  isIdTaken={(id) => service.isDAIdTaken(id)}
+  typeKind={DataTypeKind.DAType}
   onConfirm={handleConfirm}
 />

@@ -3,7 +3,7 @@
   import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openSelectInstanceTypeDialog } from '../utils/overlayUitils';
-  import { SetDefaultButton } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { SetDefaultButton, TypeActionMenu } from '@oscd-transnet-plugins/oscd-template-generator';
 
   interface Props {
     type: DataTypeKind;
@@ -16,6 +16,8 @@
     onModeChange?: (mode: 'edit' | 'view') => void;
     onInstanceTypeChange?: (instanceType: string) => void;
     onClickDefault?: () => void;
+    onDelete?: () => void;
+    onRename?: () => void;
   }
 
   let {
@@ -28,8 +30,9 @@
 
     onModeChange = (_: 'edit' | 'view') => {},
     onInstanceTypeChange = (_: string) => {},
-    onClickDefault = () => {}
-
+    onClickDefault = () => {},
+    onDelete = () => {},
+    onRename = () => {}
   }: Props = $props();
 
   const handleChange = (checked) => onModeChange(checked ? 'edit' : 'view');
@@ -112,6 +115,10 @@
     {:else}
       <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose {getInstanceText(type)} to Edit</Button>
     {/if}
+    <TypeActionMenu
+      onDelete={onDelete}
+      onRename={onRename}
+    />
   </div>
 </div>
 

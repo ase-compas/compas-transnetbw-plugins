@@ -2,6 +2,7 @@
   import GenericCreateDialog from './GenericCreateDialog.svelte';
   import { getEnumTypeService } from '../../../services';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { DataTypeKind } from '../../../domain';
 
   const service = getEnumTypeService();
 
@@ -24,6 +25,6 @@
   idLabel="Enum Type ID"
   autocompleteLabel="Enum Instance"
   getOptions={() => service.getTypeOptions()}
-  isIdTaken={(id) => service.isEnumIdTaken(id)}
+  typeKind={DataTypeKind.EnumType}
   onConfirm={handleConfirm}
 />

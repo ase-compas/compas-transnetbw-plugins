@@ -245,8 +245,7 @@
   .oscd-card-item.selected .oscd-card-subtitle,
   .oscd-card-item.selected .oscd-references,
   .oscd-card-item.mandatory .oscd-card-title,
-  .oscd-card-item.mandatory .oscd-card-subtitle,
-  .oscd-card-item.mandatory .oscd-card-references {
+  .oscd-card-item.mandatory .oscd-card-subtitle {
     color: white;
   }
 

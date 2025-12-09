@@ -126,17 +126,6 @@
     text-overflow: ellipsis;
   }
 
-  /* eslint-disable-next-line svelte/valid-compile */
-  .breadcrumb-back {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0;
-    margin-right: 0.5rem;
-  }
-
   .breadcrumb-separator {
     color: rgba(255, 255, 255, 0.5);
   }

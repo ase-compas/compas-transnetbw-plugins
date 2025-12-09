@@ -234,6 +234,34 @@ export class DataTypeService implements IDataTypeService {
     this.typeRepo.applyDataTypeChanges({creates: [defaultDataTypes.root, ...defaultDataTypes.references]})
   }
 
+  async deleteType(typeKind: DataTypeKind, id: string): Promise<boolean> {
+    return this.typeRepo.deleteDataTypeById(typeKind, id);
+  }
+
+  async dataTypeExists(typeKind: DataTypeKind, id: string): Promise<boolean> {
+    const type = this.typeRepo.findDataTypeById(typeKind, id);
+    return !!type;
+  }
+
+  async renameType(typeKind: DataTypeKind, oldId: string, newId: string): Promise<void> {
+    const existingTypeOfOldId = this.typeRepo.findDataTypeById(typeKind, oldId);
+    const existingTypeOfNewId = this.typeRepo.findDataTypeById(typeKind, newId);
+
+    if (!existingTypeOfOldId) {
+      throw new Error(`Data type ${typeKind} with id ${oldId} not found`);
+    }
+
+    if (existingTypeOfNewId) {
+      throw new Error(`Data type ${typeKind} with id ${newId} already exists`);
+    }
+
+    const result = this.typeRepo.renameDataTypeById(typeKind, oldId, newId);
+    if (!result) {
+      throw new Error(`Failed to rename data type ${typeKind} from id ${oldId} to ${newId}`);
+    }
+  }
+
+
   /**
    * Converts a DefaultConfig into DataTypeWithKind objects for root and referenced types.
    * Resolves ID conflicts before conversion.
