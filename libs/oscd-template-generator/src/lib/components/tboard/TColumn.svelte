@@ -76,7 +76,9 @@
   function matchesQuery(item: TItem, query: string): boolean {
     const q = query.toLowerCase().trim();
 
-    return item.title.toLowerCase().includes(q) || item.subtitle?.toLowerCase().includes(q);
+    return item.title.toLowerCase().includes(q) || 
+      item.subtitle?.toLowerCase().includes(q)  ||
+      item.badgeText?.toLocaleLowerCase().includes(q);
   }
 
   function filterItems(itemsToFilter: TItem[], query: string): TItem[] {
