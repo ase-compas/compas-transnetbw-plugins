@@ -40,7 +40,7 @@
     }
   }: Props = $props();
 
-  let inputEl;
+  let inputEl = $state(undefined);
 
   // --- State ---
   let loading = $state<boolean>(false);
@@ -116,19 +116,13 @@
 </script>
 
 <form onsubmit={handleSubmit}>
-  <TypeIdInput
-    bind:typeId={typeId}
-    bind:valid={isTypeIdValid}
-    bind:this={inputEl}
-    {typeKind}
-    idLabel={idLabel}
-    showErrorsOnInput={false}
-  />
 
   {#if !loading}
     <Autocomplete
       label={autocompleteLabel}
       bind:value={selectedItem}
+      bind:this={inputEl}
+      selectOnExactMatch
       {options}
       {getOptionLabel}
       textfield$required
@@ -143,6 +137,14 @@
       {/snippet}
     </Autocomplete>
   {/if}
+
+  <TypeIdInput
+    bind:typeId={typeId}
+    bind:valid={isTypeIdValid}
+    {typeKind}
+    idLabel={idLabel}
+    showErrorsOnInput={false}
+  />
 
   {#if allowCreateFromDefault && !!selectedItem}
     <div style="margin-top: 1em;">
