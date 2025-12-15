@@ -3,19 +3,20 @@
   // Components
   // Services & utils
   import {
-  applyDefaultWarningNotification,
+    applyDefaultWarningNotification,
     type BasicType,
     type BasicTypes,
     canAssignTypeToObjectReference,
     createEditorStore,
     createObjectReferenceStore,
     DataTypeKind,
-    getAlertService,
     getDataTypeService,
     getDefaultTypeService,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
     getLNodeTypeService,
+    handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
     type IDataTypeService,
     type IDefaultService,
     type ILNodeTypeService,
@@ -37,7 +38,8 @@
     setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType,
     TBoard,
-    type TBoardItemContext
+    type TBoardItemContext,
+    TypeActionMenu,
   } from '@oscd-transnet-plugins/oscd-template-generator';
   import { OscdBreadcrumbs, OscdButton, OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { loadLNodeType, loadTypes } from './dataLoader';
@@ -246,6 +248,20 @@
     // Set the reference to the newly created to reflect the change in the UI
   }
 
+  async function handleOnDeleteType() {
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId)
+    if (success) route.set({ path: ['overview'] });
+  }
+
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
+   console.log(newTypeId);
+   if(newTypeId) {
+     lNodeTypeId = newTypeId;
+     loadLogicalNodeType(lNodeTypeId, lnClass)
+   }
+  }
+
   // -----------------------------
   // Utils
   // -----------------------------
@@ -290,14 +306,6 @@
 
     <div class="oscd-details-toolbar-right">
 
-      {#if $dirty}
-        <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
-          <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
-        </OscdTooltip>
-      {:else}
-        <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} />
-      {/if}
-
       <OscdSwitch
         bind:checked={$isEditModeSwitchState}
         onChange={e => onEditModeChange(e)}
@@ -307,10 +315,25 @@
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
+      {#if $dirty}
+        <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
+          <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
+        </OscdTooltip>
+      {:else}
+        <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} />
+      {/if}
+
       <OscdButton
         disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
+
+      <OscdTooltip content="Type Actions" side="bottom" hoverDelay={2000}>
+        <TypeActionMenu
+          onDelete={handleOnDeleteType}
+          onRename={handleRename}
+        />
+      </OscdTooltip>
     </div>
   </div>
   <!-- END: Toolbar -->
@@ -344,7 +367,7 @@
   .oscd-details-toolbar-right {
     display: flex;
     align-items: center;
-    gap: 3rem;
+    gap: 1rem;
   }
 
   .oscd-details-board {

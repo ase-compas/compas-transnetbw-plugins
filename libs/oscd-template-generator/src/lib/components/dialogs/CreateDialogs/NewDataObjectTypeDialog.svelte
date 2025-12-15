@@ -2,6 +2,7 @@
   import GenericCreateDialog from './GenericCreateDialog.svelte';
   import { getDOTypeService } from '../../../services';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { DataTypeKind } from '../../../domain';
 
   const service = getDOTypeService();
   interface Props {
@@ -23,6 +24,6 @@
   idLabel="ID"
   autocompleteLabel="Common Data Class (cdc)"
   getOptions={() => service.getTypeOptions()}
-  isIdTaken={(id) => service.isDOIdTaken(id)}
+  typeKind={DataTypeKind.DOType}
   onConfirm={handleConfirm}
 />
