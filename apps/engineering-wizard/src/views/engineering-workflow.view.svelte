@@ -189,30 +189,31 @@
   </div>
 </div>
 
-{#if selectedPlugin.plugin}
-  <div class="plugin-container">
-    {#if selectedPlugin.plugin.type === 'internal'}
-      <PluginHost
-        plugin={selectedPlugin.plugin}
-        doc={doc}
-        {editCount}
-        {plugins}
-        {nsdoc}
-        {docName}
-        {docId}
-        {docs}
-        {locale}
-        {oscdApi}
-      />
-    {:else}
-      <svelte:element
-        this={selectedPlugin.plugin.id}
-        use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
-      />
-    {/if}
-  </div>
-{/if}
-
+<div class="plugin-container">
+  {#each plugins as plugin (plugin.id)}
+    <div style="display: {selectedPlugin.plugin?.id === plugin.id ? 'block' : 'none'}">
+      {#if plugin.type === 'internal'}
+        <PluginHost
+          plugin={plugin}
+          doc={doc}
+          {editCount}
+          {plugins}
+          {nsdoc}
+          {docName}
+          {docId}
+          {docs}
+          {locale}
+          {oscdApi}
+        />
+      {:else}
+        <svelte:element
+          this={plugin.id}
+          use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
+        />
+      {/if}
+    </div>
+  {/each}
+</div>
 <style>
   * {
     font-family: Roboto, sans-serif;
