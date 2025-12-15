@@ -178,7 +178,7 @@
           const url = window['URL'].createObjectURL(data);
           const a = document.createElement('a');
           a.href = url;
-          a.download = row.filename;
+          a.download = `${row.filename}.${row.type.toLowerCase()}`;
           a.style.display = 'none';
           document.body.appendChild(a);
           a.click();
