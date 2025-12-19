@@ -43,7 +43,6 @@
         onclick={() => handleCrumbClick(index)}
         aria-current={index === activeIndex ? 'page' : undefined}
         aria-disabled={crumb.enabled ? undefined : 'true'}
-        disabled={!crumb.enabled && activeIndex !== index}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
@@ -112,11 +111,9 @@
     font-weight: 700;
   }
 
-  .br-disabled,
-  .breadcrumb:disabled {
+  .br-disabled {
     cursor: default;
     pointer-events: none;
-    opacity: 0.6;
   }
 
   .separator {
