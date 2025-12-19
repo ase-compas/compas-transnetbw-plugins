@@ -13,19 +13,24 @@
     type IDoTypeService
   } from '../../../services';
   import { createEditorStore, createObjectReferenceStore, pluginStore } from '../../../stores';
-  import { type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
-  applyDefaultWarningNotification,
+    applyDefaultWarningNotification,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
+    handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
     openCreateDataAttributeTypeDialog,
     openCreateDataObjectTypeDialog,
     openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer,
     openDataEnumTypeDrawer,
     openDataObjectTypeDrawer,
-    openReferencedTypeDrawer, setDefaultTypeErrorNotification, setDefaultTypeSuccessNotification, setTypeAsDefaultWithConfirmation,
+    openReferencedTypeDrawer,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
+    setTypeAsDefaultWithConfirmation,
     setTypeAsDefaultWithConfirmationForBasicType
   } from '../../../utils';
 
@@ -92,6 +97,10 @@
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
     if (reason === 'save' && $isDirty) {
       await editorStore.save();
+      return true;
+    }
+
+    if(reason === 'force') {
       return true;
     }
 
@@ -232,6 +241,19 @@
     if(ok) await loadData();
   }
 
+  async function handleOnDelete() {
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.DOType, typeId);
+    if(success) await closeDrawer('force');
+  }
+
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.DOType, typeId);
+   if(newTypeId) {
+     typeId = newTypeId;
+     loadData();
+   }
+  }
+
   // ===== Helpers =====
   function acceptDrop(source: TBoardItemContext, target: ObjectReferenceDetails): boolean {
     const sourceType: BasicType = dataTypes[source.columnId].find(
@@ -239,7 +261,6 @@
     );
     return canAssignTypeToObjectReference(target, sourceType);
   }
-
 
   let referenceDataObjects = $derived(
     getDisplayReferenceItems($refStore, $canEdit, acceptDrop)
@@ -279,6 +300,8 @@
   bind:isEditMode={$isEditModeSwitchState}
   onModeChange={e => handleModeChange(e)}
   onClickDefault={() => handleClickSetAsDefault()}
+  onDelete={handleOnDelete}
+  onRename={handleRename}
 />
 <TBoard
   {columns}

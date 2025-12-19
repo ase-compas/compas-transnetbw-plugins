@@ -11,13 +11,15 @@
     onDuplicate: () => void;
     onDelete: () => void;
     onClick: () => void;
+    onRename: () => void;
   }
 
   let {
     node,
     onDuplicate,
     onDelete,
-    onClick
+    onClick,
+    onRename
   }: Props = $props();
 </script>
 
@@ -26,6 +28,11 @@
   <Cell>{node.class}</Cell>
   <Cell>{node.references}</Cell>
   <Cell>
+    <OscdIconActionButton
+      tooltip="Rename"
+      type="edit"
+      onClick={onRename}
+    />
     <OscdIconActionButton
       tooltip="Duplicate"
       type="duplicate"

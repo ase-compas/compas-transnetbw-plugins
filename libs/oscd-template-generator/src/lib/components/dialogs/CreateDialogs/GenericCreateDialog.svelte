@@ -2,7 +2,7 @@
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
-  import type { TypeOption } from '../../../domain';
+  import type { DataTypeKind, TypeOption } from '../../../domain';
   import type { ChangeEventDetails } from '../../forms/types';
 
   // ===== Props =====
@@ -12,11 +12,11 @@
     confirmText?: string;
     idLabel?: string;
     autocompleteLabel?: string;
+    typeKind: DataTypeKind;
     getOptions?: () => Promise<TypeOption[]>;
-    isIdTaken?: (id: string) => Promise<boolean>;
     onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
-    checkDefaultAvailable: (instanceType: string) => Promise<boolean>;
-    showCreateFromDefault: boolean;
+    checkDefaultAvailable?: (instanceType: string) => Promise<boolean>;
+    showCreateFromDefault?: boolean;
   }
 
   let {
@@ -25,8 +25,8 @@
     confirmText = 'Confirm',
     idLabel = 'ID',
     autocompleteLabel = 'Select Option',
+    typeKind,
     getOptions = async () => [],
-    isIdTaken = async () => false,
     onConfirm,
     checkDefaultAvailable =  async () => false,
     showCreateFromDefault = false
@@ -75,7 +75,7 @@
         <div style="padding: 1rem;" >
         <CreateTypeForm
           {idLabel}
-          isIdTaken={isIdTaken}
+          typeKind={typeKind}
 
           {autocompleteLabel}
           getOptions={getOptions}

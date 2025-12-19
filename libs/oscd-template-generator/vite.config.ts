@@ -35,8 +35,8 @@ export default defineConfig(async () => {
 
     test: {
       globals: true,
-      cache: { dir: '../../node_modules/.vitest' },
-      environment: 'jsdom',
+      cacheDir: '../../node_modules/.vitest',
+      environment: 'happy-dom',
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       reporters: ['default'],
       coverage: {
