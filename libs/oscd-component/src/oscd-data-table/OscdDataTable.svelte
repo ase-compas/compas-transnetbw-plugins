@@ -60,27 +60,31 @@
             <div class="cell-actions">
               {#each rowActions as action}
                 {#if action.iconComponent}
+                <OscdTooltip content={action.tooltip} hoverDelay={500}>
                   <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                </OscdTooltip>
                 {:else}
-                  <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
-                    {#if action.icon === "add"}
-                      <OscdAddIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "cancel"}
-                      <OscdCancelIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "download"}
-                      <OscdDownloadIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "find-in-page"}
-                      <OscdFindInPageIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "remove"}
-                      <OscdRemoveIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "edit"}
-                      <OscdEditIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "delete"}
-                      <OscdDeleteIcon svgStyles="margin: unset" />
-                    {:else}
-                      <OscdRefreshIcon svgStyles="margin: unset" />
-                    {/if}
-                  </OscdButton>
+                  <OscdTooltip content={action.tooltip} hoverDelay={500}>
+                    <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                      {#if action.icon === "add"}
+                        <OscdAddIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "cancel"}
+                        <OscdCancelIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "download"}
+                        <OscdDownloadIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "find-in-page"}
+                        <OscdFindInPageIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "remove"}
+                        <OscdRemoveIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "edit"}
+                        <OscdEditIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "delete"}
+                        <OscdDeleteIcon svgStyles="margin: unset" />
+                      {:else}
+                        <OscdRefreshIcon svgStyles="margin: unset" />
+                      {/if}
+                    </OscdButton>
+                  </OscdTooltip>
                 {/if}
               {/each}
             </div>
@@ -135,6 +139,7 @@
   } from "@oscd-transnet-plugins/oscd-icons";
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
   import { v4 as uuidv4 } from 'uuid';
+  import OscdTooltip from '../oscd-tooltip/OscdTooltip.svelte';
 
   interface Props {
     loadingDone?: boolean;
