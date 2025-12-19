@@ -2,9 +2,9 @@
   bind:open
   aria-labelledby="large-scroll-title"
   aria-describedby="large-scroll-content"
-  on:SMUIDialog:closed={(e) => {
+  onSMUIDialogClosed={(e) => {
     (open = false);
-    dispatch('close');
+     onClose();
   }}
   surface$style="width: 1080px; max-width: calc(100vw - 32px);"
 >
@@ -22,24 +22,24 @@
 </Dialog>
 
 <script lang="ts">
-  import Dialog, { Title, Content, Actions } from '@smui/dialog';
-  import {createEventDispatcher} from "svelte";
+  import Dialog, { Actions, Content } from '@smui/dialog';
 
   interface Props {
     open?: boolean;
     title?: import('svelte').Snippet;
     content?: import('svelte').Snippet;
     actions?: import('svelte').Snippet;
+    onClose?: () => void;
   }
 
   let {
     open = $bindable(false),
     title,
     content,
-    actions
+    actions,
+    onClose = () => {}
   }: Props = $props();
 
-  const dispatch = createEventDispatcher();
 </script>
 
 <style lang="css">

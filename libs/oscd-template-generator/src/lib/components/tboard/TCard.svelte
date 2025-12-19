@@ -1,16 +1,7 @@
 <script lang="ts">
   import { OscdIconActionButton, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
-  import { createEventDispatcher } from 'svelte';
   import Checkbox from '@smui/checkbox';
   import { OscdWarningIcon, OscdLockIcon, OscdCallMadeIcon } from '@oscd-transnet-plugins/oscd-icons';
-
-  const dispatch = createEventDispatcher();
-
-
-
-
-
-
 
   interface Props {
     title: string;
@@ -23,6 +14,7 @@
     canClick?: boolean;
     canUnlink?: boolean;
     canClickReference?: boolean;
+    canSetDefault: boolean;
     selectionEnabled?: boolean;
     selected?: boolean;
     isMandatory?: boolean;
@@ -33,6 +25,16 @@
     isOver?: boolean;
     canDrag?: boolean;
     referencable?: boolean;
+
+    // Callbacks
+    onClick?: () => void;
+    onMarked?: (marked: boolean) => void;
+    onEdit?: () => void;
+    onApplyDefaults?: () => void;
+    onUnlink?: () => void;
+    onReferenceClick?: () => void;
+    onSetDefault?: () => void;
+    onSelectChange?: () => void;
   }
 
   let {
@@ -46,6 +48,7 @@
     canClick = false,
     canUnlink = true,
     canClickReference = true,
+    canSetDefault = false,
     selectionEnabled = false,
     selected = false,
     isMandatory = false,
@@ -55,7 +58,15 @@
     canDrop = false,
     isOver = false,
     canDrag = false,
-    referencable = false
+    referencable = false,
+    onClick = () => {},
+    onMarked = (_: boolean) => {},
+    onEdit = () => {},
+    onApplyDefaults = () => {},
+    onUnlink = () => {},
+    onReferenceClick = () => {},
+    onSetDefault = () => {},
+    onSelectChange = () => {},
   }: Props = $props();
 
 
@@ -68,15 +79,14 @@
     return 'default'
   }
 
-
-
   // ==== Event Handlers ====
-  function handleOnClick() { if (canClick) dispatch('click'); }
-  function toggleMark() { if(canMark) dispatch('marked', !marked); }
-  function handleOnEdit() { if (canEdit) dispatch('edit'); }
-  function handleOnApplyDefaults() { if (canApplyDefaults) dispatch('applyDefaults'); }
-  function handleOnUnlink() { if (canUnlink) dispatch('unlink'); }
-  function handleOnReferenceClick() { if (canClickReference) dispatch('referenceClick'); }
+  function handleOnClick() { if (canClick) onClick(); }
+  function toggleMark() { if(canMark) onMarked(!marked); }
+  function handleOnEdit() { if (canEdit) onEdit(); }
+  function handleOnApplyDefaults() { if (canApplyDefaults) onApplyDefaults(); }
+  function handleOnUnlink() { if (canUnlink) onUnlink(); }
+  function handleOnReferenceClick() { if (canClickReference) onReferenceClick(); }
+  function handleOnSetDefault() { if (canSetDefault) onSetDefault(); }
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
   let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
@@ -101,7 +111,7 @@
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
-          <Checkbox checked={selected} on:change={() => dispatch('selectChange')}/>
+          <Checkbox checked={selected} onchange={onSelectChange}/>
         </OscdTooltip>
       {/if}
     </div>
@@ -124,6 +134,14 @@
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
+            fillColor={onPrimaryColor}
+          />
+        {/if}
+        {#if canSetDefault}
+          <OscdIconActionButton
+            type="star"
+            tooltip="Set as Default"
+            onClick={handleOnSetDefault}
             fillColor={onPrimaryColor}
           />
         {/if}
@@ -227,8 +245,7 @@
   .oscd-card-item.selected .oscd-card-subtitle,
   .oscd-card-item.selected .oscd-references,
   .oscd-card-item.mandatory .oscd-card-title,
-  .oscd-card-item.mandatory .oscd-card-subtitle,
-  .oscd-card-item.mandatory .oscd-references {
+  .oscd-card-item.mandatory .oscd-card-subtitle {
     color: white;
   }
 

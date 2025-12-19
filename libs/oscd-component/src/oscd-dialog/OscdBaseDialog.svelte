@@ -1,6 +1,5 @@
 <script lang="ts">
   import Dialog, { Actions, Content, Header } from '@smui/dialog';
-  import { createEventDispatcher } from 'svelte';
   import Button from '@smui/button';
   import { OscdIconActionButton } from '../index';
 
@@ -9,6 +8,7 @@
     title?: string;
     confirmActionText?: string;
     cancelActionText?: string;
+    confirmActionColor?: 'primary' | 'danger';
     width?: string;
     maxWidth?: string;
     height?: string;
@@ -17,12 +17,17 @@
     color?: string;
     showCloseButton?: boolean;
     content?: import('svelte').Snippet;
+
+    onClose?: () => void;
+    onCancel?: () => void;
+    onConfirm?: () => void;
   }
 
   let {
     open = $bindable(false),
     title = '',
     confirmActionText = 'Confirm',
+    confirmActionColor = 'primary',
     cancelActionText = 'Cancel',
     width = '80vw',
     maxWidth = '85vw',
@@ -31,24 +36,37 @@
     confirmDisabled = false,
     color = 'var(--mdc-theme-primary, #ff3e00)',
     showCloseButton = true,
-    content
+    content,
+
+    onClose = () => {},
+    onCancel = () => {},
+    onConfirm = () => {},
   }: Props = $props();
 
-  const dispatch = createEventDispatcher();
-
-  function handleClose(e) {
-    if (e.detail.action === 'cancel') dispatch('cancel');
-    else if (e.detail.action === 'confirm') dispatch('confirm');
-    else if (e.detail.action === 'close') dispatch('close');
-    else dispatch('close');
+  function handleClose(e: CustomEvent<{action: string}>) {
+    if (e.detail.action === 'cancel') onCancel()
+    else if (e.detail.action === 'confirm') onConfirm()
+    else if (e.detail.action === 'close') onClose()
+    else onClose();
   }
+
+  let confirmButtonStyle = $derived.by(() => {
+    let confirmColor;
+    if (confirmActionColor === 'primary') {
+      confirmColor = color;
+    } else {
+      confirmColor = '#FF203A'
+    }
+
+    return confirmDisabled ? '' : `background-color: ${confirmColor}; color: white;`
+  })
 </script>
 
 <Dialog
   bind:open
   aria-labelledby="large-scroll-title"
   aria-describedby="large-scroll-content"
-  on:SMUIDialog:closed={(e) => handleClose(e)}
+  onSMUIDialogClosed={handleClose}
   surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight};`}
 >
 
@@ -59,7 +77,7 @@
       <OscdIconActionButton
         onClick={() => {
           open = false;
-          dispatch('close');
+          onClose();
         }}
         tooltip="Close"
         tooltipSide="left"
@@ -84,10 +102,9 @@
         </Button>
       {/if}
       <Button
-        color="primary"
         action="confirm"
         disabled={confirmDisabled}
-        style={confirmDisabled ? '' : `background-color: ${color}; color: white;`}
+        style={confirmButtonStyle}
         tabindex="0"
       >{confirmActionText}</Button>
     </Actions>

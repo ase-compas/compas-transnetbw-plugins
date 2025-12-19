@@ -3,9 +3,9 @@
   style="max-width: 100%; width: 100%;"
 >
   <Head>
-    <Row class="header-row">
+    <Row class="header-title-row">
       {#each columnDefs as col}
-        <Cell on:click={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
+        <Cell onclick={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
             <div class="cell-header">
               <span class="header-title">{col.headerName}</span>
@@ -26,7 +26,13 @@
                 {/if}
               {/if}
             </div>
-
+          </div>
+        </Cell>
+      {/each}
+    </Row>
+    <Row class="header-filter-row">
+      {#each columnDefs as col}
+        <Cell>
             {#if col.filter}
               {#if col.filterType === 'text'}
                 <input
@@ -45,7 +51,6 @@
                 />
               {/if}
             {/if}
-          </div>
         </Cell>
       {/each}
     </Row>
@@ -60,34 +65,46 @@
             <div class="cell-actions">
               {#each rowActions as action}
                 {#if action.iconComponent}
+                <OscdTooltip content={action.tooltip} hoverDelay={500}>
                   <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                </OscdTooltip>
                 {:else}
-                  <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
-                    {#if action.icon === "add"}
-                      <OscdAddIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "cancel"}
-                      <OscdCancelIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "download"}
-                      <OscdDownloadIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "find-in-page"}
-                      <OscdFindInPageIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "remove"}
-                      <OscdRemoveIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "edit"}
-                      <OscdEditIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "delete"}
-                      <OscdDeleteIcon svgStyles="margin: unset" />
-                    {:else}
-                      <OscdRefreshIcon svgStyles="margin: unset" />
-                    {/if}
-                  </OscdButton>
+                  <OscdTooltip content={action.tooltip} hoverDelay={500}>
+                    <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                      {#if action.icon === "add"}
+                        <OscdAddIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "cancel"}
+                        <OscdCancelIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "download"}
+                        <OscdDownloadIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "find-in-page"}
+                        <OscdFindInPageIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "remove"}
+                        <OscdRemoveIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "edit"}
+                        <OscdEditIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "delete"}
+                        <OscdDeleteIcon svgStyles="margin: unset" />
+                      {:else}
+                        <OscdRefreshIcon svgStyles="margin: unset" />
+                      {/if}
+                    </OscdButton>
+                  </OscdTooltip>
                 {/if}
               {/each}
             </div>
           </Cell>
         {:else}
           <Cell numeric={col.numeric} style={col.cellStyle}>
-            {#if col.valueFormatter}
+            {#if col.cellRenderer}
+              {@const CellRenderer = col.cellRenderer}
+              <CellRenderer
+                row={row}
+                value={row[col.field]}
+                col={col}
+                {...(col.cellRendererProps ?? {})}
+              />
+            {:else if col.valueFormatter}
               {col.valueFormatter(row[col.field])}
             {:else}
               {row[col.field] ?? ''}
@@ -105,7 +122,7 @@
       indeterminate
       bind:closed={loadingDone}
       aria-label="Data is being loaded..."
-      
+
     />
   {/snippet}
 </DataTable>
@@ -127,6 +144,7 @@
   } from "@oscd-transnet-plugins/oscd-icons";
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
   import { v4 as uuidv4 } from 'uuid';
+  import OscdTooltip from '../oscd-tooltip/OscdTooltip.svelte';
 
   interface Props {
     loadingDone?: boolean;
@@ -167,7 +185,7 @@
     let filtered = rowData.filter(row => {
       return columnDefs.every(col => {
         const filterValue = filters[col.field];
-        const fieldValue = row[col.field];
+        const fieldValue = col.filterValueGetter ? col.filterValueGetter(row) : row[col.field];
         if (!filterValue) {
           return true;
         }
@@ -239,7 +257,17 @@
     flex-direction: column;
   }
 
-  :global(.mdc-data-table__table) {
+
+  :global(.mdc-data-table__header-row.header-title-row .mdc-data-table__header-cell) {
+    border-bottom: none !important;
+  }
+
+  :global(.mdc-data-table__header-row.header-title-row) {
+    height: 0;
+  }
+
+  /*
+  .mdc-data-table {
     font-family: 'Roboto', sans-serif;
     border-collapse: collapse;
     width: 100%;
@@ -273,13 +301,13 @@
     padding: 12px 15px;
     text-align: left;
     font-size: 0.9rem;
-    font-size: 0.9rem;
     color: #555;
   }
 
   :global(.mdc-data-table__table tbody td.numeric) {
     text-align: right;
   }
+  */
 
   input[type="text"], input[type="number"] {
     padding: 5px 8px;
@@ -298,7 +326,8 @@
     outline: none;
   }
 
-  .cell-actions :global(button) {
+  /*
+  button {
     background-color: #007bff;
     color: white;
     padding: 8px 16px;
@@ -312,6 +341,7 @@
   .cell-actions :global(button:hover) {
     background-color: #0056b3;
   }
+  */
 
   .cell-actions {
     display: flex;
@@ -323,17 +353,21 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-    :global(.mdc-data-table__table) {
+    /*
+    table {
       font-size: 0.8rem;
     }
+    */
 
     input[type="text"], input[type="number"] {
       font-size: 0.85rem;
     }
 
-    .cell-actions :global(button) {
+    /*
+    button {
       font-size: 0.8rem;
     }
+    */
   }
 
   svg {
@@ -349,9 +383,11 @@
     cursor: pointer;
   }
 
-  :global(.header-title svg) {
+  /*
+  .header-title svg {
     margin-left: 4px;
   }
+  */
 
   .cell-header {
     display: flex;

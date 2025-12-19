@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { OscdTooltip } from '../../../../../libs/oscd-component/src';
   import { OscdCheckIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../../libs/oscd-icons/src';
+  import StepCircle from './StepCircle.svelte';
 
   export type StepItem = { id: string; label: string };
 
@@ -11,6 +12,7 @@
     currentId?: string | null;
     status?: Record<string, 'check' | 'warning' | 'error'>;
     tooltipMap?: Record<string, string>;
+    onSelect?: (itemId: string) => void;
   }
 
   let {
@@ -18,10 +20,9 @@
     visited = [],
     currentId = null,
     status = {},
-    tooltipMap = {}
+    tooltipMap = {},
+    onSelect
   }: Props = $props();
-
-  const dispatch = createEventDispatcher<{ select: string }>();
 </script>
 
 <div class="steps">
@@ -29,25 +30,16 @@
     <div class="step">
       <OscdTooltip content={tooltipMap[item.id] ?? ''} side="bottom">
         <button
-          onclick={() => dispatch('select', item.id)}
-          class:not-visited={!visited.includes(item.id)}
-          class:current={item.id === currentId}
-          class:visited={visited.includes(item.id) && item.id !== currentId}
+          onclick={() => onSelect(item.id)}
           aria-current={item.id === currentId ? 'step' : undefined}
+          class="step-button"
         >
-          {#if visited.includes(item.id) && item.id !== currentId}
-            {#if status[item.id] === 'check'}
-              <OscdCheckIcon />
-            {:else if status[item.id] === 'error'}
-              <OscdErrorIcon />
-            {:else if status[item.id] === 'warning'}
-              <OscdWarningIcon />
-            {:else}
-              {i + 1}
-            {/if}
-          {:else}
-            {i + 1}
-          {/if}
+          <StepCircle
+            number={i + 1}
+            active={item.id === currentId}
+            visited={visited.includes(item.id) && item.id !== currentId}
+            status={status[item.id]}
+          />
         </button>
       </OscdTooltip>
       <p>{item.label}</p>
@@ -77,41 +69,20 @@
     cursor: pointer;
   }
 
-  .step :global(button) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-
   .step-line {
     width: 56px;
     height: 1px;
     background-color: #6B9197;
   }
 
-  .step :global(button) {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid transparent;
-    border-radius: 50%;
-    font-weight: 600;
-    transition: background-color 0.2s ease;
-  }
-
-  .step :global(button.not-visited) {
-    background-color: #6B9197;
-    color: #ffffff;
-  }
-
-  .step :global(button.current) {
-    background-color: #D9D800;
-    color: #004552;
-  }
-
-  .step :global(button.visited) {
-    background-color: #ffffff;
-    color: #004552;
+  .step-button {
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
 

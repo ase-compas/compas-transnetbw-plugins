@@ -17,18 +17,20 @@
   } from "@oscd-transnet-plugins/oscd-component";
   import Card from "@smui/card";
   import {OscdAddIcon, OscdRefreshIcon, OscdSaveIcon, OscdCancelIcon} from '@oscd-transnet-plugins/oscd-icons';
-  import {LocationManagerService, type Location, LocationModel, LocationStore} from "@oscd-transnet-plugins/oscd-location-manager";
+  import {LocationManagerService, LocationModel, LocationStore} from "@oscd-transnet-plugins/oscd-location-manager";
+  import { type Location } from "@oscd-transnet-plugins/oscd-archiving-api-client"
   import {take} from "rxjs";
   import {finalize, tap} from "rxjs/operators";
   import {onMount} from "svelte";
   import {_} from "svelte-i18n";
+  import "svelte-material-ui/bare.css"
+  import "../public/material-icon.css"
+  import "../public/global.css"
+  import "../public/smui.css"
 
   const locationManagerService = LocationManagerService.getInstance();
-  interface Props {
-    locationStore?: any;
-  }
+  const locationStore = new LocationStore()
 
-  let { locationStore = new LocationStore() }: Props = $props();
   const DialogState = {
     Closed: 'closed',
     Update: 'update',
@@ -39,14 +41,18 @@
 
   let loadingDone = $state(false);
   let dialogState: DialogState = $state(DialogState.Closed);
-  let currentSelectLocation: Location | null = $state(null);
+  let hasSelection = $state(false);
+  let currentSelectLocation: Location = $state(emptyLocation());
+
+  function emptyLocation(): Location {
+    return { uuid: undefined, key: '', name: '', description: '', assignedResources: undefined };
+  }
 
   let columnDefs = $derived([
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('key'), field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('description'), field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
+    { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: false, filterType: 'number', sortable: true },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ]);
   //loading quickfix for css to load
@@ -64,23 +70,26 @@
   ];
 
   function update(row: Location) {
-    currentSelectLocation = row;
+    currentSelectLocation = {...row};
+    hasSelection = true;
     dialogState = DialogState.Update;
   }
 
   function create() {
-    currentSelectLocation = new LocationModel("", "");
+    currentSelectLocation = {...emptyLocation()};
+    hasSelection = true;
     dialogState = DialogState.Create;
   }
 
   function remove(row: Location) {
-    currentSelectLocation = row;
+    currentSelectLocation = {...row};
+    hasSelection = true;
     dialogState = DialogState.Remove;
   }
 
   function onUpdateOrCreateSave() {
     try {
-      const isUpdate = currentSelectLocation?.uuid !== undefined;
+      const isUpdate = currentSelectLocation?.uuid !== undefined && currentSelectLocation.uuid !== '';
       const locationServiceRequest = isUpdate
         ? locationManagerService.updateLocation({ locationId: currentSelectLocation.uuid, location: currentSelectLocation})
         : locationManagerService.createLocation(currentSelectLocation);
@@ -109,7 +118,8 @@
 
   function onCloseDialog() {
     dialogState = DialogState.Closed;
-    currentSelectLocation = null;
+    hasSelection = false;
+    currentSelectLocation = {...emptyLocation()};
   }
 
   function load() {
@@ -136,7 +146,7 @@
 {:else}
   <div class="location-manager-container">
     <OscdLoadingSpinner {loadingDone} />
-    <OscdDialog open={dialogState === DialogState.Remove} on:close={onCloseDialog}>
+    <OscdDialog open={dialogState === DialogState.Remove} onClose={onCloseDialog}>
       {#snippet title()}
             <h3 >{$_('delete_location', { values: { name: currentSelectLocation?.name }})}</h3>
           {/snippet}
@@ -153,7 +163,7 @@
         </div>
           {/snippet}
     </OscdDialog>
-    <OscdDialog open={dialogState === DialogState.Update || dialogState === DialogState.Create} on:close={onCloseDialog}>
+    <OscdDialog open={dialogState === DialogState.Update || dialogState === DialogState.Create} onClose={onCloseDialog}>
       {#snippet title()}
             <h3 >{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
           {/snippet}
@@ -204,9 +214,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  @import "/global.css";
-  @import "/material-icon.css";
-  @import '/smui.css';
-</style>

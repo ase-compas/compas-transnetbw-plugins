@@ -1,16 +1,16 @@
 import {
   type BasicType,
   type BasicTypes,
-  type ChildNameFilter, DataTypeKind,
+  type ChildNameFilter,
+  DataTypeKind,
   type DataTypeUpdate,
   type LNodeType,
   type LNodeTypeDetails,
   type ObjectReferenceDetails,
-  type TypeOption
+  type TypeOption,
 } from '../domain';
 import { type IDataTypeRepository } from '../repositories';
-import { type IDataTypeService } from './data-type.service';
-import { type ITypeSpecificationService } from './type-specification.service';
+import { type IDataTypeService } from './common-data-type';
 import { BasicTypeMapper } from '../mappers';
 
 export interface ILNodeTypeService {
@@ -58,7 +58,7 @@ export interface ILNodeTypeService {
    */
   getReferencedTypes(
     id: string,
-    childNameFilter?: ChildNameFilter
+    childNameFilter?: ChildNameFilter,
   ): Promise<BasicTypes>;
 
   /**
@@ -69,7 +69,7 @@ export interface ILNodeTypeService {
    */
   getAssignableTypes(
     lnClass: string,
-    childNameFilter?: ChildNameFilter
+    childNameFilter?: ChildNameFilter,
   ): Promise<BasicTypes>;
 
   /**
@@ -92,14 +92,22 @@ export class LNodeTypeService implements ILNodeTypeService {
   constructor(
     public typeRepo: IDataTypeRepository,
     public dataTypeService: IDataTypeService,
-    public typeSpecificationService: ITypeSpecificationService,
   ) {}
 
   async getTypeById(id: string): Promise<LNodeTypeDetails> {
-    const dataType: LNodeType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id) as LNodeType;
-    if (!dataType) throw new Error(`Unable to find logical node type with id ${id}`);
+    const dataType: LNodeType = this.typeRepo.findDataTypeById(
+      DataTypeKind.LNodeType,
+      id,
+    ) as LNodeType;
+    if (!dataType)
+      throw new Error(`Unable to find logical node type with id ${id}`);
 
-    const objRefDetails: ObjectReferenceDetails[] = await this.dataTypeService.getObjectReferenceDetails(DataTypeKind.LNodeType, dataType.lnClass, dataType.children);
+    const objRefDetails: ObjectReferenceDetails[] =
+      await this.dataTypeService.getObjectReferenceDetails(
+        DataTypeKind.LNodeType,
+        dataType.lnClass,
+        dataType.children,
+      );
 
     return {
       id: dataType.id,
@@ -109,7 +117,10 @@ export class LNodeTypeService implements ILNodeTypeService {
   }
 
   async isLNodeIdTaken(id: string): Promise<boolean> {
-    const existingType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id);
+    const existingType = this.typeRepo.findDataTypeById(
+      DataTypeKind.LNodeType,
+      id,
+    );
     return Promise.resolve(!!existingType);
   }
 
@@ -118,16 +129,28 @@ export class LNodeTypeService implements ILNodeTypeService {
     if (!data.id) throw new Error('No id provided');
     if (!data.instanceType) throw new Error('No innstance type provided');
 
-    const configuredObjRefDetails = await this.dataTypeService.getConfiguredObjectReferenceDetails(DataTypeKind.LNodeType, data.instanceType, data.children)
+    const configuredObjRefDetails =
+      await this.dataTypeService.getConfiguredObjectReferenceDetails(
+        DataTypeKind.LNodeType,
+        data.instanceType,
+        data.children,
+      );
 
-    const node: LNodeType = { id: data.id, lnClass: data.instanceType, children: configuredObjRefDetails };
+    const node: LNodeType = {
+      id: data.id,
+      lnClass: data.instanceType,
+      children: configuredObjRefDetails,
+    };
     this.typeRepo.upsertDataType(DataTypeKind.LNodeType, node);
 
     return Promise.resolve(true);
   }
 
   async duplicateType(id: string, newId?: string): Promise<LNodeTypeDetails> {
-    const existingType = this.typeRepo.findDataTypeById(DataTypeKind.LNodeType, id);
+    const existingType = this.typeRepo.findDataTypeById(
+      DataTypeKind.LNodeType,
+      id,
+    );
     if (!existingType)
       throw new Error(`Unable to find logical node type with id ${id}`);
 
@@ -138,27 +161,52 @@ export class LNodeTypeService implements ILNodeTypeService {
     };
 
     this.typeRepo.upsertDataType(DataTypeKind.LNodeType, duplicate);
-    return this.getTypeById(duplicateId)
+
+    const objRefDetails = await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.LNodeType, existingType.lnClass);
+
+    return {
+      id: newId,
+      lnClass: existingType.lnClass,
+      children: objRefDetails,
+    };
   }
 
   async deleteTypeById(id: string): Promise<boolean> {
     return Promise.resolve(
-      this.typeRepo.deleteDataTypeById(DataTypeKind.LNodeType, id)
+      this.typeRepo.deleteDataTypeById(DataTypeKind.LNodeType, id),
     );
   }
 
-  async getReferencedTypes(id: string, childNameFilter: ChildNameFilter): Promise<BasicTypes> {
-    const dataType = await this.dataTypeService.getReferencedTypes(DataTypeKind.LNodeType, id, childNameFilter)
+  async getReferencedTypes(
+    id: string,
+    childNameFilter: ChildNameFilter,
+  ): Promise<BasicTypes> {
+    const dataType = await this.dataTypeService.getReferencedTypes(
+      DataTypeKind.LNodeType,
+      id,
+      childNameFilter,
+    );
     return BasicTypeMapper.mapDataTypesToBasicTypes(dataType);
   }
 
-  async getAssignableTypes(lnClass: string, childNameFilter: string[] = []): Promise<BasicTypes> {
-    const dataTypes = await this.dataTypeService.getAssignableTypes(DataTypeKind.LNodeType, lnClass, childNameFilter);
-    return BasicTypeMapper.mapDataTypesToBasicTypes(dataTypes)
+  async getAssignableTypes(
+    lnClass: string,
+    childNameFilter: string[] = [],
+  ): Promise<BasicTypes> {
+    const dataTypes = await this.dataTypeService.getAssignableTypes(
+      DataTypeKind.LNodeType,
+      lnClass,
+      childNameFilter,
+    );
+    return BasicTypeMapper.mapDataTypesToBasicTypes(dataTypes);
   }
 
   async getDefaultType(lnClass: string): Promise<LNodeTypeDetails> {
-    const children: ObjectReferenceDetails[] = await this.dataTypeService.getDefaultObjectReferenceDetails(DataTypeKind.LNodeType, lnClass)
+    const children: ObjectReferenceDetails[] =
+      await this.dataTypeService.getDefaultObjectReferenceDetails(
+        DataTypeKind.LNodeType,
+        lnClass,
+      );
 
     return Promise.resolve({
       id: '',
@@ -168,8 +216,12 @@ export class LNodeTypeService implements ILNodeTypeService {
   }
 
   async getAllTypes(): Promise<BasicType[]> {
-    const types = this.typeRepo.findAllDataTypesByKind(DataTypeKind.LNodeType) as LNodeType[];
-    return Promise.resolve(types.map((t) => BasicTypeMapper.mapLNodeTypeToBasicType(t)));
+    const types = this.typeRepo.findAllDataTypesByKind(
+      DataTypeKind.LNodeType,
+    ) as LNodeType[];
+    return Promise.resolve(
+      types.map((t) => BasicTypeMapper.mapLNodeTypeToBasicType(t)),
+    );
   }
 
   private generateUniqueId(baseId: string): string {

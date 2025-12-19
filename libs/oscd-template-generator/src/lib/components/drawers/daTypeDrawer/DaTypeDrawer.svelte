@@ -6,20 +6,30 @@
 
   // ===== Services & Utils =====
   import { getColumns } from './columns.config';
-  import { createObjectReferenceStore, doc } from '../../../stores';
-  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
+    createObjectReferenceStore,
+    handleDeleteTypeWorkflow,
+    pluginStore
+  } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import {
+  applyDefaultWarningNotification,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
-    getDisplayReferenceItems
-  } from '../../../utils/typeBoardUtils';
+    getDisplayReferenceItems,
+    handleRenameTypeWorkflow,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
+    setTypeAsDefaultWithConfirmation,
+    setTypeAsDefaultWithConfirmationForBasicType
+  } from '../../../utils';
   import {
     openCreateDataAttributeTypeDialog,
     openCreateEnumTypeDialog,
     openDataAttributeTypeDrawer,
     openDataEnumTypeDrawer,
     openReferencedTypeDrawer
-  } from '../../../utils/overlayUitils';
+  } from '../../../utils';
 
   // ===== Types =====
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TItem } from '../../tboard/types';
@@ -32,21 +42,29 @@
     type Mode
   } from '../../../domain';
   import type { IDaTypeService } from '../../../services/da-type.service';
-  import { getDATypeService } from '../../../services';
+  import {
+    getDataTypeService,
+    getDATypeService,
+    getDefaultTypeService,
+    type IDataTypeService,
+    type IDefaultService
+  } from '../../../services';
   import TypeHeader from '../../TypeHeader.svelte';
-  import { createEditorStore } from '../../../stores/editorStore';
+  import { createEditorStore } from '../../../stores';
 
   // ===== Services =====
   const daTypeService: IDaTypeService = getDATypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
+  const defaultTypeService: IDefaultService = getDefaultTypeService();
 
   // ===== Props =====
   interface Props {
-    mode?: 'view' | 'edit' | 'create';
+    mode?: Mode
     typeId: string;
     instanceType?: string | null;
   }
 
-  let { mode = $bindable('view'), typeId, instanceType = $bindable(null) }: Props = $props();
+  let { mode = 'view', typeId = $bindable(), instanceType = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
   const refStore = createObjectReferenceStore(async () => dataAttributeTypes.children);
@@ -55,9 +73,9 @@
   const editorStore = createEditorStore({
     onSave: async () => saveChanges(),
     onDiscard: async () => refStore.reset(),
-    initialMode: instanceType ? mode : 'view',
+    initialMode: instanceType ? mode : 'view'
   });
-  const { canEdit, isEditModeSwitchState } = editorStore;
+  const { canEdit, isEditModeSwitchState, dirty } = editorStore;
 
   // ===== State =====
   let dataAttributeTypes: DATypeDetails | null = $state(null);
@@ -73,10 +91,10 @@
 
   // ===== Lifecycle =====
   onMount(() => {
-    init()
+    validateProps();
 
     // Subscribe to doc changes to reload data
-    const unsubscribe = doc.subscribe(async () => {
+    const unsubscribe = pluginStore.updates.subscribe(async () => {
       if ($isDirty) {
         // ensure async function is awaited
         dataTypes = await loadTypes(editorStore.getCanEdit(), typeId, instanceType, $markedItemIds);
@@ -90,23 +108,27 @@
 
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
-    if (reason === 'save') {
+    if (reason === 'save' && $isDirty) {
       await editorStore.save();
+      return true;
+    }
+
+    if (reason === 'force') {
       return true;
     }
 
     return await editorStore.confirmLeave();
   };
 
-  // ===== Initialization =====
-  function init() {
-    validateProps();
-    loadData();
-  }
-
   async function loadData() {
+    if(editorStore.isCreateMode()) {
+      await editorStore.switchMode('edit')
+      await daTypeService.createOrUpdateType({id: typeId, instanceType: instanceType, children: []})
+      return
+    }
     const result = await loadDAType(editorStore.isCreateMode(), typeId, instanceType);
-    if (!result?.instanceType || result.instanceType === '') mode = 'view'
+    typeId = result.id
+    instanceType = result.instanceType;
     dataAttributeTypes = result;
     await refStore.reload();
   }
@@ -151,6 +173,48 @@
     else if (columnId === 'enumTypes') openDataEnumTypeDrawer(openingMode, itemId);
   }
 
+  async function handleOnSetAsDefault(itemId: string, columnId: string) {
+    let types: BasicType[];
+    if (columnId === 'dataObjectTypes') {
+      types = dataTypes.dataObjectTypes;
+    } else if (columnId === 'dataAttributeTypes') {
+      types = dataTypes.dataAttributeTypes;
+    } else if (columnId === 'enumTypes') {
+      types = dataTypes.enumTypes;
+    } else {
+      return;
+    }
+    const type = types.find(t => t.id === itemId);
+    if(!type) return;
+
+    try {
+      const success = await setTypeAsDefaultWithConfirmationForBasicType(defaultTypeService, dataTypeService, type)
+      if (success) setDefaultTypeSuccessNotification(type.id, type.typeKind, type.instanceType);
+    } catch (e) {
+      console.error(e);
+      setDefaultTypeErrorNotification(type.id, e?.message ?? "")
+    }
+  }
+
+  async function handleApplyDefaults(detail) {
+    const {itemId} = detail;
+    try {
+      const defaultRootId = await dataTypeService.applyDefaultType(DataTypeKind.DAType, typeId, itemId);
+      refStore.setTypeReference(itemId, defaultRootId);
+    } catch (e) {
+      applyDefaultWarningNotification(e?.message)
+    }
+  }
+
+  async function handleClickSetAsDefault() {
+    try {
+      const success = await setTypeAsDefaultWithConfirmation(defaultTypeService, dataTypeService, DataTypeKind.DAType, instanceType, typeId);
+      if(success) setDefaultTypeSuccessNotification(typeId, DataTypeKind.DAType, instanceType);
+    } catch (e) {
+      setDefaultTypeErrorNotification(typeId, e?.message);
+    }
+  }
+
   function handleOnReferenceClick(itemId: string) {
     const ref = $refStore.find(child => child.name === itemId);
     openReferencedTypeDrawer(ref, 'view');
@@ -164,6 +228,20 @@
   function handleItemDrop({ source, target }: ItemDropOnItemEventDetail) {
     if (!source || !target) return;
     refStore.setTypeReference(target.itemId, source.itemId);
+  }
+
+  async function handleOnDelete() {
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.DAType, typeId);
+    if(success) await closeDrawer('force');
+  }
+
+
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.DAType, typeId);
+   if(newTypeId) {
+     typeId = newTypeId;
+     loadData();
+   }
   }
 
   // ===== Helpers =====
@@ -180,9 +258,9 @@
     }
   }
 
-  function handleModeChange(newMode: 'view' | 'edit') {
-    editorStore.switchMode(newMode);
-    loadData();
+  async function handleModeChange(newMode: 'view' | 'edit') {
+    const ok = await editorStore.switchMode(newMode);
+    if (ok) await loadData();
   }
   let referenceDataObjects = $derived(
     getDisplayReferenceItems($refStore, editorStore.getCanEdit(), acceptDrop)
@@ -198,13 +276,16 @@
       ).then((types) => (dataTypes = types));
     }
   });
+
   let boardData = $derived({
     refs: referenceDataObjects,
     dataObjectTypes: getDisplayDataTypeItems(dataTypes.dataObjectTypes, true),
     dataAttributeTypes: getDisplayDataTypeItems(dataTypes.dataAttributeTypes, true),
     enumTypes: getDisplayDataTypeItems(dataTypes.enumTypes, true),
   });
+
   let columns = $derived(getColumns($canEdit));
+
   $effect(() => {
     if ($isDirty) editorStore.makeDirty();
     else editorStore.makeClean();
@@ -215,23 +296,29 @@
   {typeId}
   type={DataTypeKind.DAType}
   instanceType={dataAttributeTypes?.instanceType}
-  isEditMode={$isEditModeSwitchState}
-  on:modeChange={e => handleModeChange(e.detail)}
-  on:instanceTypeChange={(e) => {
-    instanceType = e.detail;
+  setAsDefaultDisabled={$dirty}
+  bind:isEditMode={$isEditModeSwitchState}
+  onModeChange={e => handleModeChange(e)}
+  onClickDefault={() => handleClickSetAsDefault()}
+  onDelete={handleOnDelete}
+  onRename={handleRename}
+  onInstanceTypeChange={(e) => {
+    instanceType = e;
     editorStore.switchMode('create');
-    init();
+    loadData();
     }
   }
 />
 <TBoard
   {columns}
   data={boardData}
-  on:itemMarkChange={e => handleOnMark(e.detail)}
-  on:itemSelectChange={e => handleOnSelect(e.detail)}
-  on:itemDrop={e => handleItemDrop(e.detail)}
-  on:columnActionClick={e => handleActionClick(e.detail)}
-  on:itemEdit={e => handleOnEdit(e.detail.itemId, e.detail.columnId)}
-  on:itemReferenceClick={e => handleOnReferenceClick(e.detail.itemId)}
-  on:itemUnlink={({ detail: { itemId }}) => refStore.removeTypeReference(itemId)}
+  onItemMarkChange={e => handleOnMark(e)}
+  onItemSelectChange={e => handleOnSelect(e)}
+  onItemDrop={e => handleItemDrop(e)}
+  onColumnActionClick={e => handleActionClick(e)}
+  onItemEdit={e => handleOnEdit(e.itemId, e.columnId)}
+  onItemReferenceClick={e => handleOnReferenceClick(e.itemId)}
+  onItemUnlink={({ itemId }) => refStore.removeTypeReference(itemId)}
+  onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
+  onItemApplyDefaults={e => handleApplyDefaults(e)}
 />

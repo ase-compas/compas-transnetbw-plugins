@@ -2,21 +2,21 @@
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
-  import type { TypeOption } from '../../../domain';
-  import { onMount } from 'svelte';
+  import type { DataTypeKind, TypeOption } from '../../../domain';
+  import type { ChangeEventDetails } from '../../forms/types';
 
   // ===== Props =====
-
-
   interface Props {
     open?: boolean;
     dialogTitle: string;
     confirmText?: string;
     idLabel?: string;
     autocompleteLabel?: string;
+    typeKind: DataTypeKind;
     getOptions?: () => Promise<TypeOption[]>;
-    isIdTaken?: (id: string) => Promise<boolean>;
-    onConfirm: (id: string, selected: any) => void;
+    onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
+    checkDefaultAvailable?: (instanceType: string) => Promise<boolean>;
+    showCreateFromDefault?: boolean;
   }
 
   let {
@@ -25,34 +25,37 @@
     confirmText = 'Confirm',
     idLabel = 'ID',
     autocompleteLabel = 'Select Option',
+    typeKind,
     getOptions = async () => [],
-    isIdTaken = async () => false,
-    onConfirm
+    onConfirm,
+    checkDefaultAvailable =  async () => false,
+    showCreateFromDefault = false
   }: Props = $props();
 
-  let id = $state();
-  let valid = $state(false);
-  let selectedItem = $state();
-  let formEl = $state();
+  let formState = $state<ChangeEventDetails | undefined>();
+
+  let valid = $derived.by(() => {
+    return formState?.valid ?? false;
+  });
+
+  function updateState(details: ChangeEventDetails) {
+    formState = details;
+  }
 
   // ===== Event Handlers =====
-  const handleCreate = () => {
-    onConfirm(id, selectedItem.id);
-  };
+  function handleCreate() {
+    if(!formState) return;
+    if(!formState.valid) return;
+    onConfirm(formState.id, formState.selectedItem.id, formState.createFromDefault);
+  }
 
-  const handleCancel = () => {
+  function handleCancel() {
     closeDialog('cancel');
-  };
+  }
 
-  const handleClose = () => {
-    closeDialog('close');
-  };
-
-  onMount(() => {
-    setTimeout(() => {
-      formEl.focus();
-    }, 300)
-  })
+  function handleClose ()  {
+    closeDialog('exit');
+  }
 
   // ===== Util Functions =====
 </script>
@@ -63,23 +66,25 @@
     confirmActionText={confirmText}
     maxWidth="800px"
     bind:open
-    on:confirm={handleCreate}
-    on:cancel={handleCancel}
-    on:close={handleClose}
+    onConfirm={handleCreate}
+    onCancel={handleCancel}
+    onClose={handleClose}
     confirmDisabled={!valid}
   >
     {#snippet content()}
         <div style="padding: 1rem;" >
         <CreateTypeForm
-          bind:this={formEl}
           {idLabel}
+          typeKind={typeKind}
+
           {autocompleteLabel}
           getOptions={getOptions}
-          isIdTakenFn={isIdTaken}
-          bind:id
-          bind:selectedItem
-          bind:valid
-          on:submit={handleCreate}
+
+          allowCreateFromDefault={showCreateFromDefault}
+          isDefaultAvailable={checkDefaultAvailable}
+
+          onSubmit={handleCreate}
+          onChange={updateState}
         />
       </div>
       {/snippet}

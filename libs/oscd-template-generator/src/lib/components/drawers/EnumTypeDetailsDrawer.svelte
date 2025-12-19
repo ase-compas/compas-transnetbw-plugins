@@ -1,18 +1,27 @@
 <script lang="ts">
-  import type { IEnumTypeService } from '../../services/enum-type.service';
-  import { getEnumTypeService } from '../../services';
+  import type { IEnumTypeService, IDefaultService, IDataTypeService } from '../../services';
+  import { getEnumTypeService, getDefaultTypeService, getDataTypeService } from '../../services';
   import { DataTypeKind, type EnumTypeDetails, type Mode } from '../../domain';
   import { onMount } from 'svelte';
-  import type { CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
   import Checkbox from '@smui/checkbox';
   import TypeHeader from '../TypeHeader.svelte';
-  import { createEditorStore } from '../../stores/editorStore';
+  import { createEditorStore } from '../../stores';
+  import {
+    handleDeleteTypeWorkflow,
+    handleRenameTypeWorkflow,
+    setDefaultTypeErrorNotification,
+    setDefaultTypeSuccessNotification,
+    setTypeAsDefaultWithConfirmation
+  } from '../../utils';
 
 
   // ===== Services =====
   const enumTypeService: IEnumTypeService = getEnumTypeService();
+  const defaultService: IDefaultService = getDefaultTypeService();
+  const dataTypeService: IDataTypeService = getDataTypeService();
 
   // ===== Props =====
   interface Props {
@@ -24,8 +33,8 @@
   let { mode = 'view', typeId, instanceTypeId = $bindable(null) }: Props = $props();
 
   // ===== Stores =====
-  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view'});
-  const { canEdit, isEditModeSwitchState } = editorStore;
+  const editorStore = createEditorStore({ onSave: async () => saveChanges(), onDiscard: async () => {}, initialMode: instanceTypeId ? mode : 'view' });
+  const { canEdit, isEditModeSwitchState, mode: currentMode, dirty } = editorStore;
 
   // ===== State =====
   let enumType: EnumTypeDetails = $state(null);
@@ -79,10 +88,25 @@
     });
   }
 
+  async function handleOnDelete() {
+    const success = await handleDeleteTypeWorkflow(DataTypeKind.EnumType, typeId);
+    if(success) await closeDrawer('force');
+  }
+
+  async function handleRename() {
+   const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.EnumType, typeId);
+   if(newTypeId) {
+     typeId = newTypeId;
+     loadData();
+   }
+  }
+
   // ===== Dialog Close Guard =====
   export const canClose = async (reason: CloseReason): Promise<boolean> => {
     if (reason === 'save') {
-      await editorStore.save();
+      if(isDirty()) await editorStore.save();
+      return true;
+    } else if (reason === 'force') {
       return true;
     } else {
       return editorStore.confirmLeave();
@@ -91,6 +115,7 @@
 
   function isDirty() {
     if(!enumType) return false;
+    if($currentMode === 'create') return true;
     const configuredNames = enumType.children.filter(item => item.meta.isConfigured).map(a => a.name).sort();
     const selectedSorted = selected.slice().sort();
     return JSON.stringify(configuredNames) !== JSON.stringify(selectedSorted);
@@ -100,9 +125,25 @@
     const ok = await editorStore.switchMode(newMode);
     if(ok) await loadData();
   }
+
+  async function handleOnSetAsDefault() {
+    try {
+      const success = await setTypeAsDefaultWithConfirmation(defaultService, dataTypeService, DataTypeKind.EnumType, enumType.instanceType, enumType.id);
+      if (success) setDefaultTypeSuccessNotification(enumType.id, DataTypeKind.EnumType, enumType.instanceType);
+    } catch (e) {
+      setDefaultTypeErrorNotification(enumType.id, e?.message);
+    }
+  }
   // ===== Derived =====
-  let filteredItems = $derived(enumType?.children.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())) ?? []);
+  let filteredItems = $derived.by(() => {
+    if (!enumType) return [];
+    const query = searchQuery.toLowerCase();
+    return enumType.children
+      .filter(item => $currentMode === 'view' ? item.meta.isConfigured : true)
+      .filter(item => item.name.toLowerCase().includes(query));
+
+  });
+
   $effect(() => {
     if (!selected) return;
     const dirty = isDirty();
@@ -115,10 +156,14 @@
   {typeId}
   type={DataTypeKind.EnumType}
   instanceType={enumType?.instanceType}
+  onClickDefault={() => handleOnSetAsDefault()}
+  setAsDefaultDisabled={$dirty}
   bind:isEditMode={$isEditModeSwitchState}
-  on:modeChange={(e) => handleModeChange(e.detail)}
-  on:instanceTypeChange={(e) => {
-    instanceTypeId = e.detail;
+  onDelete={handleOnDelete}
+  onRename={handleRename}
+  onModeChange={(e) => handleModeChange(e)}
+  onInstanceTypeChange={(e) => {
+    instanceTypeId = e;
     editorStore.switchMode('create')
     loadData();
     }

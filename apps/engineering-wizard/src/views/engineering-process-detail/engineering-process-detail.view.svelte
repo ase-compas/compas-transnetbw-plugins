@@ -1,65 +1,61 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
   import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
   import Button from '@smui/button';
-  import ProcessStepper from '../../components/engineering-process-detail/ProcessStepper.svelte';
-  import WorkflowBack from '../../components/engineering-workflow/WorkflowBack.svelte';
-  import ProcessPluginGroupsView from '../../components/engineering-process-detail/ProcessPluginGroupsView.svelte';
-  import { getBreadcrumbs, getPluginGroups } from '../../services/engineering-process-detail.service';
+  import ProcessDetailStepper from '../../components/engineering-process-detail/ProcessDetailStepper.svelte';
+  import PluginViewPanel from '../../components/engineering-process-detail/PluginViewPanel.svelte';
   import { editorTabsVisible } from '../../stores/editor-tabs.store';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
+  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { buildProcessBreadcrumbs } from '../../utils/breadcrumbs.util';
+  import { processEditModeState, selectedProcessState } from '../../services/engineering-process.svelte';
+  import WorkflowActions from '../../components/engineering-workflow/WorkflowActions.svelte';
+  import WorkflowTitle from '../../components/engineering-workflow/WorkflowTitle.svelte';
 
   interface Props {
-    currentProcess?: Process | null;
+    handleStart: (process: Process) => void;
   }
 
-  let { currentProcess = null }: Props = $props();
+  let {
+    handleStart,
+  }: Props = $props();
 
   type StepId = 'process-definition' | 'validator-configuration';
   const STEP_IDS: StepId[] = ['process-definition', 'validator-configuration'];
-
-  const dispatch = createEventDispatcher();
-
-  let isEditing = $state(false);
 
   let currentStepIndex = $state(0);
   let currentStepId = $derived(STEP_IDS[currentStepIndex] ?? STEP_IDS[0]);
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let breadcrumbs = $derived(getBreadcrumbs(currentProcess, { edit: isEditing }));
+  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedProcessState.process, { edit: processEditModeState.isEditing }));
 
-  let pluginGroups = $derived(getPluginGroups(currentProcess));
+  let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
 
   let visitedSteps: StepId[] = $state([]);
 
-  function handleBreadcrumbClick(e: CustomEvent<{ index: number }>) {
-    if (e.detail.index !== 0) return;
+  function handleBreadcrumbClick(index: number) {
+    if (index !== 0) return;
     editorTabsVisible.set(true);
-    dispatch('back');
-  }
-
-  function startProcess() {
-    if (currentProcess) dispatch('start', currentProcess);
+    selectedProcessState.process = null;
   }
 
   function startEditing() {
-    isEditing = true;
+    console.log("EDITING");
+    processEditModeState.isEditing = true;
     editorTabsVisible.set(false);
     currentStepIndex = 0;
     visitedSteps = [];
   }
 
   function exitEditing() {
-    isEditing = false;
+    processEditModeState.isEditing = false;
     editorTabsVisible.set(true);
-    dispatch('back');
+    selectedProcessState.process = null;
   }
 
-  function handleStepSelect(e: CustomEvent<StepId>) {
-    const idx = STEP_IDS.indexOf(e.detail);
+  function handleStepSelect(stepId: StepId) {
+    const idx = STEP_IDS.indexOf(stepId);
     if (idx !== -1) currentStepIndex = idx;
   }
 
@@ -71,13 +67,11 @@
     if (isAtLastStep) return;
     markStepVisited(currentStepId);
     currentStepIndex += 1;
-    dispatch('next');
   }
 
   function goToPreviousStep() {
     if (isAtFirstStep) return;
     currentStepIndex -= 1;
-    dispatch('previous');
   }
 
   function handleAddValidationClick() {
@@ -86,50 +80,33 @@
 </script>
 
 <div class="page-content">
-  {#if isEditing}
+  {#if processEditModeState.isEditing}
     <div class="stepper">
-      <WorkflowBack on:back={exitEditing} />
 
-      <ProcessStepper currentId={currentStepId} visited={visitedSteps} on:select={handleStepSelect} />
+      <WorkflowTitle onClick={exitEditing} />
 
-      <div class="stepper-navigation">
-        <button
-          type="button"
-          class="btn btn--back"
-          onclick={goToPreviousStep}
-          disabled={isAtFirstStep}
-          aria-label="Previous step"
-        >
-          Back
-        </button>
+      <ProcessDetailStepper currentId={currentStepId} visited={visitedSteps} onSelect={handleStepSelect} />
 
-        <button
-          type="button"
-          class="btn btn--next"
-          onclick={goToNextStep}
-          disabled={isAtLastStep}
-          aria-label="Next step"
-        >
-          Next
-        </button>
-      </div>
+      <WorkflowActions
+        onGoToPreviousStep={goToPreviousStep}
+        onGoToNextStep={goToNextStep}
+        onDone={exitEditing}
+
+        isAtFirstStep={isAtFirstStep}
+        isAtLastStep={isAtLastStep}
+      />
     </div>
 
     <div class="step-content">
       {#if currentStepId === 'process-definition'}
-        <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
-        </div>
         <ProcessDefinition {pluginGroups} />
       {:else if currentStepId === 'validator-configuration'}
-        <div class="header">
-          <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
-
+        <div class="header header--right">
           <Button
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-            on:click={handleAddValidationClick}
-            disabled={!currentProcess}
+            onclick={handleAddValidationClick}
+            disabled={!selectedProcessState.process}
             aria-label="Add validation"
           >
             ADD NEW VALIDATION
@@ -137,7 +114,6 @@
         </div>
         <ProcessValidationGroups
           {pluginGroups}
-          {currentProcess}
           {breadcrumbs}
           activeBreadcrumbIndex={2}
           on:addValidation={handleAddValidationClick}
@@ -148,20 +124,20 @@
   {:else}
     <div class="step-content">
       <div class="header">
-        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} on:click={handleBreadcrumbClick} />
+        <OscdBreadcrumbs {breadcrumbs} activeIndex={1} handleClick={handleBreadcrumbClick} />
 
         <Button
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-          on:click={startProcess}
-          disabled={!currentProcess}
+          onclick={() => handleStart(selectedProcessState.process)}
+          disabled={!selectedProcessState.process}
           aria-label="Start process"
         >
           START PROCESS
         </Button>
       </div>
 
-      <ProcessPluginGroupsView {pluginGroups} on:editRequested={startEditing} />
+      <PluginViewPanel {pluginGroups} requestEdit={startEditing} />
     </div>
   {/if}
 </div>
@@ -174,7 +150,6 @@
     --on-brand: #ffffff;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
   }
 
   .header {
@@ -182,6 +157,10 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
+  }
+
+  .header--right {
+    justify-content: flex-end;
   }
 
   .stepper {
@@ -193,25 +172,5 @@
     background-color: var(--brand);
   }
 
-  .stepper-navigation {
-    display: flex;
-    gap: 0.8rem;
-    justify-self: end;
-  }
-
-  .btn {
-    height: 36px;
-    min-width: 70px;
-    padding: 0 12px;
-    text-transform: uppercase;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .btn[disabled] { opacity: 0.6; cursor: default; }
-  .btn--back { color: #ffffff; background-color: #6b9197; }
-  .btn--next { background-color: #ffffff; color: var(--brand); }
-
-  .step-content { padding: 1rem 2rem; }
+  .step-content { padding: 1.5rem 1.5rem; }
 </style>

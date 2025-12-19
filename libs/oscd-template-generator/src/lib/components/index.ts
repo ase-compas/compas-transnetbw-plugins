@@ -13,6 +13,7 @@ export {default as ChooseInstanceTypeDialog } from './dialogs/ChooseInstanceType
 
 export {default as GenericCreateDialog} from './dialogs/CreateDialogs/GenericCreateDialog.svelte';
 export {default as NewLNodeTypeDialog } from './dialogs/CreateDialogs/NewLNodeTypeDialog.svelte';
+export {default as TypeRenameDialog } from './dialogs/TypeRenameDialog.svelte';
 export {default as NewDataObjectTypeDialog } from './dialogs/CreateDialogs/NewDataObjectTypeDialog.svelte';
 export {default as NewDataAttributeTypeDialog } from './dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
 export {default as NewEnumTypeDialog } from './dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
@@ -21,3 +22,9 @@ export {default as NewEnumTypeDialog } from './dialogs/CreateDialogs/NewEnumType
 export {default as LogicalNodeTypeRow} from './tables/LogicalNodeTypeRow.svelte';
 
 export * from './tboard/types';
+
+
+export {default as SetDefaultButton} from './ui/SetDefaultButton.svelte'
+
+export {default as TypeActionMenu } from './ui/TypeActionMenu.svelte'
+export {default as TypeIdInput } from './ui/TypeIdInput.svelte'

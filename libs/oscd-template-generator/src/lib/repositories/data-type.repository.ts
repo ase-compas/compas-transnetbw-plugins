@@ -1,7 +1,7 @@
 import { findElementByTagAndId } from '../utils/scdUtils';
 import {
-  DataTypeKind,
   type ChildNameFilter,
+  DataTypeKind,
   type DataTypeMap,
   type DataTypes,
   type DAType,
@@ -14,14 +14,15 @@ import {
   buildRemove,
   createAndDispatchEditEvent,
   dispatchEditEvent,
-  type EditV2
+  type EditV2,
+  type SetAttributesV2,
 } from '@oscd-transnet-plugins/oscd-event-api';
 import {
-  LNodeTypeMapperV,
-  DOTypeMapperV,
   DATypeMapperV,
+  DOTypeMapperV,
   EnumTypeMapperV,
-  type TypeMapper
+  LNodeTypeMapperV,
+  type TypeMapper,
 } from '../mappers';
 import { TypeTraverser } from '../utils/typeTraverser';
 import { PRIVATE_INSTANCE_TYPE_NS, SCL_NAMESPACE_PREFIX } from '../constants';
@@ -66,7 +67,8 @@ export interface IDataTypeRepository {
   ): DataTypeMap[K][];
 
   /**
-   * Deletes a data type by ID. Returns true if deleted, false if not found.
+   * Deletes a data type by ID. All references to this type will be set to "".
+   * Returns true if deleted, false if not found.
    * @param dataTypeKind The type of data to delete.
    * @param id The ID of the data type.
    * @returns True if deleted, false if not found.
@@ -83,6 +85,15 @@ export interface IDataTypeRepository {
     dataTypeKind: K,
     data: DataTypeMap[K]
   ): DataTypeMap[K];
+
+  applyDataTypeChanges<K extends DataTypeKind>(
+    editInputs: {
+      creates?: { kind: K; dataType: DataTypeMap[K] }[],
+      updates?: { kind: K; dataType: DataTypeMap[K] }[]
+    }
+  ): boolean;
+
+  renameDataTypeById(dataTypeKind: DataTypeKind, id: string, newName: string): boolean;
 }
 
 
@@ -96,12 +107,12 @@ export class DataTypeRepository implements IDataTypeRepository {
     [DataTypeKind.DAType]: new DATypeMapperV(),
     [DataTypeKind.EnumType]: new EnumTypeMapperV(),
   };
-  private static instanceTypeRegistry = {
-    [DataTypeKind.LNodeType]: 'lnClass',
-    [DataTypeKind.DOType]: 'cdc',
-    [DataTypeKind.DAType]: undefined,
-    [DataTypeKind.EnumType]: undefined,
-  }
+  private static typeOrder: DataTypeKind[] = [
+    DataTypeKind.LNodeType,
+    DataTypeKind.DOType,
+    DataTypeKind.DAType,
+    DataTypeKind.EnumType,
+  ];
 
   constructor(private doc: XMLDocument, private hostElement: HTMLElement) {}
 
@@ -162,39 +173,160 @@ export class DataTypeRepository implements IDataTypeRepository {
     const el = findElementByTagAndId(this.doc, dataTypeKind, id);
     if (!el) return false;
 
-    const edit = buildRemove(el);
-    createAndDispatchEditEvent(this.hostElement, edit);
+    const root: Element = this.doc.querySelector(DataTypeRepository.rootElementTagName);
+    if(!root) return false;
+
+    // get all elements referencing to type to delete
+    const editEvents: EditV2[] = []
+    const refEls = root.querySelectorAll(`[type="${id}"]`);
+
+    // set their type attribute to empty
+    refEls.forEach(refEl => {
+      const edit: SetAttributesV2 = {
+        element: refEl,
+        attributes: { type: '' },
+        attributesNS: {},
+      };
+      editEvents.push(edit);
+    });
+
+
+    const removeEvent = buildRemove(el);
+    editEvents.push(removeEvent);
+    createAndDispatchEditEvent(this.hostElement, editEvents);
     return true;
   }
 
+
+  renameDataTypeById(dataTypeKind: DataTypeKind, id: string, newName: string): boolean {
+    const el = findElementByTagAndId(this.doc, dataTypeKind, id);
+    if (!el) return false;
+
+    const root: Element = this.doc.querySelector(DataTypeRepository.rootElementTagName);
+    if(!root) return false;
+    const editEvents: EditV2[] = []
+
+    const typeElementRenameEvent : SetAttributesV2 = {
+      element: el,
+      attributes: { id: newName },
+      attributesNS: {},
+    }
+    editEvents.push(typeElementRenameEvent);
+
+    // update id for references
+    const refEls = root.querySelectorAll(`[type="${id}"]`);
+
+    // set their type attribute to empty
+    refEls.forEach(refEl => {
+      const edit: SetAttributesV2 = {
+        element: refEl,
+        attributes: { type: newName },
+        attributesNS: {},
+      };
+      editEvents.push(edit);
+    });
+
+    createAndDispatchEditEvent(this.hostElement, editEvents);
+    return true;
+
+  }
+
   upsertDataType<K extends DataTypeKind>(dataTypeKind: K, data: DataTypeMap[K]): DataTypeMap[K] {
-    const mapper = DataTypeRepository.typeMapperRegistry[dataTypeKind];
     if (!data.id) {
-      throw new Error(
-        `Upsert failed: DataType of kind "${dataTypeKind}" is missing an "id"`
-      );
+      throw new Error(`Upsert failed: DataType of kind "${dataTypeKind}" is missing an "id"`);
     }
 
-    const newElement = mapper.toElement(data, this.doc);
-    const root = this.ensureRootElement();
-
-    const existing = findElementByTagAndId(this.doc, dataTypeKind, data.id);
-    if (existing) {
-      this.replaceElement(existing, newElement);
-      return data;
-    }
-
-    const reference = this.findInsertionReference(root, dataTypeKind);
     createAndDispatchEditEvent(
       this.hostElement,
-      buildInsert(root, newElement, reference)
+      this.buildUpsertEdit(dataTypeKind, data),
     );
+
     return data;
+  }
+
+  applyDataTypeChanges<K extends DataTypeKind>(
+    editInputs: {
+      creates?: { kind: K; dataType: DataTypeMap[K] }[],
+      updates?: { kind: K; dataType: DataTypeMap[K] }[]
+    }
+  ): boolean {
+    const edits: {kind: DataTypeKind, edits: EditV2[]}[] = [];
+    const root = this.ensureRootElement();
+
+    // Handle Creates
+    // skips create if type already exists
+    for (const create of editInputs.creates ?? []) {
+      const { kind, dataType } = create;
+      if (!dataType.id) {
+        console.error(`Create skipped: ${kind} is missing an "id"`);
+        continue;
+      }
+
+      const existing = findElementByTagAndId(this.doc, kind, dataType.id);
+      if (existing) {
+        console.warn(`Create skipped: ${kind} with id "${dataType.id}" already exists`);
+        continue;
+      }
+
+      const mapper = DataTypeRepository.typeMapperRegistry[kind];
+      const newEl = mapper.toElement(dataType, this.doc);
+      const reference = this.findInsertionReference(root, kind);
+      edits.push({kind: kind, edits: [buildInsert(root, newEl, reference)]});
+    }
+
+    //  Handle Updates
+    // overwrites existing types, creates if not existing
+    for (const update of editInputs.updates ?? []) {
+      const { kind, dataType } = update;
+      edits.push({kind: kind, edits: this.buildUpsertEdit(kind, dataType)});
+    }
+
+    // Dispatch once if any edits
+    if (edits.length > 0) {
+      // sort by hierarchy to avoid dependency issues
+      edits.sort((a, b) => {
+        return DataTypeRepository.typeOrder.indexOf(a.kind) - DataTypeRepository.typeOrder.indexOf(b.kind);
+      });
+
+      const flatEdits = edits.flatMap(e => e.edits);
+      dispatchEditEvent(this.hostElement, flatEdits);
+      return true;
+    }
+
+    return false;
   }
 
   /** Sets a new XML document. */
   public setDocument(doc: XMLDocument): void {
     this.doc = doc;
+  }
+
+  public setHost(host: HTMLElement): void {
+    this.hostElement = host;
+  }
+
+  // ==== Edit API Builders ====
+  private buildUpsertEdit<K extends DataTypeKind>(kind: K, data: DataTypeMap[K]): EditV2[] {
+    const mapper = DataTypeRepository.typeMapperRegistry[kind];
+    const root = this.ensureRootElement();
+    const newEl = mapper.toElement(data, this.doc);
+    const existing = findElementByTagAndId(this.doc, kind, data.id);
+
+    return existing
+      ? this.buildReplaceEdit(existing, newEl)
+      : [buildInsert(root, newEl, this.findInsertionReference(root, kind))];
+  }
+
+  private buildReplaceEdit(oldEl: Element, newEl: Element): EditV2[] {
+    const parent = oldEl.parentNode;
+    if (!parent) {
+      throw new Error(`Replace failed: old element has no parent`);
+    }
+
+    return [
+      buildRemove(oldEl),
+      buildInsert(parent, newEl, oldEl.nextSibling)
+    ]
   }
 
   // ===== Private Helpers =====
@@ -279,19 +411,14 @@ export class DataTypeRepository implements IDataTypeRepository {
 
   /** Find where to insert a new DataType, respecting order and siblings */
   private findInsertionReference(root: Element, kind: DataTypeKind): Element | null {
-    // 1. if siblings of same kind exist → insert after last one
-    const sameTagEls = Array.from(root.querySelectorAll(kind));
-    if (sameTagEls.length > 0) {
-      return sameTagEls[sameTagEls.length - 1].nextSibling as Element;
+    // 1. if siblings of same kind exist -> insert before first one
+    const ref = root.querySelector(kind);
+    if (ref) {
+      return ref;
     }
 
     // 2️. else -> insert before first element of later kind in canonical order
-    const order: DataTypeKind[] = [
-      DataTypeKind.LNodeType,
-      DataTypeKind.DOType,
-      DataTypeKind.DAType,
-      DataTypeKind.EnumType,
-    ];
+    const order = DataTypeRepository.typeOrder;
     const index = order.indexOf(kind);
 
     for (let i = index + 1; i < order.length; i++) {

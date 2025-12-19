@@ -235,6 +235,7 @@
   aria-haspopup={content ? 'true' : undefined}
   aria-expanded={content ? (show ? 'true' : 'false') : undefined}
   aria-describedby={content ? id : undefined}
+  aria-labelledby="tooltip"
   onmouseenter={handleMouseEnter}
   onmouseleave={handleMouseLeave}
   onfocus={handleFocus}

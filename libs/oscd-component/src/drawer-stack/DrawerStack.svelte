@@ -151,6 +151,7 @@ function handleBackdropKeydown(event: KeyboardEvent) {
   {#if drawerList.length > 0}
     <!-- Single backdrop under the top drawer -->
     <div
+      aria-hidden="true"
       class="drawer-backdrop"
       style="z-index: {zBase + (drawerList.length - 1) * 2};"
       role="button"
@@ -182,7 +183,7 @@ function handleBackdropKeydown(event: KeyboardEvent) {
             color="primary"
             style="background: white;
             color: var(--mdc-theme-primary, #ff3e00)"
-            on:click={() => closeDrawer('save')}
+            onclick={() => closeDrawer('save')}
           >Save & Close</Button>
           <Button
             variant="unelevated"
@@ -190,7 +191,7 @@ function handleBackdropKeydown(event: KeyboardEvent) {
             style="
             background: #6B9197;
             color: white"
-            on:click={() => closeDrawer('cancel')}
+            onclick={() => closeDrawer('cancel')}
           >Cancel</Button>
         </div>
 

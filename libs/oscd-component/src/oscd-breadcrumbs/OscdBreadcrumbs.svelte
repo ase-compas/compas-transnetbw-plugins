@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import OscdChevronRightIcon from '../../../oscd-icons/src/oscd-chevron-right-icon/OscdChevronRightIcon.svelte';
 
   export interface Breadcrumb {
     label: string;
@@ -10,43 +10,54 @@
   interface Props {
     breadcrumbs?: Breadcrumb[];
     activeIndex?: number;
+    handleClick?: (index: number) => void;
+    // css color
+    color?: string;
   }
 
-  let { breadcrumbs = [], activeIndex = 0 }: Props = $props();
+  let {
+    breadcrumbs = [],
+    activeIndex = 0,
+    handleClick,
+    color 
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher();
+  const handleCrumbClick = (index: number) => {
+    const crumb = breadcrumbs[index];
 
+    if (!crumb?.enabled || index === activeIndex) return;
 
-  const handleClick = (index: number) => {
-    if (breadcrumbs[index].enabled && index !== activeIndex) {
-      dispatch('click', { index });
-    }
+    handleClick?.(index);
   };
 </script>
 
-<div class="oscd-breadcrumbs">
-  {#each breadcrumbs as crumb, i}
+<nav class="oscd-breadcrumbs" aria-label="Breadcrumb">
+  {#each breadcrumbs as crumb, index}
     <div class="breadcrumb-wrapper">
       <button
+        style:color={color ? color : null}
         type="button"
-        class="breadcrumb {crumb.enabled ? '' : 'br-disabled'} {i === activeIndex ? 'br-active' : ''}"
-        onclick={() => handleClick(i)}
-        aria-current={i === activeIndex ? 'page' : undefined}
+        class="breadcrumb"
+        class:br-disabled={!crumb.enabled}
+        class:br-active={index === activeIndex}
+        onclick={() => handleCrumbClick(index)}
+        aria-current={index === activeIndex ? 'page' : undefined}
         aria-disabled={crumb.enabled ? undefined : 'true'}
-        disabled={!crumb.enabled || i === activeIndex}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
-          <span class="secondary-label">{crumb.secondaryLabel}</span>
+          <span class="secondary-label" style:color={color ? color : null} >{crumb.secondaryLabel}</span>
         {/if}
       </button>
 
-      {#if i < breadcrumbs.length - 1}
-        <span class="material-icons separator">chevron_right</span>
+      {#if index < breadcrumbs.length - 1}
+      <div class="seperator">
+        <OscdChevronRightIcon svgStyles="fill: {color ? color : '#004552'}" />
+      </div>
       {/if}
     </div>
   {/each}
-</div>
+</nav>
 
 <style>
   .oscd-breadcrumbs {
@@ -58,13 +69,18 @@
   .breadcrumb-wrapper {
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 
   .breadcrumb {
-    font-size: 1.3rem;
     display: flex;
     align-items: baseline;
-    color: var(--mdc-theme-primary);
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
     gap: 0.3rem;
     border: none;
     background: none;
@@ -87,16 +103,12 @@
 
   .secondary-label {
     font-size: 1em;
-    color: var(--mdc-theme-primary);
     opacity: 0.6;
-  }
-
-  .secondary-label, .br-active {
     font-weight: 500;
   }
 
   .br-active {
-    font-weight: bold;
+    font-weight: 700;
   }
 
   .br-disabled,

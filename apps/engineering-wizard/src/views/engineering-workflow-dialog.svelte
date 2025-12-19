@@ -3,6 +3,7 @@
   import { closeDialog } from '../../../../libs/oscd-services/src/dialog';
   import type { ViewPlugin } from '../types/view-plugin';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
+  import { selectedProcessState } from '../services/engineering-process.svelte';
 
   interface Props {
     open: boolean;
@@ -10,6 +11,12 @@
     editCount?: any;
     host: HTMLElement;
     plugins?: ViewPlugin[];
+    docName?: string;
+    docId?: string;
+    nsdoc?: any;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: any;
   }
 
   let {
@@ -17,7 +24,13 @@
     doc,
     editCount = -1,
     host,
-    plugins = []
+    plugins = [],
+    nsdoc,
+    docName,
+    docId,
+    docs,
+    locale,
+    oscdApi,
   }: Props = $props();
 
   let hasExited = $state(false);
@@ -27,23 +40,23 @@
   const exit = (reason: 'cancel' | 'exit') => {
     if (hasExited) return;
     hasExited = true;
+    selectedProcessState.process = null;
     editorTabsVisible.set(true);
     closeDialog(reason);
   };
 
-const onBackdropClick = () => exit('exit');
-const onBackdropKeydown = (event: KeyboardEvent) => {
-  if (event.target !== event.currentTarget) return;
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    exit('exit');
-  }
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    onBackdropClick();
-  }
-};
-  const onChildExit = () => exit('exit');
+  const onBackdropClick = () => exit('exit');
+  const onBackdropKeydown = (event: KeyboardEvent) => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      exit('exit');
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onBackdropClick();
+    }
+  };
 
   $effect(() => {
     if (open !== prevOpen) {
@@ -69,7 +82,7 @@ const onBackdropKeydown = (event: KeyboardEvent) => {
     onkeydown={onBackdropKeydown}
     onclick={(event) => {
       if (event.target === event.currentTarget) {
-        onBackdropClick();
+        exit('exit');
       }
     }}
   >
@@ -80,7 +93,13 @@ const onBackdropKeydown = (event: KeyboardEvent) => {
         {editCount}
         {host}
         {plugins}
-        on:exit={onChildExit}
+        {docName}
+        {nsdoc}
+        {docs}
+        {docId}
+        {locale}
+        {oscdApi}
+        onExit={() => exit('exit')}
       />
     </div>
   </div>

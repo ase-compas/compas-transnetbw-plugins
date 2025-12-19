@@ -1,9 +1,5 @@
-import type { ComponentType } from 'svelte';
-import {
-  type DialogCloseType,
-  type DialogResult,
-  dialogStore,
-} from './dialog.store';
+import type { Component } from 'svelte';
+import { type DialogCloseType, type DialogResult, dialogStore } from './dialog.store';
 
 /**
  * Opens a dialog with the given component and props.
@@ -15,7 +11,7 @@ import {
  * @returns A Promise that resolves with a `DialogResult<T>` when the dialog is closed.
  */
 export function openDialog<T = any>(
-  component: ComponentType,
+  component: Component,
   props: Record<string, any> = {}
 ): Promise<DialogResult<T>> {
   return new Promise((resolve) => {
