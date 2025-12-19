@@ -20067,7 +20067,7 @@ function iy(t, e) {
   function b(K) {
     console.log("Download file: ", K), a.downloadSclData(K.uuid, K.type, K.version).pipe(la(1), ua((U) => {
       const N = window.URL.createObjectURL(U), M = document.createElement("a");
-      M.href = N, M.download = K.filename, M.style.display = "none", document.body.appendChild(M), M.click(), document.body.removeChild(M), window.URL.revokeObjectURL(N);
+      M.href = N, M.download = `${K.filename}.${K.type.toLowerCase()}`, M.style.display = "none", document.body.appendChild(M), M.click(), document.body.removeChild(M), window.URL.revokeObjectURL(N);
     })).subscribe();
   }
   function E() {
