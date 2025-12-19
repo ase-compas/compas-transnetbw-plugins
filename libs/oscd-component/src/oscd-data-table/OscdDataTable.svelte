@@ -3,7 +3,7 @@
   style="max-width: 100%; width: 100%;"
 >
   <Head>
-    <Row class="header-row">
+    <Row class="header-title-row">
       {#each columnDefs as col}
         <Cell onclick={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
@@ -26,7 +26,13 @@
                 {/if}
               {/if}
             </div>
-
+          </div>
+        </Cell>
+      {/each}
+    </Row>
+    <Row class="header-filter-row">
+      {#each columnDefs as col}
+        <Cell>
             {#if col.filter}
               {#if col.filterType === 'text'}
                 <input
@@ -45,7 +51,6 @@
                 />
               {/if}
             {/if}
-          </div>
         </Cell>
       {/each}
     </Row>
@@ -245,6 +250,15 @@
     display: flex;
     align-items: flex-start;
     flex-direction: column;
+  }
+
+
+  :global(.mdc-data-table__header-row.header-title-row .mdc-data-table__header-cell) {
+    border-bottom: none !important;
+  }
+
+  :global(.mdc-data-table__header-row.header-title-row) {
+    height: 0;
   }
 
   /*
