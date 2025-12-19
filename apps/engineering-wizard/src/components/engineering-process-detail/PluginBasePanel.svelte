@@ -109,18 +109,6 @@
         </header>
 
         <div class="plugin-list__group-plugins-section">
-          <div class="plugin-list__group-plugins__indicator">
-            {#if groupIndex < pluginGroups.length - 1}
-              <!-- Show arrow except for last group -->
-              <!-- <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/> -->
-
-              <!--
-              <div class="step-line-container">
-                <div class="step-line"></div>
-              </div>
-              -->
-            {/if}
-          </div>
           <div
             class="plugin-list__group-plugins"
             class:plugin_list__group-plugins--dashed={processEditModeState.isEditing}
