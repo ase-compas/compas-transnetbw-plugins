@@ -43,6 +43,7 @@
         onclick={() => handleCrumbClick(index)}
         aria-current={index === activeIndex ? 'page' : undefined}
         aria-disabled={crumb.enabled ? undefined : 'true'}
+        disabled={!crumb.enabled && activeIndex !== index}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
@@ -51,7 +52,7 @@
       </button>
 
       {#if index < breadcrumbs.length - 1}
-      <div class="seperator">
+      <div class="separator">
         <OscdChevronRightIcon svgStyles="fill: {color ? color : '#004552'}" />
       </div>
       {/if}
