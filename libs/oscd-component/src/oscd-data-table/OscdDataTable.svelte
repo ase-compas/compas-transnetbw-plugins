@@ -274,37 +274,37 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
-  thead {
+  :global(.mdc-data-table__table thead) {
     background-color: #f4f4f4;
     text-transform: uppercase;
     font-weight: bold;
     color: #333;
   }
 
-  thead th {
+  :global(.mdc-data-table__table thead th) {
     padding: 12px 15px;
     border-bottom: 2px solid #ddd;
     text-align: left;
     font-size: 0.85rem;
   }
 
-  tbody tr {
+  :global(.mdc-data-table__table tbody tr) {
     border-bottom: 1px solid #ddd;
     transition: background-color 0.3s ease;
   }
 
-  tbody tr:hover {
+  :global(.mdc-data-table__table tbody tr:hover) {
     background-color: #f1f1f1;
   }
 
-  tbody td {
+  :global(.mdc-data-table__table tbody td) {
     padding: 12px 15px;
     text-align: left;
     font-size: 0.9rem;
     color: #555;
   }
 
-  tbody td.numeric {
+  :global(.mdc-data-table__table tbody td.numeric) {
     text-align: right;
   }
   */
@@ -338,7 +338,7 @@
     transition: background-color 0.3s ease;
   }
 
-  button:hover {
+  .cell-actions :global(button:hover) {
     background-color: #0056b3;
   }
   */

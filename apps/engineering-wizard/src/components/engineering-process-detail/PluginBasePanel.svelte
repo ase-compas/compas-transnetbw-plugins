@@ -311,18 +311,4 @@
     background-color: white;
     color: var(--primary-base);
   }
-
-  .step-line-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* center it under the circle */
-    flex: 1; /* take full vertical height of the space */
-  }
-
-  .step-line {
-    width: 1px; /* line thickness */
-    background-color: #6B9197; /* line color */
-    flex-grow: 1; /* stretch vertically */
-    border-radius: 2px;
-  }
 </style>
