@@ -1,15 +1,27 @@
 <script lang="ts">
-  import { drawers, closeDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { drawers, closeDrawer, homeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
   import type { Drawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { fly } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
+  import OscdTooltip from '../oscd-tooltip/OscdTooltip.svelte';
 
   let drawerList: Drawer[] = $derived($drawers);
   const widthStep = 45;
 
   let innerWidth = $state(window.innerWidth);
+
+  let breadcrumbs = $derived.by(() => {
+  const titles = $drawers.map(d => d.title).slice(0, $drawers.length-1);
+
+  if (titles.length < 3) {
+    return titles;
+  }
+
+  return ["...", ...titles.slice(-2)]; // last two titles
+});
+
 
   // update on resize
   function handleResize() {
@@ -138,11 +150,19 @@
 
   .breadcrumb-segment {
     color: rgba(255, 255, 255, 0.65);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 200px;
   }
 
   .breadcrumb-current {
     color: #fff;
     font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 200px;
   }
 </style>
 
@@ -176,12 +196,28 @@
 
 
         <div class="drawer-header__breadcrumbs">
-          {#each drawerList.slice(0, index) as d}
-            <span class="breadcrumb-segment">{d.title}</span>
+          {#if $homeTitle}
+            <OscdTooltip side="bottom" content={$homeTitle}>
+            <div style="display: flex; align-items: center; gap: 0.1re;">
+              <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="rgba(255, 255, 255, 0.65)"><path d="M160-120v-480l320-240 320 240v480H560v-280H400v280H160Z"/></svg>
+              <div class="breadcrumb-segment">
+                {$homeTitle}
+              </div>
+            </div>
+            </OscdTooltip>
+            <span class="breadcrumb-separator">›</span>
+          {/if}
+
+          {#each breadcrumbs as title, index (index)}
+            <OscdTooltip side="bottom" content={title}>
+              <div class="breadcrumb-segment">{title}</div>
+            </OscdTooltip>
             <span class="breadcrumb-separator">›</span>
           {/each}
 
-          <span class="breadcrumb-current">{drawer.title}</span>
+          <OscdTooltip side="bottom" content={drawer.title}>
+            <div class="breadcrumb-current">{drawer.title}</div>
+          </OscdTooltip>
         </div>
         <OscdIconActionButton
           type="close"

@@ -46,6 +46,7 @@
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
+  import { setHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
 
   // -----------------------------
   // Service instances
@@ -172,6 +173,7 @@
   }
 
   function handleOnEdit(itemId: string, columnId: string) {
+    setHomeTitle(`LN: ${lNodeTypeId}`);
     const openMode: Mode = canEdit ? 'edit' : 'view';
     if (columnId === 'doTypes') {
       openDataObjectTypeDrawer(openMode, itemId);
@@ -233,6 +235,7 @@
   }
 
   function handleOnReferenceClick({itemId}) {
+    setHomeTitle(`LN: ${lNodeTypeId}`);
     const ref = $refStore.find(i => i.name === itemId);
     openReferencedTypeDrawer(ref, 'view')
   }

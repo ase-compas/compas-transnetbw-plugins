@@ -24,7 +24,7 @@ export function openDataObjectTypeDrawer(
 ) {
   openDrawer({
     component: DoTypeDrawer,
-    title: 'DO Details',
+    title: `DO: ${typeId}`,
     props: { mode, typeId, cdc },
   });
 }
@@ -145,7 +145,7 @@ export function openDataAttributeTypeDrawer(
 ) {
   openDrawer({
     component: DaTypeDrawer,
-    title: 'DA Details',
+    title: `DA: ${typeId}`,
     props: { mode, typeId, instanceType },
   });
 }
@@ -157,7 +157,7 @@ export function openDataEnumTypeDrawer(
 ) {
   openDrawer({
     component: EnumTypeDetailsDrawer,
-    title: 'Enum Details',
+    title: `Enum: ${typeId}`,
     props: { mode, typeId, instanceTypeId: instanceType },
   });
 }
