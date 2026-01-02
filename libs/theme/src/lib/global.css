@@ -13,7 +13,7 @@
   --mdc-theme-text-primary-on-background: var(--base01);
   --mdc-theme-text-secondary-on-background: var(--base00);
   --mdc-theme-text-icon-on-background: var(--base00);
-  --mdc-theme-error: var(--red);
+  --mdc-theme-error: #b71c1c;
 
   --mdc-button-disabled-ink-color: var(--base1);
 
@@ -65,6 +65,10 @@
 
 .mdc-drawer span.mdc-drawer__title {
   color: var(--mdc-theme-text-primary-on-background) !important;
+}
+
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+  color: var(--primary-base) !important;
 }
 
 abbr {
