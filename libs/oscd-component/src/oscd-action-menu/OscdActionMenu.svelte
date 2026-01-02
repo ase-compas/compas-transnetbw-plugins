@@ -10,7 +10,7 @@
 
   interface Props {
     anchorCorner?: string;
-    buttonVariant?: 'text' | 'outlined' | 'raised' | 'unelevated';
+    buttonVariant?: 'text' | 'outlined' | 'raised' | 'unelevated' | 'default';
     children: Snippet<[any]>;
   }
 

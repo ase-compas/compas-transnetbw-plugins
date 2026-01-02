@@ -315,6 +315,11 @@
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
+      <OscdButton
+        disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
+        SAVE CHANGES
+      </OscdButton>
+      
       {#if $dirty}
         <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
           <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
@@ -323,10 +328,6 @@
         <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} />
       {/if}
 
-      <OscdButton
-        disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
-        SAVE CHANGES
-      </OscdButton>
 
       <OscdTooltip content="Type Actions" side="bottom" hoverDelay={2000}>
         <TypeActionMenu
