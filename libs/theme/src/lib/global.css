@@ -47,6 +47,20 @@
 
   --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
   --oscd-icon-font: var(--oscd-theme-icon-font, 'Material Icons');
+
+    /* MDC Switch Overwrites */
+  --mdc-switch-selected-track-color: #6B9197;
+
+  --mdc-switch-selected-focus-track-color: #6B9197;
+  --mdc-switch-selected-hover-track-color: #6B9197;
+  --mdc-switch-selected-pressed-track-color: #6B9197;
+  --mdc-switch-selected-track-color: #6B9197;
+  --mdc-switch-unselected-icon-color: #fff;
+
+  --mdc-switch-selected-handle-color: var(--mdc-theme-primary, #676778);
+  --mdc-switch-selected-hover-handle-color: var(--mdc-theme-primary, #676778);
+  --mdc-switch-selected-pressed-handle-color: var(--mdc-theme-primary, #676778);
+  --mdc-switch-selected-focus-handle-color: var(--mdc-theme-primary, #676778);;
 }
 
 .mdc-drawer span.mdc-drawer__title {
