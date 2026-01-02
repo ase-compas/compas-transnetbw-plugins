@@ -108,10 +108,16 @@
     padding: 1rem;
   }
 
-  .drawer-header__actions {
+  .drawer-footer {
+    background: #fff;
+    padding: 8px 1.5rem;
+    border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, .12));
+  }
+
+  .drawer-footer__actions {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: end;
     gap: 1rem;
   }
 
@@ -165,24 +171,8 @@
       in:fly={{ x: baseWidth + 200, duration: 200 }}
       out:fly={{ x: baseWidth + 200, duration: 200 }}
     >
+      <!-- Start: Drawer Header -->
       <div class="drawer-header">
-        <div class="drawer-header__actions">
-          <Button
-            variant="unelevated"
-            color="primary"
-            style="background: white;
-            color: var(--mdc-theme-primary, #ff3e00)"
-            onclick={() => closeDrawer('save')}
-          >Save & Close</Button>
-          <Button
-            variant="unelevated"
-            color="secondary"
-            style="
-            background: #6B9197;
-            color: white"
-            onclick={() => closeDrawer('cancel')}
-          >Cancel</Button>
-        </div>
 
 
         <div class="drawer-header__breadcrumbs">
@@ -193,9 +183,6 @@
 
           <span class="breadcrumb-current">{drawer.title}</span>
         </div>
-
-
-
         <OscdIconActionButton
           type="close"
           fillColor="white"
@@ -204,12 +191,34 @@
           tooltipSide="left"
         />
       </div>
+      <!-- End: Drawer Header -->
+
+      <!-- Start: Drawer Body -->
       <div class="drawer-body">
         <drawer.component
           {...drawer.props}
           bind:this={drawer.ref}
         />
       </div>
+      <!-- End: Drawer Body -->
+
+      <!-- Start: Drawer Footer -->
+       <div class="drawer-footer">
+        <div class="drawer-footer__actions">
+          <Button
+            variant="unelevated"
+            color="primary"
+            style="background: white;
+            color: var(--mdc-theme-primary, #ff3e00)"
+            onclick={() => closeDrawer('cancel')}
+          >Cancel</Button>
+          <Button
+            variant="unelevated"
+            onclick={() => closeDrawer('save')}
+          >Save & Close</Button>
+        </div>
+       </div>
+      <!-- End: Drawer Footer -->
     </div>
   {/each}
 </div>
