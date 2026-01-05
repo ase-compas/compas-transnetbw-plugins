@@ -173,7 +173,7 @@
   }
 
   function handleOnEdit(itemId: string, columnId: string) {
-    setHomeTitle(`LN: ${lNodeTypeId}`);
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
     const openMode: Mode = canEdit ? 'edit' : 'view';
     if (columnId === 'doTypes') {
       openDataObjectTypeDrawer(openMode, itemId);
@@ -235,7 +235,7 @@
   }
 
   function handleOnReferenceClick({itemId}) {
-    setHomeTitle(`LN: ${lNodeTypeId}`);
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
     const ref = $refStore.find(i => i.name === itemId);
     openReferencedTypeDrawer(ref, 'view')
   }
