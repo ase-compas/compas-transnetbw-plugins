@@ -18,15 +18,15 @@
   }
 
   const visibleBreadcrumbs = $derived.by(() => {
-      if (breadcrumbs.length <= MAX_VISIBLE) {
-          // display all items
-          return breadcrumbs.map((label, index) => ({
-              label,
-              display: truncate(label),
-              truncated: label.length > TRUNCATE_AT,
-              isEllipsis: false,
-              isCurrent: index === breadcrumbs.length-1
-          }))
+    if (breadcrumbs.length <= MAX_VISIBLE) {
+        // display all items
+        return breadcrumbs.map((label, index) => ({
+            label,
+            display: truncate(label),
+            truncated: label.length > TRUNCATE_AT,
+            isEllipsis: false,
+            isCurrent: index === breadcrumbs.length-1
+        }))
       }
 
       const first = breadcrumbs[0];

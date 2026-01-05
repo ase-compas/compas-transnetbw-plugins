@@ -163,6 +163,7 @@
 
   // Dialog handlers
   function handleActionClick({ columnId }) {
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
    if (columnId === 'doTypes') {
      openCreateDataObjectTypeDialog();
     } else if (columnId === 'daTypes') {
