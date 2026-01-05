@@ -111,7 +111,7 @@
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
-          <Checkbox checked={selected} onchange={onSelectChange}/>
+          <Checkbox checked={selected} onchange={onSelectChange} onclick={e => e.stopPropagation()}/>
         </OscdTooltip>
       {/if}
     </div>
