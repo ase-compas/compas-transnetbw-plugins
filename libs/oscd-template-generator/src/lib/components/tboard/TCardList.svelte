@@ -141,6 +141,7 @@
       showSelectionIndicator={showSelectionIndicator}
       canApplyDefaults={item.canApplyDefaults}
       canUnlink={item.canUnlink}
+      canClick={item.canClick}
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
       canDrag={itemsDraggable}

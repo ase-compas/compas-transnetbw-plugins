@@ -45,7 +45,7 @@
     canEdit = false,
     canMark = false,
     canApplyDefaults = false,
-    canClick = true,
+    canClick = false,
     canUnlink = true,
     canClickReference = true,
     canSetDefault = false,
