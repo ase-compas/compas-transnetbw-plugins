@@ -312,6 +312,7 @@
 <TBoard
   {columns}
   data={boardData}
+  onItemClick={(e) => handleOnMark(e)}
   onItemMarkChange={e => handleOnMark(e)}
   onItemSelectChange={e => handleOnSelect(e)}
   onItemDrop={e => handleItemDrop(e)}

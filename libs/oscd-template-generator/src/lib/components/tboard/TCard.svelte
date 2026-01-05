@@ -45,7 +45,7 @@
     canEdit = false,
     canMark = false,
     canApplyDefaults = false,
-    canClick = false,
+    canClick = true,
     canUnlink = true,
     canClickReference = true,
     canSetDefault = false,
@@ -85,7 +85,7 @@
   function handleOnEdit() { if (canEdit) onEdit(); }
   function handleOnApplyDefaults() { if (canApplyDefaults) onApplyDefaults(); }
   function handleOnUnlink() { if (canUnlink) onUnlink(); }
-  function handleOnReferenceClick() { if (canClickReference) onReferenceClick(); }
+  function handleOnReferenceClick(e: Event) { e.stopPropagation(); if (canClickReference) onReferenceClick(); }
   function handleOnSetDefault() { if (canSetDefault) onSetDefault(); }
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
@@ -93,7 +93,7 @@
 </script>
 
 <div
-  class="oscd-card-item {cardState}"
+  class="oscd-card-item {cardState} {canClick ? 'clickable' : ''}"
   class:marked={marked}
   class:is-over={isOver}
   class:error={(isMandatory || selected) && referencable && !subtitle && !isDragTarget}
@@ -185,7 +185,7 @@
   >
     {#if subtitle}
       <OscdTooltip content={subtitle} hoverDelay={500} side="right">
-        <button class="oscd-card-subtitle--with-tooltip" onclick={handleOnReferenceClick} class:pointer={canClickReference}>
+        <button class="oscd-card-subtitle--with-tooltip" onclick={e => handleOnReferenceClick(e)} class:pointer={canClickReference}>
           {#if canClickReference}
             <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />
           {/if}
@@ -395,9 +395,11 @@
     white-space: nowrap;
   }
 
+  
   .clickable:hover {
-    background: rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    filter: brightness(1.05); /* 5% brighter */
+    transition: filter 0.2s ease;
   }
 
   .oscd-card-chip {

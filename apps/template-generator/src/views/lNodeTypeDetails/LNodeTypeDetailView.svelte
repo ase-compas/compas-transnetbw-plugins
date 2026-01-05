@@ -349,6 +349,7 @@
       onColumnActionClick={e => handleActionClick(e)}
       onItemEdit={({itemId, columnId}) => handleOnEdit(itemId, columnId)}
       onItemMarkChange={({itemId}) => handleToggleMark(itemId)}
+      onItemClick={({itemId}) => handleToggleMark(itemId)}
       onItemSelectChange={e => handleToggleSelect(e)}
       onItemDrop={e => handleItemDrop(e)}
       onItemApplyDefaults={e => handleApplyDefaults(e)}

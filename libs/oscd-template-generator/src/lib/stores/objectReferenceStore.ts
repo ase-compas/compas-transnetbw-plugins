@@ -71,15 +71,24 @@ export function createObjectReferenceStore(
     );
   }
 
+ /**
+ * Handles card selection when a card is clicked.
+ *
+ * If the clicked card is already selected, it will be deselected.
+ * If a different card is clicked, the selection switches to the new card,
+ * ensuring that only one card is selected at any time.
+ *
+ * @param {string} id - The id of the card that to toggle / select.
+ */
   function toggleMarked(id: string) {
     update(list =>
-      list.map(item => item.name === id ? { ...item, isMarked: !item.isMarked } : item)
+      list.map(item => item.name === id ? { ...item, isMarked: !item.isMarked } : {...item, isMarked: false})
     );
   }
 
   function setTypeReference(id: string, typeRef: string) {
     update(list =>
-      list.map(item => item.name === id ? { ...item, typeRef, meta: { ...item.meta, isConfigured: true }, } : item)
+      list.map(item => item.name === id ? { ...item, typeRef, isMarked: false, meta: { ...item.meta, isConfigured: true }, } : item)
     );
   }
 
