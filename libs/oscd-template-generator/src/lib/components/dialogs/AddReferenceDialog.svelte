@@ -54,7 +54,7 @@ onMount(async () => {
       if (options.length === 0) {
         mode = 'create';
         return;
-      } 
+      }
 
       // focus autocomplete
       setTimeout(() => selectAutocompleteEl?.focus(), 350);
@@ -105,22 +105,23 @@ onMount(async () => {
     onCancel={() => closeDialog('cancel')}
     onClose={() => closeDialog('exit')}
     onConfirm={(() => handleConfirm())}
+    confirmDisabled={mode === 'select' ? !selectedItem : !(formState?.valid)}
   >
     {#snippet content()}
       <div style="padding: 1rem;" >
         <div class="referencing-mode-radios">
           <div class="radio-demo">
-            
+
             <FormField>
               <Radio bind:group={mode} value="select" touch disabled={selectNotAvailable}/>
               {#snippet label()}
-                  Select 
+                  Select
               {/snippet}
             </FormField>
             <FormField>
               <Radio bind:group={mode} value="create" touch />
               {#snippet label()}
-                  Create 
+                  Create
               {/snippet}
             </FormField>
           </div>
@@ -145,7 +146,7 @@ onMount(async () => {
               <div>{item.id}</div>
             {/snippet}
           </Autocomplete>
-          
+
         {:else if mode === 'create'}
           <CreateTypeForm
             idLabel = "Type ID"
