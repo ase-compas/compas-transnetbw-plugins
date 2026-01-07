@@ -8,9 +8,11 @@
 
   interface Props {
     open?: boolean;
+    defaultTypeId?: string;
+    defaultInstance?: string;
   }
 
-  let { open = $bindable(false) }: Props = $props();
+  let { open = $bindable(false), defaultTypeId, defaultInstance }: Props = $props();
 
   const handleConfirm = (id: string, optionId: string) => {
     closeDialog('confirm', { id, instanceType: optionId});
@@ -21,6 +23,8 @@
 <GenericCreateDialog
   bind:open
   dialogTitle="Create Data Attribute Type"
+  {defaultTypeId}
+  {defaultInstance}
   confirmText="Next"
   idLabel="Data Attribute Type ID"
   autocompleteLabel="Data Attribute Instance"

@@ -13,6 +13,10 @@
     idLabel?: string;
     autocompleteLabel?: string;
     typeKind: DataTypeKind;
+
+    defaultTypeId?: string;
+    defaultInstance?: string;
+
     getOptions?: () => Promise<TypeOption[]>;
     onConfirm: (id: string, selected: any, createFromDefault?: boolean) => void;
     checkDefaultAvailable?: (instanceType: string) => Promise<boolean>;
@@ -26,6 +30,10 @@
     idLabel = 'ID',
     autocompleteLabel = 'Select Option',
     typeKind,
+
+    defaultInstance,
+    defaultTypeId,
+
     getOptions = async () => [],
     onConfirm,
     checkDefaultAvailable =  async () => false,
@@ -76,6 +84,9 @@
         <CreateTypeForm
           {idLabel}
           typeKind={typeKind}
+
+          {defaultInstance}
+          {defaultTypeId}
 
           {autocompleteLabel}
           getOptions={getOptions}

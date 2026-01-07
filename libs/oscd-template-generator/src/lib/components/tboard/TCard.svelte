@@ -33,6 +33,7 @@
     onApplyDefaults?: () => void;
     onUnlink?: () => void;
     onReferenceClick?: () => void;
+    onAddReferenceClick?: () => void;
     onSetDefault?: () => void;
     onSelectChange?: () => void;
   }
@@ -65,6 +66,7 @@
     onApplyDefaults = () => {},
     onUnlink = () => {},
     onReferenceClick = () => {},
+    onAddReferenceClick = () => {},
     onSetDefault = () => {},
     onSelectChange = () => {},
   }: Props = $props();
@@ -192,11 +194,18 @@
           {subtitle.length > 25 ? subtitle.slice(0, 25) + '...' : subtitle}
         </button>
         </OscdTooltip>
-    {:else if (isMandatory ||selected) && !subtitle && referencable}
-      <OscdWarningIcon fill="#FF6B6B" size="15px" />
-      Add reference
-    {:else if !subtitle && referencable && !isMandatory && !selected}
-      Add reference
+    {:else if !subtitle && referencable}
+      <button 
+      class="oscd-card-subtitle__add-reference"
+      onclick={(e) => {
+        e.stopPropagation();
+        onAddReferenceClick();
+      }}>
+        {#if isMandatory || selected }
+          <OscdWarningIcon fill="#FF6B6B" size="15px" />
+        {/if}
+        Add reference
+      </button> 
     {/if}
   </span>
     {:else}
@@ -425,6 +434,18 @@
 
   .pointer {
     cursor: pointer;
+  }
+
+  .oscd-card-subtitle__add-reference {
+     all: unset;
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     gap: 0.1rem;
+  }
+
+  .oscd-card-subtitle__add-reference:hover {
+     cursor: pointer;
   }
 
   :global(.oscd-card-item .selection .oscd-icon svg) {

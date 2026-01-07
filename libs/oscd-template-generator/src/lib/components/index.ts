@@ -17,6 +17,7 @@ export {default as TypeRenameDialog } from './dialogs/TypeRenameDialog.svelte';
 export {default as NewDataObjectTypeDialog } from './dialogs/CreateDialogs/NewDataObjectTypeDialog.svelte';
 export {default as NewDataAttributeTypeDialog } from './dialogs/CreateDialogs/NewDataAttributeTypeDialog.svelte';
 export {default as NewEnumTypeDialog } from './dialogs/CreateDialogs/NewEnumTypeDialog.svelte';
+export {default as AddReferenceDialog } from './dialogs/AddReferenceDialog.svelte'
 
 
 export {default as LogicalNodeTypeRow} from './tables/LogicalNodeTypeRow.svelte';

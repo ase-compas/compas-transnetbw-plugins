@@ -4,6 +4,7 @@
   // Services & utils
   import {
     applyDefaultWarningNotification,
+    assignOrCreateReference,
     type BasicType,
     type BasicTypes,
     canAssignTypeToObjectReference,
@@ -259,12 +260,22 @@
 
   async function handleRename() {
    const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
-   console.log(newTypeId);
    if(newTypeId) {
      lNodeTypeId = newTypeId;
      loadLogicalNodeType(lNodeTypeId, lnClass)
    }
   }
+  
+  async function handleAddReference({itemId}) {
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
+    assignOrCreateReference(
+      refStore,
+      DataTypeKind.LNodeType,
+      logicalNodeType.lnClass,
+      itemId
+    );
+  }
+
 
   // -----------------------------
   // Utils
@@ -356,6 +367,7 @@
       onItemApplyDefaults={e => handleApplyDefaults(e)}
       onItemUnlink={e => handleOnUnlink(e)}
       onItemReferenceClick={e => handleOnReferenceClick(e)}
+      onItemAddReferenceClick={e => handleAddReference(e)}
       onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
     />
   </div>

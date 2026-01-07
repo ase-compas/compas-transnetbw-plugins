@@ -12,6 +12,11 @@
     idLabel?: string;
     typeKind: DataTypeKind
 
+    // defaults
+    defaultTypeId?: string,
+    defaultInstance?: string,
+
+
     // auto complete settings
     autocompleteLabel?: string;
     getOptions?: () => Promise<Option[]>;
@@ -19,6 +24,8 @@
     // create from default settings
     allowCreateFromDefault?: boolean; // callbacks
     isDefaultAvailable?: (typeId: string) => Promise<boolean>;
+
+    typeSelectionDisabled?: boolean;
 
     onChange?: (event: ChangeEventDetails) => void;
     onSubmit?: (event: ChangeEventDetails) => void;
@@ -28,11 +35,16 @@
     idLabel = 'Enter Id',
     typeKind,
 
+    defaultTypeId = '',
+    defaultInstance,
+
     autocompleteLabel = 'Select Option',
     getOptions = async () => [],
 
     allowCreateFromDefault = false,
     isDefaultAvailable = async (_: string) => false,
+
+    typeSelectionDisabled = false,
 
     onChange = (_: ChangeEventDetails) => {
     },
@@ -40,14 +52,15 @@
     }
   }: Props = $props();
 
-  let inputEl = $state(undefined);
+  let idInputEl = $state(undefined);
+  let instanceTypeSelectEl = $state(undefined);
 
   // --- State ---
   let loading = $state<boolean>(false);
   let options = $state<Option[]>([]);
 
   // from fields
-  let typeId = $state<string>('');
+  let typeId = $state<string>(defaultTypeId);
   let selectedItem = $state<Option | undefined>(undefined);
   let createFromDefault = $state<boolean>(false);
 
@@ -59,21 +72,26 @@
   // default available for selected item
   let defaultAvailable = $state<boolean>(false);
 
-  onMount(() => {
-    loadOptions();
-     setTimeout(() => {
-      inputEl.focus();
-    }, 350)
+  onMount(async () => {
+    await loadOptions();
+    focusElement()
   });
 
-  function loadOptions() {
+  async function loadOptions() {
     loading = true;
-    getOptions().then((data) => {
+    try {
+      const data = await getOptions();
       options = data;
+
+      // preselect instance
+      if(defaultInstance) {
+        selectedItem = data.find(d => d.id === defaultInstance); // check if default is a valid option
+      }
+
       loading = false;
-    }).catch((err) => {
-      console.log('Error loading options:', err);
-    });
+    } catch (err) {
+      console.error('Error loading options:', err);
+    }
   }
 
   let getOptionLabel: (opt: Option) => string = (opt) => opt?.id ?? '';
@@ -86,6 +104,26 @@
       createFromDefault: createFromDefault,
       valid: isFormValid
     });
+  }
+
+  function focusElement() {
+     setTimeout(() => {
+      // if instance is selected, focus input
+      if (selectedItem) {
+        focusInput();
+      } else {
+        focusSelect();
+      }
+    }, 350) // delay focus to prevent other element to be focused later
+
+  }
+
+  function focusInput() {
+    idInputEl?.focus();
+  }
+
+  function focusSelect() {
+    instanceTypeSelectEl?.focus();
   }
 
   // dispatch if any input changes
@@ -121,8 +159,9 @@
     <Autocomplete
       label={autocompleteLabel}
       bind:value={selectedItem}
-      bind:this={inputEl}
+      bind:this={instanceTypeSelectEl}
       selectOnExactMatch
+      disabled={typeSelectionDisabled}
       {options}
       {getOptionLabel}
       textfield$required
@@ -141,9 +180,10 @@
   <TypeIdInput
     bind:typeId={typeId}
     bind:valid={isTypeIdValid}
+    bind:this={idInputEl}
     {typeKind}
     idLabel={idLabel}
-    showErrorsOnInput={false}
+    showErrorsOnInput={true}
   />
 
   {#if allowCreateFromDefault && !!selectedItem}

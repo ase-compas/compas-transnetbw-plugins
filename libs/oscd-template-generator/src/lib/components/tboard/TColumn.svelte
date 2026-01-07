@@ -28,6 +28,7 @@
     onItemMarkChange?: (event: { itemId: string; item: TItem; marked: boolean }) => void;
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
+    onItemAddReferenceClick?: (evetn: { itemId: string; item: TItem}) => void;
     onItemSetDefault?: ({itemId: string, item: TItem}) => void;
     onItemUnlink?: ({itemId: string, item: TItem}) => void;
     onItemEdit?: ({itemId: string, item: TItem}) => void;
@@ -60,6 +61,7 @@
     onItemMarkChange = () => {},
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
+    onItemAddReferenceClick = () => {},
     onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
@@ -133,6 +135,7 @@
     onItemDragChange={(e) => onItemDragChange(e)}
     onItemDrop={(e) => onItemDrop(e)}
     onItemReferenceClick={(e) => onItemReferenceClick(e)}
+    onItemAddReferenceClick={(e) => onItemAddReferenceClick(e)}
     onItemSetDefault={(e) => onItemSetDefault(e)}
   />
   </div>

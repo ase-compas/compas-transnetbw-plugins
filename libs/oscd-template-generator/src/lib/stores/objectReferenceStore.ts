@@ -24,6 +24,9 @@ export interface ObjectReferenceStore extends Readable<ObjectReferenceState[]> {
   /** Items that have been marked */
   markedItemIds: Readable<string[]>;
 
+  /** Returns the single marked item, or undefined if none is selected. */
+  markedItem: Readable<ObjectReferenceState | null>;
+
   /** Items that have been configured */
   configuredItems: Readable<ObjectReferenceState[]>;
 
@@ -111,6 +114,7 @@ export function createObjectReferenceStore(
 
   const markedItems = derived(store, $items => $items.filter(item => item.isMarked));
   const markedItemIds = derived(markedItems, $items => $items.map(item => item.name));
+  const markedItem = derived(store, $items => $items.find(item => item.isMarked))
 
   const configuredItems = derived(store, $items => $items.filter(item => item.meta.isConfigured || item.meta.isMandatory));
 
@@ -138,6 +142,7 @@ export function createObjectReferenceStore(
     removeTypeReference,
     markedItems,
     markedItemIds,
+    markedItem,
     configuredItems,
     isDirty,
     reset,

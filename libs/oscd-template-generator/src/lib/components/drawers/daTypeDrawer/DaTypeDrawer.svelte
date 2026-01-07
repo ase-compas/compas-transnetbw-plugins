@@ -14,6 +14,7 @@
   import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
   applyDefaultWarningNotification,
+    assignOrCreateReference,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
@@ -220,6 +221,15 @@
     openReferencedTypeDrawer(ref, 'view');
   }
 
+  async function handleAddReference({itemId}) {
+    assignOrCreateReference(
+       refStore,
+       DataTypeKind.DAType,
+       dataAttributeTypes.instanceType,
+       itemId
+    );
+  }
+
   function handleActionClick({ columnId }) {
     if (columnId === 'dataAttributeTypes') openCreateDataAttributeTypeDialog();
     else if (columnId === 'enumTypes') openCreateEnumTypeDialog();
@@ -319,6 +329,7 @@
   onColumnActionClick={e => handleActionClick(e)}
   onItemEdit={e => handleOnEdit(e.itemId, e.columnId)}
   onItemReferenceClick={e => handleOnReferenceClick(e.itemId)}
+  onItemAddReferenceClick={(e) => handleAddReference(e)}
   onItemUnlink={({ itemId }) => refStore.removeTypeReference(itemId)}
   onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
   onItemApplyDefaults={e => handleApplyDefaults(e)}
