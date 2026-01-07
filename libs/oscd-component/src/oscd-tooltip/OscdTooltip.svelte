@@ -30,18 +30,47 @@
   let observer: MutationObserver | null = $state(null);
 
   // --- Hover / focus handlers ---
-  function handleMouseEnter() {
+  function openTooltip() {
     if (!content || disabled) return;
+    if (hoverTimeout) clearTimeout(hoverTimeout);
     if (hoverDelay > 0) {
-      hoverTimeout = setTimeout(() => show = true, hoverDelay);
+      hoverTimeout = setTimeout(() => (show = true), hoverDelay);
     } else {
       show = true;
     }
   }
 
-  function handleMouseLeave() {
+  function closeTooltip() {
     if (hoverTimeout) clearTimeout(hoverTimeout);
     show = false;
+  }
+
+  function handleMouseEnter() {
+    openTooltip();
+  }
+
+  function handleMouseLeave() {
+    closeTooltip();
+  }
+
+  function handleFocus() {
+    openTooltip();
+  }
+
+  function handleBlur() {
+    closeTooltip();
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (!content) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openTooltip();
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeTooltip();
+    }
   }
 
   // --- Position tooltip relative to trigger ---
@@ -203,11 +232,17 @@
 <!-- Trigger -->
 <span
   bind:this={triggerEl}
-  role="tooltip"
+  role="button"
   aria-describedby={content && !disabled ? id : undefined}
+  tabindex="0"
+  aria-haspopup={content ? 'true' : undefined}
+  aria-expanded={content ? (show ? 'true' : 'false') : undefined}
   aria-labelledby="tooltip"
   onmouseenter={handleMouseEnter}
   onmouseleave={handleMouseLeave}
+  onfocus={handleFocus}
+  onblur={handleBlur}
+  onkeydown={handleKeydown}
 >
   {@render children?.()}
 </span>

@@ -42,6 +42,7 @@
         class:br-active={index === activeIndex}
         onclick={() => handleCrumbClick(index)}
         aria-current={index === activeIndex ? 'page' : undefined}
+        aria-disabled={crumb.enabled ? undefined : 'true'}
       >
         <span class="label">{crumb.label}</span>
         {#if crumb.secondaryLabel}
@@ -50,7 +51,7 @@
       </button>
 
       {#if index < breadcrumbs.length - 1}
-      <div class="seperator">
+      <div class="separator">
         <OscdChevronRightIcon svgStyles="fill: {color ? color : '#004552'}" />
       </div>
       {/if}
@@ -81,6 +82,10 @@
     padding: 0;
     margin: 0;
     gap: 0.3rem;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
   }
 
   .breadcrumb:not(.br-disabled):not(.br-active) {
@@ -102,16 +107,18 @@
     font-weight: 500;
   }
 
+  .br-active {
+    font-weight: 700;
+  }
+
   .br-disabled {
     cursor: default;
     pointer-events: none;
   }
 
-  .br-active {
-    font-weight: 700;
-  }
-
-  .seperator {
+  .separator {
+    font-size: 1.1rem;
+    color: var(--mdc-theme-primary);
     opacity: 0.7;
     margin: 0 0.25rem;
     display: flex;

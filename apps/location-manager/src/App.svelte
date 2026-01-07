@@ -49,11 +49,10 @@
   }
 
   let columnDefs = $derived([
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('key'), field: 'key', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('description'), field: 'description', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: true, filterType: 'number', sortable: true },
+    { headerName: $_('assigned_resources'), field: 'assignedResources', numeric: true, filter: false, filterType: 'number', sortable: true },
     { headerName: '', field: 'actions', numeric: false, filter: false, filterType: 'text', minWidth: '100px', sortable: false}
   ]);
   //loading quickfix for css to load

@@ -20,14 +20,17 @@ export { default as OscdChevronLeftIcon } from './oscd-chevron-left-icon/OscdChe
 export { default as OscdArrowUpIcon } from './oscd-arrow-up-icon/OscdArrowUpIcon.svelte';
 export { default as OscdArrowDownIcon } from './oscd-arrow-down-icon/OscdArrowDownIcon.svelte';
 export { default as OscdWandStarsIcon } from './oscd-wand-stars-icon/OscdWandStarsIcon.svelte';
-export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte';
-export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte';
-export {default as OscdCallMadeIcon} from './oscd-call-made-icon/OscdCallMadeIcon.svelte';
-export {default as OscdCloseIcon} from './oscd-close-icon/OscdCloseIcon.svelte';
-export {default as OscdStarIcon} from './oscd-star-icon/OscdStarIcon.svelte';
-export { default as OscdAddCircleIcon } from './oscd-add-circle-icon/OscdAddCircleIcon.svelte';
-export { default as OscdCompareArrowsIcon } from './oscd-compare-arrows-icon/OscdCompareArrowsIcon.svelte';
-export { default as OscdDragHandleIcon } from './oscd-drag-handle-icon/OscdDragHandleIcon.svelte';
-export { default as OscdDragIndicatorIcon } from './oscd-drag-indicator-icon/OscdDragIndicatorIcon.svelte';
-export { default as OscdMoreVertIcon } from './oscd-more-vert-icon/OscdMoreVertIcon.svelte';
+export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte'
+export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte'
+export {default as OscdCallMadeIcon} from './oscd-call-made-icon/OscdCallMadeIcon.svelte'
+export {default as OscdCloseIcon} from './oscd-close-icon/OscdCloseIcon.svelte'
+export {default as OscdStarIcon} from './oscd-star-icon/OscdStarIcon.svelte'
+export { default as OscdAddCircleIcon } from './oscd-add-circle-icon/OscdAddCircleIcon.svelte'
+export { default as OscdCompareArrowsIcon } from './oscd-compare-arrows-icon/OscdCompareArrowsIcon.svelte'
+export { default as OscdDragHandleIcon } from './oscd-drag-handle-icon/OscdDragHandleIcon.svelte'
+export { default as OscdDragIndicatorIcon } from './oscd-drag-indicator-icon/OscdDragIndicatorIcon.svelte'
+export { default as OscdMoreVertIcon } from './oscd-more-vert-icon/OscdMoreVertIcon.svelte'
+export { default as OscdArrowSouthIcon } from './oscd-arrow-south-icon/OscdArrowSouthIcon.svelte'
+export { default as OscdArrowForwardIcon } from './oscd-arrow-forward-icon/OscdArrowForwardIcon.svelte'
+export { default as OscdArrowBackIcon } from './oscd-arrow-back-icon/OscdArrowBackIcon.svelte'
 export { default as OscdHomeIcon } from './oscd-home-icon/OscdHomeIcon.svelte';
