@@ -16,6 +16,7 @@
   import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     applyDefaultWarningNotification,
+    assignOrCreateReference,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
@@ -226,6 +227,16 @@
     openReferencedTypeDrawer(ref, 'edit');
   }
 
+  async function handleAddReference({itemId}) {
+    assignOrCreateReference(
+       refStore,
+       DataTypeKind.DOType,
+       dataObjectType.cdc,
+       itemId
+    );
+  }
+
+
   function handleActionClick({ columnId }) {
     if (columnId === 'dataObjectTypes') {
       openCreateDataObjectTypeDialog();
@@ -306,11 +317,13 @@
 <TBoard
   {columns}
   data={boardData}
+  onItemClick={(e) => handleOnMark(e)}
   onItemMarkChange={(e) => handleOnMark(e)}
   onItemSelectChange={(e) => handleOnSelect(e)}
   onItemDrop={(e) => handleItemDrop(e)}
   onItemEdit={({ itemId, columnId }) => handleOnEdit(itemId, columnId)}
   onItemReferenceClick={({ itemId}) => handleOnReferenceClick(itemId)}
+  onItemAddReferenceClick={(e) => handleAddReference(e)}
   onItemUnlink={({ itemId }) => refStore.removeTypeReference(itemId)}
   onColumnActionClick={({ columnId }) => handleActionClick({ columnId })}
   onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}

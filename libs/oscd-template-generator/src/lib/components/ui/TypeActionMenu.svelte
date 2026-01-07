@@ -13,7 +13,7 @@ const { onRename = () => {}, onDelete = () => {} }: Props  = $props();
 
 </script>
 
-<OscdActionMenu buttonVariant="text">
+<OscdActionMenu buttonVariant="default">
   <List>
     <Item onSMUIAction={onRename}>
       <Graphic><OscdEditIcon svgStyles="fill: var(--primary-base)"/></Graphic>

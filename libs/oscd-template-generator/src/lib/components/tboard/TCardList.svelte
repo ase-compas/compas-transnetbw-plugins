@@ -21,6 +21,7 @@
     onItemMarkChange?: (event: { itemId: string; item: TItem; marked: boolean }) => void;
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
+    onItemAddReferenceClick?: (event: { itemId: string; item: TItem }) => void;
     onItemSetDefault?: (event: {itemId: string, item: TItem}) => void;
     onItemUnlink?: (event: {itemId: string, item: TItem}) => void;
     onItemEdit?: (event: {itemId: string, item: TItem}) => void;
@@ -42,6 +43,7 @@
     onItemMarkChange = () => {},
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
+    onItemAddReferenceClick = () => {},
     onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
@@ -141,6 +143,7 @@
       showSelectionIndicator={showSelectionIndicator}
       canApplyDefaults={item.canApplyDefaults}
       canUnlink={item.canUnlink}
+      canClick={item.canClick}
       isDragTarget={isDragTarget(item, dropCandidate)}
       canDrop={isDroppable(item, dropCandidate)}
       canDrag={itemsDraggable}
@@ -158,6 +161,7 @@
       onApplyDefaults={() => onItemApplyDefaults({itemId: item.id, item})}
       onUnlink={() => onItemUnlink({itemId: item.id, item})}
       onReferenceClick={(e) => onItemReferenceClick({item, itemId: item.id, reference: e})}
+      onAddReferenceClick={() => onItemAddReferenceClick({itemId: item.id, item})}
       onSetDefault={() => onItemSetDefault({itemId: item.id, item})}
     />
     </div>

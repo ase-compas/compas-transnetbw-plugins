@@ -13,7 +13,7 @@
   --mdc-theme-text-primary-on-background: var(--base01);
   --mdc-theme-text-secondary-on-background: var(--base00);
   --mdc-theme-text-icon-on-background: var(--base00);
-  --mdc-theme-error: var(--red);
+  --mdc-theme-error: #b71c1c;
 
   --mdc-button-disabled-ink-color: var(--base1);
 
@@ -47,10 +47,28 @@
 
   --oscd-text-font: var(--oscd-theme-text-font, 'Roboto');
   --oscd-icon-font: var(--oscd-theme-icon-font, 'Material Icons');
+
+    /* MDC Switch Overwrites */
+  --mdc-switch-selected-track-color: #6B9197;
+
+  --mdc-switch-selected-focus-track-color: #6B9197;
+  --mdc-switch-selected-hover-track-color: #6B9197;
+  --mdc-switch-selected-pressed-track-color: #6B9197;
+  --mdc-switch-selected-track-color: #6B9197;
+  --mdc-switch-unselected-icon-color: #fff;
+
+  --mdc-switch-selected-handle-color: var(--mdc-theme-primary, #676778);
+  --mdc-switch-selected-hover-handle-color: var(--mdc-theme-primary, #676778);
+  --mdc-switch-selected-pressed-handle-color: var(--mdc-theme-primary, #676778);
+  --mdc-switch-selected-focus-handle-color: var(--mdc-theme-primary, #676778);;
 }
 
 .mdc-drawer span.mdc-drawer__title {
   color: var(--mdc-theme-text-primary-on-background) !important;
+}
+
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+  color: var(--primary-base) !important;
 }
 
 abbr {
