@@ -5,7 +5,7 @@
   import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
   import PluginHost from '../components/shared/PluginHost.svelte';
-  import { selectedEngineeringProcessState } from '../services/engineering-process.svelte';
+  import { selectedEngineeringProcessState, runningEngineeringProcessState, setLastSelectedPluginId } from '../services/engineering-process.svelte';
   import PluginGroupsStepper from '../components/engineering-process-detail/PluginGroupsStepper.svelte';
 
   type Status = 'check' | 'warning' | 'error';
@@ -80,6 +80,9 @@
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
+    // persist last selected plugin id for resume
+    setLastSelectedPluginId(plugin.id);
+
     if (!visited.includes(plugin.id)) {
       visited = [...visited, plugin.id];
 
@@ -113,6 +116,33 @@
     };
   }
 
+  // When opening the workflow, restore selection from running state if available
+  $effect(() => {
+    if (!hasPlugins) return;
+
+    const lastId = runningEngineeringProcessState.lastSelectedPluginId;
+    if (!lastId) return;
+
+    // If already selected and matches, nothing to do
+    if (selectedPlugin.plugin?.id === lastId) return;
+
+    const match = findGroupAndPluginIndexById(lastId);
+    if (match.groupIndex !== null && match.pluginIndex !== null) {
+      selectedGroupIndex = match.groupIndex;
+      selectedPluginIndex = match.pluginIndex;
+      const plugin = plugins.find((p) => p.id === lastId);
+      if (plugin) {
+        void selectPlugin(plugin);
+        return;
+      }
+    }
+
+    // Fallback if the stored plugin doesn't exist anymore
+    if (currentIndex === -1 && plugins.length) {
+      void selectPlugin(plugins[0]);
+    }
+  });
+
   $effect(() => {
     if (selectedGroupIndex === null || selectedPluginIndex === null) return;
     const group = pluginGroups?.[selectedGroupIndex];
@@ -136,7 +166,9 @@
     }
 
     if (currentIndex === -1) {
-      void selectPlugin(plugins[0]);
+      if (!runningEngineeringProcessState.lastSelectedPluginId) {
+        void selectPlugin(plugins[0]);
+      }
     }
   });
 

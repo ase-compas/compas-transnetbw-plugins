@@ -10,7 +10,8 @@
   import {
     getPluginsForProcess,
     getProcesses, isEngineeringProcessEditingState, runningEngineeringProcessState,
-    selectedEngineeringProcessState
+    selectedEngineeringProcessState,
+    setRunningProcess
   } from './services/engineering-process.svelte.ts';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 
@@ -52,8 +53,10 @@
   });
 
   async function startProcess(process: Process) {
-    if(runningEngineeringProcessState.process) {
-      const result = await openDialog(OscdConfirmDialog, {
+    const running = runningEngineeringProcessState.process;
+
+    if (running && running.id !== process.id) {
+      const result = await openDialog(OscdConfirmDialog as any, {
         title: 'Do you want to start a new process?',
         message: 'Starting a new process will stop the current running process. Any unsaved progress will be lost.',
         confirmActionText: 'Start New Process',
@@ -63,16 +66,20 @@
       if(result.type === 'cancel') {
         return;
       }
-    }
 
-    runningEngineeringProcessState.process = process;
+      // New process confirmed: reset running state
+      setRunningProcess(process, null);
+    } else if (!running) {
+      // No running process: set it now
+      setRunningProcess(process, null);
+    }
 
     if (!selectedEngineeringProcessState.process) {
       selectedEngineeringProcessState.process = process;
     }
 
     const plugins = getPluginsForProcess(selectedEngineeringProcessState.process);
-    openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    openDialog(EngineeringWorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
   }
 
   $effect(() => {
