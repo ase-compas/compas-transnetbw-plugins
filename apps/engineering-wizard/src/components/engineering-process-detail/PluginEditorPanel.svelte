@@ -8,7 +8,7 @@
     updateGroupsOfProcessStore,
     removeAllPluginsFromProcessStore,
     removePluginFromProcessStore,
-    selectedProcessState,
+    selectedEngineeringProcessState
   } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -31,20 +31,20 @@
     });
 
     if(result.type === 'confirm') {
-      removeAllPluginsFromProcessStore(selectedProcessState.process.id);
+      removeAllPluginsFromProcessStore(selectedEngineeringProcessState.process.id);
     }
   }
 
   function handleRemoveOne(pluginId: string) {
-    removePluginFromProcessStore(selectedProcessState.process.id, pluginId);
+    removePluginFromProcessStore(selectedEngineeringProcessState.process.id, pluginId);
   }
 
   function handleAddGroup(name: string, position: number) {
-    addGroupToProcessStore(selectedProcessState.process.id, name, position);
+    addGroupToProcessStore(selectedEngineeringProcessState.process.id, name, position);
   }
 
   function handleUpdateGroups(updatedGroups: PluginGroup[]) {
-    updateGroupsOfProcessStore(selectedProcessState.process.id, updatedGroups)
+    updateGroupsOfProcessStore(selectedEngineeringProcessState.process.id, updatedGroups)
   }
 
   let showRemoveAll = $derived(pluginGroups.flatMap(g => g.plugins).length > 0)
@@ -63,8 +63,8 @@
 {#snippet headerAction()}
   {#if showRemoveAll}
     <Button
-      style="background-color: #FF203A"
       variant="raised"
+      style="background-color: #FF203A"
       aria-label="Remove all plugins"
       onclick={handleRemoveAll}
     >

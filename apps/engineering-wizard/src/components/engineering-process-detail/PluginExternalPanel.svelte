@@ -3,7 +3,7 @@
   import type { Plugin } from '@oscd-transnet-plugins/shared';
 
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import { addPluginToProcessStore, selectedProcessState } from '../../services/engineering-process.svelte';
+  import { addPluginToProcessStore, selectedEngineeringProcessState } from '../../services/engineering-process.svelte';
   import Textfield from '@smui/textfield';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { dragHandle, dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
@@ -92,7 +92,7 @@
             </div>
             <button
               class="plugin-add-btn"
-              onclick={() => addPluginToProcess(plugin, selectedProcessState.process.id)}
+              onclick={() => addPluginToProcess(plugin, selectedEngineeringProcessState.process.id)}
             >
               <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
             </button>

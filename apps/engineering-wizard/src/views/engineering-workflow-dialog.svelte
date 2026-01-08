@@ -3,7 +3,7 @@
   import { closeDialog } from '../../../../libs/oscd-services/src/dialog';
   import type { ViewPlugin } from '../types/view-plugin';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
-  import { selectedProcessState } from '../services/engineering-process.svelte';
+  import { selectedEngineeringProcessState } from '../services/engineering-process.svelte';
 
   interface Props {
     open: boolean;
@@ -40,7 +40,8 @@
   const exit = (reason: 'cancel' | 'exit') => {
     if (hasExited) return;
     hasExited = true;
-    selectedProcessState.process = null;
+    // when closing
+    selectedEngineeringProcessState.process = null;
     editorTabsVisible.set(true);
     closeDialog(reason);
   };

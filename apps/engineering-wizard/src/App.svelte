@@ -7,8 +7,12 @@
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { getPluginsForProcess, getProcesses } from './services/engineering-process.svelte.ts';
-  import { processEditModeState, selectedProcessState } from './services/engineering-process.svelte';
+  import {
+    getPluginsForProcess,
+    getProcesses, isEngineeringProcessEditingState, runningEngineeringProcessState,
+    selectedEngineeringProcessState
+  } from './services/engineering-process.svelte.ts';
+  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 
   interface Plugin {
     src: string;
@@ -47,11 +51,27 @@
     await getProcesses();
   });
 
-  function startProcess(process: Process) {
-    if (!selectedProcessState.process) {
-      selectedProcessState.process = process;
+  async function startProcess(process: Process) {
+    if(runningEngineeringProcessState.process) {
+      const result = await openDialog(OscdConfirmDialog, {
+        title: 'Do you want to start a new process?',
+        message: 'Starting a new process will stop the current running process. Any unsaved progress will be lost.',
+        confirmActionText: 'Start New Process',
+        cancelActionText: 'Cancel',
+      });
+
+      if(result.type === 'cancel') {
+        return;
+      }
     }
-    const plugins = getPluginsForProcess(selectedProcessState.process);
+
+    runningEngineeringProcessState.process = process;
+
+    if (!selectedEngineeringProcessState.process) {
+      selectedEngineeringProcessState.process = process;
+    }
+
+    const plugins = getPluginsForProcess(selectedEngineeringProcessState.process);
     openDialog(EngineeringWorkflowDialog, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
   }
 
@@ -60,27 +80,27 @@
   });
 
   function handleView(process: Process) {
-    selectedProcessState.process = process;
+    selectedEngineeringProcessState.process = process;
   }
 
   function goBack() {
-    selectedProcessState.process = null;
+    selectedEngineeringProcessState.process = null;
   }
 
   function addNewProcess() {
-    processEditModeState.isEditing = false;
-    selectedProcessState.process = null;
+    isEngineeringProcessEditingState.isEditing = false;
+    selectedEngineeringProcessState.process = null;
     isCreatingProcess = true;
   }
 
   function cancelCreate() {
-    processEditModeState.isEditing = false;
+    isEngineeringProcessEditingState.isEditing = false;
     isCreatingProcess = false;
   }
 
   function handleCreated(proc: Process) {
     isCreatingProcess = false;
-    selectedProcessState.process = proc;
+    selectedEngineeringProcessState.process = proc;
   }
 </script>
 
@@ -88,7 +108,7 @@
 
 {#if isCreatingProcess}
   <AddNewProcess handleCancel={cancelCreate} handleSaved={handleCreated} />
-{:else if selectedProcessState.process}
+{:else if selectedEngineeringProcessState.process}
   <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
 {:else}
   <EngineeringProcessesList

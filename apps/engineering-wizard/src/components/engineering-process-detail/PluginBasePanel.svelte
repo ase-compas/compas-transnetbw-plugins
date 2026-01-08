@@ -3,7 +3,7 @@
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   import { OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import { processEditModeState } from '../../services/engineering-process.svelte';
+  import { isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddGroupDialog from './AddGroupDialog.svelte';
   import EditGroupsDialog from './EditGroupsDialog.svelte';
@@ -104,7 +104,7 @@
 
         <div
           class="plugin-list__group-plugins"
-          class:plugin_list__group-plugins--dashed={processEditModeState.isEditing}
+          class:plugin_list__group-plugins--dashed={isEngineeringProcessEditingState.isEditing}
           use:dragHandleZone={{
             items: group.plugins,
             flipDurationMs: 100,
@@ -122,7 +122,7 @@
                 <div class="plugin-list__item-row">
 
                   <div class="plugin-list__item-row__left">
-                    {#if processEditModeState.isEditing}
+                    {#if isEngineeringProcessEditingState.isEditing}
                       <div use:dragHandle aria-label="drag-handle">
                         <OscdDragIndicatorIcon/>
                       </div>
@@ -152,7 +152,7 @@
 {/snippet}
 
 {#snippet additional()}
-  {#if processEditModeState.isEditing}
+  {#if isEngineeringProcessEditingState.isEditing}
     <div class="plugin-list__footer">
       <button
         type="button"

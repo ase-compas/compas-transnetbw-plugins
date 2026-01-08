@@ -4,7 +4,7 @@
   import { createPluginId } from '../../services/plugin.service';
   import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
-  import { internalPlugins } from '../../services/engineering-process.svelte';
+  import { corePluginsState } from '../../services/engineering-process.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -16,7 +16,7 @@
 
   let searchTerm = $state('');
   let filteredPlugins = $derived.by(() => {
-    const compasPlugins = internalPlugins.plugins;
+    const compasPlugins = corePluginsState.plugins;
     const allPlugins = compasPlugins.map((compasPlugin) => ({
     id: createPluginId(compasPlugin.name),
     name: compasPlugin.name,
