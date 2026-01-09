@@ -8,12 +8,14 @@
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
   import {
+    engineeringProcessesState,
     getPluginsForProcess,
     getProcesses, isEngineeringProcessEditingState, runningEngineeringProcessState,
     selectedEngineeringProcessState,
     setRunningProcess
   } from './services/engineering-process.svelte.ts';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './services/engineering-workflow-state.svelte';
 
   interface Plugin {
     src: string;
@@ -50,6 +52,20 @@
 
   onMount(async () => {
     await getProcesses();
+
+    try {
+      if (doc) {
+        const { processId, lastPluginId } = readEngineeringWorkflowState(doc);
+        if (processId) {
+          const match = (engineeringProcessesState.processes ?? []).find(p => p.id === processId);
+          if (match) {
+            setRunningProcess(match, lastPluginId ?? null);
+          }
+        }
+      }
+    } catch (e) {
+
+    }
   });
 
   async function startProcess(process: Process) {
@@ -67,14 +83,16 @@
         return;
       }
 
-      // New process confirmed: reset running state
       setRunningProcess(process, null);
+      if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id, lastPluginId: null });
     } else if (!running) {
-      // No running process: set it now
       setRunningProcess(process, null);
+      if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id, lastPluginId: null });
+    } else {
+      if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id });
     }
 
-    if (!selectedEngineeringProcessState.process) {
+    if (!selectedEngineeringProcessState.process || selectedEngineeringProcessState.process.id !== process.id) {
       selectedEngineeringProcessState.process = process;
     }
 
@@ -122,5 +140,6 @@
     handleView={handleView}
     handleStart={startProcess}
     handleAddNew={addNewProcess}
+    docName={docName}
   />
 {/if}

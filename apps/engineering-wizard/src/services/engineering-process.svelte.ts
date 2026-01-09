@@ -34,7 +34,6 @@ export const corePluginsState = $state<{plugins: CoMPASPlugin[]}>({
 
 const SOURCE_URL = processesUrl;
 const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
-const RUNNING_PROCESS_STORAGE_KEY = 'engineeringWizardRunningProcess';
 const DEFAULT_SRC_TYPE: PluginType = 'external';
 
 // --- Load from localStorage (SSR-safe) ---
@@ -48,30 +47,6 @@ if (typeof localStorage !== 'undefined') {
       }
     } catch {
       // ignore corrupt data
-    }
-  }
-
-  // Load running process if present (support legacy shape = Process)
-  const savedRunning = localStorage.getItem(RUNNING_PROCESS_STORAGE_KEY);
-  if (savedRunning) {
-    try {
-      const parsed = JSON.parse(savedRunning) as unknown;
-      if (parsed && typeof parsed === 'object') {
-        type RunningSnapshot = { process?: Process | null; lastSelectedPluginId?: string | null } | Process;
-        const obj = parsed as RunningSnapshot;
-        if ('id' in obj && !('process' in obj)) {
-          // Legacy: previously we stored just the Process directly
-          runningEngineeringProcessState.process = obj as Process;
-          runningEngineeringProcessState.lastSelectedPluginId = null;
-        } else if ('process' in obj) {
-          const snap = obj as { process?: Process | null; lastSelectedPluginId?: string | null };
-          runningEngineeringProcessState.process = (snap.process ?? null) as Process;
-          runningEngineeringProcessState.lastSelectedPluginId = snap.lastSelectedPluginId ?? null;
-        }
-      }
-    } catch (e) {
-      // ignore corrupt data in running process storage
-      console.warn('Ignoring invalid running process snapshot');
     }
   }
 }
@@ -91,28 +66,6 @@ $effect.root(() => {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
     } catch {
       // ignore storage errors
-    }
-  });
-
-  $effect(() => {
-    const proc = runningEngineeringProcessState.process;
-    if (proc?.pluginGroups) {
-      proc.pluginGroups.forEach((g) => g.plugins?.length);
-    }
-
-    // Persist the entire running state so we can resume with last selected plugin
-    const snapshot = $state.snapshot(runningEngineeringProcessState);
-
-    if (typeof localStorage === 'undefined') return;
-    try {
-      if (snapshot && (snapshot as { process: Process | null }).process) {
-        localStorage.setItem(RUNNING_PROCESS_STORAGE_KEY, JSON.stringify(snapshot));
-      } else {
-        localStorage.removeItem(RUNNING_PROCESS_STORAGE_KEY);
-      }
-    } catch (e) {
-      // ignore storage errors while persisting running state
-      console.warn('Failed persisting running process snapshot');
     }
   });
 });
@@ -371,7 +324,6 @@ export function getPluginsForProcess(process: Process): Plugin[] {
   return (process.pluginGroups ?? []).flatMap((group) => group.plugins ?? []);
 }
 
-// Convenience helpers for running process state
 export function setRunningProcess(process: Process, lastSelectedPluginId: string | null = null): void {
   runningEngineeringProcessState.process = process ?? null;
   runningEngineeringProcessState.lastSelectedPluginId = lastSelectedPluginId;
@@ -379,17 +331,4 @@ export function setRunningProcess(process: Process, lastSelectedPluginId: string
 
 export function setLastSelectedPluginId(pluginId: string | null): void {
   runningEngineeringProcessState.lastSelectedPluginId = pluginId ?? null;
-}
-
-export function clearRunningProcess(): void {
-  runningEngineeringProcessState.process = null;
-  runningEngineeringProcessState.lastSelectedPluginId = null;
-  if (typeof localStorage !== 'undefined') {
-    try {
-      localStorage.removeItem(RUNNING_PROCESS_STORAGE_KEY);
-    } catch (e) {
-      // ignore storage errors on clear
-      console.warn('Failed clearing running process snapshot');
-    }
-  }
 }

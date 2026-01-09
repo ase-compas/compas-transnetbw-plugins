@@ -7,6 +7,7 @@
   import PluginHost from '../components/shared/PluginHost.svelte';
   import { selectedEngineeringProcessState, runningEngineeringProcessState, setLastSelectedPluginId } from '../services/engineering-process.svelte';
   import PluginGroupsStepper from '../components/engineering-process-detail/PluginGroupsStepper.svelte';
+  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../services/engineering-workflow-state.svelte';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
@@ -80,7 +81,10 @@
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
-    // persist last selected plugin id for resume
+    try {
+      if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
+    } catch (e) { }
+
     setLastSelectedPluginId(plugin.id);
 
     if (!visited.includes(plugin.id)) {
@@ -116,11 +120,11 @@
     };
   }
 
-  // When opening the workflow, restore selection from running state if available
   $effect(() => {
     if (!hasPlugins) return;
 
-    const lastId = runningEngineeringProcessState.lastSelectedPluginId;
+    const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
+    const lastId = xmlState.lastPluginId || runningEngineeringProcessState.lastSelectedPluginId;
     if (!lastId) return;
 
     // If already selected and matches, nothing to do
