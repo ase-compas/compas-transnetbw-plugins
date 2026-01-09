@@ -222,6 +222,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
     const name = dataObject.getAttribute('name');
     const type = dataObject.getAttribute('type');
     const presCond = dataObject.getAttribute('presCond');
+    const underlyingType = dataObject.getAttribute('underlyingType');
     if (!name || !type || !presCond) return null;
     return {
       name: name,
@@ -230,6 +231,7 @@ export class XMLTypeSpecificationParser implements ITypeSpecificationParser {
       requiresReference: true,
       objectType: type,
       refTypeKind: DataTypeKind.DOType,
+      underlyingType: underlyingType ? underlyingType : undefined,
     };
   }
 
