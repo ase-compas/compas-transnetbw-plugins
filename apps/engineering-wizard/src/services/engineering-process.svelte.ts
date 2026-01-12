@@ -1,29 +1,33 @@
 import type { CoMPASPlugin, Plugin, PluginGroup, PluginType, Process } from '@oscd-transnet-plugins/shared';
-/* eslint-disable @nx/enforce-module-boundaries */
 import processesUrl from '../assets/processes.xml?url';
 
-export const processesLoadingStore = $state<{ loading: boolean }>({
-  loading: false,
-});
-
-export const processesErrorStore = $state<{ error: string }>({
-  error: '',
-});
-
-export const processesStore = $state<{ processes: Process[] }>({
+export const engineeringProcessesState = $state<{ processes: Process[] }>({
   processes: [],
 });
 
-export const selectedProcessState = $state<{ process: Process }>({
+export const isEngineeringProcessesLoadingState = $state<{ loading: boolean }>({
+  loading: false,
+});
+
+export const engineeringProcessesErrorState = $state<{ error: string }>({
+  error: '',
+});
+
+export const selectedEngineeringProcessState = $state<{ process: Process }>({
   process: null,
 });
 
-export const processEditModeState = $state<{ isEditing: boolean }>({
+export const isEngineeringProcessEditingState = $state<{ isEditing: boolean }>({
   isEditing: false,
 });
 
-// Plugins that are available from the OSCD core
-export const internalPlugins = $state<{plugins: CoMPASPlugin[]}>({
+// Track the currently running process plus the last selected plugin id for resume
+export const runningEngineeringProcessState = $state<{ process: Process; lastSelectedPluginId: string | null }>({
+  process: null,
+  lastSelectedPluginId: null,
+});
+
+export const corePluginsState = $state<{plugins: CoMPASPlugin[]}>({
   plugins: []
 });
 
@@ -31,46 +35,40 @@ const SOURCE_URL = processesUrl;
 const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
 const DEFAULT_SRC_TYPE: PluginType = 'external';
 
-// --- Load from localStorage (SSR-safe) ---
 if (typeof localStorage !== 'undefined') {
   const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (saved) {
     try {
       const parsed: unknown = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        processesStore.processes = parsed as Process[];
+        engineeringProcessesState.processes = parsed as Process[];
       }
     } catch {
-      // ignore corrupt data
     }
   }
 }
 
 $effect.root(() => {
   $effect(() => {
-    processesStore.processes.forEach((proc) => {
+    engineeringProcessesState.processes.forEach((proc) => {
       proc.pluginGroups?.forEach((group) => {
         group.plugins?.length;
       });
     });
 
-    const snapshot = $state.snapshot(processesStore.processes);
+    const snapshot = $state.snapshot(engineeringProcessesState.processes);
 
     if (typeof localStorage === 'undefined') return;
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
     } catch {
-      // ignore storage errors
     }
   });
 });
 
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
 const attr = (el: Element | null, attrKey: string) => el?.getAttribute(attrKey) ?? undefined;
-/**
- * Parses the `type` attribute of a <src> tag within the given element.
- * Returns 'internal', 'external', or a default type if the attribute is missing or invalid.
- */
+
 const parseSrcType = (el: Element | null): PluginType => {
   const value = attr(el?.querySelector('src'), 'type') ?? '';
   if( value === 'internal' || value === 'external') {
@@ -117,8 +115,8 @@ const parseProcessesXml = (xml: XMLDocument): Process[] =>
   });
 
 export async function getProcesses(): Promise<Process[]> {
-  processesLoadingStore.loading = true;
-  processesErrorStore.error = '';
+  isEngineeringProcessesLoadingState.loading = true;
+  engineeringProcessesErrorState.error = '';
 
   try {
     const res = await fetch(SOURCE_URL, { cache: 'no-cache' });
@@ -141,31 +139,30 @@ export async function getProcesses(): Promise<Process[]> {
 
     const parsed = parseProcessesXml(xml);
 
-    const localSnapshot = $state.snapshot(processesStore.processes) as Process[];
+    const localSnapshot = $state.snapshot(engineeringProcessesState.processes) as Process[];
     if (Array.isArray(localSnapshot) && localSnapshot.length) {
       const byId = new Map<string, Process>();
       for (const p of parsed) byId.set(p.id, p);
       for (const p of localSnapshot) byId.set(p.id, p);
       const merged = Array.from(byId.values());
-      processesStore.processes = merged;
+      engineeringProcessesState.processes = merged;
       return merged;
     }
 
-    processesStore.processes = parsed;
+    engineeringProcessesState.processes = parsed;
     return parsed;
   } catch (err) {
-    const message =
+    engineeringProcessesErrorState.error =
       err instanceof Error ? err.message : 'Failed to load processes.';
-    processesErrorStore.error = message;
     throw err;
   } finally {
-    processesLoadingStore.loading = false;
+    isEngineeringProcessesLoadingState.loading = false;
   }
 }
 
 function ensureUniqueProcessId(base: string): string {
   const normalized = (base || '').trim() || 'process';
-  const existing = new Set((processesStore.processes ?? []).map(p => p.id));
+  const existing = new Set((engineeringProcessesState.processes ?? []).map(p => p.id));
   if (!existing.has(normalized)) return normalized;
 
   let i = 2;
@@ -192,7 +189,7 @@ export function addProcessToStore(process: Process): Process {
   };
 
   // assign a new array for clean reactivity
-  processesStore.processes = [...(processesStore.processes ?? []), toInsert];
+  engineeringProcessesState.processes = [...(engineeringProcessesState.processes ?? []), toInsert];
 
   return toInsert;
 }
@@ -209,7 +206,7 @@ export function addPluginToProcessStore(
 ): void {
   const title = (groupTitle && groupTitle.trim()) || 'Ungrouped';
 
-  const process = processesStore.processes.find((p) => p.id === procId);
+  const process = engineeringProcessesState.processes.find((p) => p.id === procId);
   if (!process) return;
 
   const groups = process.pluginGroups ?? (process.pluginGroups = []);
@@ -232,7 +229,7 @@ export function removePluginFromProcessStore(
   procId: string,
   pluginId: string
 ): boolean {
-  const process = processesStore.processes.find((p) => p.id === procId);
+  const process = engineeringProcessesState.processes.find((p) => p.id === procId);
   if (!process || !process.pluginGroups) return false;
 
   for (const group of process.pluginGroups) {
@@ -257,7 +254,7 @@ export function removePluginFromProcessStore(
 }
 
 export function removeAllPluginsFromProcessStore(procId: string): void {
-  const process = processesStore.processes.find((p) => p.id === procId);
+  const process = engineeringProcessesState.processes.find((p) => p.id === procId);
   if (!process || !process.pluginGroups) return;
 
   for (const group of process.pluginGroups) {
@@ -278,7 +275,7 @@ export function addGroupToProcessStore(
   groupTitle: string,
   position?: number
 ): void {
-  const process = processesStore.processes.find((p) => p.id === procId);
+  const process = engineeringProcessesState.processes.find((p) => p.id === procId);
   if (!process) return;
 
   const groups = process.pluginGroups ?? (process.pluginGroups = []);
@@ -305,7 +302,7 @@ export function updateGroupsOfProcessStore(
   procId: string,
   newGroups: PluginGroup[]
 ): void {
-  const process = processesStore.processes.find((p) => p.id === procId);
+  const process = engineeringProcessesState.processes.find((p) => p.id === procId);
   if (!process) return;
 
   // Replace the entire plugin groups array with the new groups
@@ -313,9 +310,18 @@ export function updateGroupsOfProcessStore(
 }
 
 export function setInternalPlugins(plugins :CoMPASPlugin[]) {
-  internalPlugins.plugins = [...plugins]
+  corePluginsState.plugins = [...plugins]
 }
 
 export function getPluginsForProcess(process: Process): Plugin[] {
   return (process.pluginGroups ?? []).flatMap((group) => group.plugins ?? []);
+}
+
+export function setRunningProcess(process: Process, lastSelectedPluginId: string | null = null): void {
+  runningEngineeringProcessState.process = process ?? null;
+  runningEngineeringProcessState.lastSelectedPluginId = lastSelectedPluginId;
+}
+
+export function setLastSelectedPluginId(pluginId: string | null): void {
+  runningEngineeringProcessState.lastSelectedPluginId = pluginId ?? null;
 }

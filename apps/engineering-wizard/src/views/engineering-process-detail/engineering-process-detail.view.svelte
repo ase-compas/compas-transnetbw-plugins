@@ -8,7 +8,10 @@
   import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { buildProcessBreadcrumbs } from '../../utils/breadcrumbs.util';
-  import { processEditModeState, selectedProcessState } from '../../services/engineering-process.svelte';
+  import {
+    isEngineeringProcessEditingState,
+    selectedEngineeringProcessState
+  } from '../../services/engineering-process.svelte';
   import WorkflowActions from '../../components/engineering-workflow/WorkflowActions.svelte';
   import WorkflowTitle from '../../components/engineering-workflow/WorkflowTitle.svelte';
 
@@ -28,30 +31,29 @@
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedProcessState.process, { edit: processEditModeState.isEditing }));
-
-  let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
+  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedEngineeringProcessState.process, { edit: isEngineeringProcessEditingState.isEditing }));
+  let pluginGroups = $derived(selectedEngineeringProcessState.process.pluginGroups);
 
   let visitedSteps: StepId[] = $state([]);
 
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
     editorTabsVisible.set(true);
-    selectedProcessState.process = null;
+    selectedEngineeringProcessState.process = null;
   }
 
   function startEditing() {
     console.log("EDITING");
-    processEditModeState.isEditing = true;
+    isEngineeringProcessEditingState.isEditing = true;
     editorTabsVisible.set(false);
     currentStepIndex = 0;
     visitedSteps = [];
   }
 
   function exitEditing() {
-    processEditModeState.isEditing = false;
+    isEngineeringProcessEditingState.isEditing = false;
     editorTabsVisible.set(true);
-    selectedProcessState.process = null;
+    selectedEngineeringProcessState.process = null;
   }
 
   function handleStepSelect(stepId: StepId) {
@@ -80,7 +82,7 @@
 </script>
 
 <div class="page-content">
-  {#if processEditModeState.isEditing}
+  {#if isEngineeringProcessEditingState.isEditing}
     <div class="stepper">
 
       <WorkflowTitle onClick={exitEditing} />
@@ -106,7 +108,7 @@
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
             onclick={handleAddValidationClick}
-            disabled={!selectedProcessState.process}
+            disabled={!selectedEngineeringProcessState.process}
             aria-label="Add validation"
           >
             ADD NEW VALIDATION
@@ -129,8 +131,8 @@
         <Button
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-          onclick={() => handleStart(selectedProcessState.process)}
-          disabled={!selectedProcessState.process}
+          onclick={() => handleStart(selectedEngineeringProcessState.process)}
+          disabled={!selectedEngineeringProcessState.process}
           aria-label="Start process"
         >
           START PROCESS

@@ -2,13 +2,8 @@
   import type { Snippet } from 'svelte';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import {
-    OscdAddCircleIcon,
-    OscdArrowSouthIcon,
-    OscdDragIndicatorIcon,
-    OscdEditIcon
-  } from '@oscd-transnet-plugins/oscd-icons';
-  import { processEditModeState } from '../../services/engineering-process.svelte';
+  import { OscdArrowSouthIcon, OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddGroupDialog from './AddGroupDialog.svelte';
   import EditGroupsDialog from './EditGroupsDialog.svelte';
@@ -111,7 +106,7 @@
         <div class="plugin-list__group-plugins-section">
           <div
             class="plugin-list__group-plugins"
-            class:plugin_list__group-plugins--dashed={processEditModeState.isEditing}
+            class:plugin_list__group-plugins--dashed={isEngineeringProcessEditingState.isEditing}
             use:dragHandleZone={{
               items: group.plugins,
               flipDurationMs: 100,
@@ -128,12 +123,12 @@
                 <OscdListItem variant="secondary">
                   <div class="plugin-list__item-row">
 
-                    <div class="plugin-list__item-row__left">
-                      {#if processEditModeState.isEditing}
-                        <div use:dragHandle aria-label="drag-handle">
-                          <OscdDragIndicatorIcon/>
-                        </div>
-                      {/if}
+                  <div class="plugin-list__item-row__left">
+                    {#if isEngineeringProcessEditingState.isEditing}
+                      <div use:dragHandle aria-label="drag-handle">
+                        <OscdDragIndicatorIcon/>
+                      </div>
+                    {/if}
 
                       <span class="plugin-list__item-name">{plugin.name}</span>
                     </div>
@@ -165,7 +160,7 @@
 {/snippet}
 
 {#snippet additional()}
-  {#if processEditModeState.isEditing}
+  {#if isEngineeringProcessEditingState.isEditing}
     <div class="plugin-list__footer">
       <button
         type="button"

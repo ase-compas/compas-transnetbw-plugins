@@ -8,7 +8,7 @@
   import { OscdCompareArrowsIcon, OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
   import PluginBasePanel from '../../components/engineering-process-detail/PluginBasePanel.svelte';
 
-  import { internalPlugins, processEditModeState } from '../../services/engineering-process.svelte';
+  import { corePluginsState, isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
   import { addProcessToStore } from '../../services/engineering-process.svelte'; // adjust if your fn lives in `.svelte.ts`
   import { createPluginId } from '../../services/plugin.service';
 
@@ -159,7 +159,7 @@
   let filteredPlugins = $derived.by(() => {
     const term = searchTerm.toLowerCase().trim();
 
-    const allPlugins = (internalPlugins.plugins ?? []).map((p) => ({
+    const allPlugins = (corePluginsState.plugins ?? []).map((p) => ({
       id: createPluginId(p.name),
       name: p.name,
       src: p.src,
@@ -185,22 +185,22 @@
 
     const created = addProcessToStore(draft);
 
-    processEditModeState.isEditing = false;
+    isEngineeringProcessEditingState.isEditing = false;
 
     handleSaved(created);
   }
 
   function cancel() {
-    processEditModeState.isEditing = false;
+    isEngineeringProcessEditingState.isEditing = false;
     handleCancel();
   }
 
   onMount(() => {
-    processEditModeState.isEditing = true;
+    isEngineeringProcessEditingState.isEditing = true;
   });
 
   onDestroy(() => {
-    processEditModeState.isEditing = false;
+    isEngineeringProcessEditingState.isEditing = false;
   });
 </script>
 
