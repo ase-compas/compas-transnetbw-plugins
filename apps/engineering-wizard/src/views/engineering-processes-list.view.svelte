@@ -1,9 +1,20 @@
 <script lang="ts">
-  import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
   import Textfield from '@smui/textfield';
-  import { OscdInfoIcon, OscdPlayCircleIcon, OscdVisibilityIcon } from '../../../../libs/oscd-icons/src';
   import type { Process } from '@oscd-transnet-plugins/shared';
-  import { engineeringProcessesErrorState, isEngineeringProcessesLoadingState, engineeringProcessesState, runningEngineeringProcessState } from '../services/engineering-process.svelte';
+
+  import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
+  import {
+    OscdInfoIcon,
+    OscdPlayCircleIcon,
+    OscdVisibilityIcon,
+  } from '../../../../libs/oscd-icons/src';
+
+  import {
+    engineeringProcessesErrorState,
+    engineeringProcessesState,
+    isEngineeringProcessesLoadingState,
+    runningEngineeringProcessState,
+  } from '../services/engineering-process.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -12,51 +23,72 @@
     docName?: string;
   }
 
-  let {
-    handleStart,
-    handleView,
-    handleAddNew,
-    docName
-  }: Props = $props();
+  type ProcessRow = Process & { displayName: string };
+
+  const { handleStart, handleView, handleAddNew, docName }: Props = $props();
 
   let searchQuery = $state('');
 
-  let searchLower = $derived(searchQuery.trim().toLowerCase());
-  let rows = $derived((engineeringProcessesState.processes ?? []).map((p) => ({ ...p, displayName: p.name || p.id })));
-  let filteredRows = $derived(searchLower
-    ? rows.filter((p) => (p.displayName ?? '').toLowerCase().includes(searchLower))
-    : rows);
+  const processes = $derived(engineeringProcessesState.processes ?? []);
 
-  const columns: { key: string; header: string }[] = [
+  const rows = $derived<ProcessRow[]>(
+    processes.map((p) => ({
+      ...p,
+      displayName: p.name || p.id,
+    }))
+  );
+
+  const normalizedQuery = $derived(searchQuery.trim().toLowerCase());
+
+  const filteredRows = $derived(
+    normalizedQuery
+      ? rows.filter((p) => p.displayName.toLowerCase().includes(normalizedQuery))
+      : rows
+  );
+
+  const columns = [
     { key: 'displayName', header: 'Name' },
     { key: 'description', header: 'Description' },
-  ];
+  ] as const;
 
   const runningProc = $derived(runningEngineeringProcessState.process);
   const runningProcName = $derived(runningProc?.name || runningProc?.id || '');
   const lastSelectedPluginId = $derived(runningEngineeringProcessState.lastSelectedPluginId);
 
-  function getLastSelectedPluginName(proc: Process | null, id: string | null): string {
-    if (!id || !proc?.pluginGroups?.length) return '';
-    for (const g of proc.pluginGroups) {
-      const pl = g.plugins?.find((p) => p.id === id);
-      if (pl) return pl.name || pl.id;
+  function getLastSelectedPluginName(proc: Process | null, pluginId: string | null): string {
+    if (!pluginId) return '';
+
+    for (const group of proc?.pluginGroups ?? []) {
+      const found = group.plugins?.find((p) => p.id === pluginId);
+      if (found) return found.name || found.id;
     }
+
     return '';
   }
 
-  const lastSelectedPluginName = $derived(getLastSelectedPluginName(runningProc, lastSelectedPluginId));
-
-  const bannerText = $derived(
-    `A process “${runningProcName}” has already been started${docName ? ` for the ${docName}` : ''}${lastSelectedPluginName ? ` at “${lastSelectedPluginName}”` : ''}. Would you like to continue where you left off?`
+  const lastSelectedPluginName = $derived(
+    getLastSelectedPluginName(runningProc, lastSelectedPluginId)
   );
+
+  function buildBannerText(): string {
+    const base = `A process “${runningProcName}” has already been started`;
+
+    const parts = [
+      docName ? ` for the ${docName}` : '',
+      lastSelectedPluginName ? ` at “${lastSelectedPluginName}”` : '',
+    ];
+
+    return `${base}${parts.join('')}. Would you like to continue where you left off?`;
+  }
+
+  const bannerText = $derived(buildBannerText());
 
   function continueRunning() {
     if (runningProc) handleStart(runningProc);
   }
 
   function isRunningRow(item: Process): boolean {
-    return !!(runningProc && item?.id === runningProc.id);
+    return !!runningProc && item?.id === runningProc.id;
   }
 </script>
 
@@ -67,27 +99,15 @@
         <OscdInfoIcon />
         <span>{bannerText}</span>
       </div>
-      <button
-        type="button"
-        class="banner-continue"
-        onclick={continueRunning}
-      >
+      <button type="button" class="banner-continue" onclick={continueRunning}>
         CONTINUE
       </button>
     </div>
   {/if}
 
   <div class="process-toolbar">
-    <Textfield
-      bind:value={searchQuery}
-      variant="outlined"
-      label="Search Processes"
-    />
-    <button
-      type="button"
-      class="primary"
-      onclick={handleAddNew}
-    >
+    <Textfield bind:value={searchQuery} variant="outlined" label="Search Processes" />
+    <button type="button" class="primary" onclick={handleAddNew}>
       ADD NEW PROCESS
     </button>
   </div>
@@ -103,37 +123,35 @@
     rowBg="#ffffff"
   >
     {#snippet actions({ item })}
+      <button
+        type="button"
+        class="icon"
+        aria-label="View process"
+        onclick={() => handleView(item)}
+      >
+        <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+      </button>
 
+      {#if isRunningRow(item)}
         <button
           type="button"
           class="icon"
-          aria-label="View process"
-          onclick={() => handleView(item)}
+          aria-label="Start process"
+          onclick={() => handleStart(item)}
         >
-          <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+          <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
         </button>
-
-        {#if isRunningRow(item)}
-          <button
-            type="button"
-            class="continue-btn"
-            aria-label="Continue process"
-            onclick={() => handleStart(item)}
-          >
-            Continue
-          </button>
-        {:else}
-          <button
-            type="button"
-            class="icon"
-            aria-label="Start process"
-            onclick={() => handleStart(item)}
-          >
-            <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-          </button>
-        {/if}
-
-      {/snippet}
+      {:else}
+        <button
+          type="button"
+          class="icon"
+          aria-label="Start process"
+          onclick={() => handleStart(item)}
+        >
+          <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
+        </button>
+      {/if}
+    {/snippet}
   </OscdBasicDataTable>
 </div>
 
@@ -191,25 +209,9 @@
   .banner-continue {
     border: none;
     cursor: pointer;
-    padding: 0 16px;
-    height: 36px;
-    min-width: 110px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    padding: 8px 14px;
     background: #ffffff;
     color: #004552;
-    border-radius: 4px;
-    font-weight: 600;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  }
-
-  .continue-btn {
-    border: none;
-    cursor: pointer;
-    padding: 6px 12px;
-    background: #004552;
-    color: #fff;
     border-radius: 4px;
     font-weight: 600;
   }

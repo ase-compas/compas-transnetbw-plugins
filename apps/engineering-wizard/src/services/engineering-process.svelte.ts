@@ -27,7 +27,6 @@ export const runningEngineeringProcessState = $state<{ process: Process; lastSel
   lastSelectedPluginId: null,
 });
 
-// Plugins that are available from the OSCD core
 export const corePluginsState = $state<{plugins: CoMPASPlugin[]}>({
   plugins: []
 });
@@ -36,7 +35,6 @@ const SOURCE_URL = processesUrl;
 const LOCAL_STORAGE_KEY = 'engineeringWizardProcesses';
 const DEFAULT_SRC_TYPE: PluginType = 'external';
 
-// --- Load from localStorage (SSR-safe) ---
 if (typeof localStorage !== 'undefined') {
   const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (saved) {
@@ -46,7 +44,6 @@ if (typeof localStorage !== 'undefined') {
         engineeringProcessesState.processes = parsed as Process[];
       }
     } catch {
-      // ignore corrupt data
     }
   }
 }
@@ -65,17 +62,13 @@ $effect.root(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
     } catch {
-      // ignore storage errors
     }
   });
 });
 
 const text = (el: Element | null) => el?.textContent?.trim() ?? '';
 const attr = (el: Element | null, attrKey: string) => el?.getAttribute(attrKey) ?? undefined;
-/**
- * Parses the `type` attribute of a <src> tag within the given element.
- * Returns 'internal', 'external', or a default type if the attribute is missing or invalid.
- */
+
 const parseSrcType = (el: Element | null): PluginType => {
   const value = attr(el?.querySelector('src'), 'type') ?? '';
   if( value === 'internal' || value === 'external') {

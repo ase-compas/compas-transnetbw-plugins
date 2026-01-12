@@ -2,15 +2,8 @@
   import type { Snippet } from 'svelte';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import { OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdArrowSouthIcon, OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
-  import {
-    OscdAddCircleIcon,
-    OscdArrowSouthIcon,
-    OscdDragIndicatorIcon,
-    OscdEditIcon
-  } from '@oscd-transnet-plugins/oscd-icons';
-  import { processEditModeState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddGroupDialog from './AddGroupDialog.svelte';
   import EditGroupsDialog from './EditGroupsDialog.svelte';
