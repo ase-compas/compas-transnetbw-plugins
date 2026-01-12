@@ -4,7 +4,11 @@
   import { createPluginId } from '../../services/plugin.service';
   import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
-  import { corePluginsState } from '../../services/engineering-process.svelte';
+  import {
+    addPluginToProcessStore,
+    corePluginsState,
+    selectedEngineeringProcessState
+  } from '../../services/engineering-process.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -32,6 +36,11 @@
     plugin.name.toLowerCase().includes(term)
   );
 });
+
+  function addPluginToProcess(plugin: Plugin) {
+    const processId = selectedEngineeringProcessState.process.id;
+    addPluginToProcessStore(processId, plugin);
+  }
 </script>
 
 <div class="process-definition-view">
@@ -44,7 +53,7 @@
     <p>SELECT OR DRAG & DROP PLUGINS</p>
   </div>
 
-  <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm />
+  <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm onAddPlugin={addPluginToProcess} />
 </div>
 
 <style>

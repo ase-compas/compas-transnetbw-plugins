@@ -8,13 +8,16 @@
   import { OscdCompareArrowsIcon, OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
   import PluginBasePanel from '../../components/engineering-process-detail/PluginBasePanel.svelte';
 
-  import { corePluginsState, isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
-  import { addProcessToStore } from '../../services/engineering-process.svelte'; // adjust if your fn lives in `.svelte.ts`
+  import {
+    addProcessToStore,
+    corePluginsState,
+    isEngineeringProcessEditingState
+  } from '../../services/engineering-process.svelte';
   import { createPluginId } from '../../services/plugin.service';
 
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
-  import DraftPluginExternalPanel from '../../components/add-new-process/DraftPluginExternalPanel.svelte';
+  import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
 
   interface Props {
     handleCancel: () => void;
@@ -260,7 +263,7 @@
       <p>SELECT OR DRAG &amp; DROP PLUGINS</p>
     </div>
 
-    <DraftPluginExternalPanel
+    <PluginExternalPanel
       plugins={filteredPlugins}
       bind:searchTerm
       onAddPlugin={(p) => addPluginToDraft(p, 'Ungrouped')}

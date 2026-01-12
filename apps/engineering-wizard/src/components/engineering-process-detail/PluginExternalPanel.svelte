@@ -1,64 +1,79 @@
 <script lang="ts">
-  import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
-  import type { Plugin } from '@oscd-transnet-plugins/shared';
-
-  import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import { addPluginToProcessStore, selectedEngineeringProcessState } from '../../services/engineering-process.svelte';
   import Textfield from '@smui/textfield';
+  import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
+  import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import { dragHandle, dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
+  import type { Plugin } from '@oscd-transnet-plugins/shared';
+  import {
+    dragHandle,
+    dragHandleZone,
+    SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    TRIGGERS
+  } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
 
   interface Props {
     plugins: Plugin[];
     searchTerm?: string;
+
+    /** Called when user clicks the + button */
+    onAddPlugin?: (plugin: Plugin) => void;
   }
 
   let {
     plugins = [],
     searchTerm = $bindable(''),
+    onAddPlugin = () => {}
   }: Props = $props();
 
-  function addPluginToProcess(plugin: Plugin, processId: string) {
-    addPluginToProcessStore(processId, plugin);
-  }
-
-  const handleDNDFinalize = (event) => {
+  const handleDNDFinalize = (event: any) => {
     plugins = event.detail.items;
   };
 
   /**
-   * Handles the consider event for the drag-and-drop zone.
    * Create a shadow element so the actual plugin never leaves this list.
-   * @param e
    */
-  const handleDNDConsider = (e) => {
-    const { detail } = e;
-    const { trigger, id } = detail.info;
+  const handleDNDConsider = (e: any) => {
+    const { trigger, id } = e.detail.info;
 
     if (trigger === TRIGGERS.DRAG_STARTED) {
       const idx = plugins.findIndex(i => i.id === id);
+      if (idx < 0) return;
+
       const newId = `${id}_copy`;
-      e.detail.items = e.detail.items.filter(item => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+
+      // remove previous shadow items then insert a fresh copy at drag start index
+      e.detail.items = e.detail.items.filter(
+        (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
+      );
       e.detail.items.splice(idx, 0, { ...plugins[idx], id: newId });
+
       plugins = e.detail.items;
     } else {
       plugins = [...plugins];
     }
+  };
+
+  function normalizeOriginal(plugin: Plugin): Plugin {
+    // If user clicks add on a *_copy item, map back to original id
+    const originalId = plugin.id.endsWith('_copy') ? plugin.id.slice(0, -5) : plugin.id;
+
+    // Prefer the original plugin object if it exists in the list
+    return plugins.find(p => p.id === originalId) ?? { ...plugin, id: originalId };
+  }
+
+  function handleAddClick(plugin: Plugin) {
+    onAddPlugin(normalizeOriginal(plugin));
   }
 </script>
 
-<OscdPanel backgroundColor="#DAE3E6" {header} {content}></OscdPanel>
+<OscdPanel backgroundColor="#DAE3E6" {header} {content} />
 
 {#snippet header()}
   <div class="card-header">
     <p class="header-info">Add External Plugins</p>
     <div class="search-input">
-      <Textfield
-        variant="outlined"
-        label="Search Plugins"
-        bind:value={searchTerm}
-      />
+      <Textfield variant="outlined" label="Search Plugins" bind:value={searchTerm} />
     </div>
   </div>
 {/snippet}
@@ -76,25 +91,23 @@
     onfinalize={handleDNDFinalize}
   >
     {#each plugins as plugin (plugin.id)}
-      <div
-        data-id={plugin.id}
-        animate:flip={{duration: 100}}
-      >
+      <div data-id={plugin.id} animate:flip={{ duration: 100 }}>
         <OscdListItem variant="secondary">
           <div class="card-item-content">
-
             <div class="card-item-content__left">
               <div use:dragHandle aria-label="drag-handle">
-                <OscdDragIndicatorIcon/>
+                <OscdDragIndicatorIcon />
               </div>
 
               <p class="plugin-name">{plugin.name}</p>
             </div>
+
             <button
               class="plugin-add-btn"
-              onclick={() => addPluginToProcess(plugin, selectedEngineeringProcessState.process.id)}
+              onclick={() => handleAddClick(plugin)}
+              aria-label={`Add ${plugin.name}`}
             >
-              <OscdAddCircleIcon svgStyles="fill: var(--brand);"></OscdAddCircleIcon>
+              <OscdAddCircleIcon svgStyles="fill: var(--brand);" />
             </button>
           </div>
         </OscdListItem>
@@ -102,6 +115,7 @@
     {/each}
   </div>
 {/snippet}
+
 <style>
   .card-header {
     display: flex;
