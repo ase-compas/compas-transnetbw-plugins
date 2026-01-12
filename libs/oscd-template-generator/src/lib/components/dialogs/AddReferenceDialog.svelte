@@ -2,7 +2,7 @@
   import Radio from '@smui/radio';
   import FormField from "@smui/form-field";
   import OscdBaseDialog from "libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte";
-  import { getDataTypeService, getDefaultTypeService } from '../../services';
+  import { getDataTypeService, getDefaultTypeService, getIdGeneratorService } from '../../services';
   import Autocomplete from '@smui-extra/autocomplete';
   import CreateTypeForm from '../forms/CreateTypeForm.svelte';
   import { onMount } from 'svelte';
@@ -18,6 +18,7 @@
 
   const service = getDataTypeService();
   const defaultTypeService = getDefaultTypeService();
+  const idGeneratorService = getIdGeneratorService();
 
   let {
     open = $bindable(false),
@@ -89,6 +90,10 @@ onMount(async () => {
     formState = details;
   }
 
+  const autoGenerateRefId = (_: string) : string => {
+    return idGeneratorService.generateReferencePrefixId(itemId);
+  }
+
   // ===== Event Handlers =====
   function handleCreate() {
     if(!formState || !formState.valid) return;
@@ -154,6 +159,7 @@ onMount(async () => {
 
             typeKind={objTypeKind}
             getOptions={() => service.getTypeOptions(objTypeKind)}
+            autoGenerateId={autoGenerateRefId}
 
             defaultInstance={objInstanceType}
             typeSelectionDisabled={!!objInstanceType}

@@ -4,6 +4,9 @@
   import CreateTypeForm from '../../forms/CreateTypeForm.svelte';
   import type { DataTypeKind, TypeOption } from '../../../domain';
   import type { ChangeEventDetails } from '../../forms/types';
+  import { getIdGeneratorService } from '../../../services';
+
+  const idGeneratorService = getIdGeneratorService();
 
   // ===== Props =====
   interface Props {
@@ -50,6 +53,10 @@
     formState = details;
   }
 
+  const autoGenerateId = (instance: string) : string => {
+    return idGeneratorService.generateInstancePrefixId(instance);
+  }
+
   // ===== Event Handlers =====
   function handleCreate() {
     if(!formState) return;
@@ -87,6 +94,7 @@
 
           {defaultInstance}
           {defaultTypeId}
+          autoGenerateId={autoGenerateId}
 
           {autocompleteLabel}
           getOptions={getOptions}
