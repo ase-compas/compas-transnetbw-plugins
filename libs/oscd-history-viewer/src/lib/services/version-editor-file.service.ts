@@ -49,6 +49,11 @@ export class VersionEditorFileService {
       );
   }
 
+  deleteResource(uuid: string): Observable<void> {
+    const sclApiClient = this.generateApiClient(this.endpoint);
+    return sclApiClient.deleteAllSclFileVersions({id: uuid});
+  }
+
   downloadSclData(
     uuid: string,
     type: string,

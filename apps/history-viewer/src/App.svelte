@@ -10,7 +10,7 @@
 </script>
 <script lang="ts">
   import {
-    OscdButton,
+    OscdButton, OscdConfirmDialog,
     OscdDataTable,
     OscdDialog,
     OscdFilterBox,
@@ -34,6 +34,7 @@
   import "../public/material-icon.css"
   import "../public/global.css"
   import "../public/smui.css"
+  import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -110,11 +111,17 @@
       callback: (row) => getHistoryByUuid(row),
       disabled: () => false
     },
-    { 
+    {
       icon: 'download',
       tooltip: 'Download',
       callback: (row) => downloadBlob(row),
       disabled: (row) => !row.available
+    },
+    {
+      icon: 'delete',
+      tooltip: 'Delete',
+      callback: (row) => deleteFile(row),
+      disabled: () => false
     }
   ];
 
@@ -183,6 +190,31 @@
   ];
 
   let filtersToSearch: ActiveFilter[] = $state([]);
+
+   async function deleteFile(row: FileSearchResult) {
+   console.debug('deleteResource: ', row);
+   const result = await openDialog(OscdConfirmDialog, {
+     title: 'Confirm Deletion',
+     message: `Are you sure you want to delete the resource "${row.filename} (${row.uuid})"? This action cannot be undone.`,
+     confirmActionText: 'Delete',
+     cancelActionText: 'Cancel',
+     confirmActionColor: 'danger',
+   });
+   if (result.type !== 'confirm') return;
+   versionEditorDataService.deleteResource(row.uuid)
+      .pipe(
+        take(1),
+        tap(() => {
+          search();
+        }),
+        catchError((err) => {
+          console.error(`Failed to delete resource "${row.filename} (${row.uuid})": ${err.message}`);
+          return of(undefined);
+        })
+      )
+      .subscribe();
+  }
+
 
   function downloadBlob(row: FileSearchResult) {
     console.log('Download file: ', row);
@@ -310,60 +342,63 @@
   }
 </script>
 
-{#if loading}
-  <OscdLoadingSpinner loadingDone={!loading} />
-{:else}
-  <div class="version-editor-container">
-    <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
-      {#snippet title()}
-            <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
-          {/snippet}
-      {#snippet content()}
-            <div >
-          <OscdDataTable columnDefs={modalColumnDef}
-                         store={historyStore}
-                         {loadingDone}
-                         rowActions={historyRowActions}
-                         searchInputLabel={$_('search')} />
-        </div>
-          {/snippet}
-      {#snippet actions()}
-            <div >
-          <OscdButton callback={onCloseDialog} variant="raised">
-            <OscdCancelIcon />
-            <Label>{$_('done')}</Label>
+<div>
+  {#if loading}
+    <OscdLoadingSpinner loadingDone={!loading} />
+  {:else}
+    <div class="version-editor-container">
+      <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
+        {#snippet title()}
+              <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
+            {/snippet}
+        {#snippet content()}
+              <div >
+            <OscdDataTable columnDefs={modalColumnDef}
+                           store={historyStore}
+                           {loadingDone}
+                           rowActions={historyRowActions}
+                           searchInputLabel={$_('search')} />
+          </div>
+            {/snippet}
+        {#snippet actions()}
+              <div >
+            <OscdButton callback={onCloseDialog} variant="raised">
+              <OscdCancelIcon />
+              <Label>{$_('done')}</Label>
+            </OscdButton>
+          </div>
+            {/snippet}
+      </OscdDialog>
+      <div class="search-filter">
+        {#snippet filterControls()}
+          <OscdButton variant="raised" callback={search}>
+            <OscdSearchIcon />
+            <Label>{$_('search')}</Label>
           </OscdButton>
-        </div>
-          {/snippet}
-    </OscdDialog>
-    <div class="search-filter">
-      {#snippet filterControls()}
-        <OscdButton variant="raised" callback={search}>
-          <OscdSearchIcon />
-          <Label>{$_('search')}</Label>
-        </OscdButton>
-      {/snippet}
+        {/snippet}
 
-      <OscdFilterBox
-        {filterControls}
-        {filterTypes}
-        bind:activeFilters={filtersToSearch}
-        addFilterLabel={$_('add_filter')}
-        selectFilterLabel={$_('filter_types')}
-      />
+        <OscdFilterBox
+          {filterControls}
+          {filterTypes}
+          bind:activeFilters={filtersToSearch}
+          addFilterLabel={$_('add_filter')}
+          selectFilterLabel={$_('filter_types')}
+        />
+      </div>
+      <div class="table-container">
+        <Card style="padding: 1rem; width: 100%; height: 100%;">
+          <h3 style="margin-bottom: 1rem;">{$_('versionTable.heading')}</h3>
+          <OscdDataTable {columnDefs}
+                         store={dataStore}
+                         {loadingDone}
+                         {rowActions}
+                         searchInputLabel={$_('search')}/>
+        </Card>
+      </div>
     </div>
-    <div class="table-container">
-      <Card style="padding: 1rem; width: 100%; height: 100%;">
-        <h3 style="margin-bottom: 1rem;">{$_('versionTable.heading')}</h3>
-        <OscdDataTable {columnDefs}
-                       store={dataStore}
-                       {loadingDone}
-                       {rowActions}
-                       searchInputLabel={$_('search')}/>
-      </Card>
-    </div>
-  </div>
-{/if}
+  {/if}
+  <DialogHost/>
+</div>
 <style lang="css" global>
   .version-editor-container {
     height: 100vh;
