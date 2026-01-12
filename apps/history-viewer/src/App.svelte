@@ -100,15 +100,30 @@
   const rowActions = [
     {
       icon: 'edit',
+      tooltip: 'Edit',
       callback: (row) => openDoc(row),
       disabled: (row) => !row.available
     },
-    { icon: 'find-in-page', callback: (row) => getHistoryByUuid(row), disabled: () => false },
-    { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
+    {
+      icon: 'find-in-page',
+      tooltip: 'Find in page',
+      callback: (row) => getHistoryByUuid(row),
+      disabled: () => false
+    },
+    { 
+      icon: 'download',
+      tooltip: 'Download',
+      callback: (row) => downloadBlob(row),
+      disabled: (row) => !row.available
+    }
   ];
 
   const historyRowActions = [
-    { icon: 'download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available }
+    {
+      icon: 'download',
+      tooltip: 'Download',
+      callback: (row) => downloadBlob(row),
+      disabled: (row) => !row.available }
   ];
 
   const filterTypes: FilterType[] = [
@@ -178,7 +193,7 @@
           const url = window['URL'].createObjectURL(data);
           const a = document.createElement('a');
           a.href = url;
-          a.download = row.filename;
+          a.download = `${row.filename}.${row.type.toLowerCase()}`;
           a.style.display = 'none';
           document.body.appendChild(a);
           a.click();

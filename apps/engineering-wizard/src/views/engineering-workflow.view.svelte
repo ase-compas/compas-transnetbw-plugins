@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import WorkflowBack from '../components/engineering-workflow/WorkflowBack.svelte';
   import type { ViewPlugin } from '../types/view-plugin';
   import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
   import { editorTabsVisible } from '../stores/editor-tabs.store';
@@ -8,6 +7,8 @@
   import { selectedEngineeringProcessState, runningEngineeringProcessState, setLastSelectedPluginId } from '../services/engineering-process.svelte';
   import PluginGroupsStepper from '../components/engineering-process-detail/PluginGroupsStepper.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../services/engineering-workflow-state.svelte';
+  import WorkflowTitle from '../components/engineering-workflow/WorkflowTitle.svelte';
+  import WorkflowActions from '../components/engineering-workflow/WorkflowActions.svelte';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
@@ -192,7 +193,7 @@
 </script>
 
 <div class="stepper">
-  <WorkflowBack onBack={exitWorkflow} />
+  <WorkflowTitle onClick={exitWorkflow}/>
 
   <PluginGroupsStepper
     {pluginGroups}
@@ -202,27 +203,14 @@
     bind:selectedPluginIndex
   />
 
-  <div class="stepper-navigation">
-    <button
-      type="button"
-      class="back-button"
-      onclick={previousPlugin}
-      aria-label="Previous plugin"
-      disabled={!hasPlugins}
-    >
-      Back
-    </button>
+  <WorkflowActions
+    onGoToPreviousStep={previousPlugin}
+    onGoToNextStep={nextPlugin}
+    onDone={exitWorkflow}
 
-    <button
-      type="button"
-      class="next-button"
-      onclick={nextPlugin}
-      aria-label="Next plugin"
-      disabled={!hasPlugins}
-    >
-      Next
-    </button>
-  </div>
+    isAtFirstStep={!hasPlugins}
+    isAtLastStep={!hasPlugins}
+  />
 </div>
 
 {#if selectedPlugin.plugin}
@@ -266,33 +254,6 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-  }
-
-  .stepper-navigation {
-    display: flex;
-    gap: 0.8rem;
-    justify-self: end;
-  }
-
-  .back-button,
-  .next-button {
-    height: 36px;
-    width: 70px;
-    text-transform: uppercase;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0;
-  }
-
-  .back-button {
-    color: white;
-    background-color: #6b9197;
-  }
-
-  .next-button {
-    background-color: white;
-    color: var(--primary-base);
   }
 
   .plugin-container {

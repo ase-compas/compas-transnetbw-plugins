@@ -4,11 +4,19 @@
   import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
   import { OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
+  import {
+    OscdAddCircleIcon,
+    OscdArrowSouthIcon,
+    OscdDragIndicatorIcon,
+    OscdEditIcon
+  } from '@oscd-transnet-plugins/oscd-icons';
+  import { processEditModeState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddGroupDialog from './AddGroupDialog.svelte';
   import EditGroupsDialog from './EditGroupsDialog.svelte';
   import { dragHandle, dragHandleZone, TRIGGERS } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
+  import StepCircle from '../shared/StepCircle.svelte';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -98,28 +106,29 @@
     {#each pluginGroups as group, groupIndex}
       <section class="plugin-list__group">
         <header class="plugin-list__group-header">
-          <span class="plugin-list__group-index">{groupIndex + 1}.</span>
+          <span class="plugin-list__group-index plugin-list__group-plugins__indicator"><StepCircle number={groupIndex + 1} /></span>
           <span class="plugin-list__group-title">{group.title}</span>
         </header>
 
-        <div
-          class="plugin-list__group-plugins"
-          class:plugin_list__group-plugins--dashed={isEngineeringProcessEditingState.isEditing}
-          use:dragHandleZone={{
-            items: group.plugins,
-            flipDurationMs: 100,
-            dropTargetStyle: {},
-          }}
-          onconsider={(e) => handleSort(e, group)}
-          onfinalize={(e) => handleFinalize(e, group)}
-        >
-          {#each group.plugins as plugin, pluginIndex (plugin.id)}
-            <div
-              data-id={plugin.id}
-              animate:flip={{duration: 100}}
-            >
-              <OscdListItem variant="secondary">
-                <div class="plugin-list__item-row">
+        <div class="plugin-list__group-plugins-section">
+          <div
+            class="plugin-list__group-plugins"
+            class:plugin_list__group-plugins--dashed={isEngineeringProcessEditingState.isEditing}
+            use:dragHandleZone={{
+              items: group.plugins,
+              flipDurationMs: 100,
+              dropTargetStyle: {},
+            }}
+            onconsider={(e) => handleSort(e, group)}
+            onfinalize={(e) => handleFinalize(e, group)}
+          >
+            {#each group.plugins as plugin, pluginIndex (plugin.id)}
+              <div
+                data-id={plugin.id}
+                animate:flip={{duration: 100}}
+              >
+                <OscdListItem variant="secondary">
+                  <div class="plugin-list__item-row">
 
                   <div class="plugin-list__item-row__left">
                     {#if isEngineeringProcessEditingState.isEditing}
@@ -128,24 +137,30 @@
                       </div>
                     {/if}
 
-                    <span class="plugin-list__item-name">{plugin.name}</span>
-                  </div>
-
-                  {#if itemAction}
-                    <div class="plugin-list__item-action">
-                      {@render itemAction({
-                        group,
-                        plugin,
-                        groupIndex,
-                        pluginIndex
-                      })}
+                      <span class="plugin-list__item-name">{plugin.name}</span>
                     </div>
-                  {/if}
-                </div>
-              </OscdListItem>
-            </div>
-          {/each}
+
+                    {#if itemAction}
+                      <div class="plugin-list__item-action">
+                        {@render itemAction({
+                          group,
+                          plugin,
+                          groupIndex,
+                          pluginIndex
+                        })}
+                      </div>
+                    {/if}
+                  </div>
+                </OscdListItem>
+              </div>
+            {/each}
+          </div>
         </div>
+        {#if groupIndex < pluginGroups.length - 1}
+          <div style="display: flex; justify-content: center; margin-top: 0.4rem;">
+            <OscdArrowSouthIcon svgStyles="fill: #6B9197;"/>
+          </div>
+        {/if}
       </section>
     {/each}
   </div>
@@ -203,7 +218,7 @@
   .plugin-list__body {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    /*gap: 1.5rem;*/
     flex: 1 1 auto;
     min-height: 0;
   }
@@ -218,6 +233,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex: 1;
   }
 
   .plugin-list__group-header {
@@ -226,9 +242,14 @@
     gap: 0.5rem;
   }
 
-  .plugin-list__group-index {
-    font-weight: 500;
-    color: var(--on-brand);
+  .plugin-list__group-plugins-section {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .plugin-list__group-plugins__indicator {
+    width: 40px;
   }
 
   .plugin-list__group-title {

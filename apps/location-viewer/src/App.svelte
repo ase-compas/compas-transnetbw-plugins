@@ -19,10 +19,8 @@
   import {
     OscdDataTable,
     OscdLoadingSpinner,
-    OscdSelect
   } from '@oscd-transnet-plugins/oscd-component';
-  import type { ActiveFilter, FilterType } from '@oscd-transnet-plugins/oscd-component';
-  import Card from '@smui/card';
+  import type { ActiveFilter } from '@oscd-transnet-plugins/oscd-component';
   import { take, tap } from 'rxjs/operators';
   import { _ } from 'svelte-i18n';
   import 'svelte-material-ui/bare.css';
@@ -151,7 +149,6 @@
   }
 
   let searchColumnDefs = $derived([
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
     { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
     { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },

@@ -46,6 +46,19 @@
     closeDialog(reason);
   };
 
+  const onBackdropClick = () => exit('exit');
+  const onBackdropKeydown = (event: KeyboardEvent) => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      exit('exit');
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onBackdropClick();
+    }
+  };
+
   $effect(() => {
     if (open !== prevOpen) {
       prevOpen = open;
@@ -67,6 +80,7 @@
     aria-modal="true"
     aria-labelledby="ewf-title"
     tabindex="-1"
+    onkeydown={onBackdropKeydown}
     onclick={(event) => {
       if (event.target === event.currentTarget) {
         exit('exit');

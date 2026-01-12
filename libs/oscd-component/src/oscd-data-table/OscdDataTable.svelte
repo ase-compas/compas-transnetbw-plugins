@@ -3,7 +3,7 @@
   style="max-width: 100%; width: 100%;"
 >
   <Head>
-    <Row class="header-row">
+    <Row class="header-title-row">
       {#each columnDefs as col}
         <Cell onclick={() => col.sortable && sortColumnBy(col.field)} style={col.headerStyle}>
           <div class="custom-cell-container" style="min-width: {col.minWidth ?? 0}">
@@ -26,7 +26,13 @@
                 {/if}
               {/if}
             </div>
-
+          </div>
+        </Cell>
+      {/each}
+    </Row>
+    <Row class="header-filter-row">
+      {#each columnDefs as col}
+        <Cell>
             {#if col.filter}
               {#if col.filterType === 'text'}
                 <input
@@ -45,7 +51,6 @@
                 />
               {/if}
             {/if}
-          </div>
         </Cell>
       {/each}
     </Row>
@@ -60,27 +65,31 @@
             <div class="cell-actions">
               {#each rowActions as action}
                 {#if action.iconComponent}
+                <OscdTooltip content={action.tooltip} hoverDelay={500}>
                   <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                </OscdTooltip>
                 {:else}
-                  <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
-                    {#if action.icon === "add"}
-                      <OscdAddIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "cancel"}
-                      <OscdCancelIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "download"}
-                      <OscdDownloadIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "find-in-page"}
-                      <OscdFindInPageIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "remove"}
-                      <OscdRemoveIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "edit"}
-                      <OscdEditIcon svgStyles="margin: unset" />
-                    {:else if action.icon === "delete"}
-                      <OscdDeleteIcon svgStyles="margin: unset" />
-                    {:else}
-                      <OscdRefreshIcon svgStyles="margin: unset" />
-                    {/if}
-                  </OscdButton>
+                  <OscdTooltip content={action.tooltip} hoverDelay={500}>
+                    <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                      {#if action.icon === "add"}
+                        <OscdAddIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "cancel"}
+                        <OscdCancelIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "download"}
+                        <OscdDownloadIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "find-in-page"}
+                        <OscdFindInPageIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "remove"}
+                        <OscdRemoveIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "edit"}
+                        <OscdEditIcon svgStyles="margin: unset" />
+                      {:else if action.icon === "delete"}
+                        <OscdDeleteIcon svgStyles="margin: unset" />
+                      {:else}
+                        <OscdRefreshIcon svgStyles="margin: unset" />
+                      {/if}
+                    </OscdButton>
+                  </OscdTooltip>
                 {/if}
               {/each}
             </div>
@@ -135,6 +144,7 @@
   } from "@oscd-transnet-plugins/oscd-icons";
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
   import { v4 as uuidv4 } from 'uuid';
+  import OscdTooltip from '../oscd-tooltip/OscdTooltip.svelte';
 
   interface Props {
     loadingDone?: boolean;
@@ -247,6 +257,15 @@
     flex-direction: column;
   }
 
+
+  :global(.mdc-data-table__header-row.header-title-row .mdc-data-table__header-cell) {
+    border-bottom: none !important;
+  }
+
+  :global(.mdc-data-table__header-row.header-title-row) {
+    height: 0;
+  }
+
   /*
   .mdc-data-table {
     font-family: 'Roboto', sans-serif;
@@ -255,37 +274,37 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
-  thead {
+  :global(.mdc-data-table__table thead) {
     background-color: #f4f4f4;
     text-transform: uppercase;
     font-weight: bold;
     color: #333;
   }
 
-  thead th {
+  :global(.mdc-data-table__table thead th) {
     padding: 12px 15px;
     border-bottom: 2px solid #ddd;
     text-align: left;
     font-size: 0.85rem;
   }
 
-  tbody tr {
+  :global(.mdc-data-table__table tbody tr) {
     border-bottom: 1px solid #ddd;
     transition: background-color 0.3s ease;
   }
 
-  tbody tr:hover {
+  :global(.mdc-data-table__table tbody tr:hover) {
     background-color: #f1f1f1;
   }
 
-  tbody td {
+  :global(.mdc-data-table__table tbody td) {
     padding: 12px 15px;
     text-align: left;
     font-size: 0.9rem;
     color: #555;
   }
 
-  tbody td.numeric {
+  :global(.mdc-data-table__table tbody td.numeric) {
     text-align: right;
   }
   */
@@ -319,7 +338,7 @@
     transition: background-color 0.3s ease;
   }
 
-  button:hover {
+  .cell-actions :global(button:hover) {
     background-color: #0056b3;
   }
   */

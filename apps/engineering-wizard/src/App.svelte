@@ -129,6 +129,10 @@
   }
 </script>
 
+<svelte:head>
+  <link rel="stylesheet" href="/material-icon.css" />
+</svelte:head>
+
 <DialogHost />
 
 {#if isCreatingProcess}
