@@ -22,6 +22,7 @@ export { default as OscdPanel } from './oscd-panel/OscdPanel.svelte';
 export { default as OscdToast } from './oscd-toast/OscdToast.svelte';
 export { default as OscdToastHost } from './oscd-toast/OscdToastHost.svelte';
 export {default as OscdActionButton } from './oscd-action-button/OscdActionButton.svelte';
+export {default as OscdFilterBuilder } from './oscd-filter-builder/OscdFilterBuilder.svelte';
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
 
