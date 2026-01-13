@@ -12,3 +12,14 @@ export function setEditorTabsVisibility(visible: boolean) {
     }),
   );
 }
+
+export const editorTabs = $state<{ visible: boolean }>({
+  visible: true,
+});
+
+// Side-effect: propagate changes to host layout
+$effect.root(() => {
+  $effect(() => {
+    setEditorTabsVisibility(editorTabs.visible);
+  });
+});

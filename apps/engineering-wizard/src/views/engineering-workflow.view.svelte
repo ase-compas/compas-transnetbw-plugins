@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { ViewPlugin } from '../features/workflow/viewPlugin';
-  import { editorTabsVisible } from '../features/workflow/editor-tabs.svelte';
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
   import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
@@ -10,6 +9,7 @@
   import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
+  import { editorTabs } from '../features/workflow/layout.svelte';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
@@ -183,12 +183,14 @@
       preloadAllPlugins(plugins).catch(console.error);
     }
 
-    editorTabsVisible.set(false);
-    return () => editorTabsVisible.set(true);
+    editorTabs.visible = false;
+    return () => {
+      editorTabs.visible = true;
+    };
   });
 
   function exitWorkflow() {
-    editorTabsVisible.set(true);
+    editorTabs.visible = true;
     onExit?.();
   }
 </script>

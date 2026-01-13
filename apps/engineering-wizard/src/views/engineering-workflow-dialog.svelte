@@ -2,8 +2,8 @@
   import EngineeringWorkflow from './engineering-workflow.view.svelte';
   import { closeDialog } from '../../../../libs/oscd-services/src/dialog';
   import type { ViewPlugin } from '../features/workflow/viewPlugin';
-  import { editorTabsVisible } from '../features/workflow/editor-tabs.svelte';
   import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import { editorTabs } from '../features/workflow/layout.svelte';
 
   interface Props {
     open: boolean;
@@ -42,7 +42,7 @@
     hasExited = true;
     // when closing
     selectedEngineeringProcess.process = null;
-    editorTabsVisible.set(true);
+    editorTabs.visible = true;
     closeDialog(reason);
   };
 

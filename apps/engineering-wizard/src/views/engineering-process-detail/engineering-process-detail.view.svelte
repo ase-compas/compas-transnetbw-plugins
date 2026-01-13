@@ -3,7 +3,6 @@
   import Button from '@smui/button';
   import ProcessDetailStepper from '../../features/processes/components/steppers/ProcessDetailStepper.svelte';
   import PluginViewPanel from '../../features/processes/components/panels/PluginViewPanel.svelte';
-  import { editorTabsVisible } from '../../features/workflow/editor-tabs.svelte';
   import ProcessDefinition from './process-definition.view.svelte';
   import ProcessValidation from '../../features/processes/components/validation/ProcessValidation.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
@@ -11,6 +10,7 @@
   import WorkflowActions from '../../components/shared/WorkflowActions.svelte';
   import WorkflowTitle from '../../components/shared/WorkflowTitle.svelte';
   import { engineeringProcessEditing, selectedEngineeringProcess } from '../../features/processes/stores.svelte';
+  import { editorTabs } from '../../features/workflow/layout.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -35,21 +35,21 @@
 
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
-    editorTabsVisible.set(true);
+    editorTabs.visible = true;
     selectedEngineeringProcess.process = null;
   }
 
   function startEditing() {
     console.log("EDITING");
     engineeringProcessEditing.isEditing = true;
-    editorTabsVisible.set(false);
+    editorTabs.visible = false;
     currentStepIndex = 0;
     visitedSteps = [];
   }
 
   function exitEditing() {
     engineeringProcessEditing.isEditing = false;
-    editorTabsVisible.set(true);
+    editorTabs.visible = true;
     selectedEngineeringProcess.process = null;
   }
 
