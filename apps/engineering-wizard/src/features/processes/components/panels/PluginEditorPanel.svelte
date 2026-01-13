@@ -1,17 +1,17 @@
 <script lang="ts">
   import Button from '@smui/button';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
+  import { OscdRemoveIcon } from '@oscd-transnet-plugins/oscd-icons';
   import PluginBasePanel from './PluginBasePanel.svelte';
-  import {
-    addGroupToProcessStore,
-    updateGroupsOfProcessStore,
-    removeAllPluginsFromProcessStore,
-    removePluginFromProcessStore,
-    selectedEngineeringProcessState
-  } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    addGroupToProcess,
+    removeAllPluginsFromProcess,
+    removePluginFromProcess,
+    updateGroupsOfProcess
+  } from '../../mutations.svelte';
+  import { selectedEngineeringProcess } from '../../stores.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -31,20 +31,20 @@
     });
 
     if(result.type === 'confirm') {
-      removeAllPluginsFromProcessStore(selectedEngineeringProcessState.process.id);
+      removeAllPluginsFromProcess(selectedEngineeringProcess.process.id);
     }
   }
 
   function handleRemoveOne(pluginId: string) {
-    removePluginFromProcessStore(selectedEngineeringProcessState.process.id, pluginId);
+    removePluginFromProcess(selectedEngineeringProcess.process.id, pluginId);
   }
 
   function handleAddGroup(name: string, position: number) {
-    addGroupToProcessStore(selectedEngineeringProcessState.process.id, name, position);
+    addGroupToProcess(selectedEngineeringProcess.process.id, name, position);
   }
 
   function handleUpdateGroups(updatedGroups: PluginGroup[]) {
-    updateGroupsOfProcessStore(selectedEngineeringProcessState.process.id, updatedGroups)
+    updateGroupsOfProcess(selectedEngineeringProcess.process.id, updatedGroups)
   }
 
   let showRemoveAll = $derived(pluginGroups.flatMap(g => g.plugins).length > 0)

@@ -1,7 +1,7 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
-  import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
-  import { OscdAddCircleIcon } from '../../../../../libs/oscd-icons/src';
+  import { OscdListItem, OscdPanel } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdAddCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
   import type { Plugin } from '@oscd-transnet-plugins/shared';
   import {

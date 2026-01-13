@@ -5,19 +5,15 @@
 
   import type { Plugin, PluginGroup, Process } from '@oscd-transnet-plugins/shared';
 
-  import { OscdCompareArrowsIcon, OscdRemoveIcon } from '../../../../../libs/oscd-icons/src';
-  import PluginBasePanel from '../../components/engineering-process-detail/PluginBasePanel.svelte';
-
-  import {
-    addProcessToStore,
-    corePluginsState,
-    isEngineeringProcessEditingState
-  } from '../../services/engineering-process.svelte';
-  import { createPluginId } from '../../services/plugin.service';
+  import { OscdCompareArrowsIcon, OscdRemoveIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import PluginBasePanel from '../features/processes/components/panels/PluginBasePanel.svelte';
 
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
-  import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
+  import PluginExternalPanel from '../features/processes/components/panels/PluginExternalPanel.svelte';
+  import { corePlugins, engineeringProcessEditing } from '../features/processes/stores.svelte';
+  import { createPluginId } from '../features/plugins/id';
+  import { addProcess } from '../features/processes/mutations.svelte';
 
   interface Props {
     handleCancel: () => void;
@@ -162,7 +158,7 @@
   let filteredPlugins = $derived.by(() => {
     const term = searchTerm.toLowerCase().trim();
 
-    const allPlugins = (corePluginsState.plugins ?? []).map((p) => ({
+    const allPlugins = (corePlugins.plugins ?? []).map((p) => ({
       id: createPluginId(p.name),
       name: p.name,
       src: p.src,
@@ -186,24 +182,24 @@
       pluginGroups: $state.snapshot(pluginGroups) as PluginGroup[]
     };
 
-    const created = addProcessToStore(draft);
+    const created = addProcess(draft);
 
-    isEngineeringProcessEditingState.isEditing = false;
+    engineeringProcessEditing.isEditing = false;
 
     handleSaved(created);
   }
 
   function cancel() {
-    isEngineeringProcessEditingState.isEditing = false;
+    engineeringProcessEditing.isEditing = false;
     handleCancel();
   }
 
   onMount(() => {
-    isEngineeringProcessEditingState.isEditing = true;
+    engineeringProcessEditing.isEditing = true;
   });
 
   onDestroy(() => {
-    isEngineeringProcessEditingState.isEditing = false;
+    engineeringProcessEditing.isEditing = false;
   });
 </script>
 

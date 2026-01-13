@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { OscdListItem, OscdPanel } from '../../../../../libs/oscd-component/src';
+  import { OscdListItem, OscdPanel } from '@oscd-transnet-plugins/oscd-component';
   import { OscdArrowSouthIcon, OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import { isEngineeringProcessEditingState } from '../../services/engineering-process.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import AddGroupDialog from './AddGroupDialog.svelte';
-  import EditGroupsDialog from './EditGroupsDialog.svelte';
+  import AddPluginGroupDialog from '../dialogs/AddPluginGroupDialog.svelte';
+  import EditPluginGroupsDialog from '../dialogs/EditPluginGroupsDialog.svelte';
   import { dragHandle, dragHandleZone, TRIGGERS } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
-  import StepCircle from '../shared/StepCircle.svelte';
+  import StepCircle from '../steppers/StepCircle.svelte';
+  import { engineeringProcessEditing } from '../../stores.svelte';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -40,7 +40,7 @@
   }: Props = $props();
 
   async function addGroup() {
-    const result = await openDialog(AddGroupDialog, {groups: pluginGroups.length})
+    const result = await openDialog(AddPluginGroupDialog, {groups: pluginGroups.length})
     if (result.type !== 'confirm') return;
     onAddGroup(result.data.name, result.data.position);
   }
@@ -48,7 +48,7 @@
 
   async function editGroups() {
     const currentGroups = pluginGroups.map((g, idx) => ({ id: idx.toString(), title: g.title }));
-    const result = await openDialog(EditGroupsDialog, { groups: currentGroups });
+    const result = await openDialog(EditPluginGroupsDialog, { groups: currentGroups });
     if (result.type !== 'confirm') return;
 
     const updatedGroups: PluginGroup[] = result.data.groups.map((g: { id: string; title: string }) => {
@@ -106,7 +106,7 @@
         <div class="plugin-list__group-plugins-section">
           <div
             class="plugin-list__group-plugins"
-            class:plugin_list__group-plugins--dashed={isEngineeringProcessEditingState.isEditing}
+            class:plugin_list__group-plugins--dashed={engineeringProcessEditing.isEditing}
             use:dragHandleZone={{
               items: group.plugins,
               flipDurationMs: 100,
@@ -124,7 +124,7 @@
                   <div class="plugin-list__item-row">
 
                   <div class="plugin-list__item-row__left">
-                    {#if isEngineeringProcessEditingState.isEditing}
+                    {#if engineeringProcessEditing.isEditing}
                       <div use:dragHandle aria-label="drag-handle">
                         <OscdDragIndicatorIcon/>
                       </div>
@@ -160,7 +160,7 @@
 {/snippet}
 
 {#snippet additional()}
-  {#if isEngineeringProcessEditingState.isEditing}
+  {#if engineeringProcessEditing.isEditing}
     <div class="plugin-list__footer">
       <button
         type="button"

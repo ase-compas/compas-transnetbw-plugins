@@ -1,21 +1,4 @@
-import type { ViewPlugin } from '../types/view-plugin';
-
-// ---- layout helpers (kept) ----
-
-export function getLayoutContainer(): HTMLElement | null {
-  const openScd = document.querySelector('open-scd');
-  return (openScd as any)?.shadowRoot?.querySelector('compas-layout') ?? null;
-}
-
-export function setEditorTabsVisibility(visible: boolean) {
-  getLayoutContainer()?.dispatchEvent(
-    new CustomEvent('toggle-editor-tabs', {
-      detail: { visible },
-      bubbles: true,
-      composed: true,
-    }),
-  );
-}
+import type { ViewPlugin } from './viewPlugin';
 
 const inFlight = new Map<string, Promise<void>>();
 
@@ -25,11 +8,15 @@ function isDefined(tag: string) {
 
 function assertValidCustomElementName(tag: string) {
   if (!tag.includes('-')) {
-    throw new Error(`Invalid custom element name "${tag}". Custom element names must contain a dash.`);
+    throw new Error(
+      `Invalid custom element name "${tag}". Custom element names must contain a dash.`,
+    );
   }
 }
 
-export async function ensureCustomElementDefined(plugin: ViewPlugin): Promise<void> {
+export async function ensureCustomElementDefined(
+  plugin: ViewPlugin,
+): Promise<void> {
   if (plugin.type !== 'external') return;
 
   const tag = plugin.id;
@@ -42,13 +29,17 @@ export async function ensureCustomElementDefined(plugin: ViewPlugin): Promise<vo
 
   const p = (async () => {
     const mod = await import(/* @vite-ignore */ plugin.src);
-    const ctor = (mod?.default ?? mod?.element) as CustomElementConstructor | undefined;
+    const ctor = (mod?.default ?? mod?.element) as
+      | CustomElementConstructor
+      | undefined;
 
     if (!ctor) {
-      throw new Error(`Plugin "${plugin.id}" did not export a custom element constructor.`);
+      throw new Error(
+        `Plugin "${plugin.id}" did not export a custom element constructor.`,
+      );
     }
 
-    // Always wrap => always a fresh constructor
+    // Wrap => always a fresh constructor
     const Base = ctor as unknown as { new (): HTMLElement };
     const Wrapped: CustomElementConstructor = class extends Base {};
 
@@ -56,8 +47,7 @@ export async function ensureCustomElementDefined(plugin: ViewPlugin): Promise<vo
       try {
         customElements.define(tag, Wrapped);
       } catch (e) {
-        // tolerate races where it was defined between check and define
-        if (!isDefined(tag)) throw e;
+        if (!isDefined(tag)) throw e; // tolerate races
       }
     }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { OscdArrowDownIcon, OscdArrowUpIcon, OscdDeleteIcon } from '../../../../../libs/oscd-icons/src';
-  import PluginGroupsStepper from './PluginGroupsStepper.svelte';
+  import { OscdArrowDownIcon, OscdArrowUpIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import PluginGroupsStepper from '../../../../components/shared/PluginGroupsStepper.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];

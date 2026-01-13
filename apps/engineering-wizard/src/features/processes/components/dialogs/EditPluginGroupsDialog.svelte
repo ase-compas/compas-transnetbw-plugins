@@ -1,6 +1,6 @@
 <script lang="ts">
   /**
-   * The EditGroupsDialog allows to rename, reorder and delete Plugin Groups.
+   * The EditPluginGroupsDialog allows to rename, reorder and delete Plugin Groups.
    * On confirmation, the dialog returns the new list of groups. Deleted Groups are omitted.
    */
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
@@ -10,7 +10,7 @@
   import { dragHandle, dragHandleZone } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import StepCircle from '../shared/StepCircle.svelte';
+  import StepCircle from '../steppers/StepCircle.svelte';
 
   const FLIP_DURATION_MS = 100;
 

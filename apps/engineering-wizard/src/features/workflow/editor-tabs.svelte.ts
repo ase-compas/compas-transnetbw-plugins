@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { setEditorTabsVisibility } from '../services/engineering-workflow.service';
+import { setEditorTabsVisibility } from './layout';
 
 // Global reactive store for the editor tabs visibility across the app.
 // Defaults to visible; views can set it as needed.
@@ -9,4 +9,3 @@ export const editorTabsVisible = writable<boolean>(true);
 editorTabsVisible.subscribe((visible) => {
   setEditorTabsVisibility(visible);
 });
-

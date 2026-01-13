@@ -1,9 +1,9 @@
 <script lang="ts">
   import EngineeringWorkflow from './engineering-workflow.view.svelte';
   import { closeDialog } from '../../../../libs/oscd-services/src/dialog';
-  import type { ViewPlugin } from '../types/view-plugin';
-  import { editorTabsVisible } from '../stores/editor-tabs.store';
-  import { selectedEngineeringProcessState } from '../services/engineering-process.svelte';
+  import type { ViewPlugin } from '../features/workflow/viewPlugin';
+  import { editorTabsVisible } from '../features/workflow/editor-tabs.svelte';
+  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
 
   interface Props {
     open: boolean;
@@ -41,7 +41,7 @@
     if (hasExited) return;
     hasExited = true;
     // when closing
-    selectedEngineeringProcessState.process = null;
+    selectedEngineeringProcess.process = null;
     editorTabsVisible.set(true);
     closeDialog(reason);
   };

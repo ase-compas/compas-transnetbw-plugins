@@ -1,14 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { ViewPlugin } from '../types/view-plugin';
-  import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
-  import { editorTabsVisible } from '../stores/editor-tabs.store';
-  import PluginHost from '../components/shared/PluginHost.svelte';
-  import { selectedEngineeringProcessState, runningEngineeringProcessState, setLastSelectedPluginId } from '../services/engineering-process.svelte';
-  import PluginGroupsStepper from '../components/engineering-process-detail/PluginGroupsStepper.svelte';
-  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../services/engineering-workflow-state.svelte';
-  import WorkflowTitle from '../components/engineering-workflow/WorkflowTitle.svelte';
-  import WorkflowActions from '../components/engineering-workflow/WorkflowActions.svelte';
+  import type { ViewPlugin } from '../features/workflow/viewPlugin';
+  import { editorTabsVisible } from '../features/workflow/editor-tabs.svelte';
+  import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
+  import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
+  import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
+  import WorkflowActions from '../components/shared/WorkflowActions.svelte';
+  import { runningEngineeringProcess, selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
+  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../features/workflow/document-state';
+  import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
@@ -53,7 +54,7 @@
       : -1,
   );
 
-  let pluginGroups = $derived(selectedEngineeringProcessState.process.pluginGroups);
+  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
 
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
@@ -125,7 +126,7 @@
     if (!hasPlugins) return;
 
     const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
-    const lastId = xmlState.lastPluginId || runningEngineeringProcessState.lastSelectedPluginId;
+    const lastId = xmlState.lastPluginId || runningEngineeringProcess.lastSelectedPluginId;
     if (!lastId) return;
 
     // If already selected and matches, nothing to do
@@ -171,7 +172,7 @@
     }
 
     if (currentIndex === -1) {
-      if (!runningEngineeringProcessState.lastSelectedPluginId) {
+      if (!runningEngineeringProcess.lastSelectedPluginId) {
         void selectPlugin(plugins[0]);
       }
     }

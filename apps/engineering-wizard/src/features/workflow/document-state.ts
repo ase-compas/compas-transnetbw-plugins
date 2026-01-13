@@ -51,8 +51,11 @@ function upsertPrivate(
   }
 }
 
-export function readEngineeringWorkflowState(doc: XMLDocument): EngineeringWorkflowState {
-  const read = (type: string) => findPrivate(doc, type)?.textContent?.trim() || null;
+export function readEngineeringWorkflowState(
+  doc: XMLDocument,
+): EngineeringWorkflowState {
+  const read = (type: string) =>
+    findPrivate(doc, type)?.textContent?.trim() || null;
   return {
     processId: read(PRIVATE_WORKFLOW_PROCESS_ID),
     lastPluginId: read(PRIVATE_WORKFLOW_LAST_PLUGIN_ID),
@@ -66,13 +69,15 @@ export function writeEngineeringWorkflowState(
 ): boolean {
   const edits: EditV2[] = [];
 
-  if ('processId' in patch) {
+  if ('processId' in patch)
     upsertPrivate(doc, edits, PRIVATE_WORKFLOW_PROCESS_ID, patch.processId);
-  }
-  if ('lastPluginId' in patch) {
-    upsertPrivate(doc, edits, PRIVATE_WORKFLOW_LAST_PLUGIN_ID, patch.lastPluginId);
-  }
+  if ('lastPluginId' in patch)
+    upsertPrivate(
+      doc,
+      edits,
+      PRIVATE_WORKFLOW_LAST_PLUGIN_ID,
+      patch.lastPluginId,
+    );
 
   return edits.length ? dispatchEditEvent(host, edits) : false;
 }
-

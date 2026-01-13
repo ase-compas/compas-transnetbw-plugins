@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { OscdTooltip } from '../../../../../libs/oscd-component/src';
-  import { OscdCheckIcon, OscdErrorIcon, OscdWarningIcon } from '../../../../../libs/oscd-icons/src';
+  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import StepCircle from './StepCircle.svelte';
 
   export type StepItem = { id: string; label: string };
