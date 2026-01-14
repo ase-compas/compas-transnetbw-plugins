@@ -95,6 +95,14 @@
   <!-- Right side: actions -->
   <div class="actions-section">
     {#if instanceType}
+      <OscdSwitch
+        bind:checked={isEditMode}
+        onChange={e => handleChange(e)}
+        preventToggleOnClick={true}
+        id={`edit-mode-switch-${typeId}`}
+        label="Edit Mode"
+        labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
+      />
       {#if showSetAsDefault}
         {#if setAsDefaultDisabled}
           <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
@@ -104,14 +112,6 @@
           <SetDefaultButton onClick={onClickDefault} />
         {/if}
       {/if}
-    <OscdSwitch
-      bind:checked={isEditMode}
-      onChange={e => handleChange(e)}
-      preventToggleOnClick={true}
-      id={`edit-mode-switch-${typeId}`}
-      label="Edit Mode"
-      labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
-    />
     {:else}
       <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose {getInstanceText(type)} to Edit</Button>
     {/if}

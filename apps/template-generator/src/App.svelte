@@ -8,8 +8,9 @@
   import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
   import "svelte-material-ui/bare.css"
   import "../public/material-icon.css"
-  import "../public/global.css"
   import "../public/smui.css"
+  import "../public/global.css"
+  import "../../../libs/theme/src/lib/global.css"
 
   interface Props {
     devMode?: boolean;

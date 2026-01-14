@@ -4,7 +4,7 @@
 
   interface Props {
     onClick?: () => void;
-    variant?: 'text' | 'outlined' | 'raised' | 'unelevated';
+    variant?: 'text' | 'outlined' | 'raised' | 'unelevated' | 'default';
   }
 
   let { onClick = () => {}, variant='unelevated'}: Props  = $props();
@@ -14,6 +14,7 @@
     onclick={onClick}
     class="button-shape-round"
     variant={variant}
+    style={variant === 'default' ? 'background: white;' : '' }
   >
-    <OscdMoreVertIcon svgStyles={variant === 'text' || variant === 'outlined' ? 'fill: var(--primary-base)' : ''}/>
+    <OscdMoreVertIcon svgStyles={variant === 'text' || variant === 'outlined' || variant === 'default' ? 'fill: var(--primary-base)' : ''}/>
   </Button>

@@ -23,8 +23,8 @@ let iconStyles = $derived.by(() => {
 </script>
 <Button
   disabled={disabled}
-  color="primary"
-  variant="outlined"
+  variant="default"
+  style="background: white;"
   onclick={onClick}>
   <div style="margin-right: 0.2rem;"><OscdStarIcon svgStyles={iconStyles}/></div> Set as Default
 </Button>

@@ -68,6 +68,7 @@
     "@smui/dialog": "^8.0.0",
     "@smui/icon-button": "^8.0.0",
     "@smui/linear-progress": "^8.0.0",
+    "@smui/radio": "^8.0.0",
     "@smui/paper": "^8.0.0",
     "@smui/chips": "^8.0.0",
     "@smui/switch": "^8.0.0",
