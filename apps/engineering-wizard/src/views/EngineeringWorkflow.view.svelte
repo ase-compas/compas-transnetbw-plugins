@@ -72,7 +72,7 @@
     return { groupIndex: null, pluginIndex: null };
   }
 
-  async function selectPlugin(plugin?: ViewPlugin) {
+  async function onSelectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
 
     await ensureCustomElementDefined(plugin);
@@ -106,7 +106,7 @@
     const baseIndex = currentIndex < 0 ? 0 : currentIndex;
     const nextIndex = (baseIndex + step + plugins.length) % plugins.length;
 
-    void selectPlugin(plugins[nextIndex]);
+    void onSelectPlugin(plugins[nextIndex]);
   }
 
   const nextPlugin = () => advance(1);
@@ -121,62 +121,6 @@
       },
     };
   }
-
-  $effect(() => {
-    if (!hasPlugins) return;
-
-    const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
-    const lastId = xmlState.lastPluginId || runningEngineeringProcess.lastSelectedPluginId;
-    if (!lastId) return;
-
-    // If already selected and matches, nothing to do
-    if (selectedPlugin.plugin?.id === lastId) return;
-
-    const match = findGroupAndPluginIndexById(lastId);
-    if (match.groupIndex !== null && match.pluginIndex !== null) {
-      selectedGroupIndex = match.groupIndex;
-      selectedPluginIndex = match.pluginIndex;
-      const plugin = plugins.find((p) => p.id === lastId);
-      if (plugin) {
-        void selectPlugin(plugin);
-        return;
-      }
-    }
-
-    // Fallback if the stored plugin doesn't exist anymore
-    if (currentIndex === -1 && plugins.length) {
-      void selectPlugin(plugins[0]);
-    }
-  });
-
-  $effect(() => {
-    if (selectedGroupIndex === null || selectedPluginIndex === null) return;
-    const group = pluginGroups?.[selectedGroupIndex];
-    const pluginMeta = group?.plugins?.[selectedPluginIndex];
-    if (!pluginMeta) return;
-
-    const plugin = plugins.find((p) => p.id === pluginMeta.id);
-    if (plugin && selectedPlugin.plugin?.id !== plugin.id) {
-      void selectPlugin(plugin);
-    }
-  });
-
-  $effect(() => {
-    if (!hasPlugins) {
-      selectedPlugin.plugin = null;
-      visited = [];
-      pluginStatus = {};
-      selectedGroupIndex = null;
-      selectedPluginIndex = null;
-      return;
-    }
-
-    if (currentIndex === -1) {
-      if (!runningEngineeringProcess.lastSelectedPluginId) {
-        void selectPlugin(plugins[0]);
-      }
-    }
-  });
 
   onMount(() => {
     if (plugins.length) {
@@ -199,6 +143,7 @@
   <WorkflowTitle onClick={exitWorkflow}/>
 
   <PluginGroupsStepper
+    selectPlugin={onSelectPlugin}
     {pluginGroups}
     expandedGroupBackground="var(--primary-base)"
     expandedGroupBorderColor="white"

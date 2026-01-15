@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
+  import type { PluginGroup, Plugin } from '@oscd-transnet-plugins/shared';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -7,15 +7,16 @@
     selectedPluginIndex?: number | null;
     expandedGroupBackground?: string;
     expandedGroupBorderColor?: string;
+    selectPlugin?: (plugin: Plugin) => void;
   }
 
   let {
     pluginGroups = [],
     selectedGroupIndex = $bindable<number | null>(null),
     selectedPluginIndex = $bindable<number | null>(null),
-
     expandedGroupBackground = 'var(--brand)',
-    expandedGroupBorderColor = 'var(--brand)'
+    expandedGroupBorderColor = 'var(--brand)',
+    selectPlugin
   }: Props = $props();
 
   $effect(() => {
@@ -41,15 +42,25 @@
     }
   });
 
-  function selectGroup(groupIndex: number) {
+  function onSelectGroup(groupIndex: number) {
     const group = pluginGroups[groupIndex];
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = group?.plugins?.length ? 0 : null;
+
+    const plugin = group.plugins[0];
+    if (plugin) {
+      selectPlugin(plugin);
+    }
   }
 
-  function selectPlugin(groupIndex: number, pluginIndex: number) {
+  function onSelectPlugin(groupIndex: number, pluginIndex: number) {
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
+
+    const plugin = pluginGroups[groupIndex].plugins[pluginIndex];
+    if (plugin) {
+      selectPlugin(plugin);
+    }
   }
 </script>
 
@@ -62,8 +73,7 @@
       <button
         type="button"
         class="validation-groups__group-title"
-        aria-pressed={groupIndex === selectedGroupIndex}
-        onclick={() => selectGroup(groupIndex)}
+        onclick={() => onSelectGroup(groupIndex)}
       >
         {group.title}
       </button>
@@ -74,7 +84,7 @@
             type="button"
             class="validation-groups__plugin"
             class:active={pluginIndex === selectedPluginIndex}
-            onclick={() => selectPlugin(groupIndex, pluginIndex)}
+            onclick={() => onSelectPlugin(groupIndex, pluginIndex)}
           >
             <span>{plugin.name}</span>
           </button>
@@ -129,10 +139,9 @@
     font-family: Roboto, sans-serif;
     font-size: 16px;
 
-    border-radius: 2px; /* makes the “title pill” look nice when expanded */
+    border-radius: 2px;
   }
 
-  /* Expanded: title always stays primary */
   .validation-groups__group.expanded .validation-groups__group-title {
     background-color: var(--brand);
     color: var(--on-brand);

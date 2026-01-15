@@ -1,9 +1,9 @@
 <script lang="ts">
-  import EngineeringWorkflow from './engineering-workflow.view.svelte';
-  import { closeDialog } from '../../../../libs/oscd-services/src/dialog';
-  import type { ViewPlugin } from '../features/workflow/viewPlugin';
-  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
-  import { editorTabs } from '../features/workflow/layout.svelte';
+  import EngineeringWorkflowView from '../../../../views/EngineeringWorkflow.view.svelte';
+  import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import type { ViewPlugin } from '../../viewPlugin';
+  import { selectedEngineeringProcess } from '../../../processes/stores.svelte.js';
+  import { editorTabs } from '../../layout.svelte.js';
 
   interface Props {
     open: boolean;
@@ -89,7 +89,7 @@
   >
     <div class="ewf-dialog-panel" role="document">
       <h2 id="ewf-title" class="sr-only">Engineering Workflow</h2>
-      <EngineeringWorkflow
+      <EngineeringWorkflowView
         {doc}
         {editCount}
         {host}

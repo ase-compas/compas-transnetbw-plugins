@@ -1,8 +1,8 @@
 <script lang="ts">
-  import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
-  import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
-  import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
-  import AddNewProcess from './views/add-new-process.svelte';
+  import ProcessesListView from './views/ProcessesList.view.svelte';
+  import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
+  import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
+  import AddProcessView from './views/AddProcess.view.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
@@ -99,7 +99,7 @@
     }
 
     const plugins = getPluginsForProcess(selectedEngineeringProcess.process);
-    openDialog(EngineeringWorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    openDialog(WorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
   }
 
   $effect(() => {
@@ -138,11 +138,11 @@
 <DialogHost />
 
 {#if isCreatingProcess}
-  <AddNewProcess handleCancel={cancelCreate} handleSaved={handleCreated} />
+  <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
 {:else if selectedEngineeringProcess.process}
-  <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
+  <ProcessDetailView handleBack={goBack} handleStart={startProcess} />
 {:else}
-  <EngineeringProcessesList
+  <ProcessesListView
     handleView={handleView}
     handleStart={startProcess}
     handleAddNew={addNewProcess}

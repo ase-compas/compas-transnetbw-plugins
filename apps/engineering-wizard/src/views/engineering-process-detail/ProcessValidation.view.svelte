@@ -1,60 +1,22 @@
 <script lang="ts">
-  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdArrowDownIcon, OscdArrowUpIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import PluginGroupsStepper from '../../../../components/shared/PluginGroupsStepper.svelte';
+  import type { ValidationEntry } from '../../features/plugins/validation/types';
 
   interface Props {
     pluginGroups?: PluginGroup[];
+    selectedPlugin?: Plugin | null;
   }
 
-  let { pluginGroups = [] }: Props = $props();
-
-  let selectedGroupIndex: number | null = $state(null);
-  let selectedPluginIndex: number | null = $state(null);
-
-  const selectedGroup = $derived(
-    selectedGroupIndex !== null ? pluginGroups[selectedGroupIndex] : null
-  );
-
-  const selectedPlugin = $derived(
-    selectedGroup && selectedPluginIndex !== null
-      ? selectedGroup.plugins[selectedPluginIndex]
-      : null
-  );
-
-  $effect(() => {
-    if (!pluginGroups?.length) {
-      selectedGroupIndex = null;
-      selectedPluginIndex = null;
-      return;
-    }
-
-    if (selectedGroupIndex === null || selectedGroupIndex >= pluginGroups.length) {
-      selectedGroupIndex = 0;
-    }
-
-    const group = pluginGroups[selectedGroupIndex];
-
-    if (!group?.plugins?.length) {
-      selectedPluginIndex = null;
-      return;
-    }
-
-    if (selectedPluginIndex === null || selectedPluginIndex >= group.plugins.length) {
-      selectedPluginIndex = 0;
-    }
-  });
+  let {
+    pluginGroups = [],
+    selectedPlugin = null,
+  }: Props = $props();
 
   let xmlText = $state('');
   let isLoadingXml = $state(false);
   let xmlErrorMessage = $state('');
   let xmlAbortController: AbortController | null = null;
-
-  type ValidationEntry = {
-    name: string;
-    description?: string;
-    xml: string;
-  };
 
   let validationEntries: ValidationEntry[] = $state([]);
   let expandedValidationEntryIndexes: Set<number> = $state(new Set());
@@ -126,18 +88,6 @@
     }
   }
 
-  let currentPluginId = $derived(selectedPlugin?.id ?? null);
-  let lastLoadedPluginId: string | null = null;
-
-  $effect(() => {
-    if (!currentPluginId || currentPluginId === lastLoadedPluginId) {
-      return;
-    }
-
-    lastLoadedPluginId = currentPluginId;
-    loadXmlForPlugin(currentPluginId);
-  });
-
   function toggleValidationEntry(index: number) {
     if (expandedValidationEntryIndexes.has(index)) {
       expandedValidationEntryIndexes.delete(index);
@@ -148,12 +98,6 @@
     expandedValidationEntryIndexes = new Set(expandedValidationEntryIndexes);
   }
 </script>
-
-<PluginGroupsStepper
-  {pluginGroups}
-  bind:selectedGroupIndex
-  bind:selectedPluginIndex
-/>
 
 {#if selectedPlugin}
   {#if isLoadingXml}
@@ -188,7 +132,6 @@
                   <button
                     type="button"
                     class="toggle-btn"
-                    aria-expanded="true"
                     onclick={() => toggleValidationEntry(index)}
                     title="Collapse"
                   >
@@ -198,7 +141,6 @@
                   <button
                     type="button"
                     class="toggle-btn"
-                    aria-expanded="false"
                     onclick={() => toggleValidationEntry(index)}
                     title="Expand"
                   >
