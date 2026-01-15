@@ -1,8 +1,4 @@
-import type {
-  CoMPASPlugin,
-  PluginGroup,
-  Process,
-} from '@oscd-transnet-plugins/shared';
+import type { CoMPASPlugin, Process } from '@oscd-transnet-plugins/shared';
 import { ENGINEERING_PROCESSES_STORAGE_KEY } from './config';
 
 export const engineeringProcesses = $state<{ processes: Process[] }>({
@@ -25,7 +21,6 @@ export const engineeringProcessEditing = $state<{ isEditing: boolean }>({
   isEditing: false,
 });
 
-// Track the currently running process plus the last selected plugin id for resume
 export const runningEngineeringProcess = $state<{
   process: Process | null;
   lastSelectedPluginId: string | null;
@@ -38,10 +33,6 @@ export const corePlugins = $state<{ plugins: CoMPASPlugin[] }>({
   plugins: [],
 });
 
-/**
- * Initializes localStorage hydration + persistence.
- * Safe to import once (module-scope).
- */
 function hydrateFromLocalStorage() {
   if (typeof localStorage === 'undefined') return;
 

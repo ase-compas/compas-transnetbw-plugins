@@ -30,7 +30,6 @@ function parsePlugin(el: Element): Plugin {
   };
 }
 
-/** Always returns Process objects with concrete `pluginGroups: PluginGroup[]`. */
 export function parseProcessesXml(xml: XMLDocument): Process[] {
   return all(xml, 'process').map((procEl) => {
     const groupEls = all(procEl, ':scope > plugins-sequence > group');

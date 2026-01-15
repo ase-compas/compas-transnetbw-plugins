@@ -7,7 +7,6 @@ import {
 import { parseProcessesXml, parseXmlString } from './xml-parser';
 
 function mergeById(primary: Process[], secondary: Process[]): Process[] {
-  // secondary overwrites primary by id (or vice versa depending on usage)
   const byId = new Map<string, Process>();
   for (const p of primary) byId.set(p.id, p);
   for (const p of secondary) byId.set(p.id, p);
@@ -34,7 +33,6 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
       engineeringProcesses.processes,
     ) as Process[];
 
-    // Keep your existing behavior: if local exists, merge XML + local.
     const merged =
       Array.isArray(localSnapshot) && localSnapshot.length
         ? mergeById(parsed, localSnapshot)
