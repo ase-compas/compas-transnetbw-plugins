@@ -4,8 +4,7 @@
   import OscdInput from "libs/oscd-component/src/oscd-input/OscdInput.svelte";
   import OscdSelect from "libs/oscd-component/src/oscd-select/OscdSelect.svelte";
 
-
-    interface Props {
+  interface Props {
         open: boolean;
         groups: number
     };

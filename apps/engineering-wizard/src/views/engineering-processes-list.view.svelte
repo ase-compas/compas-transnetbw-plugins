@@ -9,12 +9,12 @@
     OscdVisibilityIcon,
   } from '../../../../libs/oscd-icons/src';
 
+  import Button from '@smui/button';
   import {
-    engineeringProcessesErrorState,
-    engineeringProcessesState,
-    isEngineeringProcessesLoadingState,
-    runningEngineeringProcessState,
-  } from '../services/engineering-process.svelte';
+    engineeringProcesses,
+    engineeringProcessesStatus,
+    runningEngineeringProcess
+  } from '../features/processes/stores.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -29,7 +29,7 @@
 
   let searchQuery = $state('');
 
-  const processes = $derived(engineeringProcessesState.processes ?? []);
+  const processes = $derived(engineeringProcesses.processes ?? []);
 
   const rows = $derived<ProcessRow[]>(
     processes.map((p) => ({
@@ -47,13 +47,13 @@
   );
 
   const columns = [
-    { key: 'displayName', header: 'Name' },
-    { key: 'description', header: 'Description' },
+    { key: 'displayName', header: 'Name', bold: true },
+    { key: 'description', header: 'Description' }
   ] as const;
 
-  const runningProc = $derived(runningEngineeringProcessState.process);
+  const runningProc = $derived(runningEngineeringProcess.process);
   const runningProcName = $derived(runningProc?.name || runningProc?.id || '');
-  const lastSelectedPluginId = $derived(runningEngineeringProcessState.lastSelectedPluginId);
+  const lastSelectedPluginId = $derived(runningEngineeringProcess.lastSelectedPluginId);
 
   function getLastSelectedPluginName(proc: Process | null, pluginId: string | null): string {
     if (!pluginId) return '';
@@ -107,16 +107,21 @@
 
   <div class="process-toolbar">
     <Textfield bind:value={searchQuery} variant="outlined" label="Search Processes" />
-    <button type="button" class="primary" onclick={handleAddNew}>
+    <Button
+      variant="raised"
+      style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+      onclick={handleAddNew}
+      aria-label="Start process"
+    >
       ADD NEW PROCESS
-    </button>
+    </Button>
   </div>
 
   <OscdBasicDataTable
     items={filteredRows}
     {columns}
-    loading={isEngineeringProcessesLoadingState.loading}
-    errorMsg={engineeringProcessesErrorState.error}
+    loading={engineeringProcessesStatus.loading}
+    errorMsg={engineeringProcessesStatus.error}
     emptyText="No processes available."
     hasActions
     headerBg="#DAE3E6"
@@ -156,6 +161,11 @@
 </div>
 
 <style>
+  * {
+    --brand: #004552;
+    --on-brand: #ffffff;
+  }
+
   .processes {
     margin-top: 16px;
     padding: 0 24px;
@@ -212,16 +222,6 @@
     padding: 8px 14px;
     background: #ffffff;
     color: #004552;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-
-  .primary {
-    border: none;
-    cursor: pointer;
-    padding: 8px 14px;
-    background: #004552;
-    color: #fff;
     border-radius: 4px;
     font-weight: 600;
   }

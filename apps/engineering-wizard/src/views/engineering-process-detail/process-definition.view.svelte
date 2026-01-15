@@ -1,10 +1,11 @@
 <script lang="ts">
-  import PluginEditorPanel from '../../components/engineering-process-detail/PluginEditorPanel.svelte';
+  import PluginEditorPanel from '../../features/processes/components/panels/PluginEditorPanel.svelte';
   import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
-  import { createPluginId } from '../../services/plugin.service';
   import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
-  import PluginExternalPanel from '../../components/engineering-process-detail/PluginExternalPanel.svelte';
-  import { corePluginsState } from '../../services/engineering-process.svelte';
+  import PluginExternalPanel from '../../features/processes/components/panels/PluginExternalPanel.svelte';
+  import { corePlugins, selectedEngineeringProcess } from '../../features/processes/stores.svelte';
+  import { createPluginId } from '../../features/plugins/id';
+  import { addPluginToProcess } from '../../features/processes/mutations.svelte';
 
   type Props = {
     pluginGroups?: PluginGroup[];
@@ -16,7 +17,7 @@
 
   let searchTerm = $state('');
   let filteredPlugins = $derived.by(() => {
-    const compasPlugins = corePluginsState.plugins;
+    const compasPlugins = corePlugins.plugins;
     const allPlugins = compasPlugins.map((compasPlugin) => ({
     id: createPluginId(compasPlugin.name),
     name: compasPlugin.name,
@@ -32,6 +33,11 @@
     plugin.name.toLowerCase().includes(term)
   );
 });
+
+  function addPlugin(plugin: Plugin) {
+    const processId = selectedEngineeringProcess.process.id;
+    addPluginToProcess(processId, plugin);
+  }
 </script>
 
 <div class="process-definition-view">
@@ -44,7 +50,7 @@
     <p>SELECT OR DRAG & DROP PLUGINS</p>
   </div>
 
-  <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm />
+  <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm onAddPlugin={addPlugin} />
 </div>
 
 <style>

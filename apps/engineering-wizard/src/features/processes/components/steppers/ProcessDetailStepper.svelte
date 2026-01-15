@@ -1,5 +1,5 @@
 <script lang="ts">
-  import StepperRow from '../shared/StepperRow.svelte';
+  import StepperRow from './StepperRow.svelte';
 
   const items = [
     {

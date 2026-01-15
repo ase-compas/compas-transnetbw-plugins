@@ -1,8 +1,8 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from 'svelte';
-import { setInternalPlugins } from './services/engineering-process.svelte';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
+import { setInternalPlugins } from './features/processes/mutations.svelte';
 
 export default class NewOSCDPlugin extends HTMLElement {
   private _doc?: XMLDocument;

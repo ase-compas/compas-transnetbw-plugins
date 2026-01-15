@@ -1,19 +1,16 @@
 <script lang="ts">
   import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
   import Button from '@smui/button';
-  import ProcessDetailStepper from '../../components/engineering-process-detail/ProcessDetailStepper.svelte';
-  import PluginViewPanel from '../../components/engineering-process-detail/PluginViewPanel.svelte';
-  import { editorTabsVisible } from '../../stores/editor-tabs.store';
+  import ProcessDetailStepper from '../../features/processes/components/steppers/ProcessDetailStepper.svelte';
+  import PluginViewPanel from '../../features/processes/components/panels/PluginViewPanel.svelte';
   import ProcessDefinition from './process-definition.view.svelte';
-  import ProcessValidationGroups from '../../components/engineering-process-detail/ProcessValidationGroups.svelte';
+  import ProcessValidation from '../../features/processes/components/validation/ProcessValidation.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
-  import { buildProcessBreadcrumbs } from '../../utils/breadcrumbs.util';
-  import {
-    isEngineeringProcessEditingState,
-    selectedEngineeringProcessState
-  } from '../../services/engineering-process.svelte';
-  import WorkflowActions from '../../components/engineering-workflow/WorkflowActions.svelte';
-  import WorkflowTitle from '../../components/engineering-workflow/WorkflowTitle.svelte';
+  import { buildProcessBreadcrumbs } from '../../features/processes/ui/breadcrumbs';
+  import WorkflowActions from '../../components/shared/WorkflowActions.svelte';
+  import WorkflowTitle from '../../components/shared/WorkflowTitle.svelte';
+  import { engineeringProcessEditing, selectedEngineeringProcess } from '../../features/processes/stores.svelte';
+  import { editorTabs } from '../../features/workflow/layout.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -31,29 +28,29 @@
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedEngineeringProcessState.process, { edit: isEngineeringProcessEditingState.isEditing }));
-  let pluginGroups = $derived(selectedEngineeringProcessState.process.pluginGroups);
+  let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedEngineeringProcess.process, { edit: engineeringProcessEditing.isEditing }));
+  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
 
   let visitedSteps: StepId[] = $state([]);
 
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
-    editorTabsVisible.set(true);
-    selectedEngineeringProcessState.process = null;
+    editorTabs.visible = true;
+    selectedEngineeringProcess.process = null;
   }
 
   function startEditing() {
     console.log("EDITING");
-    isEngineeringProcessEditingState.isEditing = true;
-    editorTabsVisible.set(false);
+    engineeringProcessEditing.isEditing = true;
+    editorTabs.visible = false;
     currentStepIndex = 0;
     visitedSteps = [];
   }
 
   function exitEditing() {
-    isEngineeringProcessEditingState.isEditing = false;
-    editorTabsVisible.set(true);
-    selectedEngineeringProcessState.process = null;
+    engineeringProcessEditing.isEditing = false;
+    editorTabs.visible = true;
+    selectedEngineeringProcess.process = null;
   }
 
   function handleStepSelect(stepId: StepId) {
@@ -82,7 +79,7 @@
 </script>
 
 <div class="page-content">
-  {#if isEngineeringProcessEditingState.isEditing}
+  {#if engineeringProcessEditing.isEditing}
     <div class="stepper">
 
       <WorkflowTitle onClick={exitEditing} />
@@ -108,13 +105,13 @@
             variant="raised"
             style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
             onclick={handleAddValidationClick}
-            disabled={!selectedEngineeringProcessState.process}
+            disabled={!selectedEngineeringProcess.process}
             aria-label="Add validation"
           >
             ADD NEW VALIDATION
           </Button>
         </div>
-        <ProcessValidationGroups
+        <ProcessValidation
           {pluginGroups}
           {breadcrumbs}
           activeBreadcrumbIndex={2}
@@ -131,8 +128,8 @@
         <Button
           variant="raised"
           style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
-          onclick={() => handleStart(selectedEngineeringProcessState.process)}
-          disabled={!selectedEngineeringProcessState.process}
+          onclick={() => handleStart(selectedEngineeringProcess.process)}
+          disabled={!selectedEngineeringProcess.process}
           aria-label="Start process"
         >
           START PROCESS
