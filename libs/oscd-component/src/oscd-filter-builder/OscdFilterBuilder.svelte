@@ -1,4 +1,34 @@
 <script lang="ts">
+  /**
+   * OscdFilters.svelte
+   *
+   * A flexible filter bar component that displays filters as badges and opens
+   * custom menus for editing values. Supports text, number, select, multiselect,
+   * date, and datetime filters.
+   *
+   * Props:
+   * - filters: FilterDefinition[] — Array of filters to display.
+   * - onfiltersChanged?: (filters: FilterDefinition[]) => void — Callback invoked
+   *   when a filter is applied or cleared.
+   *
+   * Example usage:
+   * <script lang="ts">
+   *   import OscdFilters from './OscdFilters.svelte';
+   *   let filters = [
+   *     { key: 'name', type: 'text', label: 'Name' },
+   *     { key: 'status', type: 'select', label: 'Status', options: [
+   *       { label: 'Active', value: 'active' },
+   *       { label: 'Inactive', value: 'inactive' }
+   *     ]}
+   *   ];
+   *   function handleFiltersChanged(updatedFilters) {
+   *     console.log(updatedFilters);
+   *   }
+   *
+   *
+   * <OscdFilters bind:filters={filters} onfiltersChanged={handleFiltersChanged} />
+   */
+
   import type { FilterDefinition } from './types';
   import OscdFilterBadge from './OscdFilterBadge.svelte';
   import { onDestroy, onMount } from 'svelte';
