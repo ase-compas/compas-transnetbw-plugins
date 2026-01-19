@@ -13,7 +13,6 @@
    *
    * Example usage:
    * <script lang="ts">
-   *   import OscdFilters from './OscdFilters.svelte';
    *   let filters = [
    *     { key: 'name', type: 'text', label: 'Name' },
    *     { key: 'status', type: 'select', label: 'Status', options: [
@@ -26,7 +25,7 @@
    *   }
    *
    *
-   * <OscdFilters bind:filters={filters} onfiltersChanged={handleFiltersChanged} />
+   * <OscdFilterBuilder bind:filters={filters} onfiltersChanged={handleFiltersChanged} />
    */
 
   import type { FilterDefinition } from './types';
