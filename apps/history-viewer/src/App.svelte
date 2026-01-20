@@ -13,8 +13,7 @@
     OscdButton,
     OscdDataTable,
     OscdDialog,
-    OscdFilterBuilder,
-    OscdInput,
+    OscdFilterTab,
     OscdLoadingSpinner
   } from '@oscd-transnet-plugins/oscd-component';
   import { Subject } from 'rxjs';
@@ -330,19 +329,17 @@
         </div>
           {/snippet}
     </OscdDialog>
-    <div class="search-filter" style="display: flex; flex-direction: column; gap: 1rem;">
-      <OscdInput
-        bind:value={searchText}
-        oninput={() => searchTrigger$.next()}
-        icon="search"
-        label="Search name..."
-        variant="outlined"
-        styles="background: var(--oscd-base2,#fff); max-width: 650px;"/>
 
-      <OscdFilterBuilder bind:filters={filterDefinitions} onfiltersChanged={() => searchTrigger$.next()}/>
+    <div class="search-filter">
+      <OscdFilterTab
+        bind:filters={filterDefinitions}
+        bind:searchText={searchText}
+        searchLabel="Search file name..."
+        onFilterChange={() => searchTrigger$.next(null)}
+        onSearchInput={() => searchTrigger$.next(null)}
+    />
     </div>
     <div class="table-container">
-      <h3 style="margin-bottom: 1rem;">{$_('versionTable.heading')}</h3>
       <OscdDataTable {columnDefs}
                      store={dataStore}
                      {loadingDone}
