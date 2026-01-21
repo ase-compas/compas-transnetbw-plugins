@@ -12,33 +12,50 @@
 
   let {
     pluginGroups = [],
-    selectedGroupIndex = $bindable<number | null>(null),
-    selectedPluginIndex = $bindable<number | null>(null),
+    selectedGroupIndex = $bindable<number>(0),
+    selectedPluginIndex = $bindable<number>(0),
     expandedGroupBackground = 'var(--brand)',
     expandedGroupBorderColor = 'var(--brand)',
     selectPlugin
   }: Props = $props();
 
+  let lastSelectedPluginId: string | null = null;
+
   $effect(() => {
     if (!pluginGroups?.length) {
       selectedGroupIndex = null;
       selectedPluginIndex = null;
+      lastSelectedPluginId = null;
       return;
     }
 
-    if (selectedGroupIndex === null || selectedGroupIndex >= pluginGroups.length) {
-      selectedGroupIndex = 0;
-    }
+    let groupIdx = selectedGroupIndex ?? 0;
+    if (groupIdx < 0 || groupIdx >= pluginGroups.length) groupIdx = 0;
 
-    const group = pluginGroups[selectedGroupIndex];
-
+    let group = pluginGroups[groupIdx];
     if (!group?.plugins?.length) {
-      selectedPluginIndex = null;
-      return;
+      const withPluginsIndex = pluginGroups.findIndex((g) => g?.plugins?.length);
+      if (withPluginsIndex === -1) {
+        selectedGroupIndex = groupIdx;
+        selectedPluginIndex = null;
+        lastSelectedPluginId = null;
+        return;
+      }
+      groupIdx = withPluginsIndex;
+      group = pluginGroups[groupIdx];
+      selectedGroupIndex = groupIdx;
+      selectedPluginIndex = 0;
     }
 
-    if (selectedPluginIndex === null || selectedPluginIndex >= group.plugins.length) {
-      selectedPluginIndex = 0;
+    let pluginIdx = selectedPluginIndex ?? 0;
+    if (pluginIdx < 0 || pluginIdx >= (group.plugins?.length ?? 0)) pluginIdx = 0;
+    selectedGroupIndex = groupIdx;
+    selectedPluginIndex = pluginIdx;
+
+    const plugin = group.plugins?.[pluginIdx];
+    if (plugin && plugin.id !== lastSelectedPluginId) {
+      lastSelectedPluginId = plugin.id;
+      selectPlugin?.(plugin);
     }
   });
 
@@ -47,9 +64,12 @@
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = group?.plugins?.length ? 0 : null;
 
-    const plugin = group.plugins[0];
+    const plugin = group?.plugins?.[0];
     if (plugin) {
-      selectPlugin(plugin);
+      lastSelectedPluginId = plugin.id;
+      selectPlugin?.(plugin);
+    } else {
+      lastSelectedPluginId = null;
     }
   }
 
@@ -57,9 +77,10 @@
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
-    const plugin = pluginGroups[groupIndex].plugins[pluginIndex];
+    const plugin = pluginGroups[groupIndex]?.plugins?.[pluginIndex];
     if (plugin) {
-      selectPlugin(plugin);
+      lastSelectedPluginId = plugin.id;
+      selectPlugin?.(plugin);
     }
   }
 </script>

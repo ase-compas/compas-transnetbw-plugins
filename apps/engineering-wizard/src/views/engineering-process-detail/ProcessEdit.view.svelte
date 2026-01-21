@@ -10,6 +10,10 @@
   import PluginGroupsStepper from '../../components/shared/PluginGroupsStepper.svelte';
   import type { Plugin } from '@oscd-transnet-plugins/shared';
   import type { EditorStepIds } from '../../features/processes/editor/types';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import AddNewValidationDialog
+    from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
+  import { validations } from '../../features/plugins/validation/stores.svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -19,7 +23,7 @@
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
   let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
-  let selectedPlugin: Plugin = $state({} as Plugin);
+  let selectedPlugin: Plugin | null = $state(null);
 
   let visitedSteps: EditorStepIds[] = $state([]);
 
@@ -62,32 +66,10 @@
     selectedPlugin = plugin;
   }
 
-  function handleAddValidationClick() {
-    alert('Add New Validation clicked!');
+  async function handleAddValidationClick() {
+    if (!selectedPlugin || !selectedEngineeringProcess.process) return;
+    await openDialog(AddNewValidationDialog, { plugin: selectedPlugin, process: selectedEngineeringProcess.process });
   }
-
-  $effect(() => {
-    if (!pluginGroups?.length) {
-      selectedGroupIndex = null;
-      selectedPluginIndex = null;
-      return;
-    }
-
-    if (selectedGroupIndex === null || selectedGroupIndex >= pluginGroups.length) {
-      selectedGroupIndex = 0;
-    }
-
-    const group = pluginGroups[selectedGroupIndex];
-
-    if (!group?.plugins?.length) {
-      selectedPluginIndex = null;
-      return;
-    }
-
-    if (selectedPluginIndex === null || selectedPluginIndex >= group.plugins.length) {
-      selectedPluginIndex = 0;
-    }
-  });
 
 </script>
 <div class="stepper">
@@ -120,13 +102,14 @@
         variant="raised"
         style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
         onclick={handleAddValidationClick}
-        disabled={!selectedEngineeringProcess.process}
+        disabled={!selectedEngineeringProcess.process || !selectedPlugin}
         aria-label="Add validation"
       >
         ADD NEW VALIDATION
       </Button>
     </div>
     <ProcessValidationView
+      {selectedPlugin}
       {pluginGroups}
       activeBreadcrumbIndex={2}
       on:addValidation={handleAddValidationClick}

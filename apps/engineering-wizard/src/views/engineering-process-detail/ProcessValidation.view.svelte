@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
-  import { OscdArrowDownIcon, OscdArrowUpIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import type { ValidationEntry } from '../../features/plugins/validation/types';
+  import { OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { validations } from '../../features/plugins/validation/stores.svelte';
+  import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -16,87 +17,89 @@
   let xmlText = $state('');
   let isLoadingXml = $state(false);
   let xmlErrorMessage = $state('');
-  let xmlAbortController: AbortController | null = null;
 
-  let validationEntries: ValidationEntry[] = $state([]);
-  let expandedValidationEntryIndexes: Set<number> = $state(new Set());
+  type ValidationEntry = {
+    processId: string;
+    pluginId: string;
+  };
 
-  async function loadXmlForPlugin(pluginId: string) {
-    isLoadingXml = true;
-    xmlErrorMessage = '';
-    xmlText = '';
-    validationEntries = [];
-    expandedValidationEntryIndexes = new Set();
+  // Compute only the validation entries for the current process and selected plugin
+  let validationEntries = $derived.by(() => {
+    const processId = selectedEngineeringProcess?.process?.id;
+    const pluginId = selectedPlugin?.id;
+    if (!processId || !pluginId) return [] as any[];
 
-    xmlAbortController?.abort();
-    xmlAbortController = new AbortController();
+    return (validations.validationEntries ?? []).filter(
+      (entry) => entry.processId === processId && entry.pluginId === pluginId,
+    );
+  });
 
-    try {
-      const sourceUrl = new URL(`../../assets/validations/${pluginId}.xml`, import.meta.url).href;
-      const response = await fetch(sourceUrl, {
-        cache: 'no-cache',
-        signal: xmlAbortController.signal
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          xmlText = '(No XML found for this plugin.)';
-          return;
-        }
-
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      xmlText = await response.text();
-
-      const parser = new DOMParser();
-      const parsedDocument = parser.parseFromString(xmlText, 'application/xml');
-      const parseErrorNode = parsedDocument.querySelector('parsererror');
-
-      if (parseErrorNode) {
-        throw new Error('Invalid XML format.');
-      }
-
-      const serializer = new XMLSerializer();
-      const validationNodes = Array.from(parsedDocument.getElementsByTagName('validation'));
-
-      validationEntries = validationNodes.map((validationElement, index) => {
-        const attributeName = validationElement.getAttribute('name')?.trim();
-        const attributeId = validationElement.getAttribute('id')?.trim();
-        const nameElement = validationElement.querySelector('name')?.textContent?.trim();
-        const descriptionAttribute = validationElement.getAttribute('description')?.trim();
-        const descriptionElement = validationElement
-          .querySelector('description')
-          ?.textContent?.trim();
-
-        const name = attributeName || attributeId || nameElement || `Validation ${index + 1}`;
-        const description = descriptionAttribute || descriptionElement || undefined;
-        const xml = serializer.serializeToString(validationElement);
-
-        return { name, description, xml };
-      });
-
-      expandedValidationEntryIndexes = new Set(validationEntries.map((_, index) => index));
-    } catch (error) {
-      if ((error as DOMException)?.name === 'AbortError') {
-        return;
-      }
-
-      xmlErrorMessage = (error as Error)?.message || 'Failed to load XML.';
-    } finally {
-      isLoadingXml = false;
-    }
-  }
-
-  function toggleValidationEntry(index: number) {
-    if (expandedValidationEntryIndexes.has(index)) {
-      expandedValidationEntryIndexes.delete(index);
-    } else {
-      expandedValidationEntryIndexes.add(index);
-    }
-
-    expandedValidationEntryIndexes = new Set(expandedValidationEntryIndexes);
-  }
+  // async function loadXmlForPlugin(pluginId: string) {
+  //   isLoadingXml = true;
+  //   xmlErrorMessage = '';
+  //   xmlText = '';
+  //   validationEntries = [];
+  //   expandedValidationEntryIndexes = new Set();
+  //
+  //   xmlAbortController?.abort();
+  //   xmlAbortController = new AbortController();
+  //
+  //   try {
+  //     const sourceUrl = new URL(`../../assets/validations/${pluginId}.xml`, import.meta.url).href;
+  //     const response = await fetch(sourceUrl, {
+  //       cache: 'no-cache',
+  //       signal: xmlAbortController.signal
+  //     });
+  //
+  //     if (!response.ok) {
+  //       if (response.status === 404) {
+  //         xmlText = '(No XML found for this plugin.)';
+  //         return;
+  //       }
+  //
+  //       throw new Error(`HTTP ${response.status}`);
+  //     }
+  //
+  //     xmlText = await response.text();
+  //
+  //     const parser = new DOMParser();
+  //     const parsedDocument = parser.parseFromString(xmlText, 'application/xml');
+  //     const parseErrorNode = parsedDocument.querySelector('parsererror');
+  //
+  //     if (parseErrorNode) {
+  //       throw new Error('Invalid XML format.');
+  //     }
+  //
+  //     const serializer = new XMLSerializer();
+  //     const validationNodes = Array.from(parsedDocument.getElementsByTagName('validation'));
+  //
+  //     validationEntries = validationNodes.map((validationElement, index) => {
+  //       const attributeName = validationElement.getAttribute('name')?.trim();
+  //       const attributeId = validationElement.getAttribute('id')?.trim();
+  //       const nameElement = validationElement.querySelector('name')?.textContent?.trim();
+  //       const descriptionAttribute = validationElement.getAttribute('description')?.trim();
+  //       const descriptionElement = validationElement
+  //         .querySelector('description')
+  //         ?.textContent?.trim();
+  //
+  //       const name = attributeName || attributeId || nameElement || `Validation ${index + 1}`;
+  //       const description = descriptionAttribute || descriptionElement || undefined;
+  //       const xml = serializer.serializeToString(validationElement);
+  //
+  //       return { name, description, xml };
+  //     });
+  //
+  //     expandedValidationEntryIndexes = new Set(validationEntries.map((_, index) => index));
+  //   } catch (error) {
+  //     if ((error as DOMException)?.name === 'AbortError') {
+  //       return;
+  //     }
+  //
+  //     xmlErrorMessage = (error as Error)?.message || 'Failed to load XML.';
+  //   } finally {
+  //     isLoadingXml = false;
+  //   }
+  // }
 </script>
 
 {#if selectedPlugin}
@@ -106,11 +109,8 @@
     <p class="error">{xmlErrorMessage}</p>
   {:else}
     {#if validationEntries.length === 0}
-      <div class="xml-viewer">
-        <h4 class="xml-viewer__title">XML for: {selectedPlugin.name}</h4>
-        <div class="xml-viewer__box">
-          <pre>{xmlText}</pre>
-        </div>
+      <div class="empty-state">
+        <p>No validations configured for "{selectedPlugin.name}" yet.</p>
       </div>
     {:else}
       <div class="validation-xml-list">
@@ -128,35 +128,33 @@
                   <OscdDeleteIcon svgStyles="fill: #FF203A" />
                 </button>
 
-                {#if expandedValidationEntryIndexes.has(index)}
-                  <button
-                    type="button"
-                    class="toggle-btn"
-                    onclick={() => toggleValidationEntry(index)}
-                    title="Collapse"
-                  >
-                    <OscdArrowUpIcon svgStyles="fill: #004552" />
-                  </button>
-                {:else}
-                  <button
-                    type="button"
-                    class="toggle-btn"
-                    onclick={() => toggleValidationEntry(index)}
-                    title="Expand"
-                  >
-                    <OscdArrowDownIcon svgStyles="fill: #004552" />
-                  </button>
-                {/if}
+                <!--{#if expandedValidationEntryIndexes.has(index)}-->
+                <!--  <button-->
+                <!--    type="button"-->
+                <!--    class="toggle-btn"-->
+                <!--    onclick={() => toggleValidationEntry(index)}-->
+                <!--    title="Collapse"-->
+                <!--  >-->
+                <!--    <OscdArrowUpIcon svgStyles="fill: #004552" />-->
+                <!--  </button>-->
+                <!--{:else}-->
+                <!--  <button-->
+                <!--    type="button"-->
+                <!--    class="toggle-btn"-->
+                <!--    onclick={() => toggleValidationEntry(index)}-->
+                <!--    title="Expand"-->
+                <!--  >-->
+                <!--    <OscdArrowDownIcon svgStyles="fill: #004552" />-->
+                <!--  </button>-->
+                <!--{/if}-->
               </div>
             </div>
 
-            {#if expandedValidationEntryIndexes.has(index)}
-              <div class="xml-viewer">
-                <div class="xml-viewer__box">
-                  <pre>{validationEntry.xml}</pre>
-                </div>
+            <div class="xml-viewer">
+              <div class="xml-viewer__box">
+                <pre>{validationEntry.xml}</pre>
               </div>
-            {/if}
+            </div>
           </div>
         {/each}
       </div>
@@ -245,5 +243,12 @@
 
   .error {
     color: #b00020;
+  }
+
+  .empty-state {
+    padding: 0.5rem 0.75rem;
+    color: #004552;
+    background: #edf1f2;
+    border-radius: 6px;
   }
 </style>
