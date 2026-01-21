@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { drawers, closeDrawer, homeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { drawers, closeDrawer, homeTitle, getHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
   import type { Drawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { fly } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
@@ -15,7 +15,7 @@
 
   let breadcrumbs = $derived.by(() => {
     const drawerTitles = $drawers.map(d => d.title);
-    return [$homeTitle, ...drawerTitles]
+    return [getHomeTitle(), ...drawerTitles]
 });
 
 

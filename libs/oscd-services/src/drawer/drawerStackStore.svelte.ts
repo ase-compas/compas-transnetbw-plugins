@@ -44,13 +44,10 @@ export const drawers: Readable<Drawer[]> = {
   subscribe: drawerStore.subscribe
 };
 
-const _homeTitle = writable<string | undefined>(undefined);
-export const homeTitle: Readable<string | undefined> = {
-  subscribe: _homeTitle.subscribe
-}
-export function setHomeTitle(homeTitle: string) {
-  _homeTitle.update(_ => homeTitle)
-}
+let _homeTitle = $state<string | undefined>(undefined);
+
+export const getHomeTitle = (): string | undefined  => { return _homeTitle; }
+export function setHomeTitle(homeTitle: string) { _homeTitle = homeTitle; }
 
 /**
  * Open a new drawer by pushing it to the stack.
