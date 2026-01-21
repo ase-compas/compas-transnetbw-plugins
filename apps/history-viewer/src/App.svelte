@@ -14,7 +14,8 @@
     OscdDataTable,
     OscdDialog,
     OscdFilterBox,
-    OscdLoadingSpinner
+    OscdLoadingSpinner,
+    OscdToastHost
   } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
   import { catchError, finalize, switchMap, take, tap } from 'rxjs/operators';
@@ -35,6 +36,7 @@
   import "../public/global.css"
   import "../public/smui.css"
   import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -201,18 +203,19 @@
      confirmActionColor: 'danger',
    });
    if (result.type !== 'confirm') return;
+
    versionEditorDataService.deleteResource(row.uuid)
-      .pipe(
-        take(1),
-        tap(() => {
-          search();
-        }),
-        catchError((err) => {
-          console.error(`Failed to delete resource "${row.filename} (${row.uuid})": ${err.message}`);
-          return of(undefined);
-        })
-      )
-      .subscribe();
+     .pipe(take(1))
+     .subscribe({
+       next: () => {
+         search();
+         toastService.success("Deleted successfully", `Resource "${row.filename} (${row.uuid})" has been deleted.`);
+       },
+       error: (err) => {
+         console.error(`Failed to delete resource "${row.filename} (${row.uuid})":`, err);
+         toastService.error("Deletion failed", `Failed to delete resource "${row.filename} (${row.uuid})".`);
+       }
+     });
   }
 
 
@@ -398,6 +401,7 @@
     </div>
   {/if}
   <DialogHost/>
+  <OscdToastHost/>
 </div>
 <style lang="css" global>
   .version-editor-container {
