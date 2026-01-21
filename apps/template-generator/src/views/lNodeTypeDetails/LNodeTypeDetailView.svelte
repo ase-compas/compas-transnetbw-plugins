@@ -4,6 +4,7 @@
   // Services & utils
   import {
     applyDefaultWarningNotification,
+    assignOrCreateReference,
     type BasicType,
     type BasicTypes,
     canAssignTypeToObjectReference,
@@ -46,6 +47,8 @@
   import { getColumns } from './columns.config';
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
+  import { setHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { get } from 'svelte/store';
 
   // -----------------------------
   // Service instances
@@ -129,8 +132,16 @@
   // -----------------------------
   // Event Handlers
   // -----------------------------
-  function handleToggleMark(itemId: string) {
-    refStore.toggleMarked(itemId);
+  function handleToggleMark(itemId: string, columnId: string) {
+    if (columnId === 'refs') {
+      refStore.toggleMarked(itemId);
+      return;
+    }
+
+    const currentMarkedItem = get(refStore.markedItem);
+    if (currentMarkedItem) {
+      refStore.setTypeReference(currentMarkedItem.name, itemId);
+    }
   }
 
   function handleToggleSelect({ itemId }) {
@@ -162,6 +173,7 @@
 
   // Dialog handlers
   function handleActionClick({ columnId }) {
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
    if (columnId === 'doTypes') {
      openCreateDataObjectTypeDialog();
     } else if (columnId === 'daTypes') {
@@ -172,6 +184,7 @@
   }
 
   function handleOnEdit(itemId: string, columnId: string) {
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
     const openMode: Mode = canEdit ? 'edit' : 'view';
     if (columnId === 'doTypes') {
       openDataObjectTypeDrawer(openMode, itemId);
@@ -233,6 +246,7 @@
   }
 
   function handleOnReferenceClick({itemId}) {
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
     const ref = $refStore.find(i => i.name === itemId);
     openReferencedTypeDrawer(ref, 'view')
   }
@@ -255,12 +269,22 @@
 
   async function handleRename() {
    const newTypeId = await handleRenameTypeWorkflow(DataTypeKind.LNodeType, lNodeTypeId);
-   console.log(newTypeId);
    if(newTypeId) {
      lNodeTypeId = newTypeId;
      loadLogicalNodeType(lNodeTypeId, lnClass)
    }
   }
+
+  async function handleAddReference({itemId}) {
+    setHomeTitle(`[LN] ${lNodeTypeId}`);
+    assignOrCreateReference(
+      refStore,
+      DataTypeKind.LNodeType,
+      logicalNodeType.lnClass,
+      itemId
+    );
+  }
+
 
   // -----------------------------
   // Utils
@@ -315,6 +339,11 @@
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
       />
 
+      <OscdButton
+        disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
+        SAVE CHANGES
+      </OscdButton>
+
       {#if $dirty}
         <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
           <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
@@ -323,10 +352,6 @@
         <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} />
       {/if}
 
-      <OscdButton
-        disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
-        SAVE CHANGES
-      </OscdButton>
 
       <OscdTooltip content="Type Actions" side="bottom" hoverDelay={2000}>
         <TypeActionMenu
@@ -345,11 +370,13 @@
       onColumnActionClick={e => handleActionClick(e)}
       onItemEdit={({itemId, columnId}) => handleOnEdit(itemId, columnId)}
       onItemMarkChange={({itemId}) => handleToggleMark(itemId)}
+      onItemClick={({itemId, columnId}) => handleToggleMark(itemId, columnId)}
       onItemSelectChange={e => handleToggleSelect(e)}
       onItemDrop={e => handleItemDrop(e)}
       onItemApplyDefaults={e => handleApplyDefaults(e)}
       onItemUnlink={e => handleOnUnlink(e)}
       onItemReferenceClick={e => handleOnReferenceClick(e)}
+      onItemAddReferenceClick={e => handleAddReference(e)}
       onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}
     />
   </div>

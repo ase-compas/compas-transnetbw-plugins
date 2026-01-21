@@ -1,15 +1,23 @@
 <script lang="ts">
-  import { drawers, closeDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { drawers, closeDrawer, homeTitle, getHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
   import type { Drawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { fly } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
   import { OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
+  import OscdTooltip from '../oscd-tooltip/OscdTooltip.svelte';
+  import DrawerBreadcrumbs from './DrawerBreadcrumbs.svelte';
 
   let drawerList: Drawer[] = $derived($drawers);
   const widthStep = 45;
 
   let innerWidth = $state(window.innerWidth);
+
+  let breadcrumbs = $derived.by(() => {
+    const drawerTitles = $drawers.map(d => d.title);
+    return [getHomeTitle(), ...drawerTitles]
+});
+
 
   // update on resize
   function handleResize() {
@@ -115,10 +123,16 @@ function handleBackdropKeydown(event: KeyboardEvent) {
     padding: 1rem;
   }
 
-  .drawer-header__actions {
+  .drawer-footer {
+    background: #fff;
+    padding: 8px 1.5rem;
+    border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, .12));
+  }
+
+  .drawer-footer__actions {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: end;
     gap: 1rem;
   }
 
@@ -131,19 +145,6 @@ function handleBackdropKeydown(event: KeyboardEvent) {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-  }
-
-  .breadcrumb-separator {
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .breadcrumb-segment {
-    color: rgba(255, 255, 255, 0.65);
-  }
-
-  .breadcrumb-current {
-    color: #fff;
-    font-weight: 500;
   }
 </style>
 
@@ -176,36 +177,13 @@ function handleBackdropKeydown(event: KeyboardEvent) {
       in:fly={{ x: baseWidth + 200, duration: 200 }}
       out:fly={{ x: baseWidth + 200, duration: 200 }}
     >
+      <!-- Start: Drawer Header -->
       <div class="drawer-header">
-        <div class="drawer-header__actions">
-          <Button
-            variant="unelevated"
-            color="primary"
-            style="background: white;
-            color: var(--mdc-theme-primary, #ff3e00)"
-            onclick={() => closeDrawer('save')}
-          >Save & Close</Button>
-          <Button
-            variant="unelevated"
-            color="secondary"
-            style="
-            background: #6B9197;
-            color: white"
-            onclick={() => closeDrawer('cancel')}
-          >Cancel</Button>
-        </div>
 
 
         <div class="drawer-header__breadcrumbs">
-          {#each drawerList.slice(0, index) as d}
-            <span class="breadcrumb-segment">{d.title}</span>
-            <span class="breadcrumb-separator">›</span>
-          {/each}
-
-          <span class="breadcrumb-current">{drawer.title}</span>
+          <DrawerBreadcrumbs {breadcrumbs}/>
         </div>
-
-
 
         <OscdIconActionButton
           type="close"
@@ -215,12 +193,34 @@ function handleBackdropKeydown(event: KeyboardEvent) {
           tooltipSide="left"
         />
       </div>
+      <!-- End: Drawer Header -->
+
+      <!-- Start: Drawer Body -->
       <div class="drawer-body">
         <drawer.component
           {...drawer.props}
           bind:this={drawer.ref}
         />
       </div>
+      <!-- End: Drawer Body -->
+
+      <!-- Start: Drawer Footer -->
+       <div class="drawer-footer">
+        <div class="drawer-footer__actions">
+          <Button
+            variant="unelevated"
+            color="primary"
+            style="background: white;
+            color: var(--mdc-theme-primary, #ff3e00)"
+            onclick={() => closeDrawer('cancel')}
+          >Cancel</Button>
+          <Button
+            variant="unelevated"
+            onclick={() => closeDrawer('save')}
+          >Save & Close</Button>
+        </div>
+       </div>
+      <!-- End: Drawer Footer -->
     </div>
   {/each}
 </div>

@@ -15,7 +15,9 @@ import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 import ChooseInstanceTypeDialog from '../components/dialogs/ChooseInstanceTypeDialog.svelte';
 import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 import { getDataTypeService } from '../services';
-import { TypeRenameDialog } from '../components';
+import { AddReferenceDialog, TypeRenameDialog } from '../components';
+import { get } from 'svelte/store';
+import type { ObjectReferenceStore } from '../stores';
 
 export function openDataObjectTypeDrawer(
   mode: Mode,
@@ -24,7 +26,7 @@ export function openDataObjectTypeDrawer(
 ) {
   openDrawer({
     component: DoTypeDrawer,
-    title: 'DO Details',
+    title: `[DO] ${typeId}`,
     props: { mode, typeId, cdc },
   });
 }
@@ -145,7 +147,7 @@ export function openDataAttributeTypeDrawer(
 ) {
   openDrawer({
     component: DaTypeDrawer,
-    title: 'DA Details',
+    title: `[DA] ${typeId}`,
     props: { mode, typeId, instanceType },
   });
 }
@@ -157,7 +159,7 @@ export function openDataEnumTypeDrawer(
 ) {
   openDrawer({
     component: EnumTypeDetailsDrawer,
-    title: 'Enum Details',
+    title: `[Enum] ${typeId}`,
     props: { mode, typeId, instanceTypeId: instanceType },
   });
 }
@@ -270,4 +272,99 @@ function dataTypeKindToText(kind: DataTypeKind): string {
       typeText = 'Type';
   }
   return typeText;
+}
+
+export async function openDataTypeDrawer(
+  typeKind: DataTypeKind,
+  mode: Mode,
+  typeId: string,
+  instanceType?: string
+) {
+  switch (typeKind) {
+    case DataTypeKind.DOType:
+      openDataObjectTypeDrawer(mode, typeId, instanceType);
+      return;
+    case DataTypeKind.DAType:
+      openDataAttributeTypeDrawer(mode, typeId, instanceType);
+      return;
+    case DataTypeKind.EnumType:
+      openDataEnumTypeDrawer(mode, typeId, instanceType);
+      return;
+    default:
+      console.error("open data type dialog drawer. type kind ", typeKind, " is not supported.")
+  }
+}
+
+export async function assignOrCreateReference(
+  refStore: ObjectReferenceStore,
+  srcTypeKind: DataTypeKind,
+  srcInstanceType: string,
+  targetRefId: string
+){
+
+  const ref = get(refStore).find(i => i.name === targetRefId);
+  const refTypeKind = ref.meta.refTypeKind
+  const instance = ref.meta.objectType
+  const res = await openDialog(AddReferenceDialog, {
+    typeKind: srcTypeKind,
+    instanceType: srcInstanceType,
+    objTypeKind: refTypeKind,
+    objInstanceType: instance,
+    itemId: targetRefId
+  });
+
+  if (res.type !== 'confirm') {
+    return;
+  }
+
+  const data = res.data;
+
+  refStore.setTypeReference(targetRefId, data.id)
+  if (data.mode === 'create') {
+    openDataTypeDrawer(refTypeKind, 'create', data.id, data.instanceType)
+  }
+}
+
+
+/**
+ * This utility function that manages the workflow of adding a new type directly for an object reference. 
+ * Based on the DataTypeKind and the required instanceType, it opens the create new data type dialog, with the 
+ * required instance type already selected. For references that can take any instance the instance type will not be preselected.
+ * Open sucessfull creation, the details view for the new type is created and the newly create type is reference to the given 
+ * object refence (item id).
+ * @param refStore  ObjectReference Store
+ * @param itemId  item id of the item in the ObjectReferenceStore, where you want to assign a new type.
+ */
+export async function createAndAddReference(refStore: ObjectReferenceStore, itemId: string): Promise<void> {
+  const ref = get(refStore).find(i => i.name === itemId);
+    const refTypeKind = ref.meta.refTypeKind
+    const instance = ref.meta.objectType
+
+    if (refTypeKind === DataTypeKind.DOType) {
+
+      const result = await openDialog(NewDataObjectTypeDialog, {defaultInstance: instance})
+      if (result.type !== 'confirm') return;
+
+      refStore.setTypeReference(ref.name, result.data.id)
+      openDataObjectTypeDrawer('create', result.data.id, result.data.cdc);
+
+    } else if (refTypeKind === DataTypeKind.DAType) {
+      
+      const result = await openDialog(NewDataAttributeTypeDialog, {defaultInstance: instance})
+      if (result.type !== 'confirm') return;
+
+      refStore.setTypeReference(ref.name, result.data.id)
+      openDataAttributeTypeDrawer('create', result.data.id, result.data.instanceType);
+
+    } else if (refTypeKind === DataTypeKind.EnumType) {
+      const result = await openDialog(NewEnumTypeDialog, {defaultInstance: instance})
+      if (result.type !== 'confirm') return;
+
+      refStore.setTypeReference(ref.name, result.data.id)
+      openDataEnumTypeDrawer('create', result.data.id, result.data.instanceType);
+
+    } else {
+      console.warn("Could not add and create refernce for refTypeKind: ", refTypeKind)
+      return;
+    }
 }

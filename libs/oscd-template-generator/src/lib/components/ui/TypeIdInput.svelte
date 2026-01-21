@@ -5,7 +5,8 @@
   import HelperText from '@smui/textfield/helper-text';
   import TextField from '@smui/textfield';
   import { DataTypeKind, getDataTypeService } from '@oscd-transnet-plugins/oscd-template-generator';
-  import { onMount, tick } from 'svelte';
+  import { Icon } from '@smui/button';
+  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
   const dataTypeService = getDataTypeService();
 
@@ -18,6 +19,8 @@
     typeKind: DataTypeKind
     valid?: boolean
     showErrorsOnInput?: boolean;
+    // when generate new id button is clicked
+    onGenerateId?: () => void;
   }
 
   let {
@@ -26,7 +29,9 @@
     idLabel,
     typeKind,
 
-    showErrorsOnInput = false
+    showErrorsOnInput = false,
+
+    onGenerateId = () => {}
   }: Props = $props();
 
   let inputEl;
@@ -79,6 +84,19 @@
   input$maxlength={ID_MAX_LENGTH}
   onblur={() => typeIdTouched = true}
 >
+  {#snippet trailingIcon()}
+    <OscdTooltip content="Generate ID" placement="top" hoverDelay={200}>
+      <button
+        onclick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onGenerateId()
+        }}
+        style="all: unset; cursor: pointer;">
+        <Icon class="material-icons" }>autorenew</Icon>
+      </button>
+    </OscdTooltip>
+  {/snippet}
   {#snippet helper()}
     <HelperText validationMsg persitent>
       {#if !isTypeIdRequiredValid}

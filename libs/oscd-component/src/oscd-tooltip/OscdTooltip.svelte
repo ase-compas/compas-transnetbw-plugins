@@ -8,6 +8,7 @@
     hoverDelay?: number;
     transitionDuration?: number;
     children?: import('svelte').Snippet;
+    disabled: boolean;
   }
 
   let {
@@ -15,7 +16,8 @@
     side = "top",
     hoverDelay = 0,
     transitionDuration = 80,
-    children
+    children,
+    disabled = false
   }: Props = $props();
 
   const id = `tt-${Math.random().toString(36).slice(2)}`;
@@ -29,7 +31,7 @@
 
   // --- Hover / focus handlers ---
   function openTooltip() {
-    if (!content) return;
+    if (!content || disabled) return;
     if (hoverTimeout) clearTimeout(hoverTimeout);
     if (hoverDelay > 0) {
       hoverTimeout = setTimeout(() => (show = true), hoverDelay);
@@ -73,7 +75,7 @@
 
   // --- Position tooltip relative to trigger ---
   function updateTooltipPosition() {
-    if (!tooltipEl || !bubbleEl || !triggerEl) return;
+    if (!tooltipEl || !bubbleEl || !triggerEl || disabled) return;
     const rect = triggerEl.getBoundingClientRect();
     const tooltipRect = bubbleEl.getBoundingClientRect();
     let top = 0;
@@ -119,7 +121,7 @@
   onDestroy(destroyTooltip);
 
   $effect(() => {
-    if (!show || !content) {
+    if (!show || !content || disabled) {
       return;
     }
 
@@ -231,10 +233,10 @@
 <span
   bind:this={triggerEl}
   role="button"
+  aria-describedby={content && !disabled ? id : undefined}
   tabindex="0"
   aria-haspopup={content ? 'true' : undefined}
   aria-expanded={content ? (show ? 'true' : 'false') : undefined}
-  aria-describedby={content ? id : undefined}
   aria-labelledby="tooltip"
   onmouseenter={handleMouseEnter}
   onmouseleave={handleMouseLeave}

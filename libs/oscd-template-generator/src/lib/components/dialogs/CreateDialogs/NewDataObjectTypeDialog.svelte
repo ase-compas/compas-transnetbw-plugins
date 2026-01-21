@@ -7,9 +7,12 @@
   const service = getDOTypeService();
   interface Props {
     open?: boolean;
+
+    defaultTypeId?: string;
+    defaultInstance?: string;
   }
 
-  let { open = $bindable(false) }: Props = $props();
+  let { open = $bindable(false), defaultInstance, defaultTypeId }: Props = $props();
 
   const handleConfirm = (id: string, optionId: string) => {
     closeDialog('confirm', { id, cdc: optionId });
@@ -19,6 +22,8 @@
 
 <GenericCreateDialog
   bind:open
+  {defaultInstance}
+  {defaultTypeId}
   dialogTitle="Create New Data Object Type"
   confirmText="Next"
   idLabel="ID"

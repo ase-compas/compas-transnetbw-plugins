@@ -1,1 +1,1 @@
-export * from './drawerStackStore';
+export * from './drawerStackStore.svelte';
