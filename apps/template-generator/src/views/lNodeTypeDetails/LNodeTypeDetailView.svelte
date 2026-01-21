@@ -48,6 +48,7 @@
   import { createBreadcrumbs } from './lNodeTypeDetailsUtils';
   import { onMount } from 'svelte';
   import { setHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
+  import { get } from 'svelte/store';
 
   // -----------------------------
   // Service instances
@@ -131,8 +132,16 @@
   // -----------------------------
   // Event Handlers
   // -----------------------------
-  function handleToggleMark(itemId: string) {
-    refStore.toggleMarked(itemId);
+  function handleToggleMark(itemId: string, columnId: string) {
+    if (columnId === 'refs') {
+      refStore.toggleMarked(itemId);
+      return;
+    }
+
+    const currentMarkedItem = get(refStore.markedItem);
+    if (currentMarkedItem) {
+      refStore.setTypeReference(currentMarkedItem.name, itemId);
+    }
   }
 
   function handleToggleSelect({ itemId }) {
@@ -265,7 +274,7 @@
      loadLogicalNodeType(lNodeTypeId, lnClass)
    }
   }
-  
+
   async function handleAddReference({itemId}) {
     setHomeTitle(`[LN] ${lNodeTypeId}`);
     assignOrCreateReference(
@@ -334,7 +343,7 @@
         disabled={!$isSavable} callback={() => editorStore.save()} variant="unelevated">
         SAVE CHANGES
       </OscdButton>
-      
+
       {#if $dirty}
         <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
           <SetDefaultButton onClick={() => handleClickOnSetAsDefault()} disabled={$dirty}/>
@@ -361,7 +370,7 @@
       onColumnActionClick={e => handleActionClick(e)}
       onItemEdit={({itemId, columnId}) => handleOnEdit(itemId, columnId)}
       onItemMarkChange={({itemId}) => handleToggleMark(itemId)}
-      onItemClick={({itemId}) => handleToggleMark(itemId)}
+      onItemClick={({itemId, columnId}) => handleToggleMark(itemId, columnId)}
       onItemSelectChange={e => handleToggleSelect(e)}
       onItemDrop={e => handleItemDrop(e)}
       onItemApplyDefaults={e => handleApplyDefaults(e)}

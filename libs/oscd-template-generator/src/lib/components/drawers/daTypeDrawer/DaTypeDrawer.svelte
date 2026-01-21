@@ -52,6 +52,7 @@
   } from '../../../services';
   import TypeHeader from '../../TypeHeader.svelte';
   import { createEditorStore } from '../../../stores';
+  import { get } from 'svelte/store';
 
   // ===== Services =====
   const daTypeService: IDaTypeService = getDATypeService();
@@ -152,9 +153,18 @@
   }
 
   // ===== Event Handlers =====
-  function handleOnMark({ itemId }) {
-    refStore.toggleMarked(itemId);
+  function handleToggleMark(itemId: string, columnId: string) {
+    if (columnId === 'refs') {
+      refStore.toggleMarked(itemId);
+      return;
+    }
+
+    const currentMarkedItem = get(refStore.markedItem);
+    if (currentMarkedItem) {
+      refStore.setTypeReference(currentMarkedItem.name, itemId);
+    }
   }
+
 
   function handleOnSelect({ itemId }) {
     refStore.toggleConfigured(itemId);
@@ -322,8 +332,7 @@
 <TBoard
   {columns}
   data={boardData}
-  onItemClick={(e) => handleOnMark(e)}
-  onItemMarkChange={e => handleOnMark(e)}
+  onItemClick={({itemId, columnId}) => handleToggleMark(itemId, columnId)}
   onItemSelectChange={e => handleOnSelect(e)}
   onItemDrop={e => handleItemDrop(e)}
   onColumnActionClick={e => handleActionClick(e)}
