@@ -13,7 +13,6 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
-  import { validations } from '../../features/plugins/validation/stores.svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 

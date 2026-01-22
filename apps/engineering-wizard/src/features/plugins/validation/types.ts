@@ -1,7 +1,12 @@
+export type ValidationSeverity = 'error' | 'warning' | 'info';
+
 export type ValidationEntry = {
-  name: string;
-  description?: string;
-  xml: string;
+  severity: ValidationSeverity;
+  title: string;
+  context: string;
+  assert: string;
+  message: string;
+
   processId: string;
   pluginId: string;
 };

@@ -20,21 +20,18 @@
     process
   }: Props = $props();
 
-  let name = $state<string>('');
-  let xml = $state<string>('');
-
-  let valid = $derived(Boolean(name.trim()) && Boolean(xml.trim()));
+  let validationEntry = $state<ValidationEntry>({
+    severity: 'error',
+    title: '',
+    context: '',
+    assert: '',
+    processId: process.id,
+    pluginId: plugin.id
+  } as ValidationEntry);
 
   const cancel = () => closeDialog('cancel');
 
   function saveValidation() {
-    const validationEntry: ValidationEntry = {
-      name: name.trim(),
-      description: undefined,
-      xml: xml.trim(),
-      pluginId: plugin.id,
-      processId: process.id
-    }
     addValidationEntry(validationEntry);
 
     closeDialog('confirm', validationEntry);
@@ -51,7 +48,6 @@
   onConfirm={saveValidation}
   onCancel={cancel}
   onClose={cancel}
-  confirmDisabled={!valid}
 >
   {#snippet content()}
     <div class="add-validation-form">
@@ -59,13 +55,19 @@
         label="Name"
         placeholder="{plugin.name} Validation"
         variant="outlined"
-        bind:value={name}
+        bind:value={validationEntry.title}
         required
       />
 
-      <Textfield textarea bind:value={xml} label="XML">
+      <Textfield textarea bind:value={validationEntry.context} label="Context">
         {#snippet helper()}
-          <HelperText>Validation XML</HelperText>
+          <HelperText>Context</HelperText>
+        {/snippet}
+      </Textfield>
+
+      <Textfield textarea bind:value={validationEntry.assert} label="assertion XML">
+        {#snippet helper()}
+          <HelperText>Assert</HelperText>
         {/snippet}
       </Textfield>
     </div>
