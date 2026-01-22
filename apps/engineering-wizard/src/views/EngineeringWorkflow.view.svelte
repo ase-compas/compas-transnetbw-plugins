@@ -58,6 +58,7 @@
 
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
+  let hasInitialized = $state(false);
 
   function findGroupAndPluginIndexById(id: string): {
     groupIndex: number | null;
@@ -121,6 +122,22 @@
       },
     };
   }
+
+  $effect(() => {
+    if (hasInitialized) return;
+    if (!plugins.length) return;
+
+    const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
+    const lastId = xmlState.lastPluginId || runningEngineeringProcess.lastSelectedPluginId;
+
+    let target: ViewPlugin | undefined;
+    if (lastId) target = plugins.find((p) => p.id === lastId);
+    if (!target) target = plugins[0];
+    if (!target) return;
+
+    hasInitialized = true;
+    void onSelectPlugin(target);
+  });
 
   onMount(() => {
     if (plugins.length) {
