@@ -159,6 +159,11 @@
 
   let filterDefinitions: FilterDefinition[] = $state([
     {
+      key: "uuid",
+      label: "UUID",
+      type: "text",
+    },
+    {
       key: "type",
       label: "Type",
       type: "select",
