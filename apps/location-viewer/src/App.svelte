@@ -136,18 +136,36 @@
 
     // Map filter values to searchParams
     filters.forEach((filter) => {
-      if (filter.key in searchParams && filter.type !== 'date' && filter.value) {
-        searchParams[filter.key as keyof SearchParams] = filter.value;
-      } else if (filter.type === 'date' && filter.value) {
-        const dateValue = new Date(filter.value);
-        if (filter.key === 'from') {
-          searchParams.from = dateValue.toISOString();
-        } else if (filter.key === 'to') {
-          // set to end of day
-          dateValue.setHours(23, 59, 59, 999);
-          searchParams.to = dateValue.toISOString();
-        }
+      if (!filter.value) return;
+
+      // Special case: location
+      if (filter.key === 'location') {
+        const location = locations.find(l => l.value === filter.value);
+        searchParams.location = location.label;
+        return;
       }
+
+      // Date filters
+      if (filter.type === 'date') {
+        const date = new Date(filter.value);
+
+        if (filter.key === 'from') {
+          searchParams.from = date.toISOString();
+        }
+
+        if (filter.key === 'to') {
+          date.setHours(23, 59, 59, 999);
+          searchParams.to = date.toISOString();
+        }
+
+        return;
+      }
+
+      // Normal filters
+      if (filter.key in searchParams) {
+        searchParams[filter.key as keyof SearchParams] = filter.value;
+      }
+
     });
 
     // Include searchText in filename search
