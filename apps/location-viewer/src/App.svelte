@@ -138,13 +138,6 @@
     filters.forEach((filter) => {
       if (!filter.value) return;
 
-      // Special case: location
-      if (filter.key === 'location') {
-        const location = locations.find(l => l.value === filter.value);
-        searchParams.location = location.label;
-        return;
-      }
-
       // Date filters
       if (filter.type === 'date') {
         const date = new Date(filter.value);
