@@ -9,7 +9,7 @@
   });
 </script>
 <script lang="ts">
-  import { OscdFilterBuilder, OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
   import {
     LocationViewerService,
     ResourceStore,
@@ -136,9 +136,36 @@
 
     // Map filter values to searchParams
     filters.forEach((filter) => {
-      if (filter.value && filter.key in searchParams) {
-        searchParams[filter.key] = filter.value;
+      if (!filter.value) return;
+
+      // Special case: location
+      if (filter.key === 'location') {
+        const location = locations.find(l => l.value === filter.value);
+        searchParams.location = location.label;
+        return;
       }
+
+      // Date filters
+      if (filter.type === 'date') {
+        const date = new Date(filter.value);
+
+        if (filter.key === 'from') {
+          searchParams.from = date.toISOString();
+        }
+
+        if (filter.key === 'to') {
+          date.setHours(23, 59, 59, 999);
+          searchParams.to = date.toISOString();
+        }
+
+        return;
+      }
+
+      // Normal filters
+      if (filter.key in searchParams) {
+        searchParams[filter.key as keyof SearchParams] = filter.value;
+      }
+
     });
 
     // Include searchText in filename search
