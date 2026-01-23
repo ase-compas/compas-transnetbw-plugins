@@ -225,7 +225,6 @@
 
     const subscription = locationViewerService.searchResources({}).subscribe({
       next: (data) => {
-        console.log({ data, selectedLocation: selectedLocationUUID });
         locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
       },
       error: (err) => {
