@@ -9,7 +9,7 @@
   });
 </script>
 <script lang="ts">
-  import { OscdFilterBuilder, OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
   import {
     LocationViewerService,
     ResourceStore,
@@ -136,8 +136,17 @@
 
     // Map filter values to searchParams
     filters.forEach((filter) => {
-      if (filter.value && filter.key in searchParams) {
-        searchParams[filter.key] = filter.value;
+      if (filter.key in searchParams && filter.type !== 'date' && filter.value) {
+        searchParams[filter.key as keyof SearchParams] = filter.value;
+      } else if (filter.type === 'date' && filter.value) {
+        const dateValue = new Date(filter.value);
+        if (filter.key === 'from') {
+          searchParams.from = dateValue.toISOString();
+        } else if (filter.key === 'to') {
+          // set to end of day
+          dateValue.setHours(23, 59, 59, 999);
+          searchParams.to = dateValue.toISOString();
+        }
       }
     });
 

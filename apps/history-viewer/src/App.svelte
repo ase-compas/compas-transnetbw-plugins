@@ -14,7 +14,6 @@
     OscdDataTable,
     OscdDialog,
     OscdFilterTab,
-    OscdLoadingSpinner
   } from '@oscd-transnet-plugins/oscd-component';
   import { Subject } from 'rxjs';
   import { catchError, finalize, switchMap, take, tap, debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
@@ -75,19 +74,9 @@
   let dialogOpen = $state(false);
   let searchText = $state('');
 
-  //loading quickfix for css to load
-  let loading = $state(true);
-
   onMount(() => {
     const sub = search$.subscribe();
-
-
-    setTimeout(() => {
-      loading = false;
-      // initial search
-      searchTrigger$.next();
-    }, 1000)
-
+    searchTrigger$.next();
     return () => sub.unsubscribe();
   });
 
@@ -228,8 +217,17 @@
 
     // Map filter values to searchParams
     filters.forEach((filter) => {
-      if (filter.value && filter.key in searchParams) {
-        searchParams[filter.key] = filter.value;
+      if (filter.key in searchParams && filter.type !== 'date' && filter.value) {
+        searchParams[filter.key as keyof SearchParams] = filter.value;
+      } else if (filter.type === 'date' && filter.value) {
+        const dateValue = new Date(filter.value);
+        if (filter.key === 'from') {
+          searchParams.from = dateValue.toISOString();
+        } else if (filter.key === 'to') {
+          // set to end of day
+          dateValue.setHours(23, 59, 59, 999);
+          searchParams.to = dateValue.toISOString();
+        }
       }
     });
 
@@ -307,10 +305,6 @@
 </script>
 
 <div class="oscd-app">
-
-{#if loading}
-  <OscdLoadingSpinner loadingDone={!loading} />
-{:else}
   <div class="version-editor-container">
     <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
       {#snippet title()}
@@ -352,7 +346,6 @@
                      searchInputLabel={$_('search')}/>
     </div>
   </div>
-{/if}
 </div>
 <style lang="css" global>
   .version-editor-container {
