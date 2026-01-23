@@ -9,6 +9,7 @@
   });
 </script>
 <script lang="ts">
+  import { OscdFilterBuilder, OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
   import {
     LocationViewerService,
     ResourceStore,
@@ -17,17 +18,17 @@
   import type { SearchParams } from '@oscd-transnet-plugins/oscd-location-viewer';
   import { onMount } from 'svelte';
   import {
-    OscdDataTable,
-    OscdLoadingSpinner,
+    OscdDataTable
   } from '@oscd-transnet-plugins/oscd-component';
-  import type { ActiveFilter } from '@oscd-transnet-plugins/oscd-component';
-  import { take, tap } from 'rxjs/operators';
   import { _ } from 'svelte-i18n';
   import 'svelte-material-ui/bare.css';
   import '../public/material-icon.css';
   import '../public/global.css';
   import '../public/smui.css';
   import LocationCell from './LocationCell.svelte';
+  import type { FilterDefinition } from '../../../libs/oscd-component/src/oscd-filter-builder/types';
+  import { Subject } from 'rxjs';
+  import { tap, finalize, switchMap, debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = $state([]);
@@ -35,21 +36,79 @@
 
   //loading quickfix for css to load
   let loading = $state(true);
+  let searchText = $state('');
+
+  const searchTrigger$ = new Subject<void>();
+  const search$ = searchTrigger$.pipe(
+    debounceTime(150),
+    map(() => convertFilterToSearchParams(filterDefinitions)),
+    distinctUntilChanged(
+      (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    ),
+    tap(() => {
+      loading = true;
+    }),
+    switchMap(searchParams =>
+      locationViewerService.searchResources(searchParams).pipe(
+        tap((data: SclResourceModel[]) => {
+          searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
+        }),
+        finalize(() => {
+          loading = false;
+        })
+      )
+    )
+  );
 
   onMount(() => {
-    setTimeout(() => {
-      loading = false;
-    }, 200);
-  });
-
-  onMount(() => {
+    const sub = search$.subscribe();
     locationViewerService.getLocations().subscribe({
       next: (data) => {
         locations = data.map((item) => ({ label: item.name, value: item.uuid }));
+        filterDefinitions = filterDefinitions.map(f => f.key === 'location' ? { ...f, options: locations } : f); // populate location filter options
       }
     });
-    search();
+    searchTrigger$.next();
+    return () => sub.unsubscribe();
   });
+
+  let filterDefinitions: FilterDefinition[] = $state([
+    {
+      key: "type",
+      label: "Type",
+      type: "select",
+      options: [
+        { value: 'SSD', label: 'SSD' },
+        { value: 'IID', label: 'IID' },
+        { value: 'ICD', label: 'ICD' },
+        { value: 'SCD', label: 'SCD' },
+        { value: 'CID', label: 'CID' },
+        { value: 'SED', label: 'SED' },
+        { value: 'ISD', label: 'ISD' },
+        { value: 'STD', label: 'STD' }
+      ]
+    },
+    {
+      key: "author",
+      label: "Author",
+      type: "text"
+    },
+    {
+      key: "from",
+      label: "Date from",
+      type: "date"
+    },
+    {
+      key: "to",
+      label: "Date to",
+      type: "date"
+    },
+    {
+      key: "location",
+      label: "Location",
+      type: "select",
+    }
+  ]);
 
   // Resource stores for the two tables
   const locationResourceStore = new ResourceStore();
@@ -64,20 +123,7 @@
     return locations.find(l => l.value === uuid)?.label ?? uuid;
   }
 
-
-  let filtersToSearch: ActiveFilter[] = $state([]);
-
-  function search() {
-    const searchParams = convertFilterToSearchParams(filtersToSearch);
-    locationViewerService.searchResources(searchParams).pipe(
-      take(1),
-      tap((data: SclResourceModel[]) => {
-        searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
-      })
-    ).subscribe();
-  }
-
-  function convertFilterToSearchParams(filters: ActiveFilter[]): SearchParams {
+  function convertFilterToSearchParams(filters: FilterDefinition[]): SearchParams {
     const searchParams: SearchParams = {
       uuid: null,
       type: null,
@@ -87,15 +133,19 @@
       from: null,
       to: null
     };
-    console.log('Convert filter to search params: ', filters);
+
+    // Map filter values to searchParams
     filters.forEach((filter) => {
-      console.log('KEY:', filter.key);
-      if (filter.key === 'from' || filter.key === 'to') {
-        searchParams[filter.key] = new Date(filter.value).toISOString();
-      } else {
+      if (filter.value && filter.key in searchParams) {
         searchParams[filter.key] = filter.value;
       }
     });
+
+    // Include searchText in filename search
+    if (searchText && searchText.trim() !== '') {
+      searchParams.name = searchText.trim();
+    }
+
     return searchParams;
   }
 
@@ -131,7 +181,7 @@
     obs.subscribe({
       next: () => {
         // refresh search to keep in sync
-        search();
+        searchTrigger$.next();
       },
       error: () => {
         // revert on error
@@ -149,14 +199,14 @@
   }
 
   let searchColumnDefs = $derived([
-    { headerName: $_('name'), field: 'name', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('name'), field: 'name', numeric: false, filter: false, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: false, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: false, filterType: 'text', sortable: true },
     {
       headerName: $_('location'),
       field: 'location',
       numeric: false,
-      filter: true,
+      filter: false,
       filterType: 'text',
       sortable: true,
       cellRenderer: LocationCell,
@@ -164,8 +214,8 @@
 
       filterValueGetter: (row: SclResourceModel) => formatLocation(row.location)
     },
-    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: true, filterType: 'text', sortable: true, valueFormatter: formatDate },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: false, filterType: 'text', sortable: true },
+    { headerName: $_('changed_at'), field: 'changedAt', numeric: false, filter: false, filterType: 'text', sortable: true, valueFormatter: formatDate },
   ]);
 
   $effect(() => {
@@ -175,7 +225,6 @@
 
     const subscription = locationViewerService.searchResources({}).subscribe({
       next: (data) => {
-        console.log({ data, selectedLocation: selectedLocationUUID });
         locationResourceStore.set(data.filter((item) => item.location === selectedLocationUUID));
       },
       error: (err) => {
@@ -187,23 +236,25 @@
   });
 </script>
 
-{#if loading}
-  <OscdLoadingSpinner loadingDone={!loading} />
-{:else}
-  <div class="app-container">
-    <h3 style="margin-bottom: 1rem;">{$_('search_result')}</h3>
-    <OscdDataTable columnDefs={searchColumnDefs}
-                   store={searchResourceStore}
-                   searchInputLabel={$_('search')} />
-  </div>
-{/if}
+<div class="app-container">
+  <OscdFilterTab
+    bind:filters={filterDefinitions}
+    bind:searchText={searchText}
+    searchLabel="Search name..."
+    onFilterChange={() => searchTrigger$.next(null)}
+    onSearchInput={() => searchTrigger$.next(null)}
+  />
+  <OscdDataTable columnDefs={searchColumnDefs}
+                 loadingDone={!loading}
+                 store={searchResourceStore}
+                 searchInputLabel={$_('search')} />
+</div>
 
 <style>
   .app-container {
     padding: 2rem;
-  }
-
-  h3 {
-    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
   }
 </style>

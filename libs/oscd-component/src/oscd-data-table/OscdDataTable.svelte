@@ -30,30 +30,32 @@
         </Cell>
       {/each}
     </Row>
-    <Row class="header-filter-row">
-      {#each columnDefs as col}
-        <Cell>
-            {#if col.filter}
-              {#if col.filterType === 'text'}
-                <input
-                  type="text"
-                  placeholder={`${searchInputLabel} ${col.headerName}`}
-                  bind:value={filters[col.field]}
-                  oninput={() => filterAndSortTable()}
-                />
+    {#if hasFilters }
+      <Row class="header-filter-row">
+        {#each columnDefs as col}
+          <Cell>
+              {#if col.filter}
+                {#if col.filterType === 'text'}
+                  <input
+                    type="text"
+                    placeholder={`${searchInputLabel} ${col.headerName}`}
+                    bind:value={filters[col.field]}
+                    oninput={() => filterAndSortTable()}
+                  />
+                {/if}
+                {#if col.filterType === 'number'}
+                  <input
+                    type="number"
+                    placeholder={`${searchInputLabel} ${col.headerName}`}
+                    bind:value={filters[col.field]}
+                    oninput={() => filterAndSortTable()}
+                  />
+                {/if}
               {/if}
-              {#if col.filterType === 'number'}
-                <input
-                  type="number"
-                  placeholder={`${searchInputLabel} ${col.headerName}`}
-                  bind:value={filters[col.field]}
-                  oninput={() => filterAndSortTable()}
-                />
-              {/if}
-            {/if}
-        </Cell>
-      {/each}
-    </Row>
+          </Cell>
+        {/each}
+      </Row>
+    {/if}
   </Head>
 
   <Body>
@@ -175,6 +177,7 @@
   let filteredData = writable<any[]>([]);
   let sortColumn = writable<string | null>(null);
   let sortDirection = writable<string | null>(null);  // Null bedeutet keine Sortierung
+  let hasFilters = $derived(columnDefs.some(col => col.filter));
 
   store.store.subscribe(data => {
     rowData = [...data];
@@ -257,13 +260,12 @@
     flex-direction: column;
   }
 
-
-  :global(.mdc-data-table__header-row.header-title-row .mdc-data-table__header-cell) {
-    border-bottom: none !important;
+  :global(.mdc-data-table .mdc-data-table__header-cell) {
+    background: rgba(0,0,0,0.1);
   }
 
-  :global(.mdc-data-table__header-row.header-title-row) {
-    height: 0;
+  :global(.mdc-data-table__content .mdc-data-table__cell) {
+    background: white;
   }
 
   /*
