@@ -6,11 +6,12 @@
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
   import WorkflowActions from '../components/shared/WorkflowActions.svelte';  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
   import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
-  import { writeEngineeringWorkflowState } from '../features/workflow/document-state';
+  import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { editorTabs } from '../features/workflow/layout.svelte';
   import {validateXPath } from '../features/plugins/validation/validatePluginXML.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { runningEngineeringProcess } from '../features/processes/stores.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -121,6 +122,22 @@
 
   onMount(() => {
     if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
+
+    let initialPluginId: string | null = runningEngineeringProcess.lastSelectedPluginId;
+    if (!initialPluginId && doc) {
+      try {
+        const { lastPluginId } = readEngineeringWorkflowState(doc);
+        initialPluginId = lastPluginId;
+      } catch {}
+    }
+
+    const initialPlugin = plugins.find(p => p.id === initialPluginId) ?? plugins[0];
+    if (initialPlugin) {
+      const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(initialPlugin.id);
+      selectedGroupIndex = groupIndex;
+      selectedPluginIndex = pluginIndex;
+      void onSelectPlugin(initialPlugin);
+    }
 
     editorTabs.visible = false;
     return () => {
