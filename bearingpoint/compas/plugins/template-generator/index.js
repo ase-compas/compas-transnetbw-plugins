@@ -15470,7 +15470,6 @@ function HC(n, e) {
           var N = J(f);
           Qd(N, {
             class: "material-icons",
-            "}": !0,
             children: (B, R) => {
               var F = xe("autorenew");
               h(B, F);
