@@ -4,9 +4,7 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
-  import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
-  import { addValidationEntry } from '../../mutations.svelte';
-  import type { ValidationEntry } from '../../types';
+  import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
 
   interface Props {
     open: boolean;
@@ -14,29 +12,35 @@
     process: Process;
   }
 
-  let {
-    open = $bindable(false),
-    plugin,
-    process
-  }: Props = $props();
+  let { open = $bindable(false), plugin, process }: Props = $props();
 
-  let validationEntry = $state<ValidationEntry>({
+  let validationEntry = $state<XPathValidation>({
     severity: 'error',
     title: '',
     context: '',
     assert: '',
+    message: '',
     processId: process.id,
-    pluginId: plugin.id
-  } as ValidationEntry);
+    pluginId: plugin.id,
+  });
 
-  const cancel = () => closeDialog('cancel');
+  const isValid = $derived.by(() =>
+    !!validationEntry.title?.trim() && !!validationEntry.assert?.trim()
+  );
 
   function saveValidation() {
-    addValidationEntry(validationEntry);
-
-    closeDialog('confirm', validationEntry);
+    closeDialog('confirm', {
+      ...validationEntry,
+      title: validationEntry.title.trim(),
+      context: validationEntry.context ?? '',
+      assert: validationEntry.assert.trim(),
+      message: (validationEntry.message ?? '').trim(),
+    });
   }
 
+  function cancel() {
+    closeDialog('cancel');
+  }
 </script>
 
 <OscdBaseDialog
@@ -48,6 +52,7 @@
   onConfirm={saveValidation}
   onCancel={cancel}
   onClose={cancel}
+  confirmDisabled={!isValid}
 >
   {#snippet content()}
     <div class="add-validation-form">

@@ -2,17 +2,22 @@
   import WorkflowTitle from '../../components/shared/WorkflowTitle.svelte';
   import ProcessDetailStepper from '../../features/processes/components/steppers/ProcessDetailStepper.svelte';
   import WorkflowActions from '../../components/shared/WorkflowActions.svelte';
-  import { engineeringProcessEditing, selectedEngineeringProcess } from '../../features/processes/stores.svelte';
+  import {
+    engineeringProcessEditing,
+    engineeringProcesses,
+    selectedEngineeringProcess
+  } from '../../features/processes/stores.svelte';
   import { editorTabs } from '../../features/workflow/layout.svelte';
   import Button from '@smui/button';
   import ProcessValidationView from './ProcessValidation.view.svelte';
   import ProcessDefinitionView from './ProcessDefinition.view.svelte';
   import PluginGroupsStepper from '../../components/shared/PluginGroupsStepper.svelte';
-  import type { Plugin } from '@oscd-transnet-plugins/shared';
   import type { EditorStepIds } from '../../features/processes/editor/types';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
+  import { addValidationToPluginInProcess } from '../../features/processes/mutations.svelte';
+  import type { Plugin } from '@oscd-transnet-plugins/shared';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -22,12 +27,22 @@
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
   let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
-  let selectedPlugin: Plugin | null = $state(null);
+  let selectedPluginId: string | null = $state(null);
 
   let visitedSteps: EditorStepIds[] = $state([]);
 
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
+
+  let selectedPlugin = $derived.by(() => {
+    const proc = selectedEngineeringProcess.process;
+    const id = selectedPluginId;
+    if (!proc || !id) return null;
+
+    return proc.pluginGroups
+      ?.flatMap((g) => g.plugins ?? [])
+      .find((p) => p.id === id) ?? null;
+  });
 
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
@@ -62,12 +77,22 @@
   }
 
   function onSelectPlugin(plugin: Plugin) {
-    selectedPlugin = plugin;
+    selectedPluginId = plugin.id;
   }
 
   async function handleAddValidationClick() {
-    if (!selectedPlugin || !selectedEngineeringProcess.process) return;
-    await openDialog(AddNewValidationDialog, { plugin: selectedPlugin, process: selectedEngineeringProcess.process });
+    const proc = selectedEngineeringProcess.process;
+    const pl = selectedPlugin;
+    if (!pl || !proc) return;
+
+    const result = await openDialog(AddNewValidationDialog, { plugin: pl, process: proc });
+
+    if (result?.type === 'confirm') {
+      addValidationToPluginInProcess(proc.id, pl.id, result.data);
+
+      selectedEngineeringProcess.process =
+        engineeringProcesses.processes?.find((p) => p.id === proc.id) ?? null;
+    }
   }
 
 </script>

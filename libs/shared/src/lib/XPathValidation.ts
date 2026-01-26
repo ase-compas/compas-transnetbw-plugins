@@ -1,11 +1,11 @@
-export type ValidationSeverity = 'error' | 'warning' | 'info';
+export type ValidationSeverity = 'info' | 'warning' | 'error';
 
-export type ValidationEntry = {
+export type XPathValidation = {
   severity: ValidationSeverity;
   title: string;
   context: string;
   assert: string;
-  message: string;
+  message?: string;
 
   processId: string;
   pluginId: string;

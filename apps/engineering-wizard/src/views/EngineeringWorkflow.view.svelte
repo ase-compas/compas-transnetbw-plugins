@@ -4,15 +4,12 @@
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
   import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
-  import WorkflowActions from '../components/shared/WorkflowActions.svelte';
-  import { runningEngineeringProcess, selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import WorkflowActions from '../components/shared/WorkflowActions.svelte';  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
   import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
-  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../features/workflow/document-state';
+  import { writeEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { editorTabs } from '../features/workflow/layout.svelte';
-
-  type Status = 'check' | 'warning' | 'error';
-  const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
+  import {validateXPath } from '../features/plugins/validation/validatePluginXML.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -42,43 +39,51 @@
     onExit,
   }: Props = $props();
 
-  let selectedPlugin = $state<{ plugin: ViewPlugin | null }>({ plugin: null });
-  let visited: string[] = $state([]);
-  let pluginStatus: Record<string, Status> = $state({});
+  let selectedPlugin: ViewPlugin | null = $state(null);
 
   let hasPlugins = $derived(plugins.length > 0);
 
   let currentIndex = $derived(
-    selectedPlugin.plugin && hasPlugins
-      ? plugins.findIndex((p) => p.id === selectedPlugin.plugin!.id)
-      : -1,
+    selectedPlugin && hasPlugins ? plugins.findIndex((p) => p.id === selectedPlugin!.id) : -1,
   );
 
   let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
 
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
-  let hasInitialized = $state(false);
 
-  function findGroupAndPluginIndexById(id: string): {
-    groupIndex: number | null;
-    pluginIndex: number | null;
-  } {
+  function findGroupAndPluginIndexById(id: string): { groupIndex: number | null; pluginIndex: number | null } {
     if (!pluginGroups?.length) return { groupIndex: null, pluginIndex: null };
-    for (let gi = 0; gi < pluginGroups.length; gi++) {
-      const group = pluginGroups[gi];
-      const pi = group.plugins?.findIndex((plg) => plg.id === id) ?? -1;
-      if (pi >= 0) return { groupIndex: gi, pluginIndex: pi };
+
+    for (let groupIndex = 0; groupIndex < pluginGroups.length; groupIndex++) {
+      const group = pluginGroups[groupIndex];
+      const pluginIndex = group.plugins?.findIndex((plg) => plg.id === id) ?? -1;
+      if (pluginIndex >= 0) return { groupIndex, pluginIndex };
     }
+
     return { groupIndex: null, pluginIndex: null };
   }
 
   async function onSelectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
 
+    const previous = selectedPlugin;
+    console.log(previous);
+    if (doc && previous?.validations?.length) {
+      const results = validateXPath(doc, previous.validations);
+
+      results.forEach(r => {
+        const prefix = r.ok ? 'PASS' : 'FAIL';
+        const log = `[VALIDATION ${prefix}] ${previous.name} — ${r.validation.title}: ${r.details ?? ''}`;
+
+        if (r.ok) console.info(log);
+        else console.error(log);
+      });
+    }
+
     await ensureCustomElementDefined(plugin);
 
-    selectedPlugin.plugin = plugin;
+    selectedPlugin = plugin;
 
     const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
     selectedGroupIndex = groupIndex;
@@ -86,19 +91,9 @@
 
     try {
       if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
-    } catch (e) { }
+    } catch {}
 
     setLastSelectedPluginId(plugin.id);
-
-    if (!visited.includes(plugin.id)) {
-      visited = [...visited, plugin.id];
-
-      const index = plugins.findIndex((p) => p.id === plugin.id);
-      if (index !== -1) {
-        const status = STATUSES[index % STATUSES.length];
-        pluginStatus = { ...pluginStatus, [plugin.id]: status };
-      }
-    }
   }
 
   function advance(step: number) {
@@ -123,26 +118,8 @@
     };
   }
 
-  $effect(() => {
-    if (hasInitialized) return;
-    if (!plugins.length) return;
-
-    const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
-    const lastId = xmlState.lastPluginId || runningEngineeringProcess.lastSelectedPluginId;
-
-    let target: ViewPlugin | undefined;
-    if (lastId) target = plugins.find((p) => p.id === lastId);
-    if (!target) target = plugins[0];
-    if (!target) return;
-
-    hasInitialized = true;
-    void onSelectPlugin(target);
-  });
-
   onMount(() => {
-    if (plugins.length) {
-      preloadAllPlugins(plugins).catch(console.error);
-    }
+    if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
 
     editorTabs.visible = false;
     return () => {
@@ -157,7 +134,7 @@
 </script>
 
 <div class="stepper">
-  <WorkflowTitle onClick={exitWorkflow}/>
+  <WorkflowTitle onClick={exitWorkflow} />
 
   <PluginGroupsStepper
     selectPlugin={onSelectPlugin}
@@ -172,17 +149,16 @@
     onGoToPreviousStep={previousPlugin}
     onGoToNextStep={nextPlugin}
     onDone={exitWorkflow}
-
     isAtFirstStep={!hasPlugins}
     isAtLastStep={!hasPlugins}
   />
 </div>
 
-{#if selectedPlugin.plugin}
+{#if selectedPlugin}
   <div class="plugin-container">
-    {#if selectedPlugin.plugin.type === 'internal'}
+    {#if selectedPlugin.type === 'internal'}
       <PluginHost
-        plugin={selectedPlugin.plugin}
+        plugin={selectedPlugin}
         doc={doc}
         {editCount}
         {plugins}
@@ -195,7 +171,7 @@
       />
     {:else}
       <svelte:element
-        this={selectedPlugin.plugin.id}
+        this={selectedPlugin.id}
         use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
       />
     {/if}
