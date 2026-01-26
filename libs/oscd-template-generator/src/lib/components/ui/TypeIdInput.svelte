@@ -93,7 +93,7 @@
           onGenerateId()
         }}
         style="all: unset; cursor: pointer;">
-        <Icon class="material-icons" }>autorenew</Icon>
+        <Icon class="material-icons">autorenew</Icon>
       </button>
     </OscdTooltip>
   {/snippet}
