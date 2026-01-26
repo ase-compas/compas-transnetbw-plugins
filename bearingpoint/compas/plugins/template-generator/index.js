@@ -19041,7 +19041,7 @@ function gE(n, e, t) {
     canMark: !1,
     canClick: !0,
     canSelect: e,
-    canUnlink: e && !!n.typeRef && !n.meta.isMandatory,
+    canUnlink: e && !!n.typeRef,
     canApplyDefaults: e && n.meta.requiresReference,
     referencable: n.meta.requiresReference,
     acceptDrop: t ? (r) => t(r, n) : void 0
