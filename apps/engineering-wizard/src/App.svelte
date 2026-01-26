@@ -7,7 +7,7 @@
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import { loadEngineeringProcesses } from './features/processes/repository.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './features/workflow/document-state';
   import {
@@ -149,3 +149,4 @@
     docName={docName}
   />
 {/if}
+<OscdToastHost />

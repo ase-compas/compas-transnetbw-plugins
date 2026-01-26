@@ -75,6 +75,12 @@
           <HelperText>Assert</HelperText>
         {/snippet}
       </Textfield>
+
+      <Textfield textarea bind:value={validationEntry.message} label="Message">
+        {#snippet helper()}
+          <HelperText>Message</HelperText>
+        {/snippet}
+      </Textfield>
     </div>
   {/snippet}
 </OscdBaseDialog>

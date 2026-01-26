@@ -10,6 +10,7 @@
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { editorTabs } from '../features/workflow/layout.svelte';
   import {validateXPath } from '../features/plugins/validation/validatePluginXML.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -67,22 +68,22 @@
   async function onSelectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
 
+    if (selectedPlugin?.id === plugin.id) return;
+
     const previous = selectedPlugin;
-    console.log(previous);
     if (doc && previous?.validations?.length) {
       const results = validateXPath(doc, previous.validations);
 
       results.forEach(r => {
-        const prefix = r.ok ? 'PASS' : 'FAIL';
-        const log = `[VALIDATION ${prefix}] ${previous.name} — ${r.validation.title}: ${r.details ?? ''}`;
-
-        if (r.ok) console.info(log);
-        else console.error(log);
+        if(r.ok) {
+          toastService.success("Validation passed", r.validation.title)
+        } else {
+          toastService.error("Validation failed ", r.validation.message);
+        }
       });
     }
 
     await ensureCustomElementDefined(plugin);
-
     selectedPlugin = plugin;
 
     const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);

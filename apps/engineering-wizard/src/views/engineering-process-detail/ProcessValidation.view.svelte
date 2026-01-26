@@ -36,12 +36,6 @@
           <div class="validation-xml-container__meta">
             <span class="validation-xml-container__name">{validationEntry.title}</span>
 
-            {#if validationEntry.message}
-              <span class="validation-xml-container__description">
-                {validationEntry.message}
-              </span>
-            {/if}
-
             <div class="validation-xml-container__actions">
               <button type="button" class="delete-btn" title="Remove" onclick={() => onDelete(index)}>
                 <OscdDeleteIcon svgStyles="fill: #FF203A" />
@@ -51,10 +45,24 @@
 
           <div class="xml-viewer">
             <div class="xml-viewer__box">
+              <div class="xml-viewer__label">
+                Scope
+              </div>
               <pre>{validationEntry.context}</pre>
             </div>
+
             <div class="xml-viewer__box">
+              <div class="xml-viewer__label">
+                Rule
+              </div>
               <pre>{validationEntry.assert}</pre>
+            </div>
+
+            <div class="xml-viewer__box">
+              <div class="xml-viewer__label">
+                Failure message
+              </div>
+              <pre>{validationEntry.message}</pre>
             </div>
           </div>
         </div>
@@ -101,11 +109,6 @@
     color: #002b37;
   }
 
-  .validation-xml-container__description {
-    font-weight: 400;
-    color: #002b37;
-  }
-
   .delete-btn {
     background: transparent;
     border: none;
@@ -139,8 +142,11 @@
     font-weight: 400;
   }
 
-  .error {
-    color: #b00020;
+  .xml-viewer__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #002b37;
+    margin-bottom: 6px;
   }
 
   .empty-state {
