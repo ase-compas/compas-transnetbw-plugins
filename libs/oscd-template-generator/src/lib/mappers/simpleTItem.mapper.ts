@@ -38,7 +38,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     canMark: false,
     canClick: true,
     canSelect: isEditMode,
-    canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
+    canUnlink: isEditMode && !!objRef.typeRef,
     canApplyDefaults: isEditMode && objRef.meta.requiresReference,
     referencable: objRef.meta.requiresReference,
     acceptDrop: acceptDropFn
