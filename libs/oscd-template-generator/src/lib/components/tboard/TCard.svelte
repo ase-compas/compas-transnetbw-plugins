@@ -306,14 +306,15 @@
     align-items: start;
     word-break: break-word;
     gap: 0.5rem;
+    min-height: 30px;
   }
 
   .sub-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     word-break: break-word;
-    gap: 2rem;
+    gap: 0.35rem;
   }
 
   .actions {
