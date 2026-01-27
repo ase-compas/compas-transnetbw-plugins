@@ -55,6 +55,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponseDto'
+  /api/scl/{id}:
+    delete:
+      tags:
+        - history
+      summary: Delete all versions of the given SCL File
+      description: Delete all versions of a specific SCL file by ID.
+      operationId: deleteAllSclFileVersions
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier of the SCL file
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Successfully deleted all versions of the SCL file
+        '400':
+          description: One of the specified parameters is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication information is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Unable to find data resource with the given unique identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        default:
+          description: Unexpected error, cannot handle request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
   /api/scl/{id}/versions:
     get:
       tags:

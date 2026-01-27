@@ -10,10 +10,10 @@
 </script>
 <script lang="ts">
   import {
-    OscdButton,
+    OscdButton, OscdConfirmDialog,
     OscdDataTable,
     OscdDialog,
-    OscdFilterTab,
+    OscdFilterTab, OscdToastHost
   } from '@oscd-transnet-plugins/oscd-component';
   import { Subject } from 'rxjs';
   import { catchError, finalize, switchMap, take, tap, debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
@@ -33,6 +33,8 @@
   import "../public/global.css"
   import "../public/smui.css"
   import type { FilterDefinition } from '../../../libs/oscd-component/src/oscd-filter-builder/types';
+  import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
 
@@ -118,24 +120,10 @@
   ]);
 
   const rowActions = [
-    {
-      icon: 'edit',
-      tooltip: 'Edit',
-      callback: (row) => openDoc(row),
-      disabled: (row) => !row.available
-    },
-    {
-      icon: 'find-in-page',
-      tooltip: 'Find in page',
-      callback: (row) => getHistoryByUuid(row),
-      disabled: () => false
-    },
-    {
-      icon: 'download',
-      tooltip: 'Download',
-      callback: (row) => downloadBlob(row),
-      disabled: (row) => !row.available
-    }
+    { icon: 'edit', tooltip: 'Edit', callback: (row) => openDoc(row), disabled: (row) => !row.available },
+    { icon: 'find-in-page', tooltip: 'View History', callback: (row) => getHistoryByUuid(row), disabled: () => false },
+    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
+    { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false }
   ];
 
   const historyRowActions = [
@@ -147,16 +135,8 @@
   ];
 
   let filterDefinitions: FilterDefinition[] = $state([
-    {
-      key: "uuid",
-      label: "UUID",
-      type: "text",
-    },
-    {
-      key: "type",
-      label: "Type",
-      type: "select",
-      options: [
+    { key: "uuid", label: "UUID", type: "text" },
+    { key: "type", label: "Type", type: "select", options: [
         { value: 'SSD', label: 'SSD' },
         { value: 'IID', label: 'IID' },
         { value: 'ICD', label: 'ICD' },
@@ -164,25 +144,38 @@
         { value: 'CID', label: 'CID' },
         { value: 'SED', label: 'SED' },
         { value: 'ISD', label: 'ISD' },
-        { value: 'STD', label: 'STD' }
-      ]
+        { value: 'STD', label: 'STD' }]
     },
-    {
-      key: "author",
-      label: "Author",
-      type: "text"
-    },
-    {
-      key: "from",
-      label: "Date from",
-      type: "date"
-    },
-    {
-      key: "to",
-      label: "Date to",
-      type: "date"
-    }
+    { key: "author", label: "Author", type: "text" },
+    { key: "from", label: "Date from", type: "date" },
+    { key: "to", label: "Date to", type: "date" }
   ]);
+
+   async function deleteFile(row: FileSearchResult) {
+   console.debug('deleteResource: ', row);
+   const result = await openDialog(OscdConfirmDialog, {
+     title: 'Confirm Deletion',
+     message: `Are you sure you want to delete the resource "${row.filename} (${row.uuid})"? This action cannot be undone.`,
+     confirmActionText: 'Delete',
+     cancelActionText: 'Cancel',
+     confirmActionColor: 'danger',
+   });
+   if (result.type !== 'confirm') return;
+
+   versionEditorDataService.deleteResource(row.uuid)
+     .pipe(take(1))
+     .subscribe({
+       next: () => {
+         searchTrigger$.next(null);
+         toastService.success("Deleted successfully", `Resource "${row.filename} (${row.uuid})" has been deleted.`);
+       },
+       error: (err) => {
+         console.error(`Failed to delete resource "${row.filename} (${row.uuid})":`, err);
+         toastService.error("Deletion failed", `Failed to delete resource "${row.filename} (${row.uuid})".`);
+       }
+     });
+  }
+
 
   function downloadBlob(row: FileSearchResult) {
     console.log('Download file: ', row);
@@ -347,6 +340,8 @@
     </div>
   </div>
 </div>
+<OscdToastHost/>
+<DialogHost/>
 <style lang="css" global>
   .version-editor-container {
     height: 100vh;
