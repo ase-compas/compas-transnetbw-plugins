@@ -18,6 +18,7 @@
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
   import { addValidationToPluginInProcess } from '../../features/processes/mutations.svelte';
   import type { Plugin } from '@oscd-transnet-plugins/shared';
+  import { onMount } from 'svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -42,6 +43,13 @@
     return proc.pluginGroups
       ?.flatMap((g) => g.plugins ?? [])
       .find((p) => p.id === id) ?? null;
+  });
+
+  onMount(() => {
+    editorTabs.visible = false;
+    return () => {
+      editorTabs.visible = true;
+    };
   });
 
   function handleBreadcrumbClick(index: number) {
