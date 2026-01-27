@@ -110,6 +110,11 @@
     selectedEngineeringProcess.process = process;
   }
 
+  function handleEdit(process: Process) {
+    engineeringProcessEditing.isEditing = true;
+    selectedEngineeringProcess.process = process;
+  }
+
   function goBack() {
     selectedEngineeringProcess.process = null;
   }
@@ -144,6 +149,7 @@
 {:else}
   <ProcessesListView
     handleView={handleView}
+    handleEdit={handleEdit}
     handleStart={startProcess}
     handleAddNew={addNewProcess}
     docName={docName}
