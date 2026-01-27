@@ -28,6 +28,7 @@
     onItemMarkChange?: (event: { itemId: string; item: TItem; marked: boolean }) => void;
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
+    onItemAddReferenceClick?: (evetn: { itemId: string; item: TItem}) => void;
     onItemSetDefault?: ({itemId: string, item: TItem}) => void;
     onItemUnlink?: ({itemId: string, item: TItem}) => void;
     onItemEdit?: ({itemId: string, item: TItem}) => void;
@@ -60,6 +61,7 @@
     onItemMarkChange = () => {},
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
+    onItemAddReferenceClick = () => {},
     onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
@@ -76,7 +78,9 @@
   function matchesQuery(item: TItem, query: string): boolean {
     const q = query.toLowerCase().trim();
 
-    return item.title.toLowerCase().includes(q) || item.subtitle?.toLowerCase().includes(q);
+    return item.title.toLowerCase().includes(q) || 
+      item.subtitle?.toLowerCase().includes(q)  ||
+      item.badgeText?.toLocaleLowerCase().includes(q);
   }
 
   function filterItems(itemsToFilter: TItem[], query: string): TItem[] {
@@ -131,6 +135,7 @@
     onItemDragChange={(e) => onItemDragChange(e)}
     onItemDrop={(e) => onItemDrop(e)}
     onItemReferenceClick={(e) => onItemReferenceClick(e)}
+    onItemAddReferenceClick={(e) => onItemAddReferenceClick(e)}
     onItemSetDefault={(e) => onItemSetDefault(e)}
   />
   </div>

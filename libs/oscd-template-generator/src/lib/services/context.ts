@@ -1,4 +1,8 @@
-import { DataTypeRepository } from '../repositories';
+import {
+  DataTypeRepository,
+  type IdFormatDefinition,
+  InMemoryIdFormatRepository,
+} from '../repositories';
 import { type ITypeSpecificationService, NsdSpecificationService } from './type-specification.service';
 import { type ILNodeTypeService, LNodeTypeService } from './l-node-type.service';
 import { DataTypeService, type IDataTypeService } from './common-data-type';
@@ -7,6 +11,8 @@ import { DaTypeService, type IDaTypeService } from './da-type.service';
 import { EnumTypeService, type IEnumTypeService } from './enum-type.service';
 import { type IDefaultService, LocalStorageDefaultService } from './default.service';
 import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
+import { OSCD_INSTANCE_PREFIX_ID_FORMAT, OSCD_REFERENCE_PREFIX_ID_FORMAT } from '../utils/id-formats';
+import { IdGeneratorService } from './id-generator.service';
 
 // App-scoped state
 let xmlDoc: XMLDocument | null = null;
@@ -23,6 +29,7 @@ let typeSpecService: ITypeSpecificationService | null = null;
 let dataTypeService: IDataTypeService | null = null;
 let defaultService: IDefaultService | null = null;
 let alertService: OscdAlertService | null = null;
+let idGeneratorService: IdGeneratorService | null = null;
 
 /**
  * Initializes all repositories and services with the provided XML document and host element.
@@ -33,6 +40,10 @@ export function initServices(doc: XMLDocument, host: HTMLElement): void {
 
   if (!xmlDoc || !hostElement) {
     throw new Error('Invalid arguments passed to initServices.');
+  }
+
+  if(!idGeneratorService) {
+    idGeneratorService = setupIdGeneratorService();
   }
 
   if (dataTypeRepo) {
@@ -102,4 +113,29 @@ export function getDefaultTypeService(): IDefaultService {
     throw new Error('DefaultService not initialized. Call initServices() first.');
   }
   return defaultService;
+}
+
+export function getIdGeneratorService(): IdGeneratorService {
+  if (!idGeneratorService) {
+    throw new Error('IdGeneratorService not initialized. Call initServices() first.');
+  }
+  return idGeneratorService;
+}
+
+function setupIdGeneratorService(): IdGeneratorService {
+  const formats: IdFormatDefinition[] = [
+    {
+      id: 'INSTANCE-PREFIX-UUID',
+      description: 'Default instance prefix id format',
+      format: OSCD_INSTANCE_PREFIX_ID_FORMAT,
+    },
+    {
+      id: 'REFERENCE-PREFIX-UUID',
+      description: 'Default reference prefix id format',
+      format: OSCD_REFERENCE_PREFIX_ID_FORMAT,
+    },
+  ];
+
+  const repo = new InMemoryIdFormatRepository(formats)
+  return new IdGeneratorService(repo);
 }

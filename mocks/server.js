@@ -244,14 +244,6 @@ app.post('/compas-scl-data-service/api/scl/search', (req, res) => {
 
   let results = mockDataResources;
 
-  if (!uuid && !name && !author) {
-    return res.status(400).json({
-      timestamp: new Date().toISOString(),
-      code: 'INVALID_QUERY',
-      message: 'At least one search parameter is required',
-    });
-  }
-
   // Filtering logic for the search (optional)
   if (uuid) {
     console.log('Filtering by UUID:', uuid);

@@ -62,6 +62,9 @@
       "@oscd-transnet-plugins/oscd-services/toast": [
         "libs/oscd-services/src/toast/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-services/id-generator": [
+        "libs/oscd-services/src/id-generator/id-generator.ts"
+      ],
       "@oscd-transnet-plugins/oscd-template-generator": [
         "libs/oscd-template-generator/src/index.ts"
       ],

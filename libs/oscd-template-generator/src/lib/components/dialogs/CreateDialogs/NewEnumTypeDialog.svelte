@@ -8,9 +8,11 @@
 
   interface Props {
     open?: boolean;
+    defaultTypeId?: string;
+    defaultInstance?: string;
   }
 
-  let { open = $bindable(false) }: Props = $props();
+  let { open = $bindable(false), defaultTypeId, defaultInstance }: Props = $props();
 
   const handleConfirm = (id: string, optionId: string) => {
     closeDialog('confirm', { id, instanceType: optionId});
@@ -20,6 +22,8 @@
 
 <GenericCreateDialog
   bind:open
+  {defaultTypeId}
+  {defaultInstance}
   dialogTitle="Create Enum Type"
   confirmText="Next"
   idLabel="Enum Type ID"

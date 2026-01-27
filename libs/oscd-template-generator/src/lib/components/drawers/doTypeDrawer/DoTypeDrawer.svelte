@@ -16,6 +16,7 @@
   import { closeDrawer, type CloseReason } from '@oscd-transnet-plugins/oscd-services/drawer';
   import {
     applyDefaultWarningNotification,
+    assignOrCreateReference,
     canAssignTypeToObjectReference,
     getDisplayDataTypeItems,
     getDisplayReferenceItems,
@@ -45,6 +46,7 @@
   } from '../../../domain';
   import { type ItemDropOnItemEventDetail, type TBoardItemContext } from '../../tboard/types';
   import TypeHeader from '../../TypeHeader.svelte';
+  import { get } from 'svelte/store';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -156,8 +158,16 @@
   }
 
   // ===== Event Handlers =====
-  function handleOnMark({ itemId }) {
-    refStore.toggleMarked(itemId);
+  function handleToggleMark(itemId: string, columnId: string) {
+    if (columnId === 'refs') {
+      refStore.toggleMarked(itemId);
+      return;
+    }
+
+    const currentMarkedItem = get(refStore.markedItem);
+    if (currentMarkedItem) {
+      refStore.setTypeReference(currentMarkedItem.name, itemId);
+    }
   }
 
   function handleOnSelect({ itemId }) {
@@ -225,6 +235,16 @@
     const ref = $refStore.find((child) => child.name === itemId);
     openReferencedTypeDrawer(ref, 'edit');
   }
+
+  async function handleAddReference({itemId}) {
+    assignOrCreateReference(
+       refStore,
+       DataTypeKind.DOType,
+       dataObjectType.cdc,
+       itemId
+    );
+  }
+
 
   function handleActionClick({ columnId }) {
     if (columnId === 'dataObjectTypes') {
@@ -306,11 +326,13 @@
 <TBoard
   {columns}
   data={boardData}
+  onItemClick={({itemId, columnId}) => handleToggleMark(itemId, columnId)}
   onItemMarkChange={(e) => handleOnMark(e)}
   onItemSelectChange={(e) => handleOnSelect(e)}
   onItemDrop={(e) => handleItemDrop(e)}
   onItemEdit={({ itemId, columnId }) => handleOnEdit(itemId, columnId)}
   onItemReferenceClick={({ itemId}) => handleOnReferenceClick(itemId)}
+  onItemAddReferenceClick={(e) => handleAddReference(e)}
   onItemUnlink={({ itemId }) => refStore.removeTypeReference(itemId)}
   onColumnActionClick={({ columnId }) => handleActionClick({ columnId })}
   onItemSetDefault={({itemId, columnId})  => handleOnSetAsDefault(itemId, columnId)}

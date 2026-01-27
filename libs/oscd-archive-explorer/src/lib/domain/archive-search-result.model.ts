@@ -4,6 +4,7 @@ export class ArchiveSearchResult {
   constructor(
     private readonly _uuid: string,
     private readonly _name: string,
+    private readonly _location: string,
     private readonly _note: string,
     private readonly _author: string,
     private readonly _approver: string,
@@ -22,6 +23,10 @@ export class ArchiveSearchResult {
 
   get filename(): string {
     return this._name;
+  }
+
+  get location(): string {
+    return this._location;
   }
 
   get author(): string {

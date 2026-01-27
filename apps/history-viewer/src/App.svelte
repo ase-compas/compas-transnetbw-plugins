@@ -13,12 +13,10 @@
     OscdButton, OscdConfirmDialog,
     OscdDataTable,
     OscdDialog,
-    OscdFilterBox,
-    OscdLoadingSpinner,
-    OscdToastHost
+    OscdFilterTab, OscdToastHost
   } from '@oscd-transnet-plugins/oscd-component';
-  import Card from '@smui/card';
-  import { catchError, finalize, switchMap, take, tap } from 'rxjs/operators';
+  import { Subject } from 'rxjs';
+  import { catchError, finalize, switchMap, take, tap, debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
   import { from, of } from 'rxjs';
   import {
     FileSearchResult,
@@ -27,14 +25,14 @@
   } from '@oscd-transnet-plugins/oscd-history-viewer';
   import type { SearchParams } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Label } from '@smui/button';
-  import type { ActiveFilter, FilterType } from '@oscd-transnet-plugins/oscd-component'
-  import { OscdCancelIcon, OscdSearchIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdCancelIcon } from '@oscd-transnet-plugins/oscd-icons';
   import {onMount} from "svelte";
   import {_, locale} from 'svelte-i18n';
   import "svelte-material-ui/bare.css"
   import "../public/material-icon.css"
   import "../public/global.css"
   import "../public/smui.css"
+  import type { FilterDefinition } from '../../../libs/oscd-component/src/oscd-filter-builder/types';
   import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
@@ -43,6 +41,29 @@
   let rowData: FileSearchResult[] = [];
   let historyData: FileSearchResult[] = [];
   let currentSelectFile: FileSearchResult = $state();
+
+  const searchTrigger$ = new Subject<void>();
+  const search$ = searchTrigger$.pipe(
+    debounceTime(150),
+    map(() => convertFilterToSearchParams(filterDefinitions)),
+    distinctUntilChanged(
+      (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    ),
+    tap(() => {
+      loadingDone = false;
+    }),
+    switchMap(searchParams =>
+      versionEditorDataService.searchFiles(searchParams).pipe(
+        tap((data: FileSearchResult[]) => {
+          rowData = [...data];
+          dataStore.updateData(data);
+        }),
+        finalize(() => {
+          loadingDone = true;
+        })
+      )
+    )
+  );
 
   interface Props {
     dataStore?: any;
@@ -53,14 +74,12 @@
 
   let loadingDone = $state(true);
   let dialogOpen = $state(false);
-
-  //loading quickfix for css to load
-  let loading = $state(true);
+  let searchText = $state('');
 
   onMount(() => {
-    setTimeout(() => {
-      loading = false;
-    }, 1000)
+    const sub = search$.subscribe();
+    searchTrigger$.next();
+    return () => sub.unsubscribe();
   });
 
   function formatDate(date: string) {
@@ -78,53 +97,33 @@
   };
 
   let columnDefs = $derived([
-    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: true, filterType: 'text', sortable: false },
-    { headerName: $_('filename'), field: 'filename', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('type'), field: 'type', numeric: false, filter: true, filterType: 'text', sortable: true },
-    { headerName: $_('author'), field: 'author', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('uuid'), field: 'uuid', numeric: false, filter: false, filterType: 'text', sortable: false },
+    { headerName: $_('filename'), field: 'filename', numeric: false, filter: false, filterType: 'text', sortable: true },
+    { headerName: $_('type'), field: 'type', numeric: false, filter: false, filterType: 'text', sortable: true },
+    { headerName: $_('author'), field: 'author', numeric: false, filter: false, filterType: 'text', sortable: true },
     {
       headerName: $_('date'),
       field: 'date',
       numeric: false,
-      filter: true,
+      filter: false,
       filterType: 'text',
       sortable: true,
       valueFormatter: formatDate
     },
-    { headerName: $_('version'), field: 'version', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: $_('version'), field: 'version', numeric: false, filter: false, filterType: 'text', sortable: true },
     columnDefsActions
   ]);
 
   let modalColumnDef = $derived([
     ...columnDefs,
-    { headerName: 'Comment', field: 'comment', numeric: false, filter: true, filterType: 'text', sortable: true },
+    { headerName: 'Comment', field: 'comment', numeric: false, filter: false, filterType: 'text', sortable: true },
   ]);
 
   const rowActions = [
-    {
-      icon: 'edit',
-      tooltip: 'Edit',
-      callback: (row) => openDoc(row),
-      disabled: (row) => !row.available
-    },
-    {
-      icon: 'find-in-page',
-      tooltip: 'Find in page',
-      callback: (row) => getHistoryByUuid(row),
-      disabled: () => false
-    },
-    {
-      icon: 'download',
-      tooltip: 'Download',
-      callback: (row) => downloadBlob(row),
-      disabled: (row) => !row.available
-    },
-    {
-      icon: 'delete',
-      tooltip: 'Delete',
-      callback: (row) => deleteFile(row),
-      disabled: () => false
-    }
+    { icon: 'edit', tooltip: 'Edit', callback: (row) => openDoc(row), disabled: (row) => !row.available },
+    { icon: 'find-in-page', tooltip: 'View History', callback: (row) => getHistoryByUuid(row), disabled: () => false },
+    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
+    { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false }
   ];
 
   const historyRowActions = [
@@ -135,63 +134,22 @@
       disabled: (row) => !row.available }
   ];
 
-  const filterTypes: FilterType[] = [
-    {
-      id: 1,
-      key: 'filename',
-      label: 'Filename',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
+  let filterDefinitions: FilterDefinition[] = $state([
+    { key: "uuid", label: "UUID", type: "text" },
+    { key: "type", label: "Type", type: "select", options: [
+        { value: 'SSD', label: 'SSD' },
+        { value: 'IID', label: 'IID' },
+        { value: 'ICD', label: 'ICD' },
+        { value: 'SCD', label: 'SCD' },
+        { value: 'CID', label: 'CID' },
+        { value: 'SED', label: 'SED' },
+        { value: 'ISD', label: 'ISD' },
+        { value: 'STD', label: 'STD' }]
     },
-    {
-      id: 2,
-      key: 'uuid',
-      label: 'UUID',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 3,
-      key: 'type',
-      label: 'Type',
-      inputType: {
-        id: 2, type: 'select', validatorFn: () => true, options: [
-          { value: 'SSD', label: 'SSD' },
-          { value: 'IID', label: 'IID' },
-          { value: 'ICD', label: 'ICD' },
-          { value: 'SCD', label: 'SCD' },
-          { value: 'CID', label: 'CID' },
-          { value: 'SED', label: 'SED' },
-          { value: 'ISD', label: 'ISD' },
-          { value: 'STD', label: 'STD' }
-        ]
-      },
-      allowedOperations: ['=']
-    },
-    {
-      id: 4,
-      key: 'author',
-      label: 'Author',
-      inputType: { id: 1, type: 'string', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 5,
-      key: 'from',
-      label: 'From',
-      inputType: { id: 3, type: 'timepicker', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    },
-    {
-      id: 5,
-      key: 'to',
-      label: 'To',
-      inputType: { id: 3, type: 'timepicker', validatorFn: () => true, options: [] },
-      allowedOperations: ['=']
-    }
-  ];
-
-  let filtersToSearch: ActiveFilter[] = $state([]);
+    { key: "author", label: "Author", type: "text" },
+    { key: "from", label: "Date from", type: "date" },
+    { key: "to", label: "Date to", type: "date" }
+  ]);
 
    async function deleteFile(row: FileSearchResult) {
    console.debug('deleteResource: ', row);
@@ -208,7 +166,7 @@
      .pipe(take(1))
      .subscribe({
        next: () => {
-         search();
+         searchTrigger$.next(null);
          toastService.success("Deleted successfully", `Resource "${row.filename} (${row.uuid})" has been deleted.`);
        },
        error: (err) => {
@@ -239,25 +197,7 @@
       .subscribe();
   }
 
-  function search() {
-    const searchParams = convertFilterToSearchParams(filtersToSearch);
-    console.log('Search with params: ', searchParams);
-    loadingDone = false;
-    versionEditorDataService.searchFiles(searchParams)
-      .pipe(
-        take(1),
-        tap((data: FileSearchResult[]) => {
-          rowData = [...data];
-          dataStore.updateData(data);
-        }),
-        finalize(() => {
-          loadingDone = true;
-        })
-      )
-      .subscribe();
-  }
-
-  function convertFilterToSearchParams(filters: ActiveFilter[]): SearchParams {
+  function convertFilterToSearchParams(filters: FilterDefinition[]): SearchParams {
     const searchParams: SearchParams = {
       uuid: null,
       filename: null,
@@ -267,16 +207,28 @@
       from: null,
       to: null
     };
-    console.log('Convert filter to search params: ', filters);
-    filters.filter((f) => !f.disabled).forEach((filter) => {
-      console.log('KEY:', filter.key);
-      if (filter.key === 'from' ||
-        filter.key === 'to') {
-        searchParams[filter.key] = new Date(filter.value).toISOString();
-      } else {
-        searchParams[filter.key] = filter.value;
+
+    // Map filter values to searchParams
+    filters.forEach((filter) => {
+      if (filter.key in searchParams && filter.type !== 'date' && filter.value) {
+        searchParams[filter.key as keyof SearchParams] = filter.value;
+      } else if (filter.type === 'date' && filter.value) {
+        const dateValue = new Date(filter.value);
+        if (filter.key === 'from') {
+          searchParams.from = dateValue.toISOString();
+        } else if (filter.key === 'to') {
+          // set to end of day
+          dateValue.setHours(23, 59, 59, 999);
+          searchParams.to = dateValue.toISOString();
+        }
       }
     });
+
+    // Include searchText in filename search
+    if (searchText && searchText.trim() !== '') {
+      searchParams.filename = searchText.trim();
+    }
+
     return searchParams;
   }
 
@@ -345,64 +297,51 @@
   }
 </script>
 
-<div>
-  {#if loading}
-    <OscdLoadingSpinner loadingDone={!loading} />
-  {:else}
-    <div class="version-editor-container">
-      <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
-        {#snippet title()}
-              <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
-            {/snippet}
-        {#snippet content()}
-              <div >
-            <OscdDataTable columnDefs={modalColumnDef}
-                           store={historyStore}
-                           {loadingDone}
-                           rowActions={historyRowActions}
-                           searchInputLabel={$_('search')} />
-          </div>
-            {/snippet}
-        {#snippet actions()}
-              <div >
-            <OscdButton callback={onCloseDialog} variant="raised">
-              <OscdCancelIcon />
-              <Label>{$_('done')}</Label>
-            </OscdButton>
-          </div>
-            {/snippet}
-      </OscdDialog>
-      <div class="search-filter">
-        {#snippet filterControls()}
-          <OscdButton variant="raised" callback={search}>
-            <OscdSearchIcon />
-            <Label>{$_('search')}</Label>
-          </OscdButton>
-        {/snippet}
-
-        <OscdFilterBox
-          {filterControls}
-          {filterTypes}
-          bind:activeFilters={filtersToSearch}
-          addFilterLabel={$_('add_filter')}
-          selectFilterLabel={$_('filter_types')}
-        />
-      </div>
-      <div class="table-container">
-        <Card style="padding: 1rem; width: 100%; height: 100%;">
-          <h3 style="margin-bottom: 1rem;">{$_('versionTable.heading')}</h3>
-          <OscdDataTable {columnDefs}
-                         store={dataStore}
+<div class="oscd-app">
+  <div class="version-editor-container">
+    <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
+      {#snippet title()}
+            <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
+          {/snippet}
+      {#snippet content()}
+            <div >
+          <OscdDataTable columnDefs={modalColumnDef}
+                         store={historyStore}
                          {loadingDone}
-                         {rowActions}
-                         searchInputLabel={$_('search')}/>
-        </Card>
-      </div>
+                         rowActions={historyRowActions}
+                         searchInputLabel={$_('search')} />
+        </div>
+          {/snippet}
+      {#snippet actions()}
+            <div >
+          <OscdButton callback={onCloseDialog} variant="raised">
+            <OscdCancelIcon />
+            <Label>{$_('done')}</Label>
+          </OscdButton>
+        </div>
+          {/snippet}
+    </OscdDialog>
+
+    <div class="search-filter">
+      <OscdFilterTab
+        bind:filters={filterDefinitions}
+        bind:searchText={searchText}
+        searchLabel="Search file name..."
+        onFilterChange={() => searchTrigger$.next(null)}
+        onSearchInput={() => searchTrigger$.next(null)}
+    />
     </div>
-  {/if}
-  <DialogHost/>
-  <OscdToastHost/>
+    <div class="table-container">
+      <OscdDataTable {columnDefs}
+                     store={dataStore}
+                     {loadingDone}
+                     {rowActions}
+                     searchInputLabel={$_('search')}/>
+    </div>
+  </div>
 </div>
+<OscdToastHost/>
+<DialogHost/>
 <style lang="css" global>
   .version-editor-container {
     height: 100vh;
@@ -417,7 +356,7 @@
   }
 
   .table-container {
+    margin-top: 1rem;
     height: 100%;
-    padding: 1rem;
   }
 </style>

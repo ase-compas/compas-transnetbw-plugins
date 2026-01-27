@@ -33,6 +33,7 @@
     onApplyDefaults?: () => void;
     onUnlink?: () => void;
     onReferenceClick?: () => void;
+    onAddReferenceClick?: () => void;
     onSetDefault?: () => void;
     onSelectChange?: () => void;
   }
@@ -65,6 +66,7 @@
     onApplyDefaults = () => {},
     onUnlink = () => {},
     onReferenceClick = () => {},
+    onAddReferenceClick = () => {},
     onSetDefault = () => {},
     onSelectChange = () => {},
   }: Props = $props();
@@ -85,7 +87,7 @@
   function handleOnEdit() { if (canEdit) onEdit(); }
   function handleOnApplyDefaults() { if (canApplyDefaults) onApplyDefaults(); }
   function handleOnUnlink() { if (canUnlink) onUnlink(); }
-  function handleOnReferenceClick() { if (canClickReference) onReferenceClick(); }
+  function handleOnReferenceClick(e: Event) { e.stopPropagation(); if (canClickReference) onReferenceClick(); }
   function handleOnSetDefault() { if (canSetDefault) onSetDefault(); }
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
@@ -93,7 +95,7 @@
 </script>
 
 <div
-  class="oscd-card-item {cardState}"
+  class="oscd-card-item {cardState} {canClick ? 'clickable' : ''}"
   class:marked={marked}
   class:is-over={isOver}
   class:error={(isMandatory || selected) && referencable && !subtitle && !isDragTarget}
@@ -111,7 +113,7 @@
         </OscdTooltip>
       {:else}
         <OscdTooltip content="Configure" hoverDelay={500}>
-          <Checkbox checked={selected} onchange={onSelectChange}/>
+          <Checkbox checked={selected} onchange={onSelectChange} onclick={e => e.stopPropagation()}/>
         </OscdTooltip>
       {/if}
     </div>
@@ -185,18 +187,25 @@
   >
     {#if subtitle}
       <OscdTooltip content={subtitle} hoverDelay={500} side="right">
-        <button class="oscd-card-subtitle--with-tooltip" onclick={handleOnReferenceClick} class:pointer={canClickReference}>
+        <button class="oscd-card-subtitle--with-tooltip" onclick={e => handleOnReferenceClick(e)} class:pointer={canClickReference}>
           {#if canClickReference}
             <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />
           {/if}
           {subtitle.length > 25 ? subtitle.slice(0, 25) + '...' : subtitle}
         </button>
         </OscdTooltip>
-    {:else if (isMandatory ||selected) && !subtitle && referencable}
-      <OscdWarningIcon fill="#FF6B6B" size="15px" />
-      Add reference
-    {:else if !subtitle && referencable && !isMandatory && !selected}
-      Add reference
+    {:else if !subtitle && referencable}
+      <button
+      class="oscd-card-subtitle__add-reference"
+      onclick={(e) => {
+        e.stopPropagation();
+        onAddReferenceClick();
+      }}>
+        {#if isMandatory || selected }
+          <OscdWarningIcon fill="#FF6B6B" size="15px" />
+        {/if}
+        Add reference
+      </button>
     {/if}
   </span>
     {:else}
@@ -297,14 +306,15 @@
     align-items: start;
     word-break: break-word;
     gap: 0.5rem;
+    min-height: 30px;
   }
 
   .sub-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     word-break: break-word;
-    gap: 2rem;
+    gap: 0.35rem;
   }
 
   .actions {
@@ -395,9 +405,11 @@
     white-space: nowrap;
   }
 
+
   .clickable:hover {
-    background: rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    filter: brightness(1.05); /* 5% brighter */
+    transition: filter 0.2s ease;
   }
 
   .oscd-card-chip {
@@ -423,6 +435,18 @@
 
   .pointer {
     cursor: pointer;
+  }
+
+  .oscd-card-subtitle__add-reference {
+     all: unset;
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     gap: 0.1rem;
+  }
+
+  .oscd-card-subtitle__add-reference:hover {
+     cursor: pointer;
   }
 
   :global(.oscd-card-item .selection .oscd-icon svg) {

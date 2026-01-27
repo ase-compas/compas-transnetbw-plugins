@@ -19,6 +19,9 @@ export interface ObjectSpecification {
   /** Reference type kind, required if requiresReference is true. */
   refTypeKind?: DataTypeKind;
 
+  /** Underlying type for enumerations (e.g. BehaviorModelKind for ENC) */
+  underlyingType?: string;
+
   /** Additional metadata attributes. */
   attributes?: Record<string, string>;
 }

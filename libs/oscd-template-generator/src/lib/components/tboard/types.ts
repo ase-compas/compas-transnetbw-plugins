@@ -9,6 +9,7 @@ export type TItem = {
   selected?: boolean
   isMandatory?: boolean;
 
+  canClick?: boolean;
   canEdit?: boolean;
   canMark?: boolean;
   canSelect?: boolean;

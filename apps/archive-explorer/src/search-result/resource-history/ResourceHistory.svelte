@@ -4,6 +4,7 @@
   import { catchError, of, take, tap } from 'rxjs';
   import { writable } from 'svelte/store';
   import { OscdDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
     searchResult: ArchiveSearchResult;
@@ -107,7 +108,7 @@
         }),
         catchError(err => {
           console.error(err);
-          alert(err);
+          toastService.error("Download failed", "An error occurred while trying to download the resource.", 5_000);
           return of(undefined);
         })
       )

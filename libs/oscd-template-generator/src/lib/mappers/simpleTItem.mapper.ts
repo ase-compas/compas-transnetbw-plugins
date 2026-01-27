@@ -21,9 +21,10 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
   const badgeText = [
     objRef.meta.refTypeKind ? getTypeKindAbbreviation(objRef.meta.refTypeKind) : null,
     objRef.meta?.objectType ?? 'ANY',
+    objRef.meta.underlyingType ?? null
   ]
     .filter(Boolean)
-    .join(" • ");
+    .join(" > ");
 
   return {
     id: objRef.name,
@@ -35,9 +36,10 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     isMandatory: objRef.meta.isMandatory,
     selected: objRef.meta.isConfigured,
     canEdit: false,
-    canMark: objRef.meta.requiresReference,
+    canMark: false,
+    canClick: true,
     canSelect: isEditMode,
-    canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
+    canUnlink: isEditMode && !!objRef.typeRef,
     canApplyDefaults: isEditMode && objRef.meta.requiresReference,
     referencable: objRef.meta.requiresReference,
     acceptDrop: acceptDropFn
@@ -53,6 +55,7 @@ export function mapDataTypeToItem(type: BasicType, canEdit = false): TItem {
     title: type.id,
     references: type.references,
     badgeText: type?.instanceType ?? 'Unknown Type',
+    canClick: true,
     canEdit: true,
     canUnlink: false,
     canSetDefault: true
