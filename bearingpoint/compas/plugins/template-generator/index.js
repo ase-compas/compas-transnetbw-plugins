@@ -18490,14 +18490,15 @@ class AE {
    */
   parseDataObject(e, t) {
     if (e.getAttribute("deprecated") === "true") return null;
-    const a = e.getAttribute("name"), s = e.getAttribute("type"), r = e.getAttribute("presCond");
+    const a = e.getAttribute("name"), s = e.getAttribute("type"), r = e.getAttribute("presCond"), d = e.getAttribute("underlyingType");
     return !a || !s || !r ? null : {
       name: a,
       tagName: t,
       isMandatory: r === "M",
       requiresReference: !0,
       objectType: s,
-      refTypeKind: w.DOType
+      refTypeKind: w.DOType,
+      underlyingType: d || void 0
     };
   }
   /**
@@ -19025,8 +19026,9 @@ function gE(n, e, t) {
   var s;
   const a = [
     n.meta.refTypeKind ? hE(n.meta.refTypeKind) : null,
-    ((s = n.meta) == null ? void 0 : s.objectType) ?? "ANY"
-  ].filter(Boolean).join(" • ");
+    ((s = n.meta) == null ? void 0 : s.objectType) ?? "ANY",
+    n.meta.underlyingType ?? null
+  ].filter(Boolean).join(" > ");
   return {
     id: n.name,
     title: n.name,
@@ -41641,7 +41643,8 @@ function UE(n, e) {
         isConfigured: !!t.isMandatory || !!a,
         requiresReference: !!t.requiresReference,
         objectType: t.objectType,
-        refTypeKind: t.refTypeKind
+        refTypeKind: t.refTypeKind,
+        underlyingType: t.underlyingType
       }
     };
   });
