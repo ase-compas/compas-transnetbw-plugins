@@ -898,7 +898,7 @@ function Ss(n, e) {
   return t;
 }
 // @__NO_SIDE_EFFECTS__
-function se(n, e) {
+function re(n, e) {
   const t = Ss(n);
   return kl(t), t;
 }
@@ -961,7 +961,7 @@ function he(n) {
   const e = _o(n);
   if (e !== uu && e !== pu)
     return n;
-  var t = /* @__PURE__ */ new Map(), a = $i(n), s = /* @__PURE__ */ se(0), r = _s, d = (c) => {
+  var t = /* @__PURE__ */ new Map(), a = $i(n), s = /* @__PURE__ */ re(0), r = _s, d = (c) => {
     if (_s === r)
       return c();
     var o = ze, l = _s;
@@ -969,7 +969,7 @@ function he(n) {
     var C = c();
     return En(o), _c(l), C;
   };
-  return a && t.set("length", /* @__PURE__ */ se(
+  return a && t.set("length", /* @__PURE__ */ re(
     /** @type {any[]} */
     n.length
   )), new Proxy(
@@ -980,7 +980,7 @@ function he(n) {
         (!("value" in l) || l.configurable === !1 || l.enumerable === !1 || l.writable === !1) && Su();
         var C = t.get(o);
         return C === void 0 ? C = d(() => {
-          var m = /* @__PURE__ */ se(l.value);
+          var m = /* @__PURE__ */ re(l.value);
           return t.set(o, m), m;
         }) : G(C, l.value, !0), !0;
       },
@@ -988,7 +988,7 @@ function he(n) {
         var l = t.get(o);
         if (l === void 0) {
           if (o in c) {
-            const C = d(() => /* @__PURE__ */ se(Ft));
+            const C = d(() => /* @__PURE__ */ re(Ft));
             t.set(o, C), Mr(s);
           }
         } else
@@ -1001,7 +1001,7 @@ function he(n) {
           return n;
         var C = t.get(o), m = o in c;
         if (C === void 0 && (!m || (D = Ua(c, o)) != null && D.writable) && (C = d(() => {
-          var I = he(m ? c[o] : Ft), b = /* @__PURE__ */ se(I);
+          var I = he(m ? c[o] : Ft), b = /* @__PURE__ */ re(I);
           return b;
         }), t.set(o, C)), C !== void 0) {
           var u = i(C);
@@ -1033,7 +1033,7 @@ function he(n) {
         var l = t.get(o), C = l !== void 0 && l.v !== Ft || Reflect.has(c, o);
         if (l !== void 0 || Xe !== null && (!C || (u = Ua(c, o)) != null && u.writable)) {
           l === void 0 && (l = d(() => {
-            var D = C ? he(c[o]) : Ft, I = /* @__PURE__ */ se(D);
+            var D = C ? he(c[o]) : Ft, I = /* @__PURE__ */ re(D);
             return I;
           }), t.set(o, l));
           var m = i(l);
@@ -1049,10 +1049,10 @@ function he(n) {
           for (var D = l; D < /** @type {Source<number>} */
           m.v; D += 1) {
             var I = t.get(D + "");
-            I !== void 0 ? G(I, Ft) : D in c && (I = d(() => /* @__PURE__ */ se(Ft)), t.set(D + "", I));
+            I !== void 0 ? G(I, Ft) : D in c && (I = d(() => /* @__PURE__ */ re(Ft)), t.set(D + "", I));
           }
         if (m === void 0)
-          (!u || (E = Ua(c, o)) != null && E.writable) && (m = d(() => /* @__PURE__ */ se(void 0)), G(m, he(l)), t.set(o, m));
+          (!u || (E = Ua(c, o)) != null && E.writable) && (m = d(() => /* @__PURE__ */ re(void 0)), G(m, he(l)), t.set(o, m));
         else {
           u = m.v !== Ft;
           var b = d(() => he(l));
@@ -4833,7 +4833,7 @@ function Jd(n, e) {
     "component",
     "tag",
     "children"
-  ]), A, _, v = /* @__PURE__ */ se(he({})), E = he({}), O = /* @__PURE__ */ se(he({})), y = ye("SMUI:icon-button:context"), S = ye("SMUI:icon-button:aria-describedby");
+  ]), A, _, v = /* @__PURE__ */ re(he({})), E = he({}), O = /* @__PURE__ */ re(he({})), y = ye("SMUI:icon-button:context"), S = ye("SMUI:icon-button:aria-describedby");
   const L = /* @__PURE__ */ de(() => {
     if (y === "data-table:pagination")
       switch (e.action) {
@@ -4982,13 +4982,13 @@ function Jd(n, e) {
             children: (ne, k) => {
               var ie = om(), Ee = te(ee(ie), 2);
               ge(Ee, () => e.children ?? Se);
-              var re = te(Ee);
+              var se = te(Ee);
               {
                 var De = (Ge) => {
                   var Me = dm();
                   h(Ge, Me);
                 };
-                oe(re, (Ge) => {
+                oe(se, (Ge) => {
                   C() && Ge(De);
                 });
               }
@@ -6075,7 +6075,7 @@ function Bc(n, e) {
     "required",
     "wrapped",
     "children"
-  ]), l, C = /* @__PURE__ */ se(void 0), m = new gs(), u = he({}), D = he({}), I = ye("SMUI:generic:input:props") ?? {}, b = r();
+  ]), l, C = /* @__PURE__ */ re(void 0), m = new gs(), u = he({}), D = he({}), I = ye("SMUI:generic:input:props") ?? {}, b = r();
   Ne(() => {
     i(C) && b !== r() && (b = r(), i(C).float(r()));
   });
@@ -6201,7 +6201,7 @@ function Tm(n, e) {
     "class",
     "style",
     "active"
-  ]), c, o = /* @__PURE__ */ se(void 0), l = new gs(), C = he({}), m = he({});
+  ]), c, o = /* @__PURE__ */ re(void 0), l = new gs(), C = he({}), m = he({});
   Ye(() => (G(
     o,
     new Cm({
@@ -6267,7 +6267,7 @@ function Nm(n, e) {
     "notched",
     "noLabel",
     "children"
-  ]), c, o = /* @__PURE__ */ se(void 0), l = /* @__PURE__ */ se(void 0), C = he({}), m = he({}), u;
+  ]), c, o = /* @__PURE__ */ re(void 0), l = /* @__PURE__ */ re(void 0), C = he({}), m = he({}), u;
   Ne(() => {
     i(l) !== u && (i(l) ? (i(l).addStyle("transition-duration", "0s"), D("mdc-notched-outline--upgraded"), requestAnimationFrame(() => {
       i(l) && i(l).removeStyle("transition-duration");
@@ -6684,7 +6684,7 @@ function Vi(n, e) {
   ]);
   const Q = b() !== void 0 || b() === void 0 && e.input$emptyValueUndefined || !s(A());
   s(A()) && A(null), s(_()) && _(!1);
-  let U, x = /* @__PURE__ */ se(void 0), j = new gs(), M = he({}), X = he({}), z = /* @__PURE__ */ se(void 0), H = /* @__PURE__ */ se(!1), $ = /* @__PURE__ */ se(he(E())), ae = ye("SMUI:addLayoutListener"), me, ce, pe = new Promise((K) => ce = K), V, ne, k, ie;
+  let U, x = /* @__PURE__ */ re(void 0), j = new gs(), M = he({}), X = he({}), z = /* @__PURE__ */ re(void 0), H = /* @__PURE__ */ re(!1), $ = /* @__PURE__ */ re(he(E())), ae = ye("SMUI:addLayoutListener"), me, ce, pe = new Promise((K) => ce = K), V, ne, k, ie;
   const Ee = /* @__PURE__ */ de(() => f() && f().getElement());
   Ne(() => {
     (O() || i($) || !v()) && i(x) && i(x).isValid() !== !_() && (v() ? _(!i(x).isValid()) : i(x).setValid(!_()));
@@ -6695,10 +6695,10 @@ function Vi(n, e) {
   }), Ne(() => {
     i(x) && i(x).setDisabled(l());
   });
-  let re = b();
+  let se = b();
   Ne(() => {
-    if (i(x) && Q && re !== b()) {
-      re = b();
+    if (i(x) && Q && se !== b()) {
+      se = b();
       const K = `${b() == null ? "" : b()}`;
       i(x).getValue() !== K && i(x).setValue(K);
     }
@@ -7382,9 +7382,9 @@ function qm(n, e) {
     "tabindex",
     "disabled",
     "children"
-  ]), C, m = /* @__PURE__ */ se(void 0), u = new gs(), D = he({});
+  ]), C, m = /* @__PURE__ */ re(void 0), u = new gs(), D = he({});
   const I = ye("SMUI:textfield:icon:leading"), b = t();
-  let A = /* @__PURE__ */ se(void 0);
+  let A = /* @__PURE__ */ re(void 0);
   const _ = /* @__PURE__ */ de(() => ({ role: e.role, tabindex: c() })), v = ye("SMUI:textfield:leading-icon:mount"), E = ye("SMUI:textfield:leading-icon:unmount"), O = ye("SMUI:textfield:trailing-icon:mount"), y = ye("SMUI:textfield:trailing-icon:unmount");
   Ye(() => (G(
     m,
@@ -8704,7 +8704,7 @@ function iI(n, e) {
     "openBottomBias",
     "neverRestoreFocus",
     "children"
-  ]), E, O = /* @__PURE__ */ se(void 0), y = he({}), S = he({}), L = /* @__PURE__ */ se(void 0);
+  ]), E, O = /* @__PURE__ */ re(void 0), y = he({}), S = he({}), L = /* @__PURE__ */ re(void 0);
   Te("SMUI:list:role", "menu"), Te("SMUI:list:item:role", "menuitem"), Ne(() => {
     var V, ne;
     E && d() && !((V = E.parentElement) != null && V.classList.contains("mdc-menu-surface--anchor")) && ((ne = E.parentElement) == null || ne.classList.add("mdc-menu-surface--anchor"), u(E.parentElement ?? void 0));
@@ -8903,7 +8903,7 @@ function IC(n, e) {
     "anchorElement",
     "managed",
     "children"
-  ]), l, C = /* @__PURE__ */ se(void 0), m = /* @__PURE__ */ se(void 0), u = /* @__PURE__ */ se(void 0);
+  ]), l, C = /* @__PURE__ */ re(void 0), m = /* @__PURE__ */ re(void 0), u = /* @__PURE__ */ re(void 0);
   Te("SMUI:menu-surface:mount", (g) => {
     i(m) || G(m, g, !0);
   });
@@ -9107,7 +9107,7 @@ function DC(n, e) {
     "component",
     "tag",
     "children"
-  ]), R, F = /* @__PURE__ */ se(void 0), Q = [], U = ye("SMUI:list:role");
+  ]), R, F = /* @__PURE__ */ re(void 0), Q = [], U = ye("SMUI:list:role");
   const x = /* @__PURE__ */ new WeakMap();
   let j = ye("SMUI:dialog:selection"), M = ye("SMUI:addLayoutListener"), X;
   Te("SMUI:list:nonInteractive", c()), Te("SMUI:separator:context", "list"), U || (E() ? (U = "listbox", Te("SMUI:list:item:role", "option")) : S() ? (U = "radiogroup", Te("SMUI:list:item:role", "radio")) : L() ? (U = "group", Te("SMUI:list:item:role", "checkbox")) : (U = "list", Te("SMUI:list:item:role", void 0))), Ne(() => {
@@ -9204,7 +9204,7 @@ function DC(n, e) {
       addClassForElementIndex: k,
       removeClassForElementIndex: ie,
       setAttributeForElementIndex: Ee,
-      removeAttributeForElementIndex: re,
+      removeAttributeForElementIndex: se,
       getAttributeFromElementIndex: De,
       getPrimaryTextAtIndex: Ge
     };
@@ -9257,7 +9257,7 @@ function DC(n, e) {
     const Ce = V()[fe];
     Ce && Ce.addAttr(q, K);
   }
-  function re(fe, q) {
+  function se(fe, q) {
     const K = V()[fe];
     K && K.removeAttr(q);
   }
@@ -9415,7 +9415,7 @@ function ks(n, e) {
     "children"
   ]);
   Te("SMUI:list:nonInteractive", void 0), Te("SMUI:list:item:role", void 0);
-  let y, S = he({}), L = he({}), g = he({}), f = /* @__PURE__ */ se(void 0), N = /* @__PURE__ */ se(void 0);
+  let y, S = he({}), L = he({}), g = he({}), f = /* @__PURE__ */ re(void 0), N = /* @__PURE__ */ re(void 0);
   const B = /* @__PURE__ */ de(() => a(A()) ? !o() && !I() && (D() || i(f) && i(f).checked) ? 0 : -1 : A());
   Te("SMUI:generic:input:props", { id: _() }), Te("SMUI:separator:context", void 0), Te("SMUI:generic:input:mount", (k) => {
     ("_smui_checkbox_accessor" in k || "_smui_radio_accessor" in k) && G(f, k, !0);
@@ -9576,7 +9576,7 @@ function ks(n, e) {
       "smui-menu-item--non-interactive": o(),
       ...S,
       [d()]: !0
-    })), Ee = /* @__PURE__ */ de(() => Object.entries(L).map(([De, Ge]) => `${De}: ${Ge};`).concat([c()]).join(" ")), re = /* @__PURE__ */ de(() => b() || void 0);
+    })), Ee = /* @__PURE__ */ de(() => Object.entries(L).map(([De, Ge]) => `${De}: ${Ge};`).concat([c()]).join(" ")), se = /* @__PURE__ */ de(() => b() || void 0);
     pa(ne, v, (De, Ge) => {
       Pe(
         Ge(De, mt(
@@ -9603,7 +9603,7 @@ function ks(n, e) {
           () => s ? {} : { "aria-disabled": I() ? "true" : "false" },
           {
             get "data-menu-item-skip-restore-focus"() {
-              return i(re);
+              return i(se);
             },
             get tabindex() {
               return i(B);
@@ -10150,7 +10150,7 @@ function EI(n, e) {
     "surface$class",
     "children",
     "over"
-  ]), y, S = /* @__PURE__ */ se(void 0), L = new gs(), g = he({}), f, N = Cn(!1), B = ye("SMUI:dialog:aboveFullscreen"), R = ye("SMUI:dialog:aboveFullscreenShown") ?? Cn(!1), F = ye("SMUI:addLayoutListener"), Q, U = [], x = (q) => (U.push(q), () => {
+  ]), y, S = /* @__PURE__ */ re(void 0), L = new gs(), g = he({}), f, N = Cn(!1), B = ye("SMUI:dialog:aboveFullscreen"), R = ye("SMUI:dialog:aboveFullscreenShown") ?? Cn(!1), F = ye("SMUI:addLayoutListener"), Q, U = [], x = (q) => (U.push(q), () => {
     const K = U.indexOf(q);
     K >= 0 && U.splice(K, 1);
   });
@@ -10266,7 +10266,7 @@ function EI(n, e) {
   function Ee() {
     return y;
   }
-  var re = { isOpen: ne, setOpen: k, layout: ie, getElement: Ee }, De = AI();
+  var se = { isOpen: ne, setOpen: k, layout: ie, getElement: Ee }, De = AI();
   en("resize", Ni, () => C() && i(S) && i(S).layout()), en("orientationchange", Ni, () => C() && i(S) && i(S).layout()), en("keydown", yo.body, (q) => i(S) && i(S).handleDocumentKeydown(q));
   var Ge = ee(De), Me = (q) => {
     var K;
@@ -10336,7 +10336,7 @@ function EI(n, e) {
   Pe(Ge, (q) => y = q, () => y), Be(Ge, (q, K) => le == null ? void 0 : le(q, K), o);
   var Pt = te(Ge, 2);
   ge(Pt, () => e.over ?? Se), h(n, De);
-  var fe = be(re);
+  var fe = be(se);
   return s(), fe;
 }
 function fI(n, e) {
@@ -10422,7 +10422,7 @@ const Ro = Cn({
 });
 function SI(n, e) {
   _e(e, !0);
-  let t = /* @__PURE__ */ se(void 0), a = /* @__PURE__ */ se(!1);
+  let t = /* @__PURE__ */ re(void 0), a = /* @__PURE__ */ re(!1);
   const s = Ro.subscribe((o) => {
     G(t, o, !0), G(a, o.isOpen, !0);
   });
@@ -10795,7 +10795,7 @@ function va(n, e) {
   _e(e, !0);
   let t = p(e, "content", 3, ""), a = p(e, "side", 3, "top"), s = p(e, "hoverDelay", 3, 0), r = p(e, "transitionDuration", 3, 80), d = p(e, "disabled", 3, !1);
   const c = `tt-${Math.random().toString(36).slice(2)}`;
-  let o = /* @__PURE__ */ se(null), l = /* @__PURE__ */ se(null), C = /* @__PURE__ */ se(null), m = /* @__PURE__ */ se(null), u = /* @__PURE__ */ se(!1), D = /* @__PURE__ */ se(null), I = /* @__PURE__ */ se(null);
+  let o = /* @__PURE__ */ re(null), l = /* @__PURE__ */ re(null), C = /* @__PURE__ */ re(null), m = /* @__PURE__ */ re(null), u = /* @__PURE__ */ re(!1), D = /* @__PURE__ */ re(null), I = /* @__PURE__ */ re(null);
   function b() {
     !t() || d() || (i(D) && clearTimeout(i(D)), s() > 0 ? G(D, setTimeout(() => G(u, !0), s()), !0) : G(u, !0));
   }
@@ -11350,7 +11350,7 @@ function Fo(n, e) {
     "children",
     "progress",
     "paginate"
-  ]), E, O = /* @__PURE__ */ se(void 0), y, S = /* @__PURE__ */ se(void 0), L = /* @__PURE__ */ se(void 0), g = he({}), f = /* @__PURE__ */ se(he({ height: "auto", top: "initial" })), N = ye("SMUI:addLayoutListener"), B, R = !1, F = Cn(!1), Q = Cn(C());
+  ]), E, O = /* @__PURE__ */ re(void 0), y, S = /* @__PURE__ */ re(void 0), L = /* @__PURE__ */ re(void 0), g = he({}), f = /* @__PURE__ */ re(he({ height: "auto", top: "initial" })), N = ye("SMUI:addLayoutListener"), B, R = !1, F = Cn(!1), Q = Cn(C());
   Ne(() => {
     qn(Q, C());
   });
@@ -11572,22 +11572,22 @@ function Fo(n, e) {
       () => Ta(v, ["container$", "table$"])
     ]
   );
-  var re = J(V);
-  Qe(re, (T, P) => ({ class: T, ...P }), [
+  var se = J(V);
+  Qe(se, (T, P) => ({ class: T, ...P }), [
     () => ke({
       "mdc-data-table__table-container": !0,
       [b()]: !0
     }),
     () => Vt(v, "container$")
   ]);
-  var De = J(re);
+  var De = J(se);
   Qe(De, (T, P) => ({ class: T, ...P }), [
     () => ke({ "mdc-data-table__table": !0, [_()]: !0 }),
     () => Vt(v, "table$")
   ]);
   var Ge = J(De);
-  ge(Ge, () => e.children ?? Se), Be(De, (T, P) => le == null ? void 0 : le(T, P), A), Pe(re, (T) => y = T, () => y), Be(re, (T, P) => le == null ? void 0 : le(T, P), I);
-  var Me = te(re, 2);
+  ge(Ge, () => e.children ?? Se), Be(De, (T, P) => le == null ? void 0 : le(T, P), A), Pe(se, (T) => y = T, () => y), Be(se, (T, P) => le == null ? void 0 : le(T, P), I);
+  var Me = te(se, 2);
   {
     var st = (T) => {
       var P = dD(), W = te(J(P), 2);
@@ -11607,7 +11607,7 @@ function Fo(n, e) {
 var cD = /* @__PURE__ */ Z("<thead><!></thead>");
 function Vo(n, e) {
   _e(e, !0);
-  let t = p(e, "use", 19, () => []), a = /* @__PURE__ */ Ke(e, ["$$slots", "$$events", "$$legacy", "use", "children"]), s, r = /* @__PURE__ */ se(void 0), d = [];
+  let t = p(e, "use", 19, () => []), a = /* @__PURE__ */ Ke(e, ["$$slots", "$$events", "$$legacy", "use", "children"]), s, r = /* @__PURE__ */ re(void 0), d = [];
   const c = /* @__PURE__ */ new WeakMap();
   Te("SMUI:data-table:row:header", !0);
   const o = ye("SMUI:checkbox:mount");
@@ -11710,7 +11710,7 @@ function cr(n, e) {
     "class",
     "rowId",
     "children"
-  ]), d, c = /* @__PURE__ */ se(void 0), o = he({}), l = he({}), C = ye("SMUI:data-table:row:header");
+  ]), d, c = /* @__PURE__ */ re(void 0), o = he({}), l = he({}), C = ye("SMUI:data-table:row:header");
   const m = ye("SMUI:checkbox:mount");
   Te("SMUI:checkbox:mount", (N) => {
     G(c, N, !0), m && m(N);
@@ -12060,12 +12060,16 @@ function SD(n, e) {
                                     get class() {
                                       return i(Ee);
                                     },
-                                    children: (re, De) => {
+                                    onclick: () => {
+                                      var se;
+                                      return (se = e.onRowClick) == null ? void 0 : se.call(e, i(H));
+                                    },
+                                    children: (se, De) => {
                                       var Ge = xe();
                                       ve(() => {
                                         var Me;
                                         return Re(Ge, ((Me = i(H)) == null ? void 0 : Me[i(ie).key]) ?? "");
-                                      }), h(re, Ge);
+                                      }), h(se, Ge);
                                     },
                                     $$slots: { default: !0 }
                                   });
@@ -12077,8 +12081,8 @@ function SD(n, e) {
                                   jt(k, {
                                     numeric: !0,
                                     children: (ie, Ee) => {
-                                      var re = Ie(), De = ee(re);
-                                      ge(De, () => e.actions ?? Se, () => ({ item: i(H) })), h(ie, re);
+                                      var se = Ie(), De = ee(se);
+                                      ge(De, () => e.actions ?? Se, () => ({ item: i(H) })), h(ie, se);
                                     },
                                     $$slots: { default: !0 }
                                   });
@@ -12498,7 +12502,7 @@ function UD(n, e) {
     "icons",
     "icons$use",
     "icons$class"
-  ]), _, v = /* @__PURE__ */ se(void 0), E = he({}), O = /* @__PURE__ */ se(void 0), y = /* @__PURE__ */ se(!1), S = he(ye("SMUI:generic:input:props") ?? {}), L = /* @__PURE__ */ se(he(a(l()) ? a(C()) ? !1 : C() : l().findIndex((k) => k === m()) !== -1)), g = {
+  ]), _, v = /* @__PURE__ */ re(void 0), E = he({}), O = /* @__PURE__ */ re(void 0), y = /* @__PURE__ */ re(!1), S = he(ye("SMUI:generic:input:props") ?? {}), L = /* @__PURE__ */ re(he(a(l()) ? a(C()) ? !1 : C() : l().findIndex((k) => k === m()) !== -1)), g = {
     get disabled() {
       return d();
     },
@@ -12525,7 +12529,7 @@ function UD(n, e) {
         const ie = l().findIndex((Ee) => Ee === m());
         i(L) && ie === -1 ? l().push(m()) : !i(L) && ie !== -1 && l().splice(ie, 1), k = !0;
       } else {
-        const ie = N.findIndex((re) => re === m()), Ee = l().findIndex((re) => re === m());
+        const ie = N.findIndex((se) => se === m()), Ee = l().findIndex((se) => se === m());
         ie > -1 && Ee === -1 ? g.selected = !1 : Ee > -1 && ie === -1 && (g.selected = !0);
       }
     a(C()) ? B !== i(L) && (k = !0) : C() !== i(L) && (C() === f ? (C(i(L)), k = !0) : g.selected = C()), f = C(), N = a(l()) ? [] : [...l()], B = i(L), k && M() && We(M(), "SMUISwitchChange", { selected: i(L), value: m() });
@@ -12620,10 +12624,10 @@ function UD(n, e) {
   {
     var pe = (k) => {
       var ie = wD();
-      Qe(ie, (Ee, re) => ({ class: Ee, ...re }), [
+      Qe(ie, (Ee, se) => ({ class: Ee, ...se }), [
         () => ke({ "mdc-switch__icons": !0, [b()]: !0 }),
         () => Vt(A, "icons$")
-      ]), Be(ie, (Ee, re) => le == null ? void 0 : le(Ee, re), I), h(k, ie);
+      ]), Be(ie, (Ee, se) => le == null ? void 0 : le(Ee, se), I), h(k, ie);
     };
     oe(ce, (k) => {
       D() && k(pe);
@@ -12763,7 +12767,7 @@ function ji(n, e) {
     "label$use",
     "children",
     "label"
-  ]), l, C = /* @__PURE__ */ se(void 0), m = new gs(), u, D = /* @__PURE__ */ se(void 0);
+  ]), l, C = /* @__PURE__ */ re(void 0), m = new gs(), u, D = /* @__PURE__ */ re(void 0);
   Te("SMUI:generic:input:props", { id: d() }), Te("SMUI:generic:input:mount", (O) => {
     G(D, O, !0);
   }), Te("SMUI:generic:input:unmount", () => {
@@ -12939,20 +12943,20 @@ function kn(n, e) {
                                 }, pe = (V) => {
                                   var ne = Ie(), k = ee(ne);
                                   {
-                                    var ie = (re) => {
-                                      EC(re, {
+                                    var ie = (se) => {
+                                      EC(se, {
                                         get svgStyles() {
                                           return i(d);
                                         }
                                       });
-                                    }, Ee = (re) => {
+                                    }, Ee = (se) => {
                                       var De = xe();
-                                      ve(() => Re(De, `Unsupported supported type: ${e.type ?? ""}`)), h(re, De);
+                                      ve(() => Re(De, `Unsupported supported type: ${e.type ?? ""}`)), h(se, De);
                                     };
                                     oe(
                                       k,
-                                      (re) => {
-                                        e.type === "star" ? re(ie) : re(Ee, !1);
+                                      (se) => {
+                                        e.type === "star" ? se(ie) : se(Ee, !1);
                                       },
                                       !0
                                     );
@@ -14304,7 +14308,7 @@ function lb(n) {
   return t;
 }
 const Ho = Cn([]), BC = { subscribe: Ho.subscribe };
-let UC = /* @__PURE__ */ se(void 0);
+let UC = /* @__PURE__ */ re(void 0);
 const Cb = () => i(UC);
 function Di(n) {
   G(UC, n, !0);
@@ -14450,7 +14454,7 @@ function yb(n, e) {
   const t = () => tt(BC, "$drawers", a), [a, s] = $n();
   let r = /* @__PURE__ */ de(t);
   const d = 45;
-  let c = /* @__PURE__ */ se(he(window.innerWidth)), o = /* @__PURE__ */ de(() => {
+  let c = /* @__PURE__ */ re(he(window.innerWidth)), o = /* @__PURE__ */ de(() => {
     const v = t().map((E) => E.title);
     return [Cb(), ...v];
   });
@@ -14678,8 +14682,8 @@ function qi(n, e) {
   _e(e, !0);
   let t = () => {
   };
-  function a(re) {
-    return re === t;
+  function a(se) {
+    return se === t;
   }
   let s = p(e, "use", 19, () => []), r = p(e, "class", 3, ""), d = p(e, "style", 3, ""), c = p(e, "disabled", 15, !1), o = p(e, "touch", 3, !1), l = p(e, "indeterminate", 15, t), C = p(e, "group", 11, t), m = p(e, "checked", 15, t), u = p(e, "value", 3, null), D = p(e, "valueKey", 3, t), I = p(e, "input$use", 19, () => []), b = p(e, "input$class", 3, ""), A = /* @__PURE__ */ Ke(e, [
     "$$slots",
@@ -14697,18 +14701,18 @@ function qi(n, e) {
     "valueKey",
     "input$use",
     "input$class"
-  ]), _, v = /* @__PURE__ */ se(void 0), E = /* @__PURE__ */ se(void 0), O = he({}), y = he({}), S = he({}), L = /* @__PURE__ */ se(!1), g = he(ye("SMUI:generic:input:props") ?? {}), f = /* @__PURE__ */ se(he(a(C()) ? a(m()) ? !1 : !!m() : C().findIndex((re) => re === u()) !== -1)), N = ye("SMUI:checkbox:context"), B = ye("SMUI:data-table:row:header"), R = m(), F = a(C()) ? [] : [...C()], Q = i(f);
+  ]), _, v = /* @__PURE__ */ re(void 0), E = /* @__PURE__ */ re(void 0), O = he({}), y = he({}), S = he({}), L = /* @__PURE__ */ re(!1), g = he(ye("SMUI:generic:input:props") ?? {}), f = /* @__PURE__ */ re(he(a(C()) ? a(m()) ? !1 : !!m() : C().findIndex((se) => se === u()) !== -1)), N = ye("SMUI:checkbox:context"), B = ye("SMUI:data-table:row:header"), R = m(), F = a(C()) ? [] : [...C()], Q = i(f);
   Ne(() => {
-    let re = !1;
+    let se = !1;
     if (!a(C()))
       if (Q !== i(f)) {
         const De = C().findIndex((Ge) => Ge === u());
-        i(f) && De === -1 ? C().push(u()) : !i(f) && De !== -1 && C().splice(De, 1), re = !0;
+        i(f) && De === -1 ? C().push(u()) : !i(f) && De !== -1 && C().splice(De, 1), se = !0;
       } else {
         const De = F.findIndex((Me) => Me === u()), Ge = C().findIndex((Me) => Me === u());
-        De > -1 && Ge === -1 ? (G(f, !1), re = !0) : Ge > -1 && De === -1 && (G(f, !0), re = !0);
+        De > -1 && Ge === -1 ? (G(f, !1), se = !0) : Ge > -1 && De === -1 && (G(f, !0), se = !0);
       }
-    a(m()) ? Q !== i(f) && (re = !0) : (m() !== (l() ? null : i(f)) || i(f) !== Q) && (m() === R && i(f) !== Q ? (m(i(f)), a(l()) || l(!1)) : G(f, !!m()), re = !0), i(E) && (a(l()) ? i(E).indeterminate && (i(E).indeterminate = !1, re = !0) : !l() && i(E).indeterminate ? (i(E).indeterminate = !1, re = !0) : l() && !i(E).indeterminate && (i(E).indeterminate = !0, G(f, !1), re = !0)), R = m(), F = a(C()) ? [] : [...C()], Q = i(f), re && i(v) && i(v).handleChange();
+    a(m()) ? Q !== i(f) && (se = !0) : (m() !== (l() ? null : i(f)) || i(f) !== Q) && (m() === R && i(f) !== Q ? (m(i(f)), a(l()) || l(!1)) : G(f, !!m()), se = !0), i(E) && (a(l()) ? i(E).indeterminate && (i(E).indeterminate = !1, se = !0) : !l() && i(E).indeterminate ? (i(E).indeterminate = !1, se = !0) : l() && !i(E).indeterminate && (i(E).indeterminate = !0, G(f, !1), se = !0)), R = m(), F = a(C()) ? [] : [...C()], Q = i(f), se && i(v) && i(v).handleChange();
   });
   const U = ye("SMUI:generic:input:mount"), x = ye("SMUI:generic:input:unmount"), j = ye("SMUI:checkbox:mount"), M = ye("SMUI:checkbox:unmount");
   Ye(() => {
@@ -14730,7 +14734,7 @@ function qi(n, e) {
       }),
       !0
     );
-    const re = {
+    const se = {
       _smui_checkbox_accessor: !0,
       get element() {
         return ce();
@@ -14754,25 +14758,25 @@ function qi(n, e) {
         G(L, !1);
       }
     };
-    return U && U(re), j && j(re), i(v).init(), () => {
+    return U && U(se), j && j(se), i(v).init(), () => {
       var De;
-      x && x(re), M && M(re), (De = i(v)) == null || De.destroy();
+      x && x(se), M && M(se), (De = i(v)) == null || De.destroy();
     };
   });
-  function X(re) {
-    O[re] || (O[re] = !0);
+  function X(se) {
+    O[se] || (O[se] = !0);
   }
-  function z(re) {
-    (!(re in O) || O[re]) && (O[re] = !1);
+  function z(se) {
+    (!(se in O) || O[se]) && (O[se] = !1);
   }
-  function H(re, De) {
-    y[re] != De && (De === "" || De == null ? delete y[re] : y[re] = De);
+  function H(se, De) {
+    y[se] != De && (De === "" || De == null ? delete y[se] : y[se] = De);
   }
-  function $(re, De) {
-    S[re] !== De && (S[re] = De);
+  function $(se, De) {
+    S[se] !== De && (S[se] = De);
   }
-  function ae(re) {
-    (!(re in S) || S[re] != null) && (S[re] = void 0);
+  function ae(se) {
+    (!(se in S) || S[se] != null) && (S[se] = void 0);
   }
   function me() {
     return g && g.id;
@@ -14780,11 +14784,11 @@ function qi(n, e) {
   function ce() {
     return _;
   }
-  var pe = { getId: me, getElement: ce }, V = Vb(), ne = (re) => {
+  var pe = { getId: me, getElement: ce }, V = Vb(), ne = (se) => {
     var De;
-    i(v) && i(v).handleAnimationEnd(), (De = e.onanimationend) == null || De.call(e, re);
+    i(v) && i(v).handleAnimationEnd(), (De = e.onanimationend) == null || De.call(e, se);
   };
-  Qe(V, (re, De, Ge) => ({ class: re, style: De, ...Ge, onanimationend: ne }), [
+  Qe(V, (se, De, Ge) => ({ class: se, style: De, ...Ge, onanimationend: ne }), [
     () => ke({
       "mdc-checkbox": !0,
       "mdc-checkbox--disabled": c(),
@@ -14794,20 +14798,20 @@ function qi(n, e) {
       ...O,
       [r()]: !0
     }),
-    () => Object.entries(y).map(([re, De]) => `${re}: ${De};`).concat([d()]).join(" "),
+    () => Object.entries(y).map(([se, De]) => `${se}: ${De};`).concat([d()]).join(" "),
     () => Ta(A, ["input$"])
   ]);
-  var k = J(V), ie = (re) => {
+  var k = J(V), ie = (se) => {
     var De;
-    We(ce(), "blur", re), (De = e.input$onblur) == null || De.call(e, re);
-  }, Ee = (re) => {
+    We(ce(), "blur", se), (De = e.input$onblur) == null || De.call(e, se);
+  }, Ee = (se) => {
     var De;
-    We(ce(), "focus", re), (De = e.input$onfocus) == null || De.call(e, re);
+    We(ce(), "focus", se), (De = e.input$onfocus) == null || De.call(e, se);
   };
   return Qe(
     k,
-    (re, De, Ge, Me) => ({
-      class: re,
+    (se, De, Ge, Me) => ({
+      class: se,
       type: "checkbox",
       ...g,
       disabled: c(),
@@ -14827,7 +14831,7 @@ function qi(n, e) {
     void 0,
     void 0,
     !0
-  ), Pe(k, (re) => G(E, re), () => i(E)), Be(k, (re, De) => le == null ? void 0 : le(re, De), I), Qa(() => Fp(k, () => i(f), (re) => G(f, re))), Pe(V, (re) => _ = re, () => _), Be(V, (re, De) => le == null ? void 0 : le(re, De), s), Be(V, (re, De) => Gt == null ? void 0 : Gt(re, De), () => ({
+  ), Pe(k, (se) => G(E, se), () => i(E)), Be(k, (se, De) => le == null ? void 0 : le(se, De), I), Qa(() => Fp(k, () => i(f), (se) => G(f, se))), Pe(V, (se) => _ = se, () => _), Be(V, (se, De) => le == null ? void 0 : le(se, De), s), Be(V, (se, De) => Gt == null ? void 0 : Gt(se, De), () => ({
     unbounded: !0,
     addClass: X,
     removeClass: z,
@@ -14872,7 +14876,7 @@ function Fd(n, e, t) {
 }
 const Es = Cn({ path: ["overview"] }), Gb = (n) => {
   const e = he({ doc: null, host: null });
-  let t = /* @__PURE__ */ se(!1);
+  let t = /* @__PURE__ */ re(!1);
   const { subscribe: a, set: s } = Cn({ doc: null, host: null }), r = (l) => {
     e.doc = l, o();
   }, d = (l) => {
@@ -14940,7 +14944,7 @@ function Wo(n, e) {
     "error",
     "match",
     "noMatches"
-  ]), y, S, L = /* @__PURE__ */ se(0), g = /* @__PURE__ */ se(!1), f = /* @__PURE__ */ se(!1), N, B = /* @__PURE__ */ se(he([])), R = /* @__PURE__ */ se(-1), F = /* @__PURE__ */ se(void 0), Q = O.menu$id ?? "SMUI-autocomplete-" + jb++ + "-menu";
+  ]), y, S, L = /* @__PURE__ */ re(0), g = /* @__PURE__ */ re(!1), f = /* @__PURE__ */ re(!1), N, B = /* @__PURE__ */ re(he([])), R = /* @__PURE__ */ re(-1), F = /* @__PURE__ */ re(void 0), Q = O.menu$id ?? "SMUI-autocomplete-" + jb++ + "-menu";
   const U = /* @__PURE__ */ de(() => i(f) && (o() !== "" || I()) && (i(L) > 0 || !m() && !(i(B).length === 1 && i(B)[0] === r()) || m() && !!i(B).length && !(i(B).length === 1 && i(B)[0] === r())));
   let x = o();
   Ne(() => {
@@ -15046,7 +15050,7 @@ function Wo(n, e) {
   function Ee() {
     return y;
   }
-  var re = { focus: k, blur: ie, getElement: Ee }, De = Bb(), Ge = (P) => {
+  var se = { focus: k, blur: ie, getElement: Ee }, De = Bb(), Ge = (P) => {
     var W;
     l() || V(P), (W = e.onfocusout) == null || W.call(e, P);
   };
@@ -15287,7 +15291,7 @@ function Wo(n, e) {
   }
   return Pe(De, (P) => y = P, () => y), Be(De, (P) => Xs == null ? void 0 : Xs(P)), Be(De, (P, W) => le == null ? void 0 : le(P, W), t), ve(() => {
     ht(Me, "aria-controls", Q), ht(Me, "aria-expanded", i(U) ? "true" : "false");
-  }), en("keydown", Me, pe, !0), h(n, De), be(re);
+  }), en("keydown", Me, pe, !0), h(n, De), be(se);
 }
 nn(["focusin", "input"]);
 var Ub = /* @__PURE__ */ Z("<div><!></div>");
@@ -15300,7 +15304,7 @@ function kb(n, e) {
     "use",
     "class",
     "children"
-  ]), r, d = /* @__PURE__ */ se(void 0), c = /* @__PURE__ */ se(void 0);
+  ]), r, d = /* @__PURE__ */ re(void 0), c = /* @__PURE__ */ re(void 0);
   const o = ye("SMUI:textfield:character-counter:mount"), l = ye("SMUI:textfield:character-counter:unmount");
   Ye(() => (G(
     d,
@@ -15353,7 +15357,7 @@ function Wb(n, e) {
     "persistent",
     "validationMsg",
     "children"
-  ]), o, l = /* @__PURE__ */ se(void 0), C = he({}), m = he({}), u = /* @__PURE__ */ se(void 0);
+  ]), o, l = /* @__PURE__ */ re(void 0), C = he({}), m = he({}), u = /* @__PURE__ */ re(void 0);
   const D = ye("SMUI:textfield:helper-text:id"), I = ye("SMUI:textfield:helper-text:mount"), b = ye("SMUI:textfield:helper-text:unmount");
   Ye(() => (G(
     l,
@@ -15438,7 +15442,7 @@ function HC(n, e) {
   let s = p(e, "typeId", 15, ""), r = p(e, "valid", 15, !1), d = p(e, "showErrorsOnInput", 3, !1), c = p(e, "onGenerateId", 3, () => {
   }), o;
   const l = s();
-  let C = /* @__PURE__ */ se(!1), m = /* @__PURE__ */ de(() => s() && s().trim().length > 0), u = /* @__PURE__ */ de(() => /^\S+$/.test(s())), D = /* @__PURE__ */ se(!0), I = /* @__PURE__ */ de(() => i(m) && i(u) && i(D));
+  let C = /* @__PURE__ */ re(!1), m = /* @__PURE__ */ de(() => s() && s().trim().length > 0), u = /* @__PURE__ */ de(() => /^\S+$/.test(s())), D = /* @__PURE__ */ re(!0), I = /* @__PURE__ */ de(() => i(m) && i(u) && i(D));
   Ne(() => {
     !s() || s() === l || t.dataTypeExists(e.typeKind, s()).then((E) => {
       G(D, !E);
@@ -15575,7 +15579,7 @@ function KC(n, e) {
   _e(e, !0);
   let t = p(e, "idLabel", 3, "Enter Id"), a = p(e, "defaultTypeId", 3, ""), s = p(e, "autocompleteLabel", 3, "Select Option"), r = p(e, "getOptions", 3, async () => []), d = p(e, "allowCreateFromDefault", 3, !1), c = p(e, "isDefaultAvailable", 3, async (M) => !1), o = p(e, "typeSelectionDisabled", 3, !1), l = p(e, "onChange", 3, (M) => {
   }), C = p(e, "onSubmit", 3, (M) => {
-  }), m = /* @__PURE__ */ se(void 0), u = /* @__PURE__ */ se(void 0), D = /* @__PURE__ */ se(!1), I = /* @__PURE__ */ se(he([])), b = /* @__PURE__ */ se(he(a())), A = /* @__PURE__ */ se(void 0), _ = /* @__PURE__ */ se(!1), v = /* @__PURE__ */ se(!1), E = /* @__PURE__ */ de(() => i(v) && !!i(A)), O = /* @__PURE__ */ se(!1);
+  }), m = /* @__PURE__ */ re(void 0), u = /* @__PURE__ */ re(void 0), D = /* @__PURE__ */ re(!1), I = /* @__PURE__ */ re(he([])), b = /* @__PURE__ */ re(he(a())), A = /* @__PURE__ */ re(void 0), _ = /* @__PURE__ */ re(!1), v = /* @__PURE__ */ re(!1), E = /* @__PURE__ */ de(() => i(v) && !!i(A)), O = /* @__PURE__ */ re(!1);
   Ye(async () => {
     await y(), g();
   });
@@ -15762,7 +15766,7 @@ var tA = /* @__PURE__ */ Z('<div style="padding: 1rem;"><!></div>'), nA = /* @__
 function Id(n, e) {
   _e(e, !0);
   const t = nu();
-  let a = p(e, "open", 15, !1), s = p(e, "confirmText", 3, "Confirm"), r = p(e, "idLabel", 3, "ID"), d = p(e, "autocompleteLabel", 3, "Select Option"), c = p(e, "getOptions", 3, async () => []), o = p(e, "checkDefaultAvailable", 3, async () => !1), l = p(e, "showCreateFromDefault", 3, !1), C = /* @__PURE__ */ se(void 0), m = /* @__PURE__ */ de(() => {
+  let a = p(e, "open", 15, !1), s = p(e, "confirmText", 3, "Confirm"), r = p(e, "idLabel", 3, "ID"), d = p(e, "autocompleteLabel", 3, "Select Option"), c = p(e, "getOptions", 3, async () => []), o = p(e, "checkDefaultAvailable", 3, async () => !1), l = p(e, "showCreateFromDefault", 3, !1), C = /* @__PURE__ */ re(void 0), m = /* @__PURE__ */ de(() => {
     var E;
     return ((E = i(C)) == null ? void 0 : E.valid) ?? !1;
   });
@@ -15963,9 +15967,9 @@ function mA(n, e) {
       u() && e.showSelectionIndicator && Le(pe);
     });
   }
-  var V = te(ce, 2), ne = J(V), k = J(ne), ie = J(k), Ee = te(k, 2), re = J(Ee);
+  var V = te(ce, 2), ne = J(V), k = J(ne), ie = J(k), Ee = te(k, 2), se = J(Ee);
   let De;
-  var Ge = J(re), Me = te(re, 2);
+  var Ge = J(se), Me = te(se, 2);
   {
     var st = (Le) => {
       kn(Le, {
@@ -16151,7 +16155,7 @@ function mA(n, e) {
   }
   ve(
     (Le, Y) => {
-      me = Wn(ae, 1, `oscd-card-item ${i(H) ?? ""} ${o() ? "clickable" : ""}`, "svelte-1v3z6fr", me, Le), ht(ae, "role", o() ? "button" : "undefined"), Re(ie, e.title), De = Wn(re, 1, "oscd-references svelte-1v3z6fr", null, De, Y), Re(Ge, a());
+      me = Wn(ae, 1, `oscd-card-item ${i(H) ?? ""} ${o() ? "clickable" : ""}`, "svelte-1v3z6fr", me, Le), ht(ae, "role", o() ? "button" : "undefined"), Re(ie, e.title), De = Wn(se, 1, "oscd-references svelte-1v3z6fr", null, De, Y), Re(Ge, a());
     },
     [
       () => ({
@@ -16185,11 +16189,11 @@ function _A(n, e) {
   }), I = p(e, "onItemEdit", 3, () => {
   }), b = p(e, "onItemClick", 3, () => {
   }), A = p(e, "onItemApplyDefaults", 3, () => {
-  }), _ = /* @__PURE__ */ se(he([...s()]));
+  }), _ = /* @__PURE__ */ re(he([...s()]));
   Ne(() => {
     G(_, [...s()], !0);
   });
-  let v = /* @__PURE__ */ se(null);
+  let v = /* @__PURE__ */ re(null);
   function E(f) {
     c()({ itemId: (f == null ? void 0 : f.id) ?? null, item: f ?? null });
   }
@@ -16441,7 +16445,7 @@ function SA(n, e) {
   }), f = p(e, "onItemApplyDefaults", 3, () => {
   }), N = p(e, "onColumnActionClick", 3, () => {
   }), B = p(e, "onApplyDefaults", 3, () => {
-  }), R = /* @__PURE__ */ se(""), F = /* @__PURE__ */ de(() => U(I(), i(R)));
+  }), R = /* @__PURE__ */ re(""), F = /* @__PURE__ */ de(() => U(I(), i(R)));
   function Q(ae, me) {
     var pe, V;
     const ce = me.toLowerCase().trim();
@@ -16564,10 +16568,10 @@ function qo(n, e) {
   }), D = p(e, "onColumnActionClick", 3, () => {
   }), I = p(e, "onApplyDefaults", 3, () => {
   }), b = p(e, "onItemDrop", 3, () => {
-  }), A = /* @__PURE__ */ se(
+  }), A = /* @__PURE__ */ re(
     null
     // This will hold the item being dragged. On The board only one item can be dragged at a time.
-  ), _ = /* @__PURE__ */ se(void 0);
+  ), _ = /* @__PURE__ */ re(void 0);
   Ye(() => {
     G(_, MI(), !0);
   });
@@ -16894,7 +16898,7 @@ function xA(n, e) {
     },
     initialMode: D() ? m() : "view"
   }), { canEdit: b, isEditModeSwitchState: A, mode: _, dirty: v } = I;
-  let E = /* @__PURE__ */ se(null), O = /* @__PURE__ */ se(""), y = /* @__PURE__ */ se(he([])), S = /* @__PURE__ */ se(!1);
+  let E = /* @__PURE__ */ re(null), O = /* @__PURE__ */ re(""), y = /* @__PURE__ */ re(he([])), S = /* @__PURE__ */ re(!1);
   Ye(async () => {
     await L();
   });
@@ -17051,8 +17055,8 @@ function xA(n, e) {
             },
             $$slots: { default: !0 }
           });
-          var re = te(Ee, 2);
-          Go(re, {
+          var se = te(Ee, 2);
+          Go(se, {
             children: (De, Ge) => {
               var Me = Ie(), st = ee(Me);
               Gn(st, 17, () => i(M), (dt) => dt.name, (dt, ot) => {
@@ -17169,7 +17173,7 @@ function kA(n, e) {
     onDiscard: async () => _.reset(),
     initialMode: A() ? I() : "view"
   }), { canEdit: S, isEditModeSwitchState: L, dirty: g } = y;
-  let f = /* @__PURE__ */ se(null), N = /* @__PURE__ */ se(he({
+  let f = /* @__PURE__ */ re(null), N = /* @__PURE__ */ re(he({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
@@ -17294,7 +17298,7 @@ function kA(n, e) {
   Ne(() => {
     i(f) && Q(y.getCanEdit(), i(f).id, i(f).instanceType, a()).then((T) => G(N, T, !0));
   });
-  let re = /* @__PURE__ */ de(() => ({
+  let se = /* @__PURE__ */ de(() => ({
     refs: i(Ee),
     dataObjectTypes: La(i(N).dataObjectTypes, !0),
     dataAttributeTypes: La(i(N).dataAttributeTypes, !0),
@@ -17343,7 +17347,7 @@ function kA(n, e) {
       return i(De);
     },
     get data() {
-      return i(re);
+      return i(se);
     },
     onItemClick: ({ itemId: T, columnId: P }) => U(T, P),
     onItemSelectChange: (T) => x(T),
@@ -17362,7 +17366,7 @@ function kA(n, e) {
 var HA = /* @__PURE__ */ Z('<div class="subtitle svelte-vgtta"> </div>'), KA = /* @__PURE__ */ Z('<div class="custom-item"><div class="title svelte-vgtta"> </div> <!></div>'), WA = /* @__PURE__ */ Z("<div><p> </p> <!></div>");
 function qA(n, e) {
   _e(e, !0);
-  let t = p(e, "text", 3, void 0), a = p(e, "open", 15, !1), s = /* @__PURE__ */ se(null), r = /* @__PURE__ */ se(he([])), d = (I) => (I == null ? void 0 : I.id) ?? "", c = ri(), o = dc(), l = ic(), C = rc(), m = /* @__PURE__ */ de(() => i(s) !== null);
+  let t = p(e, "text", 3, void 0), a = p(e, "open", 15, !1), s = /* @__PURE__ */ re(null), r = /* @__PURE__ */ re(he([])), d = (I) => (I == null ? void 0 : I.id) ?? "", c = ri(), o = dc(), l = ic(), C = rc(), m = /* @__PURE__ */ de(() => i(s) !== null);
   Ye(() => {
     switch (e.type) {
       case w.LNodeType:
@@ -17491,7 +17495,7 @@ function zA(n, e) {
 var XA = /* @__PURE__ */ Z('<p style="margin-top: 1rem">Please enter a new ID for the type. All references to the old ID will be updated accordingly.</p> <!>', 1);
 function ZA(n, e) {
   _e(e, !0);
-  let t, a = p(e, "open", 15, !1), s = p(e, "typeId", 7), r = /* @__PURE__ */ se(!1);
+  let t, a = p(e, "open", 15, !1), s = p(e, "typeId", 7), r = /* @__PURE__ */ re(!1);
   Ye(async () => {
     setTimeout(
       () => {
@@ -17732,7 +17736,7 @@ function cl(n, e) {
     "valueKey",
     "input$use",
     "input$class"
-  ]), A, _ = /* @__PURE__ */ se(void 0), v = he({}), E = he({}), O = /* @__PURE__ */ se(!1), y = he(ye("SMUI:generic:input:props") ?? {});
+  ]), A, _ = /* @__PURE__ */ re(void 0), v = he({}), E = he({}), O = /* @__PURE__ */ re(!1), y = he(ye("SMUI:generic:input:props") ?? {});
   const S = ye("SMUI:generic:input:mount"), L = ye("SMUI:generic:input:unmount");
   Ye(() => {
     G(
@@ -17840,7 +17844,7 @@ var nE = /* @__PURE__ */ Z(`<p class="info-text svelte-yxg2fc"><!> No compatible
 function iE(n, e) {
   _e(e, !0);
   const t = ga(), a = Ps(), s = nu();
-  let r = p(e, "open", 15, !1), d = /* @__PURE__ */ se(void 0), c = /* @__PURE__ */ se("select"), o = /* @__PURE__ */ se(void 0), l = /* @__PURE__ */ se(!0), C = /* @__PURE__ */ se(he([])), m = /* @__PURE__ */ de(() => i(C).length === 0), u = /* @__PURE__ */ se(void 0);
+  let r = p(e, "open", 15, !1), d = /* @__PURE__ */ re(void 0), c = /* @__PURE__ */ re("select"), o = /* @__PURE__ */ re(void 0), l = /* @__PURE__ */ re(!0), C = /* @__PURE__ */ re(he([])), m = /* @__PURE__ */ de(() => i(C).length === 0), u = /* @__PURE__ */ re(void 0);
   Ye(async () => {
     if (i(c) === "select") {
       G(l, !0);
@@ -18138,7 +18142,7 @@ function zi(n, e) {
 var uE = /* @__PURE__ */ Z("<div><!> <!></div>");
 function pE(n, e) {
   _e(e, !0);
-  let t = p(e, "anchorCorner", 3, "BOTTOM_RIGHT"), a = p(e, "buttonVariant", 3, "unelevated"), s, r = /* @__PURE__ */ se(void 0), d = he({});
+  let t = p(e, "anchorCorner", 3, "BOTTOM_RIGHT"), a = p(e, "buttonVariant", 3, "unelevated"), s, r = /* @__PURE__ */ re(void 0), d = he({});
   var c = uE(), o = J(c);
   Fb(o, {
     onClick: () => s.setOpen(!0),
@@ -18519,7 +18523,7 @@ function fE(n, e) {
     onDiscard: async () => _.reset(),
     initialMode: I()
   }), { canEdit: S, isEditModeSwitchState: L, dirty: g } = y;
-  let f = /* @__PURE__ */ se(null), N = /* @__PURE__ */ se(he({
+  let f = /* @__PURE__ */ re(null), N = /* @__PURE__ */ re(he({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
@@ -18642,7 +18646,7 @@ function fE(n, e) {
   Ne(() => {
     i(f) && Q(y.getCanEdit(), i(f).id, i(f).cdc, a()).then((T) => G(N, T, !0));
   });
-  let re = /* @__PURE__ */ de(() => ({
+  let se = /* @__PURE__ */ de(() => ({
     refs: i(Ee),
     dataObjectTypes: La(i(N).dataObjectTypes, !0),
     dataAttributeTypes: La(i(N).dataAttributeTypes, !0),
@@ -18688,7 +18692,7 @@ function fE(n, e) {
       return i(De);
     },
     get data() {
-      return i(re);
+      return i(se);
     },
     onItemClick: ({ itemId: T, columnId: P }) => j(T, P),
     onItemMarkChange: (T) => handleOnMark(T),
@@ -43163,7 +43167,7 @@ var af = /* @__PURE__ */ Z("<strong>Name</strong>"), sf = /* @__PURE__ */ Z("<!>
 function mf(n, e) {
   _e(e, !0);
   const t = ri(), a = ga();
-  let s = /* @__PURE__ */ se(""), r = /* @__PURE__ */ se("id"), d = /* @__PURE__ */ se("ascending"), c = /* @__PURE__ */ se(he([])), o = /* @__PURE__ */ de(() => {
+  let s = /* @__PURE__ */ re(""), r = /* @__PURE__ */ re("id"), d = /* @__PURE__ */ re("ascending"), c = /* @__PURE__ */ re(he([])), o = /* @__PURE__ */ de(() => {
     const f = i(s).toLowerCase();
     return i(c).filter((N) => N.id.toLowerCase().includes(f)).sort((N, B) => {
       const R = N[i(r)], F = B[i(r)];
@@ -43479,7 +43483,7 @@ function Ef(n, e) {
     onSave: async () => $(),
     onDiscard: async () => _.reset()
   }), { canEdit: S, isEditModeSwitchState: L, dirty: g, isSavable: f, mode: N } = y;
-  let B = /* @__PURE__ */ se(!1), R = /* @__PURE__ */ se(""), F = /* @__PURE__ */ se(""), Q = /* @__PURE__ */ se(null), U = /* @__PURE__ */ se(he({
+  let B = /* @__PURE__ */ re(!1), R = /* @__PURE__ */ re(""), F = /* @__PURE__ */ re(""), Q = /* @__PURE__ */ re(null), U = /* @__PURE__ */ re(he({
     lNodeTypes: [],
     dataObjectTypes: [],
     dataAttributeTypes: [],
@@ -43590,7 +43594,7 @@ function Ef(n, e) {
       ec(Fe == null ? void 0 : Fe.message);
     }
   }
-  async function re() {
+  async function se() {
     await ai(w.LNodeType, i(R)) && Es.set({ path: ["overview"] });
   }
   async function De() {
@@ -43688,7 +43692,7 @@ function Ef(n, e) {
     side: "bottom",
     hoverDelay: 2e3,
     children: (Y, Oe) => {
-      XC(Y, { onDelete: re, onRename: De });
+      XC(Y, { onDelete: se, onRename: De });
     },
     $$slots: { default: !0 }
   });
@@ -43716,7 +43720,7 @@ function Ef(n, e) {
 var ff = /* @__PURE__ */ Z("<h1>Default Types</h1> <!> <!>", 1);
 function Of(n, e) {
   _e(e, !0);
-  let t = Ps(), a = /* @__PURE__ */ se(he([])), s = /* @__PURE__ */ se(""), r = /* @__PURE__ */ se(!0);
+  let t = Ps(), a = /* @__PURE__ */ re(he([])), s = /* @__PURE__ */ re(""), r = /* @__PURE__ */ re(!0);
   const d = [
     { header: "Type", key: "type" },
     { header: "Instance", key: "instance" },
