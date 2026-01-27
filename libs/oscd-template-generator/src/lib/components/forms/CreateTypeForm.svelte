@@ -14,6 +14,7 @@
 
     // defaults
     defaultTypeId?: string,
+    autoGenerateId?: (instance: string) => string,
     defaultInstance?: string,
 
 
@@ -37,6 +38,7 @@
 
     defaultTypeId = '',
     defaultInstance,
+    autoGenerateId,
 
     autocompleteLabel = 'Select Option',
     getOptions = async () => [],
@@ -151,6 +153,19 @@
     })
   });
 
+  $effect(() => {
+    if (selectedItem) {
+      updateSuggestedId();
+    }
+  })
+
+  function updateSuggestedId() {
+    if (!selectedItem) return;
+    if(autoGenerateId) {
+      typeId = autoGenerateId(selectedItem.id);
+    }
+  }
+
 </script>
 
 <form onsubmit={handleSubmit}>
@@ -160,7 +175,6 @@
       label={autocompleteLabel}
       bind:value={selectedItem}
       bind:this={instanceTypeSelectEl}
-      selectOnExactMatch
       disabled={typeSelectionDisabled}
       {options}
       {getOptionLabel}
@@ -184,6 +198,7 @@
     {typeKind}
     idLabel={idLabel}
     showErrorsOnInput={true}
+    onGenerateId={() => updateSuggestedId()}
   />
 
   {#if allowCreateFromDefault && !!selectedItem}

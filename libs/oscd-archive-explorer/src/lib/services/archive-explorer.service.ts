@@ -18,6 +18,7 @@ export class ArchiveExplorerService {
     new ArchiveSearchResult(
       uuidv4(),
       'Dummy name',
+      'z1b2c3d4-e5f6-7890-1234-56789abcdef1',
       'My Note',
       'Jane Doe',
       'John Doe',
@@ -32,6 +33,7 @@ export class ArchiveExplorerService {
     new ArchiveSearchResult(
       uuidv4(),
       'Dummy name 2',
+      'e1b2c3d4-e5f6-7890-1234-56789abcdef1',
       'My Note 2',
       'Jane Doe',
       'John Doe',
@@ -91,6 +93,7 @@ export class ArchiveExplorerService {
             new ArchiveSearchResult(
               uuidv4(),
               'Dummy name',
+              'e1b2c3d4-e5f6-7890-1234-56789abcdef1',
               'My Note',
               'Jane Doe',
               'John Doe',
@@ -105,6 +108,7 @@ export class ArchiveExplorerService {
             new ArchiveSearchResult(
               uuidv4(),
               'Dummy name',
+              '3c4b2a7e-4c8b-49da-9627-5b783d85745f',
               'My Note 2',
               'Jane Doe',
               'John Doe',
@@ -145,6 +149,7 @@ export class ArchiveExplorerService {
     return new ArchiveSearchResult(
       data.uuid,
       data.name,
+      data.location,
       data.note,
       data.author,
       data.approver,

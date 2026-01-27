@@ -5,8 +5,8 @@
     key: string;
     header: string;
     width?: string;
+    bold?: boolean;
   };
-
 
   let hoveredRow: string | number | null = $state(null);
 
@@ -29,13 +29,13 @@
     loading = false,
     errorMsg = '',
     emptyText = 'Nothing to show.',
-    getRowId = (item, i) =>
-    (item && (item.id ?? item.key)) ?? i,
+    getRowId = (item, i) => (item && (item.id ?? item.key)) ?? i,
     headerBg = null,
     rowBg = null,
     hasActions = false,
     actions
   }: Props = $props();
+
   let showActions = $derived(hasActions || !!actions);
 </script>
 
@@ -68,19 +68,14 @@
 
     <Body>
     {#each items as item, i (getRowId(item, i))}
-      <Row
-        on:mouseenter={() => (hoveredRow = getRowId(item, i))}
-        on:mouseleave={() => (hoveredRow = null)}
-        style={[
-        rowBg ? `background-color:${rowBg}` : '',
-        hoveredRow === getRowId(item, i) ? 'background-color:#D9D800' : ''
-      ].filter(Boolean).join(';')}
-      >
+      <Row style={rowBg ? `background-color:${rowBg}` : undefined}>
         {#each columns as col}
-          <Cell>{item?.[col.key] ?? ''}</Cell>
+          <Cell class={col.bold ? 'cell-bold' : ''}>
+            {item?.[col.key] ?? ''}
+          </Cell>
         {/each}
         {#if showActions}
-          <Cell numeric>{@render actions?.({ item, })}</Cell>
+          <Cell numeric>{@render actions?.({ item })}</Cell>
         {/if}
       </Row>
     {/each}
@@ -91,4 +86,12 @@
 <style>
   .status { font-family: Roboto, system-ui, -apple-system, Segoe UI, sans-serif; }
   .error { color: #b00020; }
+
+  :global(.mdc-data-table__row:hover > .mdc-data-table__cell) {
+    background-color: #D9D800 !important;
+  }
+
+  :global(td.mdc-data-table__cell.cell-bold) {
+    font-weight: 700 !important;
+  }
 </style>

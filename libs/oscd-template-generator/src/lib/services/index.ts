@@ -6,3 +6,4 @@ export * from './enum-type.service';
 export * from './type-specification.service';
 export * from './common-data-type';
 export * from './default.service';
+export * from './id-generator.service'

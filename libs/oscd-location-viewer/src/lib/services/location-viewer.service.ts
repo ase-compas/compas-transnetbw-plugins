@@ -50,11 +50,10 @@ export class LocationViewerService {
   }
 
   public searchResources(params: DataResourceSearch): Observable<SclResourceModel[]> {
-    console.log(params);
     return this.historyApiClient.searchForResources({
       dataResourceSearch: this.mapToDataResourceSearch(params),
     }).pipe(
-      map((response: any) => { console.log(response); return response.results}),
+      map((response: any) => { return response.results}),
       map((data: any[]) => data.map((item: any) => SclResourceModel.from(item))
       )
     )

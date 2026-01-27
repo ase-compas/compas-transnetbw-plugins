@@ -46,6 +46,7 @@
   } from '../../../domain';
   import { type ItemDropOnItemEventDetail, type TBoardItemContext } from '../../tboard/types';
   import TypeHeader from '../../TypeHeader.svelte';
+  import { get } from 'svelte/store';
 
   // ===== Services =====
   const doTypeService: IDoTypeService = getDOTypeService();
@@ -157,8 +158,16 @@
   }
 
   // ===== Event Handlers =====
-  function handleOnMark({ itemId }) {
-    refStore.toggleMarked(itemId);
+  function handleToggleMark(itemId: string, columnId: string) {
+    if (columnId === 'refs') {
+      refStore.toggleMarked(itemId);
+      return;
+    }
+
+    const currentMarkedItem = get(refStore.markedItem);
+    if (currentMarkedItem) {
+      refStore.setTypeReference(currentMarkedItem.name, itemId);
+    }
   }
 
   function handleOnSelect({ itemId }) {
@@ -317,7 +326,7 @@
 <TBoard
   {columns}
   data={boardData}
-  onItemClick={(e) => handleOnMark(e)}
+  onItemClick={({itemId, columnId}) => handleToggleMark(itemId, columnId)}
   onItemMarkChange={(e) => handleOnMark(e)}
   onItemSelectChange={(e) => handleOnSelect(e)}
   onItemDrop={(e) => handleItemDrop(e)}

@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { ViewPlugin } from '../types/view-plugin';
-  import { ensureCustomElementDefined, preloadAllPlugins } from '../services/engineering-workflow.service';
-  import { editorTabsVisible } from '../stores/editor-tabs.store';
-  import PluginHost from '../components/shared/PluginHost.svelte';
-  import { selectedProcessState } from '../services/engineering-process.svelte';
-  import PluginGroupsStepper from '../components/engineering-process-detail/PluginGroupsStepper.svelte';
-  import WorkflowTitle from '../components/engineering-workflow/WorkflowTitle.svelte';
-  import WorkflowActions from '../components/engineering-workflow/WorkflowActions.svelte';
+  import type { ViewPlugin } from '../features/workflow/viewPlugin';
+  import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
+  import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
+  import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
+  import WorkflowActions from '../components/shared/WorkflowActions.svelte';
+  import { runningEngineeringProcess, selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
+  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../features/workflow/document-state';
+  import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
+  import { editorTabs } from '../features/workflow/layout.svelte';
 
   type Status = 'check' | 'warning' | 'error';
   const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
@@ -52,7 +54,7 @@
       : -1,
   );
 
-  let pluginGroups = $derived(selectedProcessState.process.pluginGroups);
+  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
 
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
@@ -80,6 +82,12 @@
     const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
+
+    try {
+      if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
+    } catch (e) { }
+
+    setLastSelectedPluginId(plugin.id);
 
     if (!visited.includes(plugin.id)) {
       visited = [...visited, plugin.id];
@@ -115,6 +123,33 @@
   }
 
   $effect(() => {
+    if (!hasPlugins) return;
+
+    const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
+    const lastId = xmlState.lastPluginId || runningEngineeringProcess.lastSelectedPluginId;
+    if (!lastId) return;
+
+    // If already selected and matches, nothing to do
+    if (selectedPlugin.plugin?.id === lastId) return;
+
+    const match = findGroupAndPluginIndexById(lastId);
+    if (match.groupIndex !== null && match.pluginIndex !== null) {
+      selectedGroupIndex = match.groupIndex;
+      selectedPluginIndex = match.pluginIndex;
+      const plugin = plugins.find((p) => p.id === lastId);
+      if (plugin) {
+        void selectPlugin(plugin);
+        return;
+      }
+    }
+
+    // Fallback if the stored plugin doesn't exist anymore
+    if (currentIndex === -1 && plugins.length) {
+      void selectPlugin(plugins[0]);
+    }
+  });
+
+  $effect(() => {
     if (selectedGroupIndex === null || selectedPluginIndex === null) return;
     const group = pluginGroups?.[selectedGroupIndex];
     const pluginMeta = group?.plugins?.[selectedPluginIndex];
@@ -137,7 +172,9 @@
     }
 
     if (currentIndex === -1) {
-      void selectPlugin(plugins[0]);
+      if (!runningEngineeringProcess.lastSelectedPluginId) {
+        void selectPlugin(plugins[0]);
+      }
     }
   });
 
@@ -146,12 +183,14 @@
       preloadAllPlugins(plugins).catch(console.error);
     }
 
-    editorTabsVisible.set(false);
-    return () => editorTabsVisible.set(true);
+    editorTabs.visible = false;
+    return () => {
+      editorTabs.visible = true;
+    };
   });
 
   function exitWorkflow() {
-    editorTabsVisible.set(true);
+    editorTabs.visible = true;
     onExit?.();
   }
 </script>

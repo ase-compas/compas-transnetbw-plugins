@@ -39,7 +39,7 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
     canMark: false,
     canClick: true,
     canSelect: isEditMode,
-    canUnlink: isEditMode && !!objRef.typeRef && !objRef.meta.isMandatory,
+    canUnlink: isEditMode && !!objRef.typeRef,
     canApplyDefaults: isEditMode && objRef.meta.requiresReference,
     referencable: objRef.meta.requiresReference,
     acceptDrop: acceptDropFn
@@ -55,6 +55,7 @@ export function mapDataTypeToItem(type: BasicType, canEdit = false): TItem {
     title: type.id,
     references: type.references,
     badgeText: type?.instanceType ?? 'Unknown Type',
+    canClick: true,
     canEdit: true,
     canUnlink: false,
     canSetDefault: true

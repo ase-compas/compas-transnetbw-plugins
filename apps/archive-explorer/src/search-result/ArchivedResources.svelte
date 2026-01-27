@@ -15,7 +15,7 @@
   <div class="content">
     {#if searchResults.length}
       {#each searchResults as searchResult (searchResult.uuid)}
-        <OscdExpansionPanel title={searchResult.name}>
+        <OscdExpansionPanel title={searchResult.name} open={true}>
           {#snippet content()}
                     <span >
               <ResourceHistory {searchResult} />
