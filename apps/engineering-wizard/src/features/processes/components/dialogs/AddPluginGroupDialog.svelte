@@ -4,29 +4,25 @@
   import OscdInput from "libs/oscd-component/src/oscd-input/OscdInput.svelte";
   import OscdSelect from "libs/oscd-component/src/oscd-select/OscdSelect.svelte";
 
-  interface Props {
-        open: boolean;
-        groups: number
-    };
+  interface Props { open: boolean; groups: number; }
 
-    let {
-        open = $bindable(false),
-        groups
-    }: Props = $props();
+  let {
+      open = $bindable(false),
+      groups
+  }: Props = $props();
 
-    let name = $state<string>('')
-    let position = $state<string>((groups+1).toString());
+  let name = $state<string>('')
+  let position = $state<string>((groups+1).toString());
 
-    const cancel = () => closeDialog('cancel');
-    const addGroup = () => closeDialog('confirm', {name,  position: Number(position)})
+  const cancel = () => closeDialog('cancel');
+  const addGroup = () => closeDialog('confirm', {name,  position: Number(position)})
 
-    // select values from 1..groups+1
-    let groupPositions = $derived.by(() =>
-  [
-    ...Array.from({length: groups+1}, (_, i) => ({ value: (i+1).toString(), label: (i+1).toString() })), // iterate from 1..groups+1
-  ]
-)
-let valid = $derived(name && position)
+  let groupPositions = $derived.by(() =>
+    [
+      ...Array.from({length: groups+1}, (_, i) => ({ value: (i+1).toString(), label: (i+1).toString() })), // iterate from 1..groups+1
+    ]
+  )
+  let valid = $derived(name && position)
 
 </script>
 

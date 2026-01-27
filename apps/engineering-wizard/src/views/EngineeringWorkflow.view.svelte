@@ -4,15 +4,14 @@
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
   import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
-  import WorkflowActions from '../components/shared/WorkflowActions.svelte';
-  import { runningEngineeringProcess, selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import WorkflowActions from '../components/shared/WorkflowActions.svelte';  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
   import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
-  import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from '../features/workflow/document-state';
+  import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { editorTabs } from '../features/workflow/layout.svelte';
-
-  type Status = 'check' | 'warning' | 'error';
-  const STATUSES: readonly Status[] = ['check', 'warning', 'error'] as const;
+  import {validateXPath } from '../features/plugins/validation/validatePluginXML.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { runningEngineeringProcess } from '../features/processes/stores.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -42,16 +41,12 @@
     onExit,
   }: Props = $props();
 
-  let selectedPlugin = $state<{ plugin: ViewPlugin | null }>({ plugin: null });
-  let visited: string[] = $state([]);
-  let pluginStatus: Record<string, Status> = $state({});
+  let selectedPlugin: ViewPlugin | null = $state(null);
 
   let hasPlugins = $derived(plugins.length > 0);
 
   let currentIndex = $derived(
-    selectedPlugin.plugin && hasPlugins
-      ? plugins.findIndex((p) => p.id === selectedPlugin.plugin!.id)
-      : -1,
+    selectedPlugin && hasPlugins ? plugins.findIndex((p) => p.id === selectedPlugin!.id) : -1,
   );
 
   let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
@@ -59,25 +54,38 @@
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
 
-  function findGroupAndPluginIndexById(id: string): {
-    groupIndex: number | null;
-    pluginIndex: number | null;
-  } {
+  function findGroupAndPluginIndexById(id: string): { groupIndex: number | null; pluginIndex: number | null } {
     if (!pluginGroups?.length) return { groupIndex: null, pluginIndex: null };
-    for (let gi = 0; gi < pluginGroups.length; gi++) {
-      const group = pluginGroups[gi];
-      const pi = group.plugins?.findIndex((plg) => plg.id === id) ?? -1;
-      if (pi >= 0) return { groupIndex: gi, pluginIndex: pi };
+
+    for (let groupIndex = 0; groupIndex < pluginGroups.length; groupIndex++) {
+      const group = pluginGroups[groupIndex];
+      const pluginIndex = group.plugins?.findIndex((plg) => plg.id === id) ?? -1;
+      if (pluginIndex >= 0) return { groupIndex, pluginIndex };
     }
+
     return { groupIndex: null, pluginIndex: null };
   }
 
-  async function selectPlugin(plugin?: ViewPlugin) {
+  async function onSelectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
 
-    await ensureCustomElementDefined(plugin);
+    if (selectedPlugin?.id === plugin.id) return;
 
-    selectedPlugin.plugin = plugin;
+    const previous = selectedPlugin;
+    if (doc && previous?.validations?.length) {
+      const results = validateXPath(doc, previous.validations);
+
+      results.forEach(r => {
+        if(r.ok) {
+          toastService.success("Validation passed", r.validation.title)
+        } else {
+          toastService.error("Validation failed ", r.validation.message);
+        }
+      });
+    }
+
+    await ensureCustomElementDefined(plugin);
+    selectedPlugin = plugin;
 
     const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
     selectedGroupIndex = groupIndex;
@@ -85,19 +93,9 @@
 
     try {
       if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
-    } catch (e) { }
+    } catch {}
 
     setLastSelectedPluginId(plugin.id);
-
-    if (!visited.includes(plugin.id)) {
-      visited = [...visited, plugin.id];
-
-      const index = plugins.findIndex((p) => p.id === plugin.id);
-      if (index !== -1) {
-        const status = STATUSES[index % STATUSES.length];
-        pluginStatus = { ...pluginStatus, [plugin.id]: status };
-      }
-    }
   }
 
   function advance(step: number) {
@@ -106,7 +104,7 @@
     const baseIndex = currentIndex < 0 ? 0 : currentIndex;
     const nextIndex = (baseIndex + step + plugins.length) % plugins.length;
 
-    void selectPlugin(plugins[nextIndex]);
+    void onSelectPlugin(plugins[nextIndex]);
   }
 
   const nextPlugin = () => advance(1);
@@ -122,65 +120,23 @@
     };
   }
 
-  $effect(() => {
-    if (!hasPlugins) return;
-
-    const xmlState = doc ? readEngineeringWorkflowState(doc) : { processId: null, lastPluginId: null };
-    const lastId = xmlState.lastPluginId || runningEngineeringProcess.lastSelectedPluginId;
-    if (!lastId) return;
-
-    // If already selected and matches, nothing to do
-    if (selectedPlugin.plugin?.id === lastId) return;
-
-    const match = findGroupAndPluginIndexById(lastId);
-    if (match.groupIndex !== null && match.pluginIndex !== null) {
-      selectedGroupIndex = match.groupIndex;
-      selectedPluginIndex = match.pluginIndex;
-      const plugin = plugins.find((p) => p.id === lastId);
-      if (plugin) {
-        void selectPlugin(plugin);
-        return;
-      }
-    }
-
-    // Fallback if the stored plugin doesn't exist anymore
-    if (currentIndex === -1 && plugins.length) {
-      void selectPlugin(plugins[0]);
-    }
-  });
-
-  $effect(() => {
-    if (selectedGroupIndex === null || selectedPluginIndex === null) return;
-    const group = pluginGroups?.[selectedGroupIndex];
-    const pluginMeta = group?.plugins?.[selectedPluginIndex];
-    if (!pluginMeta) return;
-
-    const plugin = plugins.find((p) => p.id === pluginMeta.id);
-    if (plugin && selectedPlugin.plugin?.id !== plugin.id) {
-      void selectPlugin(plugin);
-    }
-  });
-
-  $effect(() => {
-    if (!hasPlugins) {
-      selectedPlugin.plugin = null;
-      visited = [];
-      pluginStatus = {};
-      selectedGroupIndex = null;
-      selectedPluginIndex = null;
-      return;
-    }
-
-    if (currentIndex === -1) {
-      if (!runningEngineeringProcess.lastSelectedPluginId) {
-        void selectPlugin(plugins[0]);
-      }
-    }
-  });
-
   onMount(() => {
-    if (plugins.length) {
-      preloadAllPlugins(plugins).catch(console.error);
+    if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
+
+    let initialPluginId: string | null = runningEngineeringProcess.lastSelectedPluginId;
+    if (!initialPluginId && doc) {
+      try {
+        const { lastPluginId } = readEngineeringWorkflowState(doc);
+        initialPluginId = lastPluginId;
+      } catch {}
+    }
+
+    const initialPlugin = plugins.find(p => p.id === initialPluginId) ?? plugins[0];
+    if (initialPlugin) {
+      const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(initialPlugin.id);
+      selectedGroupIndex = groupIndex;
+      selectedPluginIndex = pluginIndex;
+      void onSelectPlugin(initialPlugin);
     }
 
     editorTabs.visible = false;
@@ -196,9 +152,10 @@
 </script>
 
 <div class="stepper">
-  <WorkflowTitle onClick={exitWorkflow}/>
+  <WorkflowTitle onClick={exitWorkflow} />
 
   <PluginGroupsStepper
+    selectPlugin={onSelectPlugin}
     {pluginGroups}
     expandedGroupBackground="var(--primary-base)"
     expandedGroupBorderColor="white"
@@ -210,17 +167,16 @@
     onGoToPreviousStep={previousPlugin}
     onGoToNextStep={nextPlugin}
     onDone={exitWorkflow}
-
     isAtFirstStep={!hasPlugins}
     isAtLastStep={!hasPlugins}
   />
 </div>
 
-{#if selectedPlugin.plugin}
+{#if selectedPlugin}
   <div class="plugin-container">
-    {#if selectedPlugin.plugin.type === 'internal'}
+    {#if selectedPlugin.type === 'internal'}
       <PluginHost
-        plugin={selectedPlugin.plugin}
+        plugin={selectedPlugin}
         doc={doc}
         {editCount}
         {plugins}
@@ -233,7 +189,7 @@
       />
     {:else}
       <svelte:element
-        this={selectedPlugin.plugin.id}
+        this={selectedPlugin.id}
         use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
       />
     {/if}

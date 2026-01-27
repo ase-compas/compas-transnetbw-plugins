@@ -1,13 +1,13 @@
 <script lang="ts">
-  import EngineeringProcessesList from './views/engineering-processes-list.view.svelte';
-  import EngineeringProcessDetail from './views/engineering-process-detail/engineering-process-detail.view.svelte';
-  import EngineeringWorkflowDialog from './views/engineering-workflow-dialog.svelte';
-  import AddNewProcess from './views/add-new-process.svelte';
+  import ProcessesListView from './views/ProcessesList.view.svelte';
+  import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
+  import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
+  import AddProcessView from './views/AddProcess.view.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
-  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import { loadEngineeringProcesses } from './features/processes/repository.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './features/workflow/document-state';
   import {
@@ -99,7 +99,7 @@
     }
 
     const plugins = getPluginsForProcess(selectedEngineeringProcess.process);
-    openDialog(EngineeringWorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    openDialog(WorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
   }
 
   $effect(() => {
@@ -107,6 +107,11 @@
   });
 
   function handleView(process: Process) {
+    selectedEngineeringProcess.process = process;
+  }
+
+  function handleEdit(process: Process) {
+    engineeringProcessEditing.isEditing = true;
     selectedEngineeringProcess.process = process;
   }
 
@@ -138,14 +143,16 @@
 <DialogHost />
 
 {#if isCreatingProcess}
-  <AddNewProcess handleCancel={cancelCreate} handleSaved={handleCreated} />
+  <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
 {:else if selectedEngineeringProcess.process}
-  <EngineeringProcessDetail handleBack={goBack} handleStart={startProcess} />
+  <ProcessDetailView handleBack={goBack} handleStart={startProcess} />
 {:else}
-  <EngineeringProcessesList
+  <ProcessesListView
     handleView={handleView}
+    handleEdit={handleEdit}
     handleStart={startProcess}
     handleAddNew={addNewProcess}
     docName={docName}
   />
 {/if}
+<OscdToastHost />

@@ -3,6 +3,7 @@ import type {
   Plugin,
   PluginGroup,
   Process,
+  XPathValidation,
 } from '@oscd-transnet-plugins/shared';
 import {
   corePlugins,
@@ -72,6 +73,31 @@ export function addPluginToProcess(
 
   group.plugins ??= [];
   group.plugins.push(plugin);
+}
+
+export function addValidationToPluginInProcess(
+  procId: string,
+  pluginId: string,
+  validation: XPathValidation,
+): void {
+  const processes = engineeringProcesses.processes ?? [];
+
+  engineeringProcesses.processes = processes.map((p) => {
+    if (p.id !== procId || !p.pluginGroups) return p;
+
+    const pluginGroups = p.pluginGroups.map((g) => {
+      const plugins = (g.plugins ?? []).map((pl) => {
+        if (pl.id !== pluginId) return pl;
+
+        const existing = pl.validations ?? [];
+        return { ...pl, validations: [...existing, validation] };
+      });
+
+      return { ...g, plugins };
+    });
+
+    return { ...p, pluginGroups };
+  });
 }
 
 export function removePluginFromProcess(

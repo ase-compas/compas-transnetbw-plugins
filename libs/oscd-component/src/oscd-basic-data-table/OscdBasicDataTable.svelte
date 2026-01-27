@@ -21,6 +21,7 @@
     rowBg?: string | null;
     hasActions?: boolean;
     actions?: import('svelte').Snippet<[any]>;
+    onRowClick?: (item: any) => void;
   }
 
   let {
@@ -33,7 +34,8 @@
     headerBg = null,
     rowBg = null,
     hasActions = false,
-    actions
+    actions,
+    onRowClick
   }: Props = $props();
 
   let showActions = $derived(hasActions || !!actions);
@@ -70,7 +72,7 @@
     {#each items as item, i (getRowId(item, i))}
       <Row style={rowBg ? `background-color:${rowBg}` : undefined}>
         {#each columns as col}
-          <Cell class={col.bold ? 'cell-bold' : ''}>
+          <Cell class={col.bold ? 'cell-bold' : ''} onclick={() => onRowClick?.(item)}>
             {item?.[col.key] ?? ''}
           </Cell>
         {/each}

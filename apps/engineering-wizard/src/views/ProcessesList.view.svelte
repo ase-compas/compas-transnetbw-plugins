@@ -4,9 +4,7 @@
 
   import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
   import {
-    OscdInfoIcon,
-    OscdPlayCircleIcon,
-    OscdVisibilityIcon,
+    OscdInfoIcon
   } from '../../../../libs/oscd-icons/src';
 
   import Button from '@smui/button';
@@ -19,13 +17,14 @@
   interface Props {
     handleStart: (process: Process) => void;
     handleView: (process: Process) => void;
+    handleEdit: (process: Process) => void;
     handleAddNew: () => void;
     docName?: string;
   }
 
   type ProcessRow = Process & { displayName: string };
 
-  const { handleStart, handleView, handleAddNew, docName }: Props = $props();
+  const { handleStart, handleView, handleEdit, handleAddNew, docName }: Props = $props();
 
   let searchQuery = $state('');
 
@@ -108,7 +107,7 @@
   <div class="process-toolbar">
     <Textfield bind:value={searchQuery} variant="outlined" label="Search Processes" />
     <Button
-      variant="raised"
+      class="mdc-button--raised"
       style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
       onclick={handleAddNew}
       aria-label="Start process"
@@ -126,35 +125,39 @@
     hasActions
     headerBg="#DAE3E6"
     rowBg="#ffffff"
+    onRowClick={handleView}
   >
     {#snippet actions({ item })}
-      <button
+      <Button
         type="button"
-        class="icon"
-        aria-label="View process"
-        onclick={() => handleView(item)}
+        onclick={(e) => { e.stopPropagation(); handleEdit(item); }}
+        aria-label="Edit process"
+        class="mdc-button--raised"
+        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
       >
-        <OscdVisibilityIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-      </button>
+        Edit
+      </Button>
 
       {#if isRunningRow(item)}
-        <button
+        <Button
           type="button"
-          class="icon"
           aria-label="Start process"
-          onclick={() => handleStart(item)}
+          onclick={(e) => { e.stopPropagation(); handleStart(item); }}
+          class="mdc-button--raised"
+          style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
         >
-          <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-        </button>
+         Continue
+        </Button>
       {:else}
-        <button
+        <Button
           type="button"
-          class="icon"
           aria-label="Start process"
-          onclick={() => handleStart(item)}
+          onclick={(e) => { e.stopPropagation(); handleStart(item); }}
+          class="mdc-button--raised"
+          style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
         >
-          <OscdPlayCircleIcon svgStyles="fill: #002B37; width: 100%; height: 100%;" />
-        </button>
+         Start
+        </Button>
       {/if}
     {/snippet}
   </OscdBasicDataTable>
@@ -201,21 +204,6 @@
     color: var(--white);
     font-weight: 500;
   }
-
-  .icon {
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    background: none;
-    width: 32px;
-    height: 32px;
-    margin-right: 8px;
-  }
-
-  .icon:last-child {
-    margin-right: 0;
-  }
-
   .banner-continue {
     border: none;
     cursor: pointer;
