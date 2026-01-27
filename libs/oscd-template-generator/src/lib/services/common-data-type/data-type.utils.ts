@@ -33,7 +33,8 @@ export function specsToObjectReferenceDetails(typeSpecification: ObjectSpecifica
         isConfigured: !!spec.isMandatory || !!existingRefObj,
         requiresReference: !!spec.requiresReference,
         objectType: spec.objectType,
-        refTypeKind: spec.refTypeKind
+        refTypeKind: spec.refTypeKind,
+        underlyingType: spec.underlyingType,
       }
     } as ObjectReferenceDetails;
   });

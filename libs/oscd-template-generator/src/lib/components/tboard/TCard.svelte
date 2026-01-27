@@ -195,7 +195,7 @@
         </button>
         </OscdTooltip>
     {:else if !subtitle && referencable}
-      <button 
+      <button
       class="oscd-card-subtitle__add-reference"
       onclick={(e) => {
         e.stopPropagation();
@@ -205,7 +205,7 @@
           <OscdWarningIcon fill="#FF6B6B" size="15px" />
         {/if}
         Add reference
-      </button> 
+      </button>
     {/if}
   </span>
     {:else}
@@ -306,14 +306,15 @@
     align-items: start;
     word-break: break-word;
     gap: 0.5rem;
+    min-height: 30px;
   }
 
   .sub-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     word-break: break-word;
-    gap: 2rem;
+    gap: 0.35rem;
   }
 
   .actions {
@@ -404,7 +405,7 @@
     white-space: nowrap;
   }
 
-  
+
   .clickable:hover {
     cursor: pointer;
     filter: brightness(1.05); /* 5% brighter */

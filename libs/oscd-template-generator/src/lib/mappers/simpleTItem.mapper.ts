@@ -21,9 +21,10 @@ export function mapObjectReferenceStateToTItem(objRef: ObjectReferenceState, isE
   const badgeText = [
     objRef.meta.refTypeKind ? getTypeKindAbbreviation(objRef.meta.refTypeKind) : null,
     objRef.meta?.objectType ?? 'ANY',
+    objRef.meta.underlyingType ?? null
   ]
     .filter(Boolean)
-    .join(" • ");
+    .join(" > ");
 
   return {
     id: objRef.name,

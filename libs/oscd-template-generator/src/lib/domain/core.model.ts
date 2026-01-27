@@ -68,6 +68,7 @@ export interface ObjectReferenceMeta {
   requiresReference: boolean;
   objectType?: string;
   refTypeKind?: DataTypeKind;
+  underlyingType?: string;
 }
 
 export interface ObjectReferenceDetails extends ObjectReference {
