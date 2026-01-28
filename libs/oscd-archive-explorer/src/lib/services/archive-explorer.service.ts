@@ -143,6 +143,13 @@ export class ArchiveExplorerService {
     );
   }
 
+  archiveSclFile(
+    uuid: string,
+    version: string
+  ): Observable<ArchivedResource> {
+    return this.generateApiClient().archiveSclResource({id: uuid, version: version})
+  }
+
   private mapToArchiveSearchResult(
     data: ArchivedResource
   ): ArchiveSearchResult {

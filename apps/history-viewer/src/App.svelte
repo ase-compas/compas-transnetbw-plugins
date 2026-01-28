@@ -23,6 +23,7 @@
     VersionEditorFileService,
     VersionEditorStore
   } from '@oscd-transnet-plugins/oscd-history-viewer';
+  import { ArchiveExplorerService } from '@oscd-transnet-plugins/oscd-archive-explorer';
   import type { SearchParams } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Label } from '@smui/button';
   import { OscdCancelIcon } from '@oscd-transnet-plugins/oscd-icons';
@@ -37,6 +38,7 @@
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
+  const archivingService = ArchiveExplorerService.getInstance();
 
   let rowData: FileSearchResult[] = [];
   let historyData: FileSearchResult[] = [];
@@ -162,7 +164,7 @@
    });
    if (result.type !== 'confirm') return;
 
-   versionEditorDataService.deleteResource(row.uuid)
+   archivingService.archiveSclFile(row.uuid, row.version)
      .pipe(take(1))
      .subscribe({
        next: () => {
