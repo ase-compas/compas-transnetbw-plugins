@@ -19,6 +19,10 @@ function root(doc: XMLDocument): Element {
   return doc.documentElement;
 }
 
+function findHeader(doc: XMLDocument): Element | null {
+  return root(doc).querySelector(':scope > Header');
+}
+
 function findPrivate(doc: XMLDocument, type: string): Element | null {
   return root(doc).querySelector(`:scope > Private[type="${type}"]`);
 }
@@ -47,7 +51,8 @@ function upsertPrivate(
   if (existing) {
     edits.push(buildSetTextContent(existing, text));
   } else {
-    edits.push(buildInsert(root(doc), createPrivate(doc, type, text), null));
+    const header = findHeader(doc);
+    edits.push(buildInsert(root(doc), createPrivate(doc, type, text), header));
   }
 }
 
