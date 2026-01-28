@@ -6,7 +6,6 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
-  import 'svelte-material-ui/bare.css';
   import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import { loadEngineeringProcesses } from './features/processes/repository.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './features/workflow/document-state';
@@ -18,6 +17,11 @@
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
+
+  import 'svelte-material-ui/bare.css';
+  import "../public/material-icon.css"
+  import "../public/smui.css"
+  import "../public/global.css"
 
   interface Plugin {
     src: string;
@@ -135,10 +139,6 @@
     selectedEngineeringProcess.process = proc;
   }
 </script>
-
-<svelte:head>
-  <link rel="stylesheet" href="/material-icon.css" />
-</svelte:head>
 
 <DialogHost />
 
