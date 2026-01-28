@@ -49,9 +49,14 @@ export class VersionEditorFileService {
       );
   }
 
-  deleteResource(uuid: string): Observable<void> {
+  /**
+   * Delete all versions of a resource
+   * @param type scl file type (e.g., SSD, SCL, etc.)
+   * @param uuid uuid of the resource
+   */
+  deleteResource(type: string, uuid: string): Observable<void> {
     const sclApiClient = this.generateApiClient(this.endpoint);
-    return sclApiClient.deleteAllSclFileVersions({id: uuid});
+    return sclApiClient.deleteAllSclFileVersions({id: uuid, type: type});
   }
 
   downloadSclData(

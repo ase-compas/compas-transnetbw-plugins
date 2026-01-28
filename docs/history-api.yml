@@ -55,7 +55,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponseDto'
-  /api/scl/{id}:
+  /api/scl/{type}/{id}:
     delete:
       tags:
         - history
@@ -70,6 +70,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: type
+          in: path
+          description: Scl file type (e.g., SSD, IID, ICD, SCD, CID, SED, ISD, STD, etc.)
+          required: true
+          schema:
+            type: string
       responses:
         '204':
           description: Successfully deleted all versions of the SCL file
