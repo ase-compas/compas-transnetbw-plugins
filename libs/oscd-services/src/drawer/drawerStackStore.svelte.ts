@@ -45,6 +45,7 @@ export const drawers: Readable<Drawer[]> = {
 };
 
 let _homeTitle = $state<string | undefined>(undefined);
+export const freezeEvents = $state<{freeze: boolean}>({freeze: false}); // state to freeze action events
 
 export const getHomeTitle = (): string | undefined  => { return _homeTitle; }
 export function setHomeTitle(homeTitle: string) { _homeTitle = homeTitle; }
@@ -71,6 +72,8 @@ async function canCloseDrawer(drawer: Drawer, reason: CloseReason) {
  * Close the top drawer
  */
 export async function closeDrawer(reason: CloseReason = 'button') {
+  if (freezeEvents.freeze) return;
+
   const drawerList = get(drawers);
   if (!drawerList.length) return;
 

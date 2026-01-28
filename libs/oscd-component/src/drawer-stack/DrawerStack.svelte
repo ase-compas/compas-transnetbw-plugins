@@ -25,8 +25,11 @@
 
   // Handle Escape key
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && drawerList.length > 0) {
+    if (drawerList.length === 0) return;
+    if (event.key === 'Escape') {
       closeDrawer('esc');
+    } else if (event.key === 'Enter') {
+      closeDrawer('save');
     }
   }
 
