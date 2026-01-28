@@ -38,17 +38,17 @@
     justify-content: center;
     font-weight: 600;
     transition: background-color 0.2s ease;
-    background-color: #6B9197;
+    background-color: rgb(from var(--base0) r g b / 0.8);
     color: white;
   }
 
   .step-circle.active {
-    background-color: #D9D800;
-    color: #004552;
+    background-color: var(--bright-yellow);
+    color: var(--primary-base);
   }
 
   .step-circle.visited {
-    background-color: #ffffff;
-    color: #004552;
+    background-color: var(--white);
+    color: var(--primary-base);
   }
 </style>

@@ -14,8 +14,8 @@
     pluginGroups = [],
     selectedGroupIndex = $bindable<number>(0),
     selectedPluginIndex = $bindable<number>(0),
-    expandedGroupBackground = 'var(--brand)',
-    expandedGroupBorderColor = 'var(--brand)',
+    expandedGroupBackground = 'var(--primary-base)',
+    expandedGroupBorderColor = 'var(--primary-base)',
     selectPlugin
   }: Props = $props();
 
@@ -121,8 +121,8 @@
     flex-direction: row;
     gap: 4px;
 
-    --expanded-group-bg: var(--brand);
-    --expanded-group-border: var(--brand);
+    --expanded-group-bg: var(--primary-base);
+    --expanded-group-border: var(--primary-base);
   }
 
   .validation-groups__group {
@@ -150,7 +150,7 @@
     padding: 0 8px;
     margin: 0;
 
-    color: var(--brand);
+    color: var(--primary-base);
     cursor: pointer;
     user-select: none;
 
@@ -164,8 +164,8 @@
   }
 
   .validation-groups__group.expanded .validation-groups__group-title {
-    background-color: var(--brand);
-    color: var(--on-brand);
+    background-color: var(--primary-base);
+    color: var(--white);
   }
 
   .validation-groups__plugin {
@@ -174,7 +174,7 @@
     justify-content: center;
     font-weight: 500;
 
-    color: var(--brand);
+    color: var(--primary-base);
     padding: 6px 1rem;
     background-color: white;
     border-radius: 2px;

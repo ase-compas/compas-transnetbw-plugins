@@ -18,9 +18,6 @@
     isAtLastStep = false,
     doneDisabled = false
   }: Props = $props();
-
-
-
 </script>
 <div class="stepper-actions">
   <div class="stepper-navigation">
@@ -31,7 +28,7 @@
       disabled={isAtFirstStep}
       aria-label="Previous step"
     >
-      <span><OscdArrowBackIcon svgStyles="fill: #ffffff" /></span>
+      <span><OscdArrowBackIcon svgStyles="fill: var(--white)" /></span>
       <span>Back</span>
     </button>
 
@@ -43,7 +40,7 @@
       aria-label="Next step"
     >
       <span>Next</span>
-      <span><OscdArrowForwardIcon svgStyles="fill: var(--brand);" /></span>
+      <span><OscdArrowForwardIcon svgStyles="fill: var(--primary-base);" /></span>
     </button>
   </div>
   <button
@@ -53,7 +50,7 @@
     disabled={doneDisabled}
     aria-label="Done"
   >
-    <span><OscdCheckIcon svgStyles="fill: var(--brand);" /></span>
+    <span><OscdCheckIcon svgStyles="fill: var(--primary-base);" /></span>
     <span>Done</span>
   </button>
 </div>
@@ -86,8 +83,8 @@
   }
 
   .btn[disabled] { opacity: 0.6; cursor: default; }
-  .btn--back { color: #ffffff; background-color: #6b9197; }
-  .btn--next { background-color: #ffffff; color: var(--brand); }
-  .btn--done { background-color: #ffffff; color: var(--brand); }
+  .btn--back { color: var(--white); background-color: rgb(from var(--base0) r g b / 0.5); }
+  .btn--next { background-color: var(--white); color: var(--primary-base); }
+  .btn--done { background-color: var(--white); color: var(--primary-base); }
 
 </style>

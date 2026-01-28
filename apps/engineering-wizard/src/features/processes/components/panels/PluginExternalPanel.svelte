@@ -107,7 +107,7 @@
               onclick={() => handleAddClick(plugin)}
               aria-label={`Add ${plugin.name}`}
             >
-              <OscdAddCircleIcon svgStyles="fill: var(--brand);" />
+              <OscdAddCircleIcon svgStyles="fill: var(--primary-base);" />
             </button>
           </div>
         </OscdListItem>
@@ -127,7 +127,7 @@
 
   .header-info {
     font-weight: 500;
-    color: var(--brand);
+    color: var(--primary-base);
     font-size: 1.25rem;
     margin: 0;
   }
@@ -160,7 +160,7 @@
   .plugin-name {
     margin: 0;
     font-weight: 500;
-    color: var(--brand);
+    color: var(--primary-base);
   }
 
   .plugin-add-btn {

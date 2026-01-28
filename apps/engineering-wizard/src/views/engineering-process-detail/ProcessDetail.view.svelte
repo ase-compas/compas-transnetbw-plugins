@@ -44,7 +44,7 @@
 
         <Button
           variant="raised"
-          style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
           onclick={() => handleStart(selectedEngineeringProcess.process)}
           disabled={!selectedEngineeringProcess.process}
           aria-label="Start process"
@@ -62,8 +62,6 @@
   * { font-family: 'Roboto', sans-serif; }
 
   .page-content {
-    --brand: #004552;
-    --on-brand: #ffffff;
     display: flex;
     flex-direction: column;
   }

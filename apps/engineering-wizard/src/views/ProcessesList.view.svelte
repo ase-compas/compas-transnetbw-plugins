@@ -108,7 +108,7 @@
     <Textfield bind:value={searchQuery} variant="outlined" label="Search Processes" />
     <Button
       class="mdc-button--raised"
-      style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+      style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
       onclick={handleAddNew}
       aria-label="Start process"
     >
@@ -133,7 +133,7 @@
         onclick={(e) => { e.stopPropagation(); handleEdit(item); }}
         aria-label="Edit process"
         class="mdc-button--raised"
-        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
       >
         Edit
       </Button>
@@ -144,7 +144,7 @@
           aria-label="Start process"
           onclick={(e) => { e.stopPropagation(); handleStart(item); }}
           class="mdc-button--raised"
-          style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         >
          Continue
         </Button>
@@ -154,7 +154,7 @@
           aria-label="Start process"
           onclick={(e) => { e.stopPropagation(); handleStart(item); }}
           class="mdc-button--raised"
-          style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         >
          Start
         </Button>
@@ -164,11 +164,6 @@
 </div>
 
 <style>
-  * {
-    --brand: #004552;
-    --on-brand: #ffffff;
-  }
-
   .processes {
     margin-top: 16px;
     padding: 0 24px;
@@ -204,12 +199,13 @@
     color: var(--white);
     font-weight: 500;
   }
+
   .banner-continue {
     border: none;
     cursor: pointer;
     padding: 8px 14px;
-    background: #ffffff;
-    color: #004552;
+    background: var(--white);
+    color: var(--primary-base);
     border-radius: 4px;
     font-weight: 600;
   }

@@ -76,7 +76,7 @@
 
 <OscdPanel
   class="plugin-list"
-  backgroundColor="var(--brand)"
+  backgroundColor="var(--primary-base)"
   {header}
   {content}
   {additional}
@@ -196,7 +196,7 @@
   .plugin-list__title {
     margin: 0;
     font-weight: 500;
-    color: var(--on-brand);
+    color: var(--white);
     font-size: 1.25rem;
     line-height: 1.2;
   }
@@ -273,7 +273,7 @@
 
   .plugin-list__item-name {
     font-weight: 500;
-    color: var(--brand);
+    color: var(--primary-base);
   }
 
   .plugin-list__item-action {
