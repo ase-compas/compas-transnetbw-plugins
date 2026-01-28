@@ -18736,6 +18736,9 @@ class qr {
       })
     );
   }
+  archiveSclFile(e, n) {
+    return this.generateApiClient().archiveSclResource({ id: e, version: n });
+  }
   mapToArchiveSearchResult(e) {
     return new da(
       e.uuid,
