@@ -212,7 +212,7 @@
     <div class="topbar__actions">
       <Button
         variant="outlined"
-        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={cancel}
       >
         CANCEL
@@ -220,7 +220,7 @@
 
       <Button
         variant="raised"
-        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={save}
         disabled={!canSave}
       >
@@ -295,8 +295,6 @@
   * { font-family: 'Roboto', sans-serif; }
 
   .page {
-    --brand: #004552;
-    --on-brand: #ffffff;
     padding: 16px 24px;
     display: flex;
     flex-direction: column;
@@ -312,7 +310,7 @@
 
   .title {
     margin: 0;
-    color: var(--brand);
+    color: var(--primary-base);
     font-size: 1.25rem;
     font-weight: 600;
   }

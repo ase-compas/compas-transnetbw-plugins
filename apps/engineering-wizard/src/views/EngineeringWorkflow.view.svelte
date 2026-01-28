@@ -204,7 +204,6 @@
 
   .stepper {
     background-color: var(--primary-base);
-    --brand: var(--primary-base);
     --on-brand: #fff;
 
     display: flex;

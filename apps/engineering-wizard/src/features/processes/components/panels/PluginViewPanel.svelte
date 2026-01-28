@@ -22,7 +22,7 @@
 {#snippet headerAction()}
   <Button
     variant="raised"
-    style="--mdc-theme-primary: var(--on-brand); --mdc-theme-on-primary: var(--brand)"
+    style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base)"
     aria-label="Edit process"
     onclick={requestEdit}
   >

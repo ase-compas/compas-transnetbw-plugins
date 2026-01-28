@@ -132,7 +132,7 @@
       />
       <Button
         variant="raised"
-        style="--mdc-theme-primary: var(--brand); --mdc-theme-on-primary: var(--on-brand)"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={handleAddValidationClick}
         disabled={!selectedEngineeringProcess.process || !selectedPlugin}
         aria-label="Add validation"
@@ -161,7 +161,7 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    background-color: var(--brand);
+    background-color: var(--primary-base);
   }
 
   .header {

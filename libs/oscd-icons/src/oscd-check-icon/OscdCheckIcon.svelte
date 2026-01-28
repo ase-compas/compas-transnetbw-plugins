@@ -1,11 +1,21 @@
-<script></script>
+<script lang="ts">
+  import OscdIconBase from '../oscd-icon-base/OscdIconBase.svelte';
 
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 -960 960 960"
-  width="24"
-  height="24"
-  fill="#004552"
->
-<path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
-</svg>
+  interface Props {
+    svgStyles?: string;
+  }
+
+  let { svgStyles = '' }: Props = $props();
+</script>
+
+<OscdIconBase>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 -960 960 960"
+    width="24"
+    height="24"
+    style={svgStyles}
+  >
+    <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+  </svg>
+</OscdIconBase>

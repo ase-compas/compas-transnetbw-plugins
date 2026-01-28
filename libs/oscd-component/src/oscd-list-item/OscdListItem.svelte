@@ -25,13 +25,13 @@
   }
 
   .osc-card--primary {
-    --osc-card-bg: var(--brand);
-    --osc-card-fg: var(--on-brand);
+    --osc-card-bg: var(--white);
+    --osc-card-fg: var(--primary-base);
   }
 
   .osc-card--secondary {
-    --osc-card-bg: var(--on-brand);
-    --osc-card-fg: var(--brand);
+    --osc-card-bg: var(--white);
+    --osc-card-fg: var(--primary-base);
   }
 
   .osc-card--dashed {

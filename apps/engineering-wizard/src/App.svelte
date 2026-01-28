@@ -156,3 +156,5 @@
   />
 {/if}
 <OscdToastHost />
+<style>
+</style>
