@@ -21,6 +21,7 @@
     showErrorsOnInput?: boolean;
     // when generate new id button is clicked
     onGenerateId?: () => void;
+    canGenerateId?: boolean;
   }
 
   let {
@@ -31,7 +32,8 @@
 
     showErrorsOnInput = false,
 
-    onGenerateId = () => {}
+    onGenerateId,
+    canGenerateId = true,
   }: Props = $props();
 
   let inputEl;
@@ -83,6 +85,7 @@
   onblur={() => typeIdTouched = true}
 >
   {#snippet trailingIcon()}
+    {#if canGenerateId}
     <OscdTooltip content="Generate ID" placement="top" hoverDelay={200}>
       <button
         type="button"
@@ -95,6 +98,7 @@
         <Icon class="material-icons">autorenew</Icon>
       </button>
     </OscdTooltip>
+    {/if}
   {/snippet}
   {#snippet helper()}
     <HelperText validationMsg persitent>
