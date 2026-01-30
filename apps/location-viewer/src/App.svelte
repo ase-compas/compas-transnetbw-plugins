@@ -9,7 +9,7 @@
   });
 </script>
 <script lang="ts">
-  import { OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdFilterTab, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import {
     LocationViewerService,
     ResourceStore,
@@ -28,7 +28,8 @@
   import LocationCell from './LocationCell.svelte';
   import type { FilterDefinition } from '../../../libs/oscd-component/src/oscd-filter-builder/types';
   import { Subject } from 'rxjs';
-  import { tap, finalize, switchMap, debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
+  import { tap, finalize, switchMap, debounceTime, map, distinctUntilChanged, mergeWith } from 'rxjs/operators';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   const locationViewerService = LocationViewerService.getInstance();
   let locations: { label: string, value: string }[] = $state([]);
@@ -39,8 +40,12 @@
   let searchText = $state('');
 
   const searchTrigger$ = new Subject<void>();
-  const search$ = searchTrigger$.pipe(
-    debounceTime(150),
+  const initialLoad$ = new Subject<void>();
+  const search$ = initialLoad$.pipe(
+    mergeWith(
+      searchTrigger$.pipe(debounceTime(200))
+    )
+  ).pipe(
     map(() => convertFilterToSearchParams(filterDefinitions)),
     distinctUntilChanged(
       (a, b) => JSON.stringify(a) === JSON.stringify(b)
@@ -66,6 +71,10 @@
       next: (data) => {
         locations = data.map((item) => ({ label: item.name, value: item.uuid }));
         filterDefinitions = filterDefinitions.map(f => f.key === 'location' ? { ...f, options: locations } : f); // populate location filter options
+      },
+      error: (err) => {
+        console.error('Error loading locations:', err);
+        toastService.error("Failed to load locations.");
       }
     });
     searchTrigger$.next();
@@ -202,8 +211,10 @@
       next: () => {
         // refresh search to keep in sync
         searchTrigger$.next();
+        toastService.success("Resource location updated successfully.");
       },
       error: () => {
+        toastService.error("Failed to update resource location.");
         // revert on error
         const revertRow = { ...row, location: prev };
         searchResourceStore.update(revertRow);
@@ -269,6 +280,7 @@
                  store={searchResourceStore}
                  searchInputLabel={$_('search')} />
 </div>
+<OscdToastHost/>
 
 <style>
   .app-container {

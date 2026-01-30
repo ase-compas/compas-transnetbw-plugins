@@ -16,7 +16,7 @@
     OscdFilterTab, OscdToastHost
   } from '@oscd-transnet-plugins/oscd-component';
   import { Subject } from 'rxjs';
-  import { catchError, finalize, switchMap, take, tap, debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
+  import { catchError, finalize, switchMap, take, tap, debounceTime, map, distinctUntilChanged, mergeWith } from 'rxjs/operators';
   import { from, of } from 'rxjs';
   import {
     FileSearchResult,
@@ -45,8 +45,11 @@
   let currentSelectFile: FileSearchResult = $state();
 
   const searchTrigger$ = new Subject<void>();
-  const search$ = searchTrigger$.pipe(
-    debounceTime(150),
+  const initialLoad$ = new Subject<void>();
+  const search$ = initialLoad$.pipe(
+    mergeWith(
+      searchTrigger$.pipe(debounceTime(200))
+  ),
     map(() => convertFilterToSearchParams(filterDefinitions)),
     distinctUntilChanged(
       (a, b) => JSON.stringify(a) === JSON.stringify(b)
@@ -80,7 +83,7 @@
 
   onMount(() => {
     const sub = search$.subscribe();
-    searchTrigger$.next();
+    initialLoad$.next();
     return () => sub.unsubscribe();
   });
 
@@ -122,7 +125,7 @@
   ]);
 
   const rowActions = [
-    { icon: 'edit', tooltip: 'Edit', callback: (row) => openDoc(row), disabled: (row) => !row.available },
+    { icon: 'edit', tooltip: 'Open', callback: (row) => openDoc(row), disabled: (row) => !row.available },
     { icon: 'find-in-page', tooltip: 'View History', callback: (row) => getHistoryByUuid(row), disabled: () => false },
     { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
     { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false }
@@ -253,7 +256,17 @@
     dialogOpen = false;
   }
 
-  function openDoc(row: FileSearchResult) {
+  async function openDoc(row: FileSearchResult) {
+     const result = await openDialog(OscdConfirmDialog, {
+      title: 'Open File',
+      message: `Do you want to open "${row.filename}"? \n\nAny unsaved changes in your current project will be lost.`,
+      confirmActionText: 'Open',
+      cancelActionText: 'Cancel',
+     });
+
+     if(result.type !== 'confirm') {
+       return;
+     }
     if (!confirm('Open the selected file?\n\n Please make sure you save all changes on your current project.')) {
       return;
     }
@@ -276,7 +289,7 @@
         ),
         take(1),
         catchError(err => {
-          alert(err);
+          toastService.error("Open Document Failed", `Failed to open document "${row.filename}".`);
           console.error(err);
           return of(undefined);
         }),
