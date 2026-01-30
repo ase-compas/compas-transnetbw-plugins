@@ -1,6 +1,6 @@
 <script lang="ts">
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
-  import { DataTypeKind, TypeIdInput } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { DataTypeKind, getIdGeneratorService, TypeIdInput } from '@oscd-transnet-plugins/oscd-template-generator';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { onMount } from 'svelte';
 
@@ -59,14 +59,18 @@
     <p style="margin-top: 1rem">
       Please enter a new ID for the type. All references to the old ID will be updated accordingly.
     </p>
-    <TypeIdInput
-      bind:typeId={typeId}
-      bind:valid={valid}
-      bind:this={inputEl}
-      {typeKind}
-      idLabel="New Type ID"
-      showErrorsOnInput={true}
-    />
+    <form onsubmit={e => { e.preventDefault(); handleRename(); }}>
+      <TypeIdInput
+        bind:typeId={typeId}
+        bind:valid={valid}
+        bind:this={inputEl}
+        {typeKind}
+        idLabel="New Type ID"
+        showErrorsOnInput={true}
+        canGenerateId={false}
+      />
+      <button type="submit" style="display: none">submit</button>
+    </form>
   {/snippet}
 
 </OscdBaseDialog>

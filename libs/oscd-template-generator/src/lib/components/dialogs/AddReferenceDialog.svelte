@@ -146,6 +146,12 @@ onMount(async () => {
             bind:value={selectedItem}
             {options}
             getOptionLabel={o => o?.id ?? ''}
+            onkeydown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (selectedItem) handleConfirm();
+              }
+            }}
           >
             {#snippet match(item)}
               <div>{item.id}</div>
