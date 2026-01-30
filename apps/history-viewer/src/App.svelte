@@ -267,9 +267,6 @@
      if(result.type !== 'confirm') {
        return;
      }
-    if (!confirm('Open the selected file?\n\n Please make sure you save all changes on your current project.')) {
-      return;
-    }
 
     let url = '';
 
