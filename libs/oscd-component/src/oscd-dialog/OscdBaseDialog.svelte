@@ -2,6 +2,7 @@
   import Dialog, { Actions, Content, Header } from '@smui/dialog';
   import Button from '@smui/button';
   import { OscdIconActionButton } from '../index';
+  import { Snippet } from 'svelte';
 
   interface Props {
     open?: boolean;
@@ -16,7 +17,8 @@
     confirmDisabled?: boolean;
     color?: string;
     showCloseButton?: boolean;
-    content?: import('svelte').Snippet;
+    content?: Snippet;
+    actions?: Snippet;
 
     onClose?: () => void;
     onCancel?: () => void;
@@ -37,6 +39,7 @@
     color = 'var(--mdc-theme-primary, #ff3e00)',
     showCloseButton = true,
     content,
+    actions,
 
     onClose = () => {},
     onCancel = () => {},
@@ -92,22 +95,28 @@
   </Content>
 
   <div class="dialog__actions">
-    <Actions class="oscd-dialog__actions">
-      {#if cancelActionText}
+    {#if actions}
+      {@render actions()}
+    {:else}
+      <Actions class="oscd-dialog__actions">
+        {#if cancelActionText}
+          <Button
+            action="cancel"
+            color="secondary"
+            tabindex="1">
+            {cancelActionText}
+          </Button>
+        {/if}
         <Button
-          action="cancel"
-          color="secondary"
-          tabindex="1">
-          {cancelActionText}
+          action="confirm"
+          disabled={confirmDisabled}
+          style={confirmButtonStyle}
+          tabindex="0"
+        >
+          {confirmActionText}
         </Button>
-      {/if}
-      <Button
-        action="confirm"
-        disabled={confirmDisabled}
-        style={confirmButtonStyle}
-        tabindex="0"
-      >{confirmActionText}</Button>
-    </Actions>
+      </Actions>
+    {/if}
   </div>
 </Dialog>
 

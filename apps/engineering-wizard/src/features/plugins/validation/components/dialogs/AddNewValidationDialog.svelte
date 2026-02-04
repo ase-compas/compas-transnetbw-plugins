@@ -5,6 +5,8 @@
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import Button from '@smui/button';
+  import WorkflowActions from '../../../../../components/shared/WorkflowActions.svelte';
 
   interface Props {
     open: boolean;
@@ -41,13 +43,23 @@
   function cancel() {
     closeDialog('cancel');
   }
+
+  function onGoToPreviousStep() {
+    // Placeholder for previous step logic
+  }
+
+  function onGoToNextStep() {
+    // Placeholder for next step logic
+  }
+  const isAtFirstStep = $derived(false);
+  const isAtLastStep = $derived(false);
+
 </script>
 
 <OscdBaseDialog
   title="Add validation for {plugin.name}"
   confirmActionText="Add"
   maxWidth="600px"
-  maxheight="600px"
   bind:open
   onConfirm={saveValidation}
   onCancel={cancel}
@@ -83,6 +95,24 @@
       </Textfield>
     </div>
   {/snippet}
+  {#snippet actions()}
+    <div class="dialog-actions">
+      <Button onclick={cancel}>
+        Cancel
+      </Button>
+      <WorkflowActions
+        onGoToPreviousStep={onGoToPreviousStep}
+        onGoToNextStep={onGoToNextStep}
+        onDone={() => {}}
+        isAtFirstStep={isAtFirstStep}
+        isAtLastStep={isAtLastStep}
+        showDone={false}
+        nextBg="var(--primary-base)"
+        nextColor="var(--white)"
+        nextIconFill="var(--white)"
+      />
+    </div>
+  {/snippet}
 </OscdBaseDialog>
 
 <style>
@@ -91,5 +121,12 @@
     flex-direction: column;
     gap: 1rem;
     padding: 1rem 0;
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
   }
 </style>
