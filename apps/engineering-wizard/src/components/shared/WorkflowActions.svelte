@@ -1,5 +1,6 @@
 <script lang="ts">
   import { OscdArrowBackIcon, OscdArrowForwardIcon, OscdCheckIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import Button, { Label, Icon } from '@smui/button';
 
   interface Props {
     onGoToPreviousStep: () => void;
@@ -42,59 +43,57 @@
     nextIconFill,
     doneIconFill
   }: Props = $props();
+
+  const backStyles = $derived(`
+    ${backBg ? `background-color: ${backBg};` : `background-color: rgb(from var(--base0) r g b / 0.5);`}
+    ${backColor ? `color: ${backColor};` : `color: var(--white);`}
+  `);
+  const nextStyles = $derived(`
+    --mdc-theme-primary: ${nextBg ?? 'var(--white)'};
+    --mdc-theme-on-primary: ${nextColor ?? 'var(--primary-base)'};
+  `);
+  const doneStyles = $derived(`
+    ${doneBg ? `background-color: ${doneBg};` : `background-color: var(--white);`}
+    ${doneColor ? `color: ${doneColor};` : `color: var(--primary-base);`}
+    border: 1px solid var(--primary-base);
+  `);
 </script>
 <div class="stepper-actions">
   <div class="stepper-navigation">
-    <button
-      type="button"
-      class="btn btn--back"
+    <Button
+      variant="unelevated"
       onclick={onGoToPreviousStep}
       disabled={isAtFirstStep}
       aria-label="Previous step"
-      style={`
-        ${backBg ? `--btn-bg:${backBg};` : ''}
-        ${backColor ? `--btn-color:${backColor};` : ''}
-        ${backIconFill ? `--icon-fill:${backIconFill};` : ''}
-      `}
+      style={backStyles}
     >
-      <span><OscdArrowBackIcon svgStyles="fill: var(--icon-fill);" /></span>
-      <span>Back</span>
-    </button>
+      <Icon><OscdArrowBackIcon svgStyles={`fill: ${backIconFill ?? 'var(--white)'};`} /></Icon>
+      <Label>Back</Label>
+    </Button>
 
-    <button
-      type="button"
-      class="btn btn--next"
+    <Button
+      class="next-btn"
+      variant="unelevated"
       onclick={onGoToNextStep}
-      disabled={isAtLastStep}
       aria-label="Next step"
-      style={`
-        ${nextBg ? `--btn-bg:${nextBg};` : ''}
-        ${nextColor ? `--btn-color:${nextColor};` : ''}
-        ${nextIconFill ? `--icon-fill:${nextIconFill};` : ''}
-      `}
+      style={nextStyles}
     >
-      <span>Next</span>
-      <span><OscdArrowForwardIcon svgStyles="fill: var(--icon-fill);" /></span>
-    </button>
+      <Label>Next</Label>
+      <Icon><OscdArrowForwardIcon svgStyles={`fill: ${nextIconFill ?? 'var(--primary-base)'};`} /></Icon>
+    </Button>
+    {#if showDone}
+      <Button
+        variant="unelevated"
+        onclick={onDone}
+        disabled={doneDisabled}
+        aria-label="Done"
+        style={doneStyles}
+      >
+        <Icon><OscdCheckIcon svgStyles={`fill: ${doneIconFill ?? 'var(--primary-base)'};`} /></Icon>
+        <Label>Done</Label>
+      </Button>
+    {/if}
   </div>
-
-  {#if showDone}
-    <button
-      type="button"
-      class="btn btn--done"
-      onclick={onDone}
-      disabled={doneDisabled}
-      aria-label="Done"
-      style={`
-        ${doneBg ? `--btn-bg:${doneBg};` : ''}
-        ${doneColor ? `--btn-color:${doneColor};` : ''}
-        ${doneIconFill ? `--icon-fill:${doneIconFill};` : ''}
-      `}
-    >
-      <span><OscdCheckIcon svgStyles="fill: var(--icon-fill);" /></span>
-      <span>Done</span>
-    </button>
-  {/if}
 </div>
 
 <style>
@@ -107,43 +106,5 @@
     display: flex;
     gap: 0.8rem;
     justify-self: end;
-  }
-
-  .btn {
-    height: 36px;
-    min-width: 70px;
-    padding: 0 12px;
-    text-transform: uppercase;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0;
-    display: flex;
-    gap: 0.2rem;
-    align-items: center;
-    justify-content: center;
-
-    background-color: var(--btn-bg);
-    color: var(--btn-color);
-  }
-
-  .btn[disabled] { opacity: 0.6; cursor: default; }
-
-  .btn--back {
-    --btn-bg: rgb(from var(--base0) r g b / 0.5);
-    --btn-color: var(--white);
-    --icon-fill: var(--white);
-  }
-
-  .btn--next {
-    --btn-bg: var(--white);
-    --btn-color: var(--primary-base);
-    --icon-fill: var(--primary-base);
-  }
-
-  .btn--done {
-    --btn-bg: var(--white);
-    --btn-color: var(--primary-base);
-    --icon-fill: var(--primary-base);
   }
 </style>

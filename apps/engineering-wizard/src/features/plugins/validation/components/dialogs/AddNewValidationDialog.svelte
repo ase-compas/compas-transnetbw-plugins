@@ -1,12 +1,10 @@
 <script lang="ts">
   import OscdBaseDialog from '../../../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
-  import OscdInput from '../../../../../../../../libs/oscd-component/src/oscd-input/OscdInput.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import Textfield from '@smui/textfield';
-  import HelperText from '@smui/textfield/helper-text';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
   import Button from '@smui/button';
   import WorkflowActions from '../../../../../components/shared/WorkflowActions.svelte';
+  import ValidationBasicInformationDialogPage from './pages/ValidationBasicInformationDialogPage.svelte';
 
   interface Props {
     open: boolean;
@@ -67,33 +65,7 @@
   confirmDisabled={!isValid}
 >
   {#snippet content()}
-    <div class="add-validation-form">
-      <OscdInput
-        label="Name"
-        placeholder="{plugin.name} Validation"
-        variant="outlined"
-        bind:value={validationEntry.title}
-        required
-      />
-
-      <Textfield textarea bind:value={validationEntry.context} label="Context">
-        {#snippet helper()}
-          <HelperText>Context</HelperText>
-        {/snippet}
-      </Textfield>
-
-      <Textfield textarea bind:value={validationEntry.assert} label="assertion XML">
-        {#snippet helper()}
-          <HelperText>Assert</HelperText>
-        {/snippet}
-      </Textfield>
-
-      <Textfield textarea bind:value={validationEntry.message} label="Message">
-        {#snippet helper()}
-          <HelperText>Message</HelperText>
-        {/snippet}
-      </Textfield>
-    </div>
+    <ValidationBasicInformationDialogPage bind:validationEntry />
   {/snippet}
   {#snippet actions()}
     <div class="dialog-actions">
@@ -112,17 +84,13 @@
         nextIconFill="var(--white)"
       />
     </div>
+    <Button onclick={saveValidation} disabled={!isValid}>
+      Save
+    </Button>
   {/snippet}
 </OscdBaseDialog>
 
 <style>
-  .add-validation-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem 0;
-  }
-
   .dialog-actions {
     display: flex;
     justify-content: space-between;
