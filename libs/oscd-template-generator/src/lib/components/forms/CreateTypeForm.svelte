@@ -178,6 +178,13 @@
       disabled={typeSelectionDisabled}
       {options}
       {getOptionLabel}
+      onkeydown={(e) => {
+        if (e.key === 'Enter' && !typeSelectionDisabled) {
+          e.preventDefault();
+          if (isFormValid) handleSubmit(e);
+        }
+      }}
+
       textfield$required
       menu$style="max-height: 500px;">
       {#snippet match(item: Option)}

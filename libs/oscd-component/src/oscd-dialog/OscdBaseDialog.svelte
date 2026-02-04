@@ -77,6 +77,7 @@
       <h4>{title}</h4>
       {#if showCloseButton}
       <OscdIconActionButton
+        tabindex="-1"
         onClick={() => {
           open = false;
           onClose();
@@ -100,17 +101,17 @@
       <Actions class="oscd-dialog__actions">
         {#if cancelActionText}
           <Button
+            type="button"
             action="cancel"
-            color="secondary"
-            tabindex="1">
+            color="secondary">
             {cancelActionText}
           </Button>
         {/if}
         <Button
+          type="button"
           action="confirm"
           disabled={confirmDisabled}
           style={confirmButtonStyle}
-          tabindex="0"
         >
           {confirmActionText}
         </Button>

@@ -69,6 +69,10 @@
 
   const filters$ = new BehaviorSubject<FilterDefinition[]>([]);
   const searchText$ = new BehaviorSubject<string>('');
+  const debouncedText$ = searchText$.pipe(
+    startWith(),  // emit the initial value immediately
+    switchMap((text, index) => index === 0 ? [text] : searchText$.pipe(debounceTime(300)))
+  );
 
   // Fetch locations and store as Observable
   const locations$ = locationService.listLocations().pipe(
@@ -137,8 +141,7 @@
   }
 
   // Reactive search params
-  const searchParams$ = combineLatest([filters$, searchText$]).pipe(
-    debounceTime(300),
+  const searchParams$ = combineLatest([filters$, debouncedText$]).pipe(
     distinctUntilChanged((prev,curr) => JSON.stringify(prev) === JSON.stringify(curr)),
     map(([filters, text]) => convertFilterToSearchParams(filters, text))
   );
@@ -164,28 +167,22 @@
             grouped.get(loc)!.push(r);
           }
           return { grouped, locations };
-        })
+        }),
+        map(data => ({ loading: false as const, ...data })),
+        startWith({ loading: true as const }) // loading state at start of each search
       )
     ),
     shareReplay(1)
   );
 
-  // Loading state
-  const loading$ = merge(
-    searchParams$.pipe(map(() => true)),
-    search$.pipe(map(() => false))
-  ).pipe(startWith(true));
-
   onMount(() => {
-    const sub = combineLatest([search$, loading$]).subscribe(([data, isLoading]) => {
-      loading = isLoading;
-      searchResults = data.grouped;
-      locations = data.locations;
+    const sub = search$.subscribe(state => {
+      loading = state.loading;
+      if (!state.loading) {
+        searchResults = state.grouped;
+        locations = state.locations;
+      }
     });
-
-    // Trigger initial search
-    filters$.next(filterDefinitions);
-    searchText$.next(searchText);
 
     return () => sub.unsubscribe();
   });

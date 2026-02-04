@@ -21,6 +21,7 @@
     showErrorsOnInput?: boolean;
     // when generate new id button is clicked
     onGenerateId?: () => void;
+    canGenerateId?: boolean;
   }
 
   let {
@@ -31,7 +32,8 @@
 
     showErrorsOnInput = false,
 
-    onGenerateId = () => {}
+    onGenerateId,
+    canGenerateId = true,
   }: Props = $props();
 
   let inputEl;
@@ -78,15 +80,15 @@
   bind:this={inputEl}
   bind:value={typeId}
   label={idLabel}
-  required
   style="width: 100%;"
-  invalid={(showErrorsOnInput || typeIdTouched) && !isTypeIdValid}
   input$maxlength={ID_MAX_LENGTH}
   onblur={() => typeIdTouched = true}
 >
   {#snippet trailingIcon()}
+    {#if canGenerateId}
     <OscdTooltip content="Generate ID" placement="top" hoverDelay={200}>
       <button
+        type="button"
         onclick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -96,6 +98,7 @@
         <Icon class="material-icons">autorenew</Icon>
       </button>
     </OscdTooltip>
+    {/if}
   {/snippet}
   {#snippet helper()}
     <HelperText validationMsg persitent>
