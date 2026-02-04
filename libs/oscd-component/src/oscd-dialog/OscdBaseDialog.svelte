@@ -2,7 +2,6 @@
   import Dialog, { Actions, Content, Header } from '@smui/dialog';
   import Button from '@smui/button';
   import { OscdIconActionButton } from '../index';
-  import { Snippet } from 'svelte';
 
   interface Props {
     open?: boolean;
@@ -17,8 +16,8 @@
     confirmDisabled?: boolean;
     color?: string;
     showCloseButton?: boolean;
-    content?: Snippet;
-    actions?: Snippet;
+    content?: import('svelte').Snippet;
+    actions?: import('svelte').Snippet;
 
     onClose?: () => void;
     onCancel?: () => void;

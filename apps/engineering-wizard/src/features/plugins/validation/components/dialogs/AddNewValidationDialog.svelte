@@ -17,6 +17,7 @@
   let validationEntry = $state<XPathValidation>({
     severity: 'error',
     title: '',
+    description: '',
     context: '',
     assert: '',
     message: '',
@@ -58,6 +59,7 @@
   title="Add validation for {plugin.name}"
   confirmActionText="Add"
   maxWidth="600px"
+  height="fit-content"
   bind:open
   onConfirm={saveValidation}
   onCancel={cancel}

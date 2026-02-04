@@ -25,6 +25,7 @@ export {default as OscdActionButton } from './oscd-action-button/OscdActionButto
 export {default as OscdFilterBuilder } from './oscd-filter-builder/OscdFilterBuilder.svelte';
 export {default as OscdMultiSelect } from './oscd-multi-select/OscdMultiSelect.svelte'
 export {default as OscdFilterTab } from './oscd-filter-tab/OscdFilterTab.svelte'
+export { default as OscdClearableSelect } from './oscd-clearable-select/OscdClearableSelect.svelte';
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
 
