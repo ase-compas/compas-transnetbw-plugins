@@ -9,6 +9,11 @@
     transitionDuration?: number;
     children?: import('svelte').Snippet;
     disabled: boolean;
+    offset?: number;
+    backgroundColor?: string;
+    paddingY?: number;
+    paddingX?: number;
+    textColor?: string;
   }
 
   let {
@@ -17,7 +22,12 @@
     hoverDelay = 0,
     transitionDuration = 80,
     children,
-    disabled = false
+    disabled = false,
+    offset = 8,
+    backgroundColor = '#000',
+    paddingY = 6,
+    paddingX = 10,
+    textColor = '#fff'
   }: Props = $props();
 
   const id = `tt-${Math.random().toString(36).slice(2)}`;
@@ -28,6 +38,26 @@
   let show = $state(false);
   let hoverTimeout: ReturnType<typeof setTimeout> | null = $state(null);
   let observer: MutationObserver | null = $state(null);
+
+  function resolveCssVar(value: string): string {
+    // Only attempt to resolve var(...) syntax
+    if (!value || !value.trim().startsWith('var(')) return value;
+    // Extract var name and optional fallback: var(--name, fallback)
+    const match = value.match(/^var\(\s*([^,\s)]+)\s*(?:,\s*([^)]+)\s*)?\)$/);
+    if (!match) return value;
+    const varName = match[1];
+    const fallback = match[2]?.trim();
+
+    // Try trigger element first, then document root
+    const fromTrigger = triggerEl ? getComputedStyle(triggerEl).getPropertyValue(varName) : '';
+    const fromRoot = getComputedStyle(document.documentElement).getPropertyValue(varName);
+    const resolved = (fromTrigger || fromRoot).trim();
+    if (resolved) return resolved;
+    // Fallback if specified
+    if (fallback) return fallback;
+    // As a last resort return the original value
+    return value;
+  }
 
   // --- Hover / focus handlers ---
   function openTooltip() {
@@ -45,32 +75,14 @@
     show = false;
   }
 
-  function handleMouseEnter() {
-    openTooltip();
-  }
-
-  function handleMouseLeave() {
-    closeTooltip();
-  }
-
-  function handleFocus() {
-    openTooltip();
-  }
-
-  function handleBlur() {
-    closeTooltip();
-  }
-
+  function handleMouseEnter() { openTooltip(); }
+  function handleMouseLeave() { closeTooltip(); }
+  function handleFocus() { openTooltip(); }
+  function handleBlur() { closeTooltip(); }
   function handleKeydown(event: KeyboardEvent) {
     if (!content) return;
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      openTooltip();
-    }
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeTooltip();
-    }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openTooltip(); }
+    if (event.key === 'Escape') { event.preventDefault(); closeTooltip(); }
   }
 
   // --- Position tooltip relative to trigger ---
@@ -80,24 +92,24 @@
     const tooltipRect = bubbleEl.getBoundingClientRect();
     let top = 0;
     let left = 0;
-    const offset = 8;
+    const gap = offset;
 
     switch (side) {
       case 'top':
-        top = rect.top - tooltipRect.height - offset;
+        top = rect.top - tooltipRect.height - gap;
         left = rect.left + rect.width / 2 - tooltipRect.width / 2;
         break;
       case 'bottom':
-        top = rect.bottom + offset;
+        top = rect.bottom + gap;
         left = rect.left + rect.width / 2 - tooltipRect.width / 2;
         break;
       case 'left':
         top = rect.top + rect.height / 2 - tooltipRect.height / 2;
-        left = rect.left - tooltipRect.width - offset;
+        left = rect.left - tooltipRect.width - gap;
         break;
       case 'right':
         top = rect.top + rect.height / 2 - tooltipRect.height / 2;
-        left = rect.right + offset;
+        left = rect.right + gap;
         break;
     }
 
@@ -109,9 +121,7 @@
   function destroyTooltip() {
     observer?.disconnect();
     observer = null;
-    if (tooltipEl && tooltipEl.parentNode) {
-      tooltipEl.parentNode.removeChild(tooltipEl);
-    }
+    if (tooltipEl && tooltipEl.parentNode) { tooltipEl.parentNode.removeChild(tooltipEl); }
     tooltipEl = null;
     bubbleEl = null;
     shadow = null;
@@ -121,9 +131,7 @@
   onDestroy(destroyTooltip);
 
   $effect(() => {
-    if (!show || !content || disabled) {
-      return;
-    }
+    if (!show || !content || disabled) { return; }
 
     if (!tooltipEl) {
       tooltipEl = document.createElement('div');
@@ -139,13 +147,17 @@
       shadow = tooltipEl.attachShadow({ mode: 'open' });
 
       const style = document.createElement('style');
+      const effectiveBg = resolveCssVar(backgroundColor);
+      const effectiveFg = resolveCssVar(textColor);
       style.textContent = `
         .bubble {
-          --pad-y: 6px;
-          --pad-x: 10px;
+          --pad-y: ${paddingY}px;
+          --pad-x: ${paddingX}px;
           --radius: 4px;
-          background: #000;
-          color: #fff;
+          --bg: ${effectiveBg};
+          --fg: ${effectiveFg};
+          background: var(--bg);
+          color: var(--fg);
           font-size: 0.85rem;
           line-height: 1.2;
           padding: var(--pad-y) var(--pad-x);
@@ -161,40 +173,22 @@
         .bubble::after {
           content: "";
           position: absolute;
-          background: #000;
+          background: var(--bg);
           width: 8px;
           height: 8px;
           transform: rotate(45deg);
         }
-        .bubble.top::after {
-          left: 50%;
-          bottom: -4px;
-          transform: translateX(-50%) rotate(45deg);
-        }
-        .bubble.bottom::after {
-          left: 50%;
-          top: -4px;
-          transform: translateX(-50%) rotate(45deg);
-        }
-        .bubble.left::after {
-          top: 50%;
-          right: -4px;
-          transform: translateY(-50%) rotate(45deg);
-        }
-        .bubble.right::after {
-          top: 50%;
-          left: -4px;
-          transform: translateY(-50%) rotate(45deg);
-        }
+        .bubble.top::after { left: 50%; bottom: -4px; transform: translateX(-50%) rotate(45deg); }
+        .bubble.bottom::after { left: 50%; top: -4px; transform: translateX(-50%) rotate(45deg); }
+        .bubble.left::after { top: 50%; right: -4px; transform: translateY(-50%) rotate(45deg); }
+        .bubble.right::after { top: 50%; left: -4px; transform: translateY(-50%) rotate(45deg); }
       `;
       shadow.appendChild(style);
 
       bubbleEl = document.createElement('div');
       shadow.appendChild(bubbleEl);
 
-      observer = new MutationObserver(() => {
-        if (show) updateTooltipPosition();
-      });
+      observer = new MutationObserver(() => { if (show) updateTooltipPosition(); });
       observer.observe(document.body, { childList: true, subtree: true });
     }
 
@@ -210,19 +204,14 @@
   });
 
   $effect(() => {
-    if (show || !tooltipEl) {
-      return;
-    }
-
+    if (show || !tooltipEl) { return; }
     tooltipEl.style.opacity = '0';
     const currentTooltip = tooltipEl;
     const timeout = setTimeout(() => {
       if (currentTooltip && currentTooltip.parentNode) {
         currentTooltip.parentNode.removeChild(currentTooltip);
       }
-      if (tooltipEl === currentTooltip) {
-        destroyTooltip();
-      }
+      if (tooltipEl === currentTooltip) { destroyTooltip(); }
     }, transitionDuration);
 
     return () => clearTimeout(timeout);

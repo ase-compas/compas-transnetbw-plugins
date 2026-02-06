@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { OscdSmartSelect } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdSmartSelect, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { OscdChevronRightIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   const nodes = [
@@ -31,6 +31,10 @@
       .filter((v): v is string => v != null);
   });
 
+  const tooltipContent = $derived(
+    hiddenMiddle.length > 0 ? hiddenMiddle.join(' > ') : '(none)'
+  );
+
   $effect(() => {
     const last = selectedContextNodes[selectedContextNodes.length - 1];
     if (last) selectedContextNodes.push(null);
@@ -46,18 +50,9 @@
 <div class="rule-nodes">
   {#each selectedContextNodes as _, i}
     {#if shouldCollapse && i === 1}
-      <span class="ellipsis-wrap">
+      <OscdTooltip content={tooltipContent} hoverDelay={300} side="bottom" offset={12} backgroundColor="var(--primary-base)" textColor="var(--white)" paddingY={8} paddingX={12}>
         <span class="ellipsis">…</span>
-
-        <div class="tooltip">
-          {#each hiddenMiddle as item}
-            <div>{item}</div>
-          {/each}
-          {#if hiddenMiddle.length === 0}
-            <div>(none)</div>
-          {/if}
-        </div>
-      </span>
+      </OscdTooltip>
 
       <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 30px; height: 30px;" />
     {:else if !shouldCollapse || i === 0 || i === lastNodeIndex || i === lastNodeIndex - 1}
@@ -78,18 +73,5 @@
 <style>
   .rule-nodes { display: flex; align-items: center; gap: 0.5rem; }
 
-  .ellipsis-wrap { position: relative; display: inline-block; }
-  .tooltip {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    display: none;
-    padding: 4px;
-    background: white;
-    border: 1px solid #ccc;
-    white-space: nowrap;
-    z-index: 10;
-  }
-  .ellipsis-wrap:hover .tooltip,
-  .ellipsis-wrap:focus-within .tooltip { display: block; }
+  .ellipsis { display: inline-block; }
 </style>
