@@ -17581,7 +17581,7 @@ On(["click"]);
 var w_ = (t, e) => e(), O_ = /* @__PURE__ */ fe('<button class="filter-tab__tabs__clear svelte-nj6sif">Clear Filters</button>'), L_ = /* @__PURE__ */ fe('<div class="filter-tab svelte-nj6sif"><!> <div class="filter-tab__tabs svelte-nj6sif"><h4 style="all:unset; font-weight: bold; font-size: 1rem;">Filter by</h4> <!> <!></div></div>');
 function R_(t, e) {
   xe(e, !0);
-  let n = g(e, "filters", 15), r = g(e, "onFilterChange", 3, (E) => {
+  let n = g(e, "filters", 31, () => Ce([])), r = g(e, "onFilterChange", 3, (E) => {
   }), i = g(e, "searchText", 15, ""), a = g(e, "searchLabel", 3, "Search"), s = g(e, "searchPlaceholder", 3, "Type to search..."), u = g(e, "onSearchInput", 3, () => {
   }), l = g(e, "searchDisabled", 3, !1), c = /* @__PURE__ */ _e(() => n().some((E) => E.value !== void 0 && E.value !== null && E.value !== "")), d = () => {
     n(n().map((E) => ({ ...E, value: void 0 }))), r()(n());
