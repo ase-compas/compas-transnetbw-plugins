@@ -58,8 +58,8 @@
 <OscdBaseDialog
   title="Add validation for {plugin.name}"
   confirmActionText="Add"
-  maxWidth="600px"
-  height="fit-content"
+  maxWidth="800px"
+  maxHeight="620px"
   bind:open
   onConfirm={saveValidation}
   onCancel={cancel}
