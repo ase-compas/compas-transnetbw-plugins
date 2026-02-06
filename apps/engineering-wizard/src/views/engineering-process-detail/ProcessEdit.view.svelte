@@ -153,7 +153,7 @@
 <style>
   * { font-family: 'Roboto', sans-serif; }
 
-  .step-content { padding: 1.5rem 1.5rem; }
+  .step-content { padding: 1rem; }
 
   .stepper {
     height: 4rem;

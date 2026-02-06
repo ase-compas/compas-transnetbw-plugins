@@ -17,6 +17,7 @@
     color?: string;
     showCloseButton?: boolean;
     content?: import('svelte').Snippet;
+    actions?: import('svelte').Snippet;
 
     onClose?: () => void;
     onCancel?: () => void;
@@ -37,6 +38,7 @@
     color = 'var(--mdc-theme-primary, #ff3e00)',
     showCloseButton = true,
     content,
+    actions,
 
     onClose = () => {},
     onCancel = () => {},
@@ -93,22 +95,28 @@
   </Content>
 
   <div class="dialog__actions">
-    <Actions class="oscd-dialog__actions">
-      {#if cancelActionText}
+    {#if actions}
+      {@render actions()}
+    {:else}
+      <Actions class="oscd-dialog__actions">
+        {#if cancelActionText}
+          <Button
+            type="button"
+            action="cancel"
+            color="secondary">
+            {cancelActionText}
+          </Button>
+        {/if}
         <Button
           type="button"
-          action="cancel"
-          color="secondary">
-          {cancelActionText}
+          action="confirm"
+          disabled={confirmDisabled}
+          style={confirmButtonStyle}
+        >
+          {confirmActionText}
         </Button>
-      {/if}
-      <Button
-        type="button"
-        action="confirm"
-        disabled={confirmDisabled}
-        style={confirmButtonStyle}
-      >{confirmActionText}</Button>
-    </Actions>
+      </Actions>
+    {/if}
   </div>
 </Dialog>
 
