@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { tick } from 'svelte';
-  import { OscdCloseIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { onMount, tick } from 'svelte';
+  import { OscdArrowDownIcon, OscdCloseIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   let {
     options = [] as readonly string[],
@@ -13,6 +13,12 @@
     clearable?: boolean;
     value?: string | null;
   }>();
+
+  let uuid = $state(null);
+
+  onMount(() => {
+    uuid = crypto.randomUUID();
+  });
 
   const hasValue = $derived(value !== null);
 
@@ -82,16 +88,7 @@
       </button>
     {:else}
       <span class="icon caret" aria-hidden="true">
-        <svg viewBox="0 0 20 20" width="16" height="16">
-          <path
-            d="M5.5 7.5 10 12l4.5-4.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <OscdArrowDownIcon svgStyles="fill: var(--primary-base)" />
       </span>
     {/if}
 

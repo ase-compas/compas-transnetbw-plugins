@@ -19,9 +19,8 @@
     bind:value={validationEntry.title}
     required
   />
-  <Textfield textarea bind:value={validationEntry.description} label="Description">
-  </Textfield>
-  <XMLContextSelector></XMLContextSelector>
+  <Textfield textarea bind:value={validationEntry.description} label="Description" />
+  <XMLContextSelector />
 </div>
 
 <style>

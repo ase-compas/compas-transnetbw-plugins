@@ -18,6 +18,7 @@
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
+  import XMLContextSelector from './features/plugins/validation/components/XMLContextSelector.svelte';
 
   interface Plugin {
     src: string;
@@ -156,5 +157,6 @@
   />
 {/if}
 <OscdToastHost />
+<XMLContextSelector />
 <style>
 </style>
