@@ -147,5 +147,6 @@
     font-size: 0.95rem;
     line-height: 1;
     font-weight: 600;
+    cursor: pointer;
   }
 </style>
