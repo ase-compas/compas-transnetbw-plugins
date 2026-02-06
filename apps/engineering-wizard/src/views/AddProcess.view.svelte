@@ -250,7 +250,7 @@
         variant="outlined"
         label="Process id"
         bind:value={procId}
-        on:input={() => (idTouched = true)}
+        oninput={() => (idTouched = true)}
       />
     </div>
 
