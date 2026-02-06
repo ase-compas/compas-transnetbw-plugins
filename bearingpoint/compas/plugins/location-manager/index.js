@@ -14087,7 +14087,7 @@ class vm {
 }
 Cn = new WeakMap();
 oh({ en: Fh, de: Sh });
-var gm = /* @__PURE__ */ J("<h3> </h3>"), pm = /* @__PURE__ */ J("<!> <!>", 1), mm = /* @__PURE__ */ J("<!> <!>", 1), bm = /* @__PURE__ */ J("<div><!> <!></div>"), _m = /* @__PURE__ */ J("<h3> </h3>"), ym = /* @__PURE__ */ J("<!> <!> <!> <!>", 1), Em = /* @__PURE__ */ J("<div><!></div>"), Sm = /* @__PURE__ */ J("<!> <!>", 1), Cm = /* @__PURE__ */ J("<!> <!>", 1), Am = /* @__PURE__ */ J("<div><!> <!></div>"), Im = /* @__PURE__ */ J("<!> <!>", 1), xm = /* @__PURE__ */ J("<!> <!>", 1), wm = /* @__PURE__ */ J('<h3 style="margin-bottom: 1rem;"> </h3> <!>', 1), Lm = /* @__PURE__ */ J('<div class="location-manager-container"><!> <!> <!> <div style="margin-top: 10px; margin-bottom: 10px"><!> <!></div> <div class="table-container"><!></div></div>');
+var gm = /* @__PURE__ */ J("<h3> </h3>"), pm = /* @__PURE__ */ J("<!> <!>", 1), mm = /* @__PURE__ */ J("<!> <!>", 1), bm = /* @__PURE__ */ J("<div><!> <!></div>"), _m = /* @__PURE__ */ J("<h3> </h3>"), ym = /* @__PURE__ */ J("<!> <!> <!> <!>", 1), Em = /* @__PURE__ */ J("<div><!></div>"), Sm = /* @__PURE__ */ J("<!> <!>", 1), Cm = /* @__PURE__ */ J("<!> <!>", 1), Am = /* @__PURE__ */ J("<div><!> <!></div>"), Im = /* @__PURE__ */ J("<!> <!>", 1), xm = /* @__PURE__ */ J("<!> <!>", 1), wm = /* @__PURE__ */ J('<h3 style="margin-bottom: 1rem;"> </h3> <!>', 1), Lm = /* @__PURE__ */ J('<div class="location-manager-container"><!> <!> <!> <div class="table-container svelte-1dmbgtb"><div class="table-actions svelte-1dmbgtb"><!> <!></div> <!></div></div>');
 function Tm(e, t) {
   Te(t, !0);
   const n = () => In(ah, "$_", r), [r, i] = Yn(), a = Lr.getInstance(), o = new vm(), u = {
@@ -14430,9 +14430,8 @@ function Tm(e, t) {
           $$slots: { title: !0, content: !0, actions: !0 }
         });
       }
-      var H = ae(F, 2), P = de(H);
-      nr(P, {
-        class: "button",
+      var H = ae(F, 2), P = de(H), j = de(P);
+      nr(j, {
         callback: _,
         variant: "raised",
         children: (A, M) => {
@@ -14449,9 +14448,8 @@ function Tm(e, t) {
         },
         $$slots: { default: !0 }
       });
-      var j = ae(P, 2);
-      nr(j, {
-        class: "button",
+      var K = ae(j, 2);
+      nr(K, {
         callback: b,
         variant: "raised",
         children: (A, M) => {
@@ -14468,7 +14466,7 @@ function Tm(e, t) {
         },
         $$slots: { default: !0 }
       });
-      var K = ae(H, 2), G = de(K);
+      var G = ae(P, 2);
       lp(G, {
         style: "padding: 1rem; width: 100%; height: 100%;",
         children: (A, M) => {
