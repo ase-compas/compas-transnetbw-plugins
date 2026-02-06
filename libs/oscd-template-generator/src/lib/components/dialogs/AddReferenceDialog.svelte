@@ -91,7 +91,7 @@ onMount(async () => {
   }
 
   const autoGenerateRefId = (_: string) : string => {
-    return idGeneratorService.generateReferencePrefixId(itemId);
+    return idGeneratorService.generateDefaultId(objInstanceType, itemId);
   }
 
   // ===== Event Handlers =====

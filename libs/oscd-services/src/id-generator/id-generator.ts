@@ -6,7 +6,9 @@ export type SegmentType =
   | 'VARIABLE'    // Value taken from the context (like a variable)
   | 'UUID'        // Randomly generated UUID segment (max length limited by idLength)
   | 'SEQUENCE'    // Numeric sequence segment
-  | 'TIMESTAMP';  // Current timestamp in milliseconds (13 digits)
+  | 'TIMESTAMP'   // Current timestamp in milliseconds (13 digits)
+  | 'DASH'        // A dash separator (-)
+  | 'UNDERSCORE';  // A underline separator (_)
 
 /**
  * Represents a segment of an ID.
@@ -87,6 +89,10 @@ export class OscdIdGenerator implements IdGenerator {
     switch (segment.type) {
       case 'TEXT':
         return segment.value || '';
+      case 'DASH':
+        return '-';
+      case 'UNDERSCORE':
+        return '_';
       case 'VARIABLE':
         if (!segment.value) throw new Error('Variable name missing');
         if (!ctx.variables || !ctx.variables[segment.value]) {

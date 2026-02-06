@@ -8,6 +8,7 @@ export interface IdFormatDefinition {
 
 export interface IdFormatRepository {
   getFormat(id: string): IdFormat;
+  setFormat(id: string, format: IdFormat): void;
 }
 
 export class InMemoryIdFormatRepository implements IdFormatRepository {
@@ -21,5 +22,9 @@ export class InMemoryIdFormatRepository implements IdFormatRepository {
     const format = this.formats.get(id);
     if (!format) throw new Error(`Unknown ID format: ${id}`);
     return format;
+  }
+
+  setFormat(id: string, format: IdFormat): void {
+    this.formats.set(id, format);
   }
 }

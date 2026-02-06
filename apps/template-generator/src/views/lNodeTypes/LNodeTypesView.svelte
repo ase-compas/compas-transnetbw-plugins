@@ -128,6 +128,7 @@
 
 <div class="logical-nodes-overview">
   <OscdButton callback={() => route.set({path: ["defaults"]})}>Default Types</OscdButton>
+  <OscdButton callback={() => route.set({path: ["id-builder"]})}>ID-Builder</OscdButton>
 
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">
