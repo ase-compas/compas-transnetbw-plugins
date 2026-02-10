@@ -18236,7 +18236,7 @@ class ly extends sy {
     pi(e, "id", "deleteAllSclFileVersions"), pi(n, "type", "deleteAllSclFileVersions");
     const i = {};
     return this.request({
-      url: "/api/scl/{type}/{id}".replace("{id}", ar(e)).replace("{type}", ar(n)),
+      url: "/scl/{type}/{id}".replace("{id}", ar(e)).replace("{type}", ar(n)),
       method: "DELETE",
       headers: i
     }, r == null ? void 0 : r.responseOpts);

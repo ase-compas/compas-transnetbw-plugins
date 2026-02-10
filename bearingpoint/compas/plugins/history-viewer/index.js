@@ -19571,7 +19571,7 @@ class Yy extends Ky {
     Ei(e, "id", "deleteAllSclFileVersions"), Ei(n, "type", "deleteAllSclFileVersions");
     const i = {};
     return this.request({
-      url: "/api/scl/{type}/{id}".replace("{id}", sr(e)).replace("{type}", sr(n)),
+      url: "/scl/{type}/{id}".replace("{id}", sr(e)).replace("{type}", sr(n)),
       method: "DELETE",
       headers: i
     }, r == null ? void 0 : r.responseOpts);
