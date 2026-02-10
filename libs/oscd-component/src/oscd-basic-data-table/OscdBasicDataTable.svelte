@@ -45,8 +45,6 @@
   <p class="status">Loading…</p>
 {:else if errorMsg}
   <p class="status error">{errorMsg}</p>
-{:else if !items || items.length === 0}
-  <p class="status">{emptyText}</p>
 {:else}
   <DataTable style="width: 100%;">
     <Head style={headerBg ? `background-color:${headerBg}` : undefined}>
@@ -69,18 +67,29 @@
     </Head>
 
     <Body>
-    {#each items as item, i (getRowId(item, i))}
-      <Row style={rowBg ? `background-color:${rowBg}` : undefined}>
-        {#each columns as col}
-          <Cell class={col.bold ? 'cell-bold' : ''} onclick={() => onRowClick?.(item)}>
-            {item?.[col.key] ?? ''}
-          </Cell>
-        {/each}
-        {#if showActions}
-          <Cell numeric>{@render actions?.({ item })}</Cell>
-        {/if}
+    {#if !items || items.length === 0}
+      <Row>
+        <Cell
+          class="oscd-basic-table__empty-row"
+          colspan={columns.length + (showActions ? 1 : 0)}
+          style="text-align:center; padding: 24px; opacity: 0.6; background: rgba(0,0,0,0.05);">
+          {emptyText}
+        </Cell>
       </Row>
-    {/each}
+    {:else}
+      {#each items as item, i (getRowId(item, i))}
+        <Row style={rowBg ? `background-color:${rowBg}` : undefined}>
+          {#each columns as col}
+            <Cell class={col.bold ? 'cell-bold' : ''} onclick={() => onRowClick?.(item)}>
+              {item?.[col.key] ?? ''}
+            </Cell>
+          {/each}
+          {#if showActions}
+            <Cell numeric>{@render actions?.({ item })}</Cell>
+          {/if}
+        </Row>
+      {/each}
+    {/if}
     </Body>
   </DataTable>
 {/if}
@@ -89,7 +98,7 @@
   .status { font-family: Roboto, system-ui, -apple-system, Segoe UI, sans-serif; }
   .error { color: #b00020; }
 
-  :global(.mdc-data-table__row:hover > .mdc-data-table__cell) {
+  :global(.mdc-data-table__row:hover > .mdc-data-table__cell:not(.oscd-basic-table__empty-row)) {
     background-color: #D9D800 !important;
   }
 

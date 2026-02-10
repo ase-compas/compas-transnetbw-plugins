@@ -133,7 +133,7 @@
   {columns}
   {loading}
   emptyText="No default types found."
-  headerBg="#DAE3E6"
+  headerBg="rgba(0,0,0,0.1)"
   rowBg="#ffffff"
   hasActions
 >
