@@ -5,6 +5,7 @@
   import Button from '@smui/button';
   import WorkflowActions from '../../../../../components/shared/WorkflowActions.svelte';
   import ValidationBasicInformationDialogPage from './pages/ValidationBasicInformationDialogPage.svelte';
+  import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
 
   interface Props {
     open: boolean;
@@ -43,15 +44,25 @@
     closeDialog('cancel');
   }
 
+  const steps = [
+    'basic',
+    'rule-definition',
+  ] as const;
+  type Step = typeof steps[number];
+
+  let currentStepIndex = $state(0);
+  const currentStep: Step = $derived(steps[currentStepIndex]);
+
   function onGoToPreviousStep() {
-    // Placeholder for previous step logic
+    if (currentStepIndex > 0) currentStepIndex -= 1;
   }
 
   function onGoToNextStep() {
-    // Placeholder for next step logic
+    if (currentStepIndex < steps.length - 1) currentStepIndex += 1;
   }
-  const isAtFirstStep = $derived(false);
-  const isAtLastStep = $derived(false);
+
+  const isAtFirstStep = $derived(currentStepIndex === 0);
+  const isAtLastStep = $derived(currentStepIndex === steps.length - 1);
 
 </script>
 
@@ -67,7 +78,11 @@
   confirmDisabled={!isValid}
 >
   {#snippet content()}
-    <ValidationBasicInformationDialogPage bind:validationEntry />
+    {#if currentStep === 'basic'}
+      <ValidationBasicInformationDialogPage bind:validationEntry />
+    {:else}
+      <ValidationRuleDefinitionDialogPage />
+    {/if}
   {/snippet}
   {#snippet actions()}
     <div class="dialog-actions">
