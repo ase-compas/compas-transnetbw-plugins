@@ -6,6 +6,7 @@
   import WorkflowActions from '../../../../../components/shared/WorkflowActions.svelte';
   import ValidationBasicInformationDialogPage from './pages/ValidationBasicInformationDialogPage.svelte';
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
+  import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
 
   interface Props {
     open: boolean;
@@ -47,6 +48,7 @@
   const steps = [
     'basic',
     'rule-definition',
+    'test-and-validate',
   ] as const;
   type Step = typeof steps[number];
 
@@ -80,8 +82,10 @@
   {#snippet content()}
     {#if currentStep === 'basic'}
       <ValidationBasicInformationDialogPage bind:validationEntry />
-    {:else}
+    {:else if currentStep === 'rule-definition'}
       <ValidationRuleDefinitionDialogPage />
+    {:else}
+      <ValidationRuleTestDialogPage />
     {/if}
   {/snippet}
   {#snippet actions()}
@@ -101,9 +105,6 @@
         nextIconFill="var(--white)"
       />
     </div>
-    <Button onclick={saveValidation} disabled={!isValid}>
-      Save
-    </Button>
   {/snippet}
 </OscdBaseDialog>
 
