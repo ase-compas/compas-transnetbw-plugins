@@ -22,6 +22,9 @@
     backIconFill?: string;
     nextIconFill?: string;
     doneIconFill?: string;
+
+    nextLabelWhenLastStep?: string;
+    showCheckOnLastStep?: boolean;
   }
 
   const {
@@ -41,7 +44,9 @@
     doneColor,
     backIconFill,
     nextIconFill,
-    doneIconFill
+    doneIconFill,
+    nextLabelWhenLastStep,
+    showCheckOnLastStep = false
   }: Props = $props();
 
   const backStyles = $derived(`
@@ -49,8 +54,8 @@
     ${backColor ? `color: ${backColor};` : `color: var(--white);`}
   `);
   const nextStyles = $derived(`
-    --mdc-theme-primary: ${nextBg ?? 'var(--white)'};
-    --mdc-theme-on-primary: ${nextColor ?? 'var(--primary-base)'};
+    ${nextBg ? `background-color: ${nextBg};` : `background-color: var(--white);`}
+    ${nextColor ? `color: ${nextColor};` : `color: var(--primary-base);`}
   `);
   const doneStyles = $derived(`
     ${doneBg ? `background-color: ${doneBg};` : `background-color: var(--white);`}
@@ -61,7 +66,6 @@
 <div class="stepper-actions">
   <div class="stepper-navigation">
     <Button
-      variant="unelevated"
       onclick={onGoToPreviousStep}
       disabled={isAtFirstStep}
       aria-label="Previous step"
@@ -73,17 +77,21 @@
 
     <Button
       class="next-btn"
-      variant="unelevated"
       onclick={onGoToNextStep}
-      aria-label="Next step"
+      aria-label={isAtLastStep && nextLabelWhenLastStep ? nextLabelWhenLastStep : 'Next step'}
       style={nextStyles}
     >
-      <Label>Next</Label>
-      <Icon><OscdArrowForwardIcon svgStyles={`fill: ${nextIconFill ?? 'var(--primary-base)'};`} /></Icon>
+      <Label>{isAtLastStep && nextLabelWhenLastStep ? nextLabelWhenLastStep : 'Next'}</Label>
+      <Icon>
+        {#if isAtLastStep && showCheckOnLastStep}
+          <OscdCheckIcon svgStyles={`fill: ${nextIconFill ?? 'var(--primary-base)'};`} />
+        {:else}
+          <OscdArrowForwardIcon svgStyles={`fill: ${nextIconFill ?? 'var(--primary-base)'};`} />
+        {/if}
+      </Icon>
     </Button>
     {#if showDone}
       <Button
-        variant="unelevated"
         onclick={onDone}
         disabled={doneDisabled}
         aria-label="Done"

@@ -157,6 +157,5 @@
   />
 {/if}
 <OscdToastHost />
-<XMLContextSelector />
 <style>
 </style>

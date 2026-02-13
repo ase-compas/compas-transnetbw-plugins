@@ -60,7 +60,12 @@
   }
 
   function onGoToNextStep() {
-    if (currentStepIndex < steps.length - 1) currentStepIndex += 1;
+    if (currentStepIndex < steps.length - 1) {
+      currentStepIndex += 1;
+    } else {
+      console.log('validation has been created');
+      saveValidation();
+    }
   }
 
   const isAtFirstStep = $derived(currentStepIndex === 0);
@@ -100,9 +105,14 @@
         isAtFirstStep={isAtFirstStep}
         isAtLastStep={isAtLastStep}
         showDone={false}
-        nextBg="var(--primary-base)"
-        nextColor="var(--white)"
-        nextIconFill="var(--white)"
+        backBg="rgb(from var(--base0) r g b / 0.5)"
+        backColor="var(--white)"
+        backIconFill="var(--white)"
+        nextBg="var(--white)"
+        nextColor="var(--primary-base)"
+        nextIconFill="var(--primary-base)"
+        nextLabelWhenLastStep="Create"
+        showCheckOnLastStep={true}
       />
     </div>
   {/snippet}
