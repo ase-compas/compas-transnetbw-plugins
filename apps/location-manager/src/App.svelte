@@ -9,7 +9,7 @@
   });
 </script>
 <script lang="ts">
-  import {Icon, Label} from "@smui/button";
+  import { Label } from "@smui/button";
   import {
     OscdButton,
     OscdDataTable,
@@ -148,10 +148,10 @@
     <OscdLoadingSpinner {loadingDone} />
     <OscdDialog open={dialogState === DialogState.Remove} onClose={onCloseDialog}>
       {#snippet title()}
-            <h3 >{$_('delete_location', { values: { name: currentSelectLocation?.name }})}</h3>
-          {/snippet}
+        <h3 >{$_('delete_location', { values: { name: currentSelectLocation?.name }})}</h3>
+      {/snippet}
       {#snippet actions()}
-            <div >
+        <div >
           <OscdButton callback={onRemoveConfirm} variant="raised">
             <OscdSaveIcon />
             <Label>{$_('confirm')}</Label>
@@ -161,14 +161,14 @@
             <Label>{$_('cancel')}</Label>
           </OscdButton>
         </div>
-          {/snippet}
+      {/snippet}
     </OscdDialog>
     <OscdDialog open={dialogState === DialogState.Update || dialogState === DialogState.Create} onClose={onCloseDialog}>
       {#snippet title()}
-            <h3 >{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
-          {/snippet}
+        <h3 >{dialogState === DialogState.Update ? $_('location', { values: { name: currentSelectLocation?.name }}) : $_('new_location')}</h3>
+      {/snippet}
       {#snippet content()}
-            <div >
+        <div >
           {#if currentSelectLocation}
             {#if dialogState === DialogState.Update}
               <Label>{currentSelectLocation.uuid}</Label>
@@ -178,9 +178,9 @@
             <OscdInput label={$_('description')} bind:value={currentSelectLocation.description}></OscdInput>
           {/if}
         </div>
-          {/snippet}
+      {/snippet}
       {#snippet actions()}
-            <div >
+        <div >
           <OscdButton callback={onUpdateOrCreateSave} variant="raised">
             <OscdSaveIcon />
             <Label>{$_('save')}</Label>
@@ -190,19 +190,19 @@
             <Label>{$_('cancel')}</Label>
           </OscdButton>
         </div>
-          {/snippet}
+      {/snippet}
     </OscdDialog>
-    <div style="margin-top: 10px; margin-bottom: 10px">
-      <OscdButton class="button" callback={create} variant="raised">
-        <OscdAddIcon />
-        <Label>{$_('add_location')}</Label>
-      </OscdButton>
-      <OscdButton class="button" callback={load} variant="raised">
-        <OscdRefreshIcon />
-        <Label>{$_('refresh')}</Label>
-      </OscdButton>
-    </div>
     <div class="table-container">
+      <div class="table-actions">
+        <OscdButton callback={create} variant="raised">
+          <OscdAddIcon />
+          <Label>{$_('add_location')}</Label>
+        </OscdButton>
+        <OscdButton callback={load} variant="raised">
+          <OscdRefreshIcon />
+          <Label>{$_('refresh')}</Label>
+        </OscdButton>
+      </div>
       <Card style="padding: 1rem; width: 100%; height: 100%;">
         <h3 style="margin-bottom: 1rem;">{$_('location_table')}</h3>
         <OscdDataTable {columnDefs}
@@ -214,3 +214,16 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .table-actions {
+    display: flex;
+    padding: 1rem;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .table-container {
+    width: 100%;
+  }
+</style>

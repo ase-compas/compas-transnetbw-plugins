@@ -6,9 +6,11 @@
     OscdBasicDataTable,
     OscdBreadcrumbs,
     OscdConfirmDialog,
+    OscdFilterTab,
     OscdIconActionButton
   } from '@oscd-transnet-plugins/oscd-component';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import type { FilterDefinition } from '../../../../../libs/oscd-component/src/oscd-filter-builder/types';
 
   type DefaultTypeRow = {
     id: string;
@@ -24,6 +26,15 @@
   let data: DefaultTypeRow[] = $state([]);
   let errorMsg = $state('');
   let loading = $state(true);
+  let searchText = $state('');
+  let filters: FilterDefinition[] = $state([
+      { key: "type", type: 'select', label: 'Data Type ', options: [
+          { label: 'LNodeType', value: DataTypeKind.LNodeType },
+          { label: 'DOType', value: DataTypeKind.DOType },
+          { label: 'DAType', value: DataTypeKind.DAType },
+          { label: 'EnumType', value: DataTypeKind.EnumType }
+        ]},
+  ]);
 
   const columns = [
     { header: 'Type', key: 'type' },
@@ -37,16 +48,35 @@
     loadDefaultTypes();
   });
 
-  // sort data by type: LNodeType > DOType > DAType > EnumType and then by instance name
-  let sortedData: DefaultTypeRow[] = $derived.by(() => [...data].sort((a, b) => {
-      const typeOrder = [DataTypeKind.LNodeType, DataTypeKind.DOType, DataTypeKind.DAType, DataTypeKind.EnumType];
+  // reactive sorted & filtered data
+  let sortedData: DefaultTypeRow[] = $derived.by(() => {
+    // apply search filter
+    let filtered = data.filter(item => {
+      // free-text search on root or instance
+      const matchesSearch = searchText
+        ? item.root.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.instance.toLowerCase().includes(searchText.toLowerCase())
+        : true;
+
+      // apply selected filters
+      const matchesFilters = filters.every(f => {
+        if (!f.value) return true; // no filter applied
+        return item[f.key] === f.value;
+      });
+
+      return matchesSearch && matchesFilters;
+    });
+
+    // sort filtered data
+    const typeOrder = [DataTypeKind.LNodeType, DataTypeKind.DOType, DataTypeKind.DAType, DataTypeKind.EnumType];
+    filtered.sort((a, b) => {
       const typeComparison = typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
-      if (typeComparison !== 0) {
-        return typeComparison;
-      }
+      if (typeComparison !== 0) return typeComparison;
       return a.instance.localeCompare(b.instance);
-    })
-  );
+    });
+
+    return filtered;
+  });
 
   async function loadDefaultTypes() {
     loading = true;
@@ -102,13 +132,20 @@
   />
 </div>
 
+<div style="margin-bottom: 1rem;">
+  <OscdFilterTab
+    bind:searchText
+    bind:filters
+    searchLabel="Search ID or instance..."
+  />
+</div>
 
 <OscdBasicDataTable
   items={sortedData}
   {columns}
   {loading}
   emptyText="No default types found."
-  headerBg="#DAE3E6"
+  headerBg="rgba(0,0,0,0.1)"
   rowBg="#ffffff"
   hasActions
 >

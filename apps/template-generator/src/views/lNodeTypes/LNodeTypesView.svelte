@@ -1,6 +1,6 @@
 <script lang="ts">
   // ===== Imports =====
-  import { OscdButton, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdButton, OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
   import {
     type BasicType,
     DataTypeKind,
@@ -23,6 +23,8 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { onMount } from 'svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import type { FilterDefinition } from '../../../../../libs/oscd-component/src/oscd-filter-builder/types';
+  import { lnClassDescriptions } from '../../../../../libs/oscd-template-generator/src/lib/data/lnClassDescriptions';
 
   // ===== Store and Service Instances =====
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
@@ -39,7 +41,18 @@
   let filteredAndSortedItems = $derived.by(() => {
     const searchTerm = nodeSearchTerm.toLowerCase();
     return items
-      .filter((node) => node.id.toLowerCase().includes(searchTerm))
+      .filter(node => {
+        // if a filter value is selected, only show nodes of that class
+        const classFilter = filters.find(f => f.key === 'class');
+        if (classFilter?.value) {
+          return node.instanceType === classFilter.value;
+        }
+        return true;
+      })
+      .filter(node =>
+        node.id.toLowerCase().includes(searchTerm) ||
+        (node.instanceType?.toLowerCase().includes(searchTerm))
+      )
       .sort((a, b) => {
         const aVal = a[sort];
         const bVal = b[sort];
@@ -49,14 +62,21 @@
       });
   });
 
+  let filters: FilterDefinition[] = $state([
+      {
+        key: 'class',
+        type: 'select',
+        label: 'LnClass',
+        options: lnClassDescriptions.map(c => ({ value: c.lnClass, label: c.lnClass }))
+      }
+  ]);
+
   onMount(() => {
     const unsubscribe = pluginStore.updates.subscribe(() => {
       loadItems();
-    })
+    });
 
-    return () => {
-      unsubscribe();
-    }
+    return () => unsubscribe();
   })
 
   async function loadItems() {
@@ -133,11 +153,10 @@
   <!-- Toolbar for search and add new template button -->
   <div class="overview-toolbar">
     <div class="toolbar-left">
-      <OscdInput
-        label="Search Logical Node Types"
-        icon="search"
-        variant="outlined"
-        bind:value={nodeSearchTerm}
+      <OscdFilterTab
+        searchLabel="Search Logical Node Types"
+        bind:searchText={nodeSearchTerm}
+        bind:filters
       />
     </div>
     <OscdButton variant="unelevated" callback={openCreateDialog}>
@@ -161,7 +180,7 @@
             <IconButton class="material-icons">arrow_drop_up</IconButton>
           </Cell>
           <Cell columnId="lnClass" style="min-width: 200px; background: rgba(0, 0, 0, 0.1);">
-            <Label><strong>Class</strong></Label>
+            <Label><strong>LnClass</strong></Label>
             <IconButton class="material-icons">arrow_drop_up</IconButton>
           </Cell>
           <Cell columnId="references" sortable={false} style="background: rgba(0, 0, 0, 0.1);">
@@ -207,7 +226,7 @@
   .overview-toolbar {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: end;
     margin-bottom: 16px;
   }
 

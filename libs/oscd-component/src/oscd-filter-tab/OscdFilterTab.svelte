@@ -14,7 +14,7 @@
   }
 
   let {
-    filters = $bindable(),
+    filters = $bindable([]),
     onFilterChange = (filters: FilterDefinition[]) => {},
     searchText = $bindable(''),
     searchLabel = 'Search',

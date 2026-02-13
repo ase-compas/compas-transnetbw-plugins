@@ -14,6 +14,7 @@
   import { corePlugins, engineeringProcessEditing } from '../features/processes/stores.svelte';
   import { createPluginId } from '../features/plugins/id';
   import { addProcess } from '../features/processes/mutations.svelte';
+  import HelperText from '@smui/textfield/helper-text';
 
   interface Props {
     handleCancel: () => void;
@@ -23,6 +24,7 @@
   let { handleCancel, handleSaved }: Props = $props();
 
   let name = $state('');
+  let nameInvalid = $derived.by(() => name.trim().length === 0);
   let description = $state('');
   let version = $state('1.0.0');
 
@@ -230,18 +232,35 @@
   </div>
 
   <div class="form">
-    <Textfield variant="outlined" label="Process name" bind:value={name} />
+    <div class="field">
+      <Textfield
+        variant="outlined"
+        label="Process name"
+        bind:value={name}
+        invalid={nameInvalid}
+      >
+        {#snippet helper()}
+          <HelperText validationMsg>Process name is required.</HelperText>
+        {/snippet}
+      </Textfield>
+    </div>
 
-    <Textfield
-      variant="outlined"
-      label="Process id"
-      bind:value={procId}
-      on:input={() => (idTouched = true)}
-    />
+    <div class="field">
+      <Textfield
+        variant="outlined"
+        label="Process id"
+        bind:value={procId}
+        oninput={() => (idTouched = true)}
+      />
+    </div>
 
-    <Textfield variant="outlined" label="Version" bind:value={version} />
+    <div class="field">
+      <Textfield variant="outlined" label="Version" bind:value={version} />
+    </div>
 
-    <Textfield variant="outlined" label="Description" bind:value={description} />
+    <div class="field">
+      <Textfield variant="outlined" label="Description" bind:value={description} />
+    </div>
   </div>
 
   <div class="process-definition-view">
@@ -325,7 +344,15 @@
     display: grid;
     grid-template-columns: 1fr 1fr 160px 1fr;
     gap: 12px;
-    align-items: end;
+    align-items: start;
+  }
+
+  .field {
+    min-width: 0;
+  }
+
+  .field :global(.mdc-text-field) {
+    width: 100%;
   }
 
   .process-definition-view {
