@@ -90,8 +90,8 @@ onMount(async () => {
     formState = details;
   }
 
-  const autoGenerateRefId = (_: string) : string => {
-    return idGeneratorService.generateDefaultId(objInstanceType, itemId);
+  function autoGenerateRefId(instance: string) : string {
+    return idGeneratorService.generateReferenceId(instance, itemId);
   }
 
   // ===== Event Handlers =====

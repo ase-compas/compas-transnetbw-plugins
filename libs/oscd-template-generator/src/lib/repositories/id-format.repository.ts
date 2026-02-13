@@ -28,3 +28,17 @@ export class InMemoryIdFormatRepository implements IdFormatRepository {
     this.formats.set(id, format);
   }
 }
+
+export class LocalStorageIdFormatRepository implements IdFormatRepository {
+  private storageKeyPrefix = 'id-format-';
+
+  getFormat(id: string): IdFormat {
+    const item = localStorage.getItem(this.storageKeyPrefix + id);
+    if (!item) throw new Error(`Unknown ID format: ${id}`);
+    return JSON.parse(item) as IdFormat;
+  }
+
+  setFormat(id: string, format: IdFormat): void {
+    localStorage.setItem(this.storageKeyPrefix + id, JSON.stringify(format));
+  }
+}

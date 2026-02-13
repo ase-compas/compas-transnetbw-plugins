@@ -1,20 +1,29 @@
 <script lang="ts">
   import {
     getIdGeneratorService,
-    IdBuilder,
-    route
+    IdBuilder, route
   } from '@oscd-transnet-plugins/oscd-template-generator';
-  import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
   import {
     OSCD_REFERENCE_PREFIX_ID_FORMAT
   } from '../../../../../libs/oscd-template-generator/src/lib/utils/id-formats';
+  import { OscdBreadcrumbs } from '@oscd-transnet-plugins/oscd-component';
   const service = getIdGeneratorService();
 
 </script>
 
-<h1>ID Builder</h1>
-<div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-  <OscdButton callback={() => route.set({path: ["overview"]})}>Back To Overview</OscdButton>
+
+<div style="margin-bottom: 1rem;">
+  <OscdBreadcrumbs
+    color='var(--primary-base)'
+    breadcrumbs={[
+      { label: 'Logical Node Types', enabled: true },
+      { label: 'ID Formats', enabled: false },
+    ]}
+    activeIndex={1}
+    handleClick={(idx) => {
+      if (idx === 0) route.set({path: ["overview"]});
+    }}
+  />
 </div>
 
 <IdBuilder initialFormat={OSCD_REFERENCE_PREFIX_ID_FORMAT}/>

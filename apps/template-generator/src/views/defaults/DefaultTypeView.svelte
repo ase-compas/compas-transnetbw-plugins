@@ -4,7 +4,7 @@
   import { DataTypeKind, getDefaultTypeService, route } from '@oscd-transnet-plugins/oscd-template-generator';
   import {
     OscdBasicDataTable,
-    OscdButton,
+    OscdBreadcrumbs,
     OscdConfirmDialog,
     OscdIconActionButton
   } from '@oscd-transnet-plugins/oscd-component';
@@ -88,8 +88,20 @@
 
 </script>
 
-<h1>Default Types</h1>
-<OscdButton callback={() => {route.set({path: ['overview']})}}>&lt; Back To Overview</OscdButton>
+<div style="margin-bottom: 1rem;">
+  <OscdBreadcrumbs
+    color='var(--primary-base)'
+    breadcrumbs={[
+      { label: 'Logical Node Types', enabled: true },
+      { label: 'Default Types', enabled: false },
+    ]}
+    activeIndex={1}
+    handleClick={(idx) => {
+      if (idx === 0) route.set({path: ["overview"]});
+    }}
+  />
+</div>
+
 
 <OscdBasicDataTable
   items={sortedData}

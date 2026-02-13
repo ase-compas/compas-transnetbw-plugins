@@ -50,16 +50,16 @@
 
 <style>
 
-  :global(.id-field-set) {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.3rem;
-    background-color: #f5f5f5;
-    padding: 0.5rem;
-    border-radius: 8px;
-    min-height: 2.5rem;
-    align-items: center;
-  }
+.id-field-set {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.3rem;
+  background-color: #f5f5f5;
+  padding: 0.5rem;
+  border-radius: 8px;
+  min-height: 2.5rem;
+  align-items: center;
+}
 
   :global(.id-field-chip) {
     width: fit-content !important;

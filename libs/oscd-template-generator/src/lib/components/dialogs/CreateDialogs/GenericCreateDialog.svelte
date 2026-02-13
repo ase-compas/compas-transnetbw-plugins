@@ -54,7 +54,7 @@
   }
 
   const autoGenerateId = (instance: string) : string => {
-    return idGeneratorService.generateDefaultId(instance);
+    return idGeneratorService.generateGeneralId(instance);
   }
 
   // ===== Event Handlers =====
