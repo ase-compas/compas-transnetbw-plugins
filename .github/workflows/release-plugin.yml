@@ -1,0 +1,153 @@
+name: Release Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      PLUGIN_NAME_TO_RELEASE:
+        description: 'Name of the plugin to release (e.g., history-viewer, archive-explorer)'
+        required: true
+        type: string
+      RELEASE_TYPE:
+        description: 'Release type: MAJOR, MINOR, or PATCH'
+        required: false
+        type: choice
+        options:
+          - MINOR
+          - MAJOR
+          - PATCH
+        default: 'MINOR'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    
+    steps:
+      - name: Checkout public plugins Branch
+        uses: actions/checkout@v4
+        with:
+          ref: public
+
+      - name: Find last release version
+        id: find_last_version
+        run: |
+          #!/bin/bash
+          set -e
+          
+          PLUGIN_NAME="${{ github.event.inputs.PLUGIN_NAME_TO_RELEASE }}"
+          PLUGIN_DIR="plugins/$PLUGIN_NAME"
+          
+          echo "Searching for semver directories in: $PLUGIN_DIR"
+          
+          # Array to store found versions
+          versions=()
+          
+          # Check if plugin directory exists
+          if [ -d "$PLUGIN_DIR" ]; then
+            # Find all directories and check if they match semver pattern
+            for dir in "$PLUGIN_DIR"/*/ ; do
+              [ -d "$dir" ] || continue
+              dirname=$(basename "$dir")
+              
+              # Check if directory name matches semver pattern (X.Y.Z)
+              if [[ $dirname =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                echo "Found semver directory: $dirname"
+                versions+=("$dirname")
+              fi
+            done
+          else
+            echo "Plugin directory $PLUGIN_DIR not found"
+          fi
+          
+          # Determine the latest version
+          if [ ${#versions[@]} -eq 0 ]; then
+            LAST_RELEASE_VERSION="1.0.0"
+            echo "No semver directories found. Using default version: $LAST_RELEASE_VERSION"
+          else
+            # Sort versions semantically and get the latest
+            LAST_RELEASE_VERSION=$(printf '%s\n' "${versions[@]}" | sort -V | tail -n 1)
+            echo "Found ${#versions[@]} semver directories"
+            echo "Latest version: $LAST_RELEASE_VERSION"
+          fi
+          
+          echo "LAST_RELEASE_VERSION=$LAST_RELEASE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: calculate_new_version
+        run: |
+          #!/bin/bash
+          set -e
+
+          PLUGIN_NAME="${{ github.event.inputs.PLUGIN_NAME_TO_RELEASE }}"
+          RELEASE_TYPE="${{ github.event.inputs.RELEASE_TYPE }}"
+          LAST_VERSION="${{ steps.find_last_version.outputs.LAST_RELEASE_VERSION }}"
+
+          echo "Plugin to release: $PLUGIN_NAME"
+          echo "Release type: $RELEASE_TYPE"
+          echo "Last published version: $LAST_VERSION"
+          
+          # Parse semantic version (MAJOR.MINOR.PATCH)
+          if [[ $LAST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+          else
+            echo "Invalid version format: $LAST_VERSION, using 1.0.0"
+            MAJOR=1
+            MINOR=0
+            PATCH=0
+          fi
+          
+          # Calculate new version based on RELEASE_TYPE
+          case "$RELEASE_TYPE" in
+            MAJOR)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            MINOR)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            PATCH)
+              PATCH=$((PATCH + 1))
+              ;;
+            *)
+              echo "Invalid RELEASE_TYPE: $RELEASE_TYPE, using MINOR"
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version: $NEW_VERSION"
+          
+          # Export variables for next steps
+          echo "NEW_RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Release plugin
+        id: release_plugin
+        run: |
+          #!/bin/bash
+          set -e
+
+          PLUGIN_NAME="${{ github.event.inputs.PLUGIN_NAME_TO_RELEASE }}"
+          NEW_RELEASE_VERSION="${{ steps.calculate_new_version.outputs.NEW_RELEASE_VERSION }}"
+
+          echo "Plugin to release: $PLUGIN_NAME"
+          echo "New version: $NEW_RELEASE_VERSION"
+
+      - name: Release Summary
+        run: |
+          #!/bin/bash
+          
+          echo "========================================="
+          echo "Release Summary"
+          echo "========================================="
+          echo "Plugin: ${{ steps.calculate_new_version.outputs.PLUGIN_NAME }}"
+          echo "Release Type: ${{ github.event.inputs.RELEASE_TYPE }}"
+          echo "Previous Version: ${{ steps.find_last_version.outputs.LAST_RELEASE_VERSION }}"
+          echo "New Version: ${{ steps.calculate_new_version.outputs.NEW_RELEASE_VERSION }}"
+          echo "========================================="
