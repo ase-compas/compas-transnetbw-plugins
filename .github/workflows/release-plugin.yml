@@ -157,5 +157,5 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add "plugins/$PLUGIN_NAME/$NEW_RELEASE_VERSION"
           git status
-          # git commit -m "Deploy $PLUGIN_NAME version $NEW_RELEASE_VERSION to public plugins" || echo "No changes to commit"
-          # git push origin public
+          git commit -m "Deploy $PLUGIN_NAME version $NEW_RELEASE_VERSION to public plugins" || echo "No changes to commit"
+          git push origin public
