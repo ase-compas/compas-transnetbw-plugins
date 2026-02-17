@@ -6,7 +6,15 @@ on:
       PLUGIN_NAME_TO_RELEASE:
         description: 'Name of the plugin to release (e.g., history-viewer, archive-explorer)'
         required: true
-        type: string
+        type: choice
+        options:
+          - archive-explorer
+          - engineering-wizard
+          - history-viewer
+          - location-manager
+          - location-viewer
+          - template-generator
+          - type-distributor
       RELEASE_TYPE:
         description: 'Release type: MAJOR, MINOR, or PATCH'
         required: false
