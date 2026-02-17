@@ -139,15 +139,22 @@ jobs:
           echo "Plugin to release: $PLUGIN_NAME"
           echo "New version: $NEW_RELEASE_VERSION"
 
-      - name: Release Summary
+          # Create new directory for the plugin version
+          NEW_PLUGIN_DIR="plugins/$PLUGIN_NAME/$NEW_RELEASE_VERSION"
+          mkdir -p "$NEW_PLUGIN_DIR"
+
+          # Copy built plugin files to the new version directory
+          cp -r "plugins/$PLUGIN_NAME/index.js" "$NEW_PLUGIN_DIR/"
+
+          echo "Plugin $PLUGIN_NAME version $NEW_RELEASE_VERSION released successfully"
+
+      - name: Commit and Push Changes
         run: |
-          #!/bin/bash
-          
-          echo "========================================="
-          echo "Release Summary"
-          echo "========================================="
-          echo "Plugin: ${{ steps.calculate_new_version.outputs.PLUGIN_NAME }}"
-          echo "Release Type: ${{ github.event.inputs.RELEASE_TYPE }}"
-          echo "Previous Version: ${{ steps.find_last_version.outputs.LAST_RELEASE_VERSION }}"
-          echo "New Version: ${{ steps.calculate_new_version.outputs.NEW_RELEASE_VERSION }}"
-          echo "========================================="
+          PLUGIN_NAME="${{ github.event.inputs.PLUGIN_NAME_TO_RELEASE }}"
+          NEW_RELEASE_VERSION="${{ steps.calculate_new_version.outputs.NEW_RELEASE_VERSION }}"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add "plugins/$PLUGIN_NAME/$NEW_RELEASE_VERSION"
+          # git commit -m "Deploy $PLUGIN_NAME version $NEW_RELEASE_VERSION to public plugins" || echo "No changes to commit"
+          # git push origin public
