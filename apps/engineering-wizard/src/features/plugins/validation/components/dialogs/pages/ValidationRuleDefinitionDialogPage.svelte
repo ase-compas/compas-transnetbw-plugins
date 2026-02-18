@@ -6,6 +6,7 @@
 
   import type { XPathValidation } from '@oscd-transnet-plugins/shared';
   import { ALL_CHECKS, type CheckKey, type ConditionKey, type RuleUiState } from '../../../validationRuleUi';
+  import { buildAssertionExpression } from '../../../xpathBuilder';
 
   interface Props {
     validationEntry: XPathValidation;
@@ -52,18 +53,16 @@
     }
   });
 
-  function buildAssert(ui: RuleUiState): string {
-    return 'custom text for now';
-  }
-
   $effect(() => {
     validationEntry.message = ruleUi.message;
-    validationEntry.assert = buildAssert(ruleUi);
+    validationEntry.assert = buildAssertionExpression(ruleUi);
   });
 </script>
 
 <div class="rule-editor">
   <p class="rule-info">Define what the rule checks and the message shown if check fails</p>
+
+  <Textfield bind:value={ruleUi.attribute} label="Attribute" variant="outlined" placeholder="@name" class="rule-editor__full" />
 
   <Select bind:value={ruleUi.condition} label="Condition" variant="outlined">
     {#each CONDITIONS as c (c.key)}
@@ -85,12 +84,12 @@
       </div>
     {/if}
 
-    <Textfield bind:value={ruleUi.specificText} label="Specific text" variant="outlined" class="full" />
+    <Textfield bind:value={ruleUi.specificText} label="Specific text" variant="outlined" class="rule-editor__full" />
   </div>
 
-  <Textfield bind:value={ruleUi.message} label="Error Message" variant="outlined" class="full" />
+  <Textfield bind:value={ruleUi.message} label="Error Message" variant="outlined" class="rule-editor__full" />
 
-  <Textfield value={validationEntry.assert} label="Generated XPath assert" variant="outlined" class="full" readonly />
+  <Textfield value={validationEntry.assert} label="Generated XPath assert" variant="outlined" class="rule-editor__full" readonly />
 </div>
 
 <style>
@@ -120,4 +119,6 @@
     gap: 0.25rem 1rem;
     align-items: center;
   }
+
+  .rule-editor__full { width: 100%; }
 </style>

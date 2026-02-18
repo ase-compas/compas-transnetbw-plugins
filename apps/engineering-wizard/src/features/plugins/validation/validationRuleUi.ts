@@ -21,6 +21,7 @@ export type RuleUiState = {
   checks: Record<CheckKey, boolean>;
   specificText: string;
   message: string;
+  attribute: string;
 };
 
 export const ALL_CHECKS = [

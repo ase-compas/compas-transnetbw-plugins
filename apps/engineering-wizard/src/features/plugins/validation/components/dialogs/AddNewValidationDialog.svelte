@@ -34,6 +34,7 @@
     checks: makeChecks({}),
     specificText: '',
     message: '',
+    attribute: '',
   });
 
   const isValid = $derived.by(() =>
