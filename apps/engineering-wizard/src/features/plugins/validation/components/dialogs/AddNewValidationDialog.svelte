@@ -2,11 +2,14 @@
   import OscdBaseDialog from '../../../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
+
   import Button from '@smui/button';
   import WorkflowActions from '../../../../../components/shared/WorkflowActions.svelte';
+
   import ValidationBasicInformationDialogPage from './pages/ValidationBasicInformationDialogPage.svelte';
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
+  import { makeChecks, type RuleUiState } from '../../validationRuleUi';
 
   interface Props {
     open: boolean;
@@ -17,7 +20,6 @@
   let { open = $bindable(false), plugin, process }: Props = $props();
 
   let validationEntry = $state<XPathValidation>({
-    severity: 'error',
     title: '',
     description: '',
     context: '',
@@ -27,11 +29,28 @@
     pluginId: plugin.id,
   });
 
+  let ruleUi = $state<RuleUiState>({
+    condition: 'notContains',
+    checks: makeChecks({}),
+    specificText: '',
+    message: '',
+  });
+
   const isValid = $derived.by(() =>
-    !!validationEntry.title?.trim() && !!validationEntry.assert?.trim()
+    !!validationEntry.title?.trim() &&
+    !!validationEntry.assert?.trim() &&
+    !!validationEntry.message?.trim()
   );
 
   function saveValidation() {
+    console.log('validation has been created:', {
+      ...validationEntry,
+      title: validationEntry.title.trim(),
+      context: validationEntry.context ?? '',
+      assert: validationEntry.assert.trim(),
+      message: (validationEntry.message ?? '').trim(),
+    });
+
     closeDialog('confirm', {
       ...validationEntry,
       title: validationEntry.title.trim(),
@@ -45,11 +64,7 @@
     closeDialog('cancel');
   }
 
-  const steps = [
-    'basic',
-    'rule-definition',
-    'test-and-validate',
-  ] as const;
+  const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
   type Step = typeof steps[number];
 
   let currentStepIndex = $state(0);
@@ -63,14 +78,12 @@
     if (currentStepIndex < steps.length - 1) {
       currentStepIndex += 1;
     } else {
-      console.log('validation has been created');
       saveValidation();
     }
   }
 
   const isAtFirstStep = $derived(currentStepIndex === 0);
   const isAtLastStep = $derived(currentStepIndex === steps.length - 1);
-
 </script>
 
 <OscdBaseDialog
@@ -88,16 +101,17 @@
     {#if currentStep === 'basic'}
       <ValidationBasicInformationDialogPage bind:validationEntry />
     {:else if currentStep === 'rule-definition'}
-      <ValidationRuleDefinitionDialogPage />
+      <ValidationRuleDefinitionDialogPage bind:validationEntry bind:ruleUi />
     {:else}
-      <ValidationRuleTestDialogPage />
+      <ValidationRuleTestDialogPage bind:validationEntry />
     {/if}
+
   {/snippet}
+
   {#snippet actions()}
     <div class="dialog-actions">
-      <Button onclick={cancel}>
-        Cancel
-      </Button>
+      <Button onclick={cancel}>Cancel</Button>
+
       <WorkflowActions
         onGoToPreviousStep={onGoToPreviousStep}
         onGoToNextStep={onGoToNextStep}

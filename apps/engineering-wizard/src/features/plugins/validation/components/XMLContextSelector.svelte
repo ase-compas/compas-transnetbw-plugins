@@ -1,14 +1,15 @@
 <script lang="ts">
-  import {
-    OscdSmartSelect,
-    OscdTooltip,
-  } from '@oscd-transnet-plugins/oscd-component';
-  import {
-    OscdChevronRightIcon,
-  } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdSmartSelect, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdChevronRightIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   type NodeName = string;
   type MaybeNode = NodeName | null;
+
+  interface Props {
+    value?: string;
+  }
+
+  let { value = $bindable('') }: Props = $props();
 
   const nodeOptions: NodeName[] = [
     'Substation',
@@ -21,8 +22,8 @@
 
   let contextPath = $state<MaybeNode[]>([null]);
 
-  function isSelected(value: MaybeNode): value is NodeName {
-    return value !== null;
+  function isSelected(v: MaybeNode): v is NodeName {
+    return v !== null;
   }
 
   function removeNulls(values: MaybeNode[]): NodeName[] {
@@ -33,14 +34,6 @@
     return [...values, null];
   }
 
-  function shallowEqual<T>(a: T[], b: T[]): boolean {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i += 1) {
-      if (a[i] !== b[i]) return false;
-    }
-    return true;
-  }
-
   function normalizeContextPath(values: MaybeNode[]): MaybeNode[] {
     const selected = removeNulls(values);
     return withTrailingNull(selected);
@@ -48,14 +41,14 @@
 
   $effect(() => {
     const normalized = normalizeContextPath(contextPath);
-    if (!shallowEqual(contextPath, normalized)) {
+    if (contextPath.length !== normalized.length ||
+      contextPath.some((v, i) => v !== normalized[i])) {
       contextPath = normalized;
     }
   });
 
   const selectedPath = $derived.by(() => removeNulls(contextPath));
   const selectedPathCount = $derived(selectedPath.length);
-
   const lastIndex = $derived(contextPath.length - 1);
 
   const isCollapsed = $derived(selectedPathCount > 3);
@@ -65,9 +58,7 @@
     return selectedPath.slice(1, -1);
   });
 
-  const hiddenNodesLabel = $derived(
-    hiddenNodes.length ? hiddenNodes.join(' > ') : '(none)'
-  );
+  const hiddenNodesLabel = $derived(hiddenNodes.length ? hiddenNodes.join(' > ') : '(none)');
 
   function isEllipsisSlot(index: number): boolean {
     return isCollapsed && index === 1;
@@ -86,6 +77,35 @@
   function hasChevronAfter(index: number): boolean {
     return index < lastIndex;
   }
+
+  function nodesToValue(nodes: NodeName[]): string {
+    return nodes.join('/');
+  }
+
+  function valueToNodes(v: string): NodeName[] {
+    if (!v?.trim()) return [];
+    const parts = v.split('/').map((s) => s.trim()).filter(Boolean);
+    return parts.filter((p): p is NodeName => nodeOptions.includes(p));
+  }
+
+  let hydrated = $state(false);
+  let lastSeenValue = $state<string | null>(null);
+
+  $effect(() => {
+    if (value === lastSeenValue) return;
+    lastSeenValue = value;
+
+    const nodes = valueToNodes(value);
+    contextPath = withTrailingNull(nodes);
+    hydrated = true;
+  });
+
+  $effect(() => {
+    if (!hydrated) return;
+
+    const next = nodesToValue(selectedPath);
+    if (next !== value) value = next;
+  });
 </script>
 
 <div class="rule-nodes">
@@ -104,9 +124,7 @@
         <span class="ellipsis">…</span>
       </OscdTooltip>
 
-      <OscdChevronRightIcon
-        svgStyles="fill: #B2C7CB; width: 30px; height: 30px;"
-      />
+      <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 30px; height: 30px;" />
     {:else if isSelectVisible(index)}
       <OscdSmartSelect
         placeholder="Select next node"
@@ -116,9 +134,7 @@
       />
 
       {#if hasChevronAfter(index)}
-        <OscdChevronRightIcon
-          svgStyles="fill: #B2C7CB; width: 30px; height: 30px;"
-        />
+        <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 30px; height: 30px;" />
       {/if}
     {/if}
   {/each}

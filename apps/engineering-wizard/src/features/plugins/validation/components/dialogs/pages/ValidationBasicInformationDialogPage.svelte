@@ -1,8 +1,8 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
-  import OscdInput from '../../../../../../../../../libs/oscd-component/src/oscd-input/OscdInput.svelte';
   import type { XPathValidation } from '@oscd-transnet-plugins/shared';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
+  import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     validationEntry: XPathValidation;
@@ -13,23 +13,15 @@
 
 <div class="validation-form">
   <section class="validation-form__section">
-    <p class="validation-form__hint">
-      Provide a clear name and description to identify this validation rule.
-    </p>
+    <OscdInput
+      label="Rule Name"
+      placeholder="Rule Name"
+      variant="outlined"
+      bind:value={validationEntry.title}
+      required
+    />
 
-    <div class="validation-form__field">
-      <OscdInput
-        label="Rule Name"
-        placeholder="Rule Name"
-        variant="outlined"
-        bind:value={validationEntry.title}
-        required
-      />
-    </div>
-
-    <div class="validation-form__field">
-      <Textfield textarea bind:value={validationEntry.description} label="Description" />
-    </div>
+    <Textfield textarea bind:value={validationEntry.description} label="Description" />
   </section>
 
   <section class="validation-form__section">
@@ -37,9 +29,7 @@
       Select the XML location where this rule should be applied.
     </p>
 
-    <div class="validation-form__field">
-      <XMLContextSelector />
-    </div>
+    <XMLContextSelector bind:value={validationEntry.context} />
   </section>
 </div>
 
@@ -59,10 +49,5 @@
 
   .validation-form__hint {
     margin: 0;
-  }
-
-  .validation-form__field {
-    display: flex;
-    flex-direction: column;
   }
 </style>

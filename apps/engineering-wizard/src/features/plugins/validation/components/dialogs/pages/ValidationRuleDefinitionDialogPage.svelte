@@ -4,46 +4,15 @@
   import Checkbox from '@smui/checkbox';
   import FormField from '@smui/form-field';
 
-  export type ConditionKey =
-    | 'contains'
-    | 'notContains'
-    | 'equals'
-    | 'notEquals'
-    | 'startsWith'
-    | 'endsWith';
+  import type { XPathValidation } from '@oscd-transnet-plugins/shared';
+  import { ALL_CHECKS, type CheckKey, type ConditionKey, type RuleUiState } from '../../../validationRuleUi';
 
-  export type CheckKey =
-    | 'noSpecial'
-    | 'noSpaces'
-    | 'noLetters'
-    | 'noNumbers'
-    | 'noAccented'
-    | 'noXmlCritical'
-    | 'hasLetters'
-    | 'hasNumbers';
+  interface Props {
+    validationEntry: XPathValidation;
+    ruleUi: RuleUiState;
+  }
 
-  export type RuleUiState = {
-    condition: ConditionKey;
-    checks: Record<CheckKey, boolean>;
-    specificText: string;
-    message: string;
-  };
-
-  type Props = {
-    initialCondition?: ConditionKey;
-    initialChecks?: Partial<Record<CheckKey, boolean>>;
-    initialSpecificText?: string;
-    initialMessage?: string;
-    checkPalette?: Partial<Record<ConditionKey, CheckKey[]>>;
-  };
-
-  const {
-    initialCondition = 'notContains',
-    initialChecks = {},
-    initialSpecificText = '',
-    initialMessage = '',
-    checkPalette
-  }: Props = $props();
+  let { validationEntry = $bindable(), ruleUi = $bindable() }: Props = $props();
 
   const CONDITIONS = [
     { key: 'contains', label: 'Contains' },
@@ -53,17 +22,6 @@
     { key: 'equals', label: 'Equals' },
     { key: 'notEquals', label: 'Does not equal' }
   ] as const;
-
-  const ALL_CHECKS = [
-    'noSpecial',
-    'noSpaces',
-    'noLetters',
-    'noNumbers',
-    'noAccented',
-    'noXmlCritical',
-    'hasLetters',
-    'hasNumbers'
-  ] as const satisfies readonly CheckKey[];
 
   const CHECK_DEFS: Record<CheckKey, string> = {
     noSpecial: 'No special characters',
@@ -85,65 +43,29 @@
     endsWith: ['noXmlCritical']
   };
 
-  const palette: Record<ConditionKey, CheckKey[]> = {
-    ...DEFAULT_PALETTE,
-    ...(checkPalette ?? {})
-  };
-
-  const makeChecks = (init: Partial<Record<CheckKey, boolean>>): Record<CheckKey, boolean> =>
-    Object.fromEntries(ALL_CHECKS.map((k) => [k, !!init[k]])) as Record<CheckKey, boolean>;
-
-  let ui: RuleUiState = $state({
-    condition: initialCondition,
-    checks: makeChecks(initialChecks),
-    specificText: initialSpecificText,
-    message: initialMessage
-  });
-
-  const availableChecks: CheckKey[] = $derived(palette[ui.condition] ?? []);
+  const availableChecks = $derived(DEFAULT_PALETTE[ruleUi.condition] ?? []);
 
   $effect(() => {
     const allowed = new Set(availableChecks);
-    const next = { ...ui.checks };
-    let changed = false;
-
     for (const k of ALL_CHECKS) {
-      if (!allowed.has(k) && next[k]) {
-        next[k] = false;
-        changed = true;
-      }
+      if (!allowed.has(k) && ruleUi.checks[k]) ruleUi.checks[k] = false;
     }
-
-    if (changed) ui.checks = next;
   });
 
-  export function getState(): RuleUiState {
-    return { ...ui, checks: { ...ui.checks } };
+  function buildAssert(ui: RuleUiState): string {
+    return 'custom text for now';
   }
 
-  export function setState(next: Partial<RuleUiState>): void {
-    ui = {
-      ...ui,
-      ...next,
-      checks: next.checks ? { ...ui.checks, ...next.checks } : ui.checks
-    };
-  }
-
-  export function validate(): { ok: boolean; errors: string[] } {
-    const errors: string[] = [];
-    if (!ui.message.trim()) errors.push('Error message is required.');
-    return { ok: errors.length === 0, errors };
-  }
-
-  export function toRuleModel(): unknown {
-    return getState();
-  }
+  $effect(() => {
+    validationEntry.message = ruleUi.message;
+    validationEntry.assert = buildAssert(ruleUi);
+  });
 </script>
 
 <div class="rule-editor">
   <p class="rule-info">Define what the rule checks and the message shown if check fails</p>
 
-  <Select bind:value={ui.condition} label="Condition" variant="outlined">
+  <Select bind:value={ruleUi.condition} label="Condition" variant="outlined">
     {#each CONDITIONS as c (c.key)}
       <Option value={c.key}>{c.label}</Option>
     {/each}
@@ -156,17 +78,19 @@
       <div class="rule-editor__checks">
         {#each availableChecks as key (key)}
           <FormField>
-            <Checkbox bind:checked={ui.checks[key]} />
+            <Checkbox bind:checked={ruleUi.checks[key]} />
             <span>{CHECK_DEFS[key]}</span>
           </FormField>
         {/each}
       </div>
     {/if}
 
-    <Textfield bind:value={ui.specificText} label="Specific text" variant="outlined" class="full" />
+    <Textfield bind:value={ruleUi.specificText} label="Specific text" variant="outlined" class="full" />
   </div>
 
-  <Textfield bind:value={ui.message} label="Error Message" variant="outlined" class="full" />
+  <Textfield bind:value={ruleUi.message} label="Error Message" variant="outlined" class="full" />
+
+  <Textfield value={validationEntry.assert} label="Generated XPath assert" variant="outlined" class="full" readonly />
 </div>
 
 <style>

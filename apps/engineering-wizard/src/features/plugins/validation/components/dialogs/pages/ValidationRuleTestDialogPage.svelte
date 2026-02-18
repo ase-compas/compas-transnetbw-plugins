@@ -1,9 +1,19 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
   import Button from '@smui/button';
+  import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 
-  let sampleValue = '';
-  const resultPlaceholder = 'Result will appear here after validation.';
+  interface Props {
+    validationEntry: XPathValidation;
+  }
+  let { validationEntry = $bindable() }: Props = $props();
+
+  let sampleValue = $state('');
+  let result = $state('Result will appear here after validation.');
+
+  function validateSample() {
+    result = `Context: ${validationEntry.context || '(none)'} | Assert: ${validationEntry.assert || '(none)'}`;
+  }
 </script>
 
 <div class="test-validate">
@@ -14,6 +24,7 @@
     <Button
       variant="raised"
       style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+      onclick={validateSample}
     >
       Validate sample value
     </Button>
@@ -21,7 +32,7 @@
 
   <div class="result">
     <span class="result__label">Result:</span>
-    <span class="result__value">{resultPlaceholder}</span>
+    <span class="result__value">{result}</span>
   </div>
 </div>
 

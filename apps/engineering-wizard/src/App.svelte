@@ -3,7 +3,7 @@
   import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
-  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { getXPathRules, type Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import 'svelte-material-ui/bare.css';
@@ -18,7 +18,6 @@
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
-  import XMLContextSelector from './features/plugins/validation/components/XMLContextSelector.svelte';
 
   interface Plugin {
     src: string;
