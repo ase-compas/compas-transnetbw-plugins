@@ -91,7 +91,7 @@
   title="Add validation for {plugin.name}"
   confirmActionText="Add"
   maxWidth="800px"
-  maxHeight="620px"
+  maxHeight="800px"
   bind:open
   onConfirm={saveValidation}
   onCancel={cancel}

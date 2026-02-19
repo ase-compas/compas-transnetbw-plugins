@@ -65,6 +65,7 @@
   <Textfield bind:value={ruleUi.attribute} label="Attribute" variant="outlined" placeholder="@name" class="rule-editor__full" />
 
   <Select bind:value={ruleUi.condition} label="Condition" variant="outlined">
+    <Option value="" disabled selected>Condition</Option>
     {#each CONDITIONS as c (c.key)}
       <Option value={c.key}>{c.label}</Option>
     {/each}
@@ -87,9 +88,12 @@
     <Textfield bind:value={ruleUi.specificText} label="Specific text" variant="outlined" class="rule-editor__full" />
   </div>
 
-  <Textfield bind:value={ruleUi.message} label="Error Message" variant="outlined" class="rule-editor__full" />
+  <Textfield textarea bind:value={ruleUi.message} label="Error Message" variant="outlined"/>
 
-  <Textfield value={validationEntry.assert} label="Generated XPath assert" variant="outlined" class="rule-editor__full" readonly />
+  <div class="rule-editor__assert-box">
+    <span class="rule-editor__assert-label">Live Code Preview</span>
+    <pre class="rule-editor__assert-value">{validationEntry.assert}</pre>
+  </div>
 </div>
 
 <style>
@@ -97,11 +101,11 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 0;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   .rule-info {
-    margin: 0 0 1rem 0;
+    margin: 0;
   }
 
   .rule-editor__section {
@@ -120,5 +124,27 @@
     align-items: center;
   }
 
-  .rule-editor__full { width: 100%; }
+  .rule-editor__assert-box {
+    background: #DAE3E6;
+    border-radius: 5px;
+    padding: 0.75rem 1rem;
+  }
+
+  .rule-editor__assert-label {
+    font-size: 0.95em;
+    font-family: 'Roboto', sans-serif;
+    color: #6B9197;
+    margin-bottom: 0.5em;
+  }
+
+  .rule-editor__assert-value {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    color: #1a2b34;
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
 </style>

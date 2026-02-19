@@ -22,10 +22,15 @@ export function buildValueExpression(attributeInput: string): string {
 }
 
 export function buildAssertionExpression(ui: RuleUiState): string {
+  const attr = (ui.attribute ?? '').trim();
   const valueExpr = buildValueExpression(ui.attribute);
-
   const expectedText = (ui.specificText ?? '').trim();
-  if (!expectedText) return 'true()';
+
+  if (!attr && !expectedText) return '';
+
+  if (attr && !expectedText) return valueExpr;
+
+  if (!expectedText) return '';
 
   const expectedLit = toXPathStringLiteral(expectedText);
 
@@ -49,6 +54,6 @@ export function buildAssertionExpression(ui: RuleUiState): string {
       return `substring(${valueExpr}, string-length(${valueExpr}) - string-length(${expectedLit}) + 1) = ${expectedLit}`;
 
     default:
-      return 'true()';
+      return '';
   }
 }
