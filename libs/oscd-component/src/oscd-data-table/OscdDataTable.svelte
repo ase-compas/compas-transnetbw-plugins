@@ -59,64 +59,75 @@
   </Head>
 
   <Body>
-  {#each $filteredData as row, index (index)}
-    <Row>
-      {#each columnDefs as col (col.field)}
-        {#if col.field === 'actions'}
-          <Cell>
-            <div class="cell-actions">
-              {#each rowActions as action}
-                {#if action.iconComponent}
-                <OscdTooltip content={action.tooltip} hoverDelay={500}>
-                  <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
-                </OscdTooltip>
-                {:else}
-                  <OscdTooltip content={action.tooltip} hoverDelay={500}>
-                    <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
-                      {#if action.icon === "add"}
-                        <OscdAddIcon svgStyles="margin: unset" />
-                      {:else if action.icon === "cancel"}
-                        <OscdCancelIcon svgStyles="margin: unset" />
-                      {:else if action.icon === "download"}
-                        <OscdDownloadIcon svgStyles="margin: unset" />
-                      {:else if action.icon === "find-in-page"}
-                        <OscdFindInPageIcon svgStyles="margin: unset" />
-                      {:else if action.icon === "remove"}
-                        <OscdRemoveIcon svgStyles="margin: unset" />
-                      {:else if action.icon === "edit"}
-                        <OscdEditIcon svgStyles="margin: unset" />
-                      {:else if action.icon === "delete"}
-                        <OscdDeleteIcon svgStyles="margin: unset" />
-                      {:else}
-                        <OscdRefreshIcon svgStyles="margin: unset" />
-                      {/if}
-                    </OscdButton>
-                  </OscdTooltip>
-                {/if}
-              {/each}
-            </div>
-          </Cell>
-        {:else}
-          <Cell numeric={col.numeric} style={col.cellStyle}>
-            {#if col.cellRenderer}
-              {@const CellRenderer = col.cellRenderer}
-              <CellRenderer
-                row={row}
-                value={row[col.field]}
-                col={col}
-                {...(col.cellRendererProps ?? {})}
-              />
-            {:else if col.valueFormatter}
-              {col.valueFormatter(row[col.field])}
+    {#if $filteredData.length === 0}
+      <Row>
+        <Cell
+          class="oscd-basic-table__empty-row"
+          colspan={columnDefs.length}
+          style="text-align:center; padding: 24px; opacity: 0.6; background: rgba(0,0,0,0.05);"
+        >
+          {emptyText}
+        </Cell>
+      </Row>
+    {:else}
+      {#each $filteredData as row, index (index)}
+        <Row>
+          {#each columnDefs as col (col.field)}
+            {#if col.field === 'actions'}
+              <Cell>
+                <div class="cell-actions">
+                  {#each rowActions as action}
+                    {#if action.iconComponent}
+                    <OscdTooltip content={action.tooltip} hoverDelay={500}>
+                      <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                    </OscdTooltip>
+                    {:else}
+                      <OscdTooltip content={action.tooltip} hoverDelay={500}>
+                        <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                          {#if action.icon === "add"}
+                            <OscdAddIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "cancel"}
+                            <OscdCancelIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "download"}
+                            <OscdDownloadIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "find-in-page"}
+                            <OscdFindInPageIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "remove"}
+                            <OscdRemoveIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "edit"}
+                            <OscdEditIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "delete"}
+                            <OscdDeleteIcon svgStyles="margin: unset" />
+                          {:else}
+                            <OscdRefreshIcon svgStyles="margin: unset" />
+                          {/if}
+                        </OscdButton>
+                      </OscdTooltip>
+                    {/if}
+                  {/each}
+                </div>
+              </Cell>
             {:else}
-              {row[col.field] ?? ''}
+              <Cell numeric={col.numeric} style={col.cellStyle}>
+                {#if col.cellRenderer}
+                  {@const CellRenderer = col.cellRenderer}
+                  <CellRenderer
+                    row={row}
+                    value={row[col.field]}
+                    col={col}
+                    {...(col.cellRendererProps ?? {})}
+                  />
+                {:else if col.valueFormatter}
+                  {col.valueFormatter(row[col.field])}
+                {:else}
+                  {row[col.field] ?? ''}
+                {/if}
+              </Cell>
             {/if}
-          </Cell>
-        {/if}
+          {/each}
+        </Row>
       {/each}
-    </Row>
-
-  {/each}
+    {/if}
   </Body>
 
   {#snippet progress()}
@@ -156,6 +167,7 @@
     store: any;
     rowActions?: RowAction[];
     searchInputLabel?: string;
+    emptyText?: string;
   }
 
   let {
@@ -165,7 +177,8 @@
     rowData = $bindable([]),
     store,
     rowActions = [],
-    searchInputLabel = 'Search'
+    searchInputLabel = 'Search',
+    emptyText = 'No data available',
   }: Props = $props();
 
   let filters = $state({
@@ -345,12 +358,21 @@
   }
   */
 
+
   .cell-actions {
     display: flex;
     height: 100%;
     justify-content: flex-end;
     gap: 0.5rem;
     align-items: center;
+  }
+
+  :global(.mdc-data-table__row:hover > .mdc-data-table__cell:not(.oscd-basic-table__empty-row)) {
+    background-color: #D9D800 !important;
+  }
+
+  :global(td.mdc-data-table__cell.cell-bold) {
+    font-weight: 700 !important;
   }
 
   /* Responsive Design */

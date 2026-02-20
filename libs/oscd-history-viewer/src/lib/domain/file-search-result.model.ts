@@ -8,7 +8,8 @@ export class FileSearchResult {
     private readonly _version: string,
     private readonly _comment: string,
     private readonly _archived: boolean,
-    private readonly _available: boolean
+    private readonly _available: boolean,
+    private readonly _deleted: boolean,
   ) {}
 
   get uuid(): string {
@@ -45,5 +46,9 @@ export class FileSearchResult {
 
   get available(): boolean {
     return this._available;
+  }
+
+  get deleted(): boolean {
+    return this._deleted;
   }
 }

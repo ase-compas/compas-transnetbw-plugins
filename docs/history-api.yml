@@ -55,7 +55,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponseDto'
-  /scl/{type}/{id}:
+  /scl/v1/{type}/{id}:
     delete:
       tags:
         - history
