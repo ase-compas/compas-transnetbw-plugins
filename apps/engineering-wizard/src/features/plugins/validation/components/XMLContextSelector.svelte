@@ -9,7 +9,7 @@
     value?: string;
   }
 
-  let { value = $bindable('') }: Props = $props();
+  let { value = $bindable('SCL//') }: Props = $props();
 
   const nodeOptions: NodeName[] = [
     'Substation',
@@ -79,12 +79,16 @@
   }
 
   function nodesToValue(nodes: NodeName[]): string {
-    return nodes.join('/');
+    if (nodes.length === 0) return 'SCL//';
+    return `SCL//${nodes.join('/')}`;
   }
 
   function valueToNodes(v: string): NodeName[] {
     if (!v?.trim()) return [];
-    const parts = v.split('/').map((s) => s.trim()).filter(Boolean);
+    let cleanValue = v.replace(/^SCL\/\//, '');
+    if (!cleanValue) return [];
+
+    const parts = cleanValue.split('/').map((s) => s.trim()).filter(Boolean);
     return parts.filter((p): p is NodeName => nodeOptions.includes(p));
   }
 

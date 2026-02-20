@@ -30,6 +30,11 @@
     </p>
 
     <XMLContextSelector bind:value={validationEntry.context} />
+
+    <div class="validation-form__preview-box">
+      <span class="validation-form__preview-label">Live XPath Preview</span>
+      <pre class="validation-form__preview-value">{validationEntry.context || 'SCL//'}</pre>
+    </div>
   </section>
 </div>
 
@@ -49,5 +54,30 @@
 
   .validation-form__hint {
     margin: 0;
+  }
+
+  .validation-form__preview-box {
+    background: #DAE3E6;
+    border-radius: 5px;
+    padding: 0.75rem 1rem;
+  }
+
+  .validation-form__preview-label {
+    font-size: 0.95em;
+    font-family: 'Roboto', sans-serif;
+    color: #6B9197;
+    margin-bottom: 0.5em;
+    display: block;
+  }
+
+  .validation-form__preview-value {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    color: #1a2b34;
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 </style>

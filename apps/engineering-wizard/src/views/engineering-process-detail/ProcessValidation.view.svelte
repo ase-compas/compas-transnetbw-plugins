@@ -3,6 +3,7 @@
   import { OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { validateScl } from '../../services/simpleValidation';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -28,6 +29,12 @@
   ] as const;
 
   function onDelete(index: number) {
+    const entry = validationEntries[index];
+    console.log('delete validation entry', entry);
+  }
+
+  async function validateSclHandler() {
+    return validateScl();
   }
 </script>
 
@@ -52,6 +59,14 @@
     {/snippet}
   </OscdBasicDataTable>
 {/if}
+
+  <button
+    type="button"
+    class="validate-btn"
+    onclick={validateSclHandler}
+  >
+    Test COMPAS Validation
+  </button>
 
 <style>
   .delete-btn {
