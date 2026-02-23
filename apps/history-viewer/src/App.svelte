@@ -47,19 +47,17 @@
   const search$ = initialLoad$.pipe(
     mergeWith(
       searchTrigger$.pipe(debounceTime(200))
-  ),
-    map(() => convertFilterToSearchParams(filterDefinitions)),
-    distinctUntilChanged(
-      (a, b) => JSON.stringify(a) === JSON.stringify(b)
     ),
+    map(() => convertFilterToSearchParams(filterDefinitions)),
     tap(() => {
       loadingDone = false;
     }),
     switchMap(searchParams =>
       versionEditorDataService.searchFiles(searchParams).pipe(
-        tap((data: FileSearchResult[]) => {
-          rowData = [...data];
-          dataStore.updateData(data);
+        map((data: FileSearchResult[]) => data.filter(item => !item.deleted)),
+        tap((filteredData: FileSearchResult[]) => {
+          rowData = [...filteredData];
+          dataStore.updateData(filteredData);
         }),
         finalize(() => {
           loadingDone = true;
@@ -342,11 +340,13 @@
     />
     </div>
     <div class="table-container">
-      <OscdDataTable {columnDefs}
-                     store={dataStore}
-                     {loadingDone}
-                     {rowActions}
-                     searchInputLabel={$_('search')}/>
+      <OscdDataTable 
+        emptyText="No resources found."
+        {columnDefs}
+        store={dataStore}
+        {loadingDone}
+        {rowActions}
+        searchInputLabel={$_('search')}/>
     </div>
   </div>
 </div>

@@ -81,7 +81,8 @@ export class VersionEditorFileService {
       data.version,
       data.comment,
       data.archived,
-      data.available
+      data.available,
+      data.deleted
     );
   }
 
