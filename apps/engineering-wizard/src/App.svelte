@@ -18,6 +18,7 @@
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
+  import { documentStore } from './documentStore.svelte';
 
   interface Plugin {
     src: string;
@@ -104,6 +105,7 @@
 
   $effect(() => {
     updateDialogProps({ editCount, doc });
+    documentStore.doc = doc ?? null;
   });
 
   function handleView(process: Process) {

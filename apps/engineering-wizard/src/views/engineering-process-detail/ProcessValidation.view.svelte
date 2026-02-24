@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Plugin, PluginGroup, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdDeleteIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { validateScl } from '../../services/simpleValidation';
+  import { validateEntry } from '../../services/validationService';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -33,8 +34,20 @@
     console.log('delete validation entry', entry);
   }
 
-  async function validateSclHandler() {
-    return validateScl();
+  async function handleValidate(entry: XPathValidation) {
+    try {
+      const result = await validateEntry(entry);
+      if (result.valid) {
+        toastService.success('Validation passed', `"${entry.title}" passed successfully`);
+      } else {
+        const errorSummary = result.errors.map((e) => e.message).join('; ');
+        toastService.error('Validation failed', errorSummary || `"${entry.title}" failed`);
+      }
+      console.log('Validation result for', entry.title, ':', result);
+    } catch (err) {
+      toastService.error('Validation error', String(err));
+      console.error('Validation error:', err);
+    }
   }
 </script>
 
@@ -51,7 +64,15 @@
     {#snippet actions({ item })}
       <button
         type="button"
-        class="delete-btn"
+        class="action-btn"
+        title="Run validation"
+        onclick={() => handleValidate(item)}
+      >
+        <OscdPlayCircleIcon svgStyles="fill: #1565C0" />
+      </button>
+      <button
+        type="button"
+        class="action-btn"
         title="Remove"
       >
         <OscdDeleteIcon svgStyles="fill: #FF203A" />
@@ -60,16 +81,8 @@
   </OscdBasicDataTable>
 {/if}
 
-  <button
-    type="button"
-    class="validate-btn"
-    onclick={validateSclHandler}
-  >
-    Test COMPAS Validation
-  </button>
-
 <style>
-  .delete-btn {
+  .action-btn {
     background: transparent;
     border: none;
     padding: 4px;

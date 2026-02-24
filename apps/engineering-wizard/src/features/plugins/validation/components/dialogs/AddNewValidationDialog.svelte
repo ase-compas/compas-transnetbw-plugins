@@ -22,7 +22,7 @@
   let validationEntry = $state<XPathValidation>({
     title: '',
     description: '',
-    context: 'SCL//',
+    context: '//SCL',
     assert: '',
     message: '',
     processId: process.id,
