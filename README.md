@@ -12,5 +12,3 @@ Open a plugin via its hosted entry point:
 - [Location Manager](https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/location-manager/index.js)
 - [Location Viewer](https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/location-viewer/index.js)
 - [Template Generator](https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/template-generator/index.js)
-- [TSLD](https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/tsld/index.js)
-- [Type Distributor](https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/type-distributor/index.js)
