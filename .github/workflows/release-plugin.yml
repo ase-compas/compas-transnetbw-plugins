@@ -153,6 +153,7 @@ jobs:
 
           # Copy built plugin files to the new version directory
           cp -r "compas/plugins/$PLUGIN_NAME/index.js" "$NEW_PLUGIN_DIR/"
+          cp -r "compas/plugins/$PLUGIN_NAME/style.css" "$NEW_PLUGIN_DIR/"
 
           echo "Plugin $PLUGIN_NAME version $NEW_RELEASE_VERSION released successfully"
 
