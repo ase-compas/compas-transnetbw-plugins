@@ -17,15 +17,11 @@ export interface ValidationResult {
   errors: ValidationError[];
 }
 
-export async function validateEntry(entry: XPathValidation): Promise<ValidationResult> {
-  const doc = documentStore.doc;
-  if (!doc) throw new Error('No SCL document loaded');
-
-  const sclContent = new XMLSerializer().serializeToString(doc);
+export async function validateWithContent(
+  entry: XPathValidation,
+  sclContent: string,
+): Promise<ValidationResult> {
   const rule = { context: entry.context, assertion: entry.assert };
-
-  console.log('[validateEntry] Sending rule:', rule);
-  console.log('[validateEntry] Document preview:', sclContent.slice(0, 300));
 
   const formData = new FormData();
   formData.append('validationType', 'XPATH');
@@ -39,4 +35,16 @@ export async function validateEntry(entry: XPathValidation): Promise<ValidationR
   }
 
   return response.json();
+}
+
+export async function validateEntry(entry: XPathValidation): Promise<ValidationResult> {
+  const doc = documentStore.doc;
+  if (!doc) throw new Error('No SCL document loaded');
+
+  const sclContent = new XMLSerializer().serializeToString(doc);
+
+  console.log('[validateEntry] Sending rule:', { context: entry.context, assertion: entry.assert });
+  console.log('[validateEntry] Document preview:', sclContent.slice(0, 300));
+
+  return validateWithContent(entry, sclContent);
 }

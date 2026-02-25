@@ -30,11 +30,15 @@
   });
 
   let ruleUi = $state<RuleUiState>({
+    mode: 'attribute',
     condition: 'notContains',
     checks: makeChecks({}),
     specificText: '',
-    message: '',
     attribute: '',
+    elementCheckType: 'exists',
+    elementName: '',
+    elementCount: 1,
+    message: '',
   });
 
   const isValid = $derived.by(() =>

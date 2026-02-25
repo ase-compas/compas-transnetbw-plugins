@@ -1,3 +1,7 @@
+export type RuleMode = 'attribute' | 'element';
+
+export type ElementCheckType = 'exists' | 'notExists' | 'exactly' | 'atLeast' | 'atMost';
+
 export type ConditionKey =
   | 'contains'
   | 'notContains'
@@ -17,11 +21,15 @@ export type CheckKey =
   | 'hasNumbers';
 
 export type RuleUiState = {
+  mode: RuleMode;
   condition: ConditionKey;
   checks: Record<CheckKey, boolean>;
   specificText: string;
-  message: string;
   attribute: string;
+  elementCheckType: ElementCheckType;
+  elementName: string;
+  elementCount: number;
+  message: string;
 };
 
 export const ALL_CHECKS = [
