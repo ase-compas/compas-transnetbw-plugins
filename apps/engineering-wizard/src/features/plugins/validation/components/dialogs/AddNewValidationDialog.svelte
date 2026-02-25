@@ -104,7 +104,7 @@
 >
   {#snippet content()}
     {#if currentStep === 'basic'}
-      <ValidationBasicInformationDialogPage bind:validationEntry />
+      <ValidationBasicInformationDialogPage bind:validationEntry bind:ruleUi />
     {:else if currentStep === 'rule-definition'}
       <ValidationRuleDefinitionDialogPage bind:validationEntry bind:ruleUi />
     {:else}

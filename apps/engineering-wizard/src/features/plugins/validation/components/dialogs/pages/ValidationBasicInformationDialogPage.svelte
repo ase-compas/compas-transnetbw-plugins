@@ -3,12 +3,16 @@
   import type { XPathValidation } from '@oscd-transnet-plugins/shared';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import type { RuleUiState } from '../../../validationRuleUi';
+  import PreviewBox from '../../PreviewBox.svelte';
+  import InfoBox from '../../InfoBox.svelte';
 
   interface Props {
     validationEntry: XPathValidation;
+    ruleUi: RuleUiState;
   }
 
-  let { validationEntry = $bindable() }: Props = $props();
+  let { validationEntry = $bindable(), ruleUi = $bindable() }: Props = $props();
 </script>
 
 <div class="validation-form">
@@ -26,15 +30,45 @@
 
   <section class="validation-form__section">
     <p class="validation-form__hint">
-      Select the XML location where this rule should be applied.
+      What kind of check does this rule perform?
     </p>
 
-    <XMLContextSelector bind:value={validationEntry.context} />
-
-    <div class="validation-form__preview-box">
-      <span class="validation-form__preview-label">Live XPath Preview</span>
-      <pre class="validation-form__preview-value">{validationEntry.context || 'SCL//'}</pre>
+    <div class="mode-switcher">
+      <button
+        type="button"
+        class="mode-btn"
+        class:mode-btn--active={ruleUi.mode === 'attribute'}
+        onclick={() => (ruleUi.mode = 'attribute')}
+      >
+        Attribute check
+      </button>
+      <button
+        type="button"
+        class="mode-btn"
+        class:mode-btn--active={ruleUi.mode === 'element'}
+        onclick={() => (ruleUi.mode = 'element')}
+      >
+        Element check
+      </button>
     </div>
+
+    {#if ruleUi.mode === 'attribute'}
+      <p class="validation-form__hint">
+        Select the XML location where this rule should be applied.
+      </p>
+
+      <XMLContextSelector bind:value={validationEntry.context} />
+
+      <PreviewBox label="Live XPath Preview" value={validationEntry.context || 'SCL//'} />
+    {:else}
+      <InfoBox title="No context selection needed">
+        {#snippet children()}
+          <span class="info-box__body">
+            Element checks are evaluated globally against the document. The context is derived automatically from the element type you select in the next step.
+          </span>
+        {/snippet}
+      </InfoBox>
+    {/if}
   </section>
 </div>
 
@@ -56,28 +90,40 @@
     margin: 0;
   }
 
-  .validation-form__preview-box {
-    background: #DAE3E6;
+  .mode-switcher {
+    display: flex;
+    gap: 0;
+    border: 1px solid #b2c7cb;
     border-radius: 5px;
-    padding: 0.75rem 1rem;
+    overflow: hidden;
+    align-self: flex-start;
   }
 
-  .validation-form__preview-label {
-    font-size: 0.95em;
-    font-family: 'Roboto', sans-serif;
-    color: #6B9197;
-    margin-bottom: 0.5em;
-    display: block;
+  .mode-btn {
+    padding: 0.5rem 1.25rem;
+    background: var(--base3, #f4f7f8);
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--base03, #002b36);
+    transition: background 0.15s, color 0.15s;
   }
 
-  .validation-form__preview-value {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    color: #1a2b34;
-    padding: 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 100%;
+  .mode-btn + .mode-btn {
+    border-left: 1px solid #b2c7cb;
+  }
+
+  .mode-btn--active {
+    background: var(--primary-base, #2e6975);
+    color: var(--white, #fff);
+  }
+
+  .mode-btn:not(.mode-btn--active):hover {
+    background: var(--base3, #dae3e6);
+  }
+
+  .info-box__body {
+    color: var(--base01, #586e75);
+    line-height: 1.5;
   }
 </style>

@@ -43,8 +43,5 @@ export async function validateEntry(entry: XPathValidation): Promise<ValidationR
 
   const sclContent = new XMLSerializer().serializeToString(doc);
 
-  console.log('[validateEntry] Sending rule:', { context: entry.context, assertion: entry.assert });
-  console.log('[validateEntry] Document preview:', sclContent.slice(0, 300));
-
   return validateWithContent(entry, sclContent);
 }

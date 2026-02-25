@@ -12,7 +12,7 @@
   interface Props {
     validationEntry: XPathValidation;
   }
-  let { validationEntry = $bindable() }: Props = $props();
+  let { validationEntry }: Props = $props();
 
   let xmlContent = $state(
     documentStore.doc ? new XMLSerializer().serializeToString(documentStore.doc) : '',
