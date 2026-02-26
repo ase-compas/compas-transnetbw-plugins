@@ -98,9 +98,12 @@
         <OscdInfoIcon />
         <span>{bannerText}</span>
       </div>
-      <button type="button" class="banner-continue" onclick={continueRunning}>
+      <Button
+        type="button"
+        style="background: var(--white); color: var(--primary-base);"
+        onclick={continueRunning}>
         CONTINUE
-      </button>
+      </Button>
     </div>
   {/if}
 
@@ -140,6 +143,7 @@
 
       {#if isRunningRow(item)}
         <Button
+          variant="raised"
           type="button"
           aria-label="Start process"
           onclick={(e) => { e.stopPropagation(); handleStart(item); }}

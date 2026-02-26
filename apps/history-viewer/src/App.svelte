@@ -23,7 +23,6 @@
     VersionEditorFileService,
     VersionEditorStore
   } from '@oscd-transnet-plugins/oscd-history-viewer';
-  import { ArchiveExplorerService } from '@oscd-transnet-plugins/oscd-archive-explorer';
   import type { SearchParams } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Label } from '@smui/button';
   import { OscdCancelIcon } from '@oscd-transnet-plugins/oscd-icons';
@@ -38,7 +37,6 @@
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
-  const archivingService = ArchiveExplorerService.getInstance();
 
   let rowData: FileSearchResult[] = [];
   let historyData: FileSearchResult[] = [];
@@ -49,19 +47,17 @@
   const search$ = initialLoad$.pipe(
     mergeWith(
       searchTrigger$.pipe(debounceTime(200))
-  ),
-    map(() => convertFilterToSearchParams(filterDefinitions)),
-    distinctUntilChanged(
-      (a, b) => JSON.stringify(a) === JSON.stringify(b)
     ),
+    map(() => convertFilterToSearchParams(filterDefinitions)),
     tap(() => {
       loadingDone = false;
     }),
     switchMap(searchParams =>
       versionEditorDataService.searchFiles(searchParams).pipe(
-        tap((data: FileSearchResult[]) => {
-          rowData = [...data];
-          dataStore.updateData(data);
+        map((data: FileSearchResult[]) => data.filter(item => !item.deleted)),
+        tap((filteredData: FileSearchResult[]) => {
+          rowData = [...filteredData];
+          dataStore.updateData(filteredData);
         }),
         finalize(() => {
           loadingDone = true;
@@ -167,12 +163,12 @@
    });
    if (result.type !== 'confirm') return;
 
-   archivingService.archiveSclFile(row.uuid, row.version)
+   versionEditorDataService.deleteResource(row.type, row.uuid)
      .pipe(take(1))
      .subscribe({
        next: () => {
          searchTrigger$.next(null);
-         toastService.success("Deleted successfully", `Resource "${row.filename} (${row.uuid})" has been deleted.`);
+         toastService.success("Deleted resource", `Resource "${row.filename} (${row.uuid})" has been deleted.`);
        },
        error: (err) => {
          console.error(`Failed to delete resource "${row.filename} (${row.uuid})":`, err);
@@ -344,11 +340,13 @@
     />
     </div>
     <div class="table-container">
-      <OscdDataTable {columnDefs}
-                     store={dataStore}
-                     {loadingDone}
-                     {rowActions}
-                     searchInputLabel={$_('search')}/>
+      <OscdDataTable 
+        emptyText="No resources found."
+        {columnDefs}
+        store={dataStore}
+        {loadingDone}
+        {rowActions}
+        searchInputLabel={$_('search')}/>
     </div>
   </div>
 </div>

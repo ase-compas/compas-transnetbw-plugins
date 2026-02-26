@@ -1,7 +1,6 @@
 import {
   DataTypeRepository,
-  type IdFormatDefinition,
-  InMemoryIdFormatRepository,
+  LocalStorageIdFormatRepository,
 } from '../repositories';
 import { type ITypeSpecificationService, NsdSpecificationService } from './type-specification.service';
 import { type ILNodeTypeService, LNodeTypeService } from './l-node-type.service';
@@ -11,7 +10,6 @@ import { DaTypeService, type IDaTypeService } from './da-type.service';
 import { EnumTypeService, type IEnumTypeService } from './enum-type.service';
 import { type IDefaultService, LocalStorageDefaultService } from './default.service';
 import { OscdAlertService } from '@oscd-transnet-plugins/oscd-services/alert';
-import { OSCD_INSTANCE_PREFIX_ID_FORMAT, OSCD_REFERENCE_PREFIX_ID_FORMAT } from '../utils/id-formats';
 import { IdGeneratorService } from './id-generator.service';
 
 // App-scoped state
@@ -123,19 +121,6 @@ export function getIdGeneratorService(): IdGeneratorService {
 }
 
 function setupIdGeneratorService(): IdGeneratorService {
-  const formats: IdFormatDefinition[] = [
-    {
-      id: 'INSTANCE-PREFIX-UUID',
-      description: 'Default instance prefix id format',
-      format: OSCD_INSTANCE_PREFIX_ID_FORMAT,
-    },
-    {
-      id: 'REFERENCE-PREFIX-UUID',
-      description: 'Default reference prefix id format',
-      format: OSCD_REFERENCE_PREFIX_ID_FORMAT,
-    },
-  ];
-
-  const repo = new InMemoryIdFormatRepository(formats)
+  const repo = new LocalStorageIdFormatRepository();
   return new IdGeneratorService(repo);
 }

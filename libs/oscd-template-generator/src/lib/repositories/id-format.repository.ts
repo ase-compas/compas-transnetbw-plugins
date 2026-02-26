@@ -8,6 +8,7 @@ export interface IdFormatDefinition {
 
 export interface IdFormatRepository {
   getFormat(id: string): IdFormat;
+  setFormat(id: string, format: IdFormat): void;
 }
 
 export class InMemoryIdFormatRepository implements IdFormatRepository {
@@ -21,5 +22,23 @@ export class InMemoryIdFormatRepository implements IdFormatRepository {
     const format = this.formats.get(id);
     if (!format) throw new Error(`Unknown ID format: ${id}`);
     return format;
+  }
+
+  setFormat(id: string, format: IdFormat): void {
+    this.formats.set(id, format);
+  }
+}
+
+export class LocalStorageIdFormatRepository implements IdFormatRepository {
+  private storageKeyPrefix = 'id-format-';
+
+  getFormat(id: string): IdFormat {
+    const item = localStorage.getItem(this.storageKeyPrefix + id);
+    if (!item) throw new Error(`Unknown ID format: ${id}`);
+    return JSON.parse(item) as IdFormat;
+  }
+
+  setFormat(id: string, format: IdFormat): void {
+    localStorage.setItem(this.storageKeyPrefix + id, JSON.stringify(format));
   }
 }

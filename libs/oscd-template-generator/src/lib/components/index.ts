@@ -21,6 +21,7 @@ export {default as AddReferenceDialog } from './dialogs/AddReferenceDialog.svelt
 
 
 export {default as LogicalNodeTypeRow} from './tables/LogicalNodeTypeRow.svelte';
+export {default as IdBuilder} from './id-builder/IdBuilder.svelte';
 
 export * from './tboard/types';
 
