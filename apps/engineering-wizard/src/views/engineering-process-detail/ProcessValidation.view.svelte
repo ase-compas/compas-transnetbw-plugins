@@ -9,9 +9,10 @@
   interface Props {
     pluginGroups?: PluginGroup[];
     selectedPlugin?: Plugin | null;
+    onEditEntry?: (item: XPathValidation, index: number) => void;
   }
 
-  let { pluginGroups = [], selectedPlugin = null }: Props = $props();
+  let { pluginGroups = [], selectedPlugin = null, onEditEntry }: Props = $props();
 
   const validationEntries = $derived.by(() => {
     const procId = selectedEngineeringProcess?.process?.id;
@@ -60,6 +61,10 @@
     headerBg="#DAE3E6"
     rowBg="#ffffff"
     getRowId={(item, i) => `${item.processId}:${item.pluginId}:${item.title}:${i}`}
+    onRowClick={(item) => {
+      const index = validationEntries.indexOf(item);
+      onEditEntry?.(item, index);
+    }}
   >
     {#snippet actions({ item })}
       <button

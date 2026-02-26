@@ -1,27 +1,19 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
-
-  import type { XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { getElementContext, type RuleUiState } from '../../../validationRuleUi';
+  import { getElementContext } from '../../../validationRuleUi';
   import { buildAssertionExpression } from '../../../xpathBuilder';
+  import { validationEditor } from '../../../validationEditorStore.svelte';
 
   import AttributeRuleEditor from './AttributeRuleEditor.svelte';
   import ElementRuleEditor from './ElementRuleEditor.svelte';
   import PreviewBox from '../../PreviewBox.svelte';
 
-  interface Props {
-    validationEntry: XPathValidation;
-    ruleUi: RuleUiState;
-  }
-
-  let { validationEntry = $bindable(), ruleUi = $bindable() }: Props = $props();
-
   $effect(() => {
-    validationEntry.message = ruleUi.message;
-    validationEntry.assert = buildAssertionExpression(ruleUi);
+    validationEditor.entry.message = validationEditor.ruleUi.message;
+    validationEditor.entry.assert = buildAssertionExpression(validationEditor.ruleUi);
 
-    if (ruleUi.mode === 'element' && ruleUi.elementName) {
-      validationEntry.context = getElementContext(ruleUi.elementName);
+    if (validationEditor.ruleUi.mode === 'element' && validationEditor.ruleUi.elementName) {
+      validationEditor.entry.context = getElementContext(validationEditor.ruleUi.elementName);
     }
   });
 </script>
@@ -29,15 +21,20 @@
 <div class="rule-editor">
   <p class="rule-info">Define what the rule checks and the message shown if it fails</p>
 
-  {#if ruleUi.mode === 'attribute'}
-    <AttributeRuleEditor bind:ruleUi />
+  {#if validationEditor.ruleUi.mode === 'attribute'}
+    <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} />
   {:else}
-    <ElementRuleEditor bind:ruleUi />
+    <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} />
   {/if}
 
-  <Textfield textarea bind:value={ruleUi.message} label="Error Message" variant="outlined" />
+  <Textfield
+    textarea
+    bind:value={validationEditor.ruleUi.message}
+    label="Error Message"
+    variant="outlined"
+  />
 
-  <PreviewBox label="Live Code Preview" value={validationEntry.assert} />
+  <PreviewBox label="Live Code Preview" value={validationEditor.entry.assert} />
 </div>
 
 <style>

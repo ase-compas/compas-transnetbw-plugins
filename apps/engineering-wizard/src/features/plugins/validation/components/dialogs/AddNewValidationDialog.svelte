@@ -9,59 +9,34 @@
   import ValidationBasicInformationDialogPage from './pages/ValidationBasicInformationDialogPage.svelte';
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
-  import { makeChecks, type RuleUiState } from '../../validationRuleUi';
+  import { validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
 
   interface Props {
     open: boolean;
     plugin: Plugin;
     process: Process;
+    initialValidation?: XPathValidation;
   }
 
-  let { open = $bindable(false), plugin, process }: Props = $props();
+  let { open = $bindable(false), plugin, process, initialValidation }: Props = $props();
 
-  let validationEntry = $state<XPathValidation>({
-    title: '',
-    description: '',
-    context: '//SCL',
-    assert: '',
-    message: '',
-    processId: process.id,
-    pluginId: plugin.id,
-  });
+  // Initialise shared store once when the dialog mounts.
+  initValidationEditor(process.id, plugin.id, initialValidation);
 
-  let ruleUi = $state<RuleUiState>({
-    mode: 'attribute',
-    condition: 'notContains',
-    checks: makeChecks({}),
-    specificText: '',
-    attribute: '',
-    elementCheckType: 'exists',
-    elementName: '',
-    elementCount: 1,
-    message: '',
-  });
-
-  const isValid = $derived.by(() =>
-    !!validationEntry.title?.trim() &&
-    !!validationEntry.assert?.trim() &&
-    !!validationEntry.message?.trim()
+  const isValid = $derived(
+    !!validationEditor.entry.title?.trim() &&
+    !!validationEditor.entry.assert?.trim() &&
+    !!validationEditor.entry.message?.trim(),
   );
 
   function saveValidation() {
-    console.log('validation has been created:', {
-      ...validationEntry,
-      title: validationEntry.title.trim(),
-      context: validationEntry.context ?? '',
-      assert: validationEntry.assert.trim(),
-      message: (validationEntry.message ?? '').trim(),
-    });
-
     closeDialog('confirm', {
-      ...validationEntry,
-      title: validationEntry.title.trim(),
-      context: validationEntry.context ?? '',
-      assert: validationEntry.assert.trim(),
-      message: (validationEntry.message ?? '').trim(),
+      ...$state.snapshot(validationEditor.entry),
+      title: validationEditor.entry.title.trim(),
+      context: validationEditor.entry.context ?? '',
+      assert: validationEditor.entry.assert.trim(),
+      message: (validationEditor.entry.message ?? '').trim(),
+      ruleUi: $state.snapshot(validationEditor.ruleUi) as Record<string, unknown>,
     });
   }
 
@@ -70,7 +45,7 @@
   }
 
   const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
-  type Step = typeof steps[number];
+  type Step = (typeof steps)[number];
 
   let currentStepIndex = $state(0);
   const currentStep: Step = $derived(steps[currentStepIndex]);
@@ -92,8 +67,8 @@
 </script>
 
 <OscdBaseDialog
-  title="Add validation for {plugin.name}"
-  confirmActionText="Add"
+  title="{initialValidation ? 'Edit' : 'Add'} validation for {plugin.name}"
+  confirmActionText={initialValidation ? 'Save' : 'Add'}
   maxWidth="800px"
   maxHeight="800px"
   bind:open
@@ -104,13 +79,12 @@
 >
   {#snippet content()}
     {#if currentStep === 'basic'}
-      <ValidationBasicInformationDialogPage bind:validationEntry bind:ruleUi />
+      <ValidationBasicInformationDialogPage />
     {:else if currentStep === 'rule-definition'}
-      <ValidationRuleDefinitionDialogPage bind:validationEntry bind:ruleUi />
+      <ValidationRuleDefinitionDialogPage />
     {:else}
-      <ValidationRuleTestDialogPage bind:validationEntry />
+      <ValidationRuleTestDialogPage />
     {/if}
-
   {/snippet}
 
   {#snippet actions()}
@@ -130,7 +104,7 @@
         nextBg="var(--white)"
         nextColor="var(--primary-base)"
         nextIconFill="var(--primary-base)"
-        nextLabelWhenLastStep="Create"
+        nextLabelWhenLastStep={initialValidation ? 'Save' : 'Create'}
         showCheckOnLastStep={true}
       />
     </div>

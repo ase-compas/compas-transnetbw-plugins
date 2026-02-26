@@ -1,18 +1,10 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
-  import type { XPathValidation } from '@oscd-transnet-plugins/shared';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
-  import type { RuleUiState } from '../../../validationRuleUi';
   import PreviewBox from '../../PreviewBox.svelte';
   import InfoBox from '../../InfoBox.svelte';
-
-  interface Props {
-    validationEntry: XPathValidation;
-    ruleUi: RuleUiState;
-  }
-
-  let { validationEntry = $bindable(), ruleUi = $bindable() }: Props = $props();
+  import { validationEditor } from '../../../validationEditorStore.svelte';
 </script>
 
 <div class="validation-form">
@@ -21,11 +13,11 @@
       label="Rule Name"
       placeholder="Rule Name"
       variant="outlined"
-      bind:value={validationEntry.title}
+      bind:value={validationEditor.entry.title}
       required
     />
 
-    <Textfield textarea bind:value={validationEntry.description} label="Description" />
+    <Textfield textarea bind:value={validationEditor.entry.description} label="Description" />
   </section>
 
   <section class="validation-form__section">
@@ -37,29 +29,29 @@
       <button
         type="button"
         class="mode-btn"
-        class:mode-btn--active={ruleUi.mode === 'attribute'}
-        onclick={() => (ruleUi.mode = 'attribute')}
+        class:mode-btn--active={validationEditor.ruleUi.mode === 'attribute'}
+        onclick={() => (validationEditor.ruleUi.mode = 'attribute')}
       >
         Attribute check
       </button>
       <button
         type="button"
         class="mode-btn"
-        class:mode-btn--active={ruleUi.mode === 'element'}
-        onclick={() => (ruleUi.mode = 'element')}
+        class:mode-btn--active={validationEditor.ruleUi.mode === 'element'}
+        onclick={() => (validationEditor.ruleUi.mode = 'element')}
       >
         Element check
       </button>
     </div>
 
-    {#if ruleUi.mode === 'attribute'}
+    {#if validationEditor.ruleUi.mode === 'attribute'}
       <p class="validation-form__hint">
         Select the XML location where this rule should be applied.
       </p>
 
-      <XMLContextSelector bind:value={validationEntry.context} />
+      <XMLContextSelector bind:value={validationEditor.entry.context} />
 
-      <PreviewBox label="Live XPath Preview" value={validationEntry.context || 'SCL//'} />
+      <PreviewBox label="Live XPath Preview" value={validationEditor.entry.context || 'SCL//'} />
     {:else}
       <InfoBox title="No context selection needed">
         {#snippet children()}

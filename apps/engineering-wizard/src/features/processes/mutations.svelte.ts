@@ -100,6 +100,40 @@ export function addValidationToPluginInProcess(
   });
 }
 
+export function updateValidationInPluginInProcess(
+  procId: string,
+  pluginId: string,
+  entryIndex: number,
+  validation: XPathValidation,
+): void {
+  engineeringProcesses.processes = (engineeringProcesses.processes ?? []).map((p) => {
+    if (p.id !== procId || !p.pluginGroups) return p;
+
+    const pluginGroups = p.pluginGroups.map((g) => {
+      const plugins = (g.plugins ?? []).map((pl) => {
+        if (pl.id !== pluginId) return pl;
+
+        const validations = [...(pl.validations ?? [])];
+        let matchCount = -1;
+        const targetIdx = validations.findIndex((v) => {
+          if (v.processId === procId && v.pluginId === pluginId) {
+            matchCount++;
+            if (matchCount === entryIndex) return true;
+          }
+          return false;
+        });
+
+        if (targetIdx !== -1) validations[targetIdx] = validation;
+        return { ...pl, validations };
+      });
+
+      return { ...g, plugins };
+    });
+
+    return { ...p, pluginGroups };
+  });
+}
+
 export function removePluginFromProcess(
   procId: string,
   pluginId: string,

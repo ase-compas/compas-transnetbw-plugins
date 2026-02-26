@@ -2,17 +2,12 @@
   import Textfield from '@smui/textfield';
   import Button from '@smui/button';
   import CircularProgress from '@smui/circular-progress';
-  import type { XPathValidation } from '@oscd-transnet-plugins/shared';
   import { documentStore } from '../../../../../../documentStore.svelte';
   import {
     validateWithContent,
     type ValidationResult,
   } from '../../../../../../services/validationService';
-
-  interface Props {
-    validationEntry: XPathValidation;
-  }
-  let { validationEntry }: Props = $props();
+  import { validationEditor } from '../../../validationEditorStore.svelte';
 
   let xmlContent = $state(
     documentStore.doc ? new XMLSerializer().serializeToString(documentStore.doc) : '',
@@ -28,7 +23,7 @@
     errorMessage = null;
     result = null;
     try {
-      result = await validateWithContent(validationEntry, xmlContent);
+      result = await validateWithContent(validationEditor.entry, xmlContent);
     } catch (e) {
       errorMessage = String(e);
     } finally {

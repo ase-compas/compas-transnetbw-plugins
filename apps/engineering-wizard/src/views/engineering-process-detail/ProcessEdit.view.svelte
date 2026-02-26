@@ -16,8 +16,8 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
-  import { addValidationToPluginInProcess } from '../../features/processes/mutations.svelte';
-  import type { Plugin } from '@oscd-transnet-plugins/shared';
+  import { addValidationToPluginInProcess, updateValidationInPluginInProcess } from '../../features/processes/mutations.svelte';
+  import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
@@ -103,6 +103,25 @@
     }
   }
 
+  async function handleEditValidationClick(entry: XPathValidation, index: number) {
+    const proc = selectedEngineeringProcess.process;
+    const pl = selectedPlugin;
+    if (!pl || !proc) return;
+
+    const result = await openDialog(AddNewValidationDialog, {
+      plugin: pl,
+      process: proc,
+      initialValidation: { ...entry },
+    });
+
+    if (result?.type === 'confirm') {
+      updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
+
+      selectedEngineeringProcess.process =
+        engineeringProcesses.processes?.find((p) => p.id === proc.id) ?? null;
+    }
+  }
+
 </script>
 <div class="stepper">
   <WorkflowTitle onClick={exitEditing} />
@@ -146,6 +165,7 @@
       activeBreadcrumbIndex={2}
       on:addValidation={handleAddValidationClick}
       on:breadcrumbClick={handleBreadcrumbClick}
+      onEditEntry={handleEditValidationClick}
     />
   {/if}
 </div>
