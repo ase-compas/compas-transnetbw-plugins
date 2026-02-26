@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Plugin, PluginGroup, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdDeleteIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { validateEntry } from '../../services/validationService';
@@ -58,29 +58,39 @@
     {columns}
     emptyText={`No validations configured for "${selectedPlugin.name}" yet.`}
     hasActions
-    headerBg="#DAE3E6"
-    rowBg="#ffffff"
+    headerBg="var(--base3)"
+    rowBg="var(--white)"
     getRowId={(item, i) => `${item.processId}:${item.pluginId}:${item.title}:${i}`}
-    onRowClick={(item) => {
-      const index = validationEntries.indexOf(item);
-      onEditEntry?.(item, index);
-    }}
   >
     {#snippet actions({ item })}
       <button
         type="button"
-        class="action-btn"
+        class="action-btn action-btn--run"
         title="Run validation"
+        aria-label="Run validation"
         onclick={() => handleValidate(item)}
       >
-        <OscdPlayCircleIcon svgStyles="fill: #1565C0" />
+        <OscdPlayCircleIcon svgStyles="fill: var(--blue)" />
       </button>
       <button
         type="button"
-        class="action-btn"
-        title="Remove"
+        class="action-btn action-btn--edit"
+        title="Edit"
+        aria-label="Edit validation"
+        onclick={() => {
+          const index = validationEntries.indexOf(item);
+          onEditEntry?.(item, index);
+        }}
       >
-        <OscdDeleteIcon svgStyles="fill: #FF203A" />
+        <OscdEditIcon svgStyles="fill: var(--primary-base)" />
+      </button>
+      <button
+        type="button"
+        class="action-btn action-btn--delete"
+        title="Remove"
+        aria-label="Remove validation"
+      >
+        <OscdDeleteIcon svgStyles="fill: var(--red)" />
       </button>
     {/snippet}
   </OscdBasicDataTable>
@@ -90,9 +100,20 @@
   .action-btn {
     background: transparent;
     border: none;
-    padding: 4px;
+    border-radius: 4px;
+    padding: 0.25rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    transition: background-color 0.15s ease;
+  }
+
+  .action-btn:hover {
+    background-color: var(--base3);
+  }
+
+  .action-btn:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 2px;
   }
 </style>

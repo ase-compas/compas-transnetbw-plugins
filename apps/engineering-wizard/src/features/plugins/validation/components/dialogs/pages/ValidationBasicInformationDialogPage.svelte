@@ -1,10 +1,12 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
+  import SegmentedButton, { Label, Segment } from '@smui/segmented-button';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import PreviewBox from '../../PreviewBox.svelte';
-  import InfoBox from '../../InfoBox.svelte';
   import { validationEditor } from '../../../validationEditorStore.svelte';
+
+  const modes = ['attribute', 'element'] as const;
 </script>
 
 <div class="validation-form">
@@ -26,22 +28,17 @@
     </p>
 
     <div class="mode-switcher">
-      <button
-        type="button"
-        class="mode-btn"
-        class:mode-btn--active={validationEditor.ruleUi.mode === 'attribute'}
-        onclick={() => (validationEditor.ruleUi.mode = 'attribute')}
-      >
-        Attribute check
-      </button>
-      <button
-        type="button"
-        class="mode-btn"
-        class:mode-btn--active={validationEditor.ruleUi.mode === 'element'}
-        onclick={() => (validationEditor.ruleUi.mode = 'element')}
-      >
-        Element check
-      </button>
+    <SegmentedButton
+      segments={modes}
+      singleSelect
+      bind:selected={validationEditor.ruleUi.mode}
+    >
+      {#snippet segment(seg)}
+        <Segment segment={seg}>
+          <Label>{seg === 'attribute' ? 'Attribute check' : 'Element check'}</Label>
+        </Segment>
+      {/snippet}
+    </SegmentedButton>
     </div>
 
     {#if validationEditor.ruleUi.mode === 'attribute'}
@@ -51,15 +48,9 @@
 
       <XMLContextSelector bind:value={validationEditor.entry.context} />
 
-      <PreviewBox label="Live XPath Preview" value={validationEditor.entry.context || 'SCL//'} />
+      <PreviewBox label="XPath context preview" value={validationEditor.entry.context || 'SCL//'} />
     {:else}
-      <InfoBox title="No context selection needed">
-        {#snippet children()}
-          <span class="info-box__body">
-            Element checks are evaluated globally against the document. The context is derived automatically from the element type you select in the next step.
-          </span>
-        {/snippet}
-      </InfoBox>
+      <PreviewBox label="Auto-derived context" value='//SCL' />
     {/if}
   </section>
 </div>
@@ -83,35 +74,8 @@
   }
 
   .mode-switcher {
-    display: flex;
-    gap: 0;
-    border: 1px solid #b2c7cb;
-    border-radius: 5px;
-    overflow: hidden;
-    align-self: flex-start;
-  }
-
-  .mode-btn {
-    padding: 0.5rem 1.25rem;
-    background: var(--base3, #f4f7f8);
-    border: none;
-    cursor: pointer;
-    font-size: 0.875rem;
-    color: var(--base03, #002b36);
-    transition: background 0.15s, color 0.15s;
-  }
-
-  .mode-btn + .mode-btn {
-    border-left: 1px solid #b2c7cb;
-  }
-
-  .mode-btn--active {
-    background: var(--primary-base, #2e6975);
-    color: var(--white, #fff);
-  }
-
-  .mode-btn:not(.mode-btn--active):hover {
-    background: var(--base3, #dae3e6);
+    --mdc-segmented-button-selected-container-fill-color: var(--primary-base);
+    --mdc-segmented-button-selected-ink-color: var(--white);
   }
 
   .info-box__body {
