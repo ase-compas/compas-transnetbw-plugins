@@ -70,7 +70,7 @@
         aria-label="Run validation"
         onclick={() => handleValidate(item)}
       >
-        <OscdPlayCircleIcon svgStyles="fill: var(--blue)" />
+        <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
       </button>
       <button
         type="button"

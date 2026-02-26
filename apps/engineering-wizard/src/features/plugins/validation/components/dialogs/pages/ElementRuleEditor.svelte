@@ -1,14 +1,8 @@
 <script lang="ts">
   import Select, { Option } from '@smui/select';
   import Textfield from '@smui/textfield';
-  import InfoBox from '../../InfoBox.svelte';
 
-  import {
-    ELEMENT_OPTIONS,
-    ELEMENT_CHECK_TYPES,
-    getElementContext,
-    type RuleUiState,
-  } from '../../../validationRuleUi';
+  import { ELEMENT_CHECK_TYPES, ELEMENT_OPTIONS, type RuleUiState } from '../../../validationRuleUi';
 
   interface Props {
     ruleUi: RuleUiState;

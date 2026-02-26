@@ -45,7 +45,7 @@
     variant="outlined"
     style="width: 100%"
     input$rows={12}
-    input$style="font-family: monospace; font-size: 0.8rem; line-height: 1.4;"
+    input$style="font-family: monospace; font-size: 0.9rem; line-height: 1.5;"
   />
 
   {#if !xmlContent.trim()}
