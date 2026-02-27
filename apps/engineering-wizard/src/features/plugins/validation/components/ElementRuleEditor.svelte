@@ -2,7 +2,7 @@
   import Select, { Option } from '@smui/select';
   import Textfield from '@smui/textfield';
 
-  import { ELEMENT_CHECK_TYPES, ELEMENT_OPTIONS, type RuleUiState } from '../../../validationRuleUi';
+  import { ELEMENT_CHECK_TYPES, ELEMENT_OPTIONS, type RuleUiState } from '../validationRuleUi';
 
   interface Props {
     ruleUi: RuleUiState;

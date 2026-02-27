@@ -4,8 +4,8 @@
   import { buildAssertionExpression } from '../../../xpathBuilder';
   import { validationEditor } from '../../../validationEditorStore.svelte';
 
-  import AttributeRuleEditor from './AttributeRuleEditor.svelte';
-  import ElementRuleEditor from './ElementRuleEditor.svelte';
+  import AttributeRuleEditor from '../../AttributeRuleEditor.svelte';
+  import ElementRuleEditor from '../../ElementRuleEditor.svelte';
   import PreviewBox from '../../PreviewBox.svelte';
 
   $effect(() => {

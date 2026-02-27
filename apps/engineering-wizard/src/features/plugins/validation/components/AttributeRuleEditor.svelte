@@ -10,7 +10,7 @@
     CHECK_DEFS,
     DEFAULT_PALETTE,
     type RuleUiState,
-  } from '../../../validationRuleUi';
+  } from '../validationRuleUi';
 
   interface Props {
     ruleUi: RuleUiState;

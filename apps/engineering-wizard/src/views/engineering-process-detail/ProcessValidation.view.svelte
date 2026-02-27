@@ -4,6 +4,7 @@
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { validateEntry } from '../../services/validationService';
+  import { formatToastDetail } from '../../services/validationMessages';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
@@ -41,8 +42,8 @@
       if (result.valid) {
         toastService.success('Validation passed', `"${entry.title}" passed successfully`);
       } else {
-        const errorSummary = result.errors.map((e) => e.message).join('; ');
-        toastService.error('Validation failed', errorSummary || `"${entry.title}" failed`);
+        const detail = formatToastDetail(result.errors, entry.message ?? '');
+        toastService.error('Validation failed', detail || `"${entry.title}" failed`);
       }
       console.log('Validation result for', entry.title, ':', result);
     } catch (err) {

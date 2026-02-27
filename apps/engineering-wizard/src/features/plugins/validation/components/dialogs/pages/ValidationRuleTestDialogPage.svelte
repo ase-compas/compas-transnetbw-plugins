@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Textfield from '@smui/textfield';
   import Button from '@smui/button';
   import CircularProgress from '@smui/circular-progress';
   import { documentStore } from '../../../../../../documentStore.svelte';
@@ -7,15 +6,21 @@
     validateWithContent,
     type ValidationResult,
   } from '../../../../../../services/validationService';
+  import { resolveErrorDisplay } from '../../../../../../services/validationMessages';
   import { validationEditor } from '../../../validationEditorStore.svelte';
+  import XmlViewer from '../../XmlViewer.svelte';
 
-  let xmlContent = $state(
+  const xmlContent = $derived(
     documentStore.doc ? new XMLSerializer().serializeToString(documentStore.doc) : '',
   );
 
   let result = $state<ValidationResult | null>(null);
   let isLoading = $state(false);
   let errorMessage = $state<string | null>(null);
+
+  const highlightLines = $derived(
+    result?.errors?.map((e) => e.lineNumber).filter((l) => l != null) ?? [],
+  );
 
   async function runValidation() {
     if (!xmlContent.trim()) return;
@@ -25,6 +30,11 @@
     try {
       result = await validateWithContent(validationEditor.entry, xmlContent);
     } catch (e) {
+      console.error('[ValidationRuleTestDialog] Validation request failed', {
+        context: validationEditor.entry.context,
+        assert: validationEditor.entry.assert,
+        error: e,
+      });
       errorMessage = String(e);
     } finally {
       isLoading = false;
@@ -34,22 +44,13 @@
 
 <div class="test-validate">
   <p class="test-validate__hint">
-    The loaded XML document is pre-filled below. Edit it if needed, then run the validation to test
-    your rule.
+    The loaded XML document is displayed below. Run the validation to test your rule against it.
   </p>
 
-  <Textfield
-    textarea
-    bind:value={xmlContent}
-    label="XML Document"
-    variant="outlined"
-    style="width: 100%"
-    input$rows={12}
-    input$style="font-family: monospace; font-size: 0.9rem; line-height: 1.5;"
-  />
-
-  {#if !xmlContent.trim()}
-    <p class="test-validate__no-doc">No document loaded. Paste XML content above to test.</p>
+  {#if xmlContent.trim()}
+    <XmlViewer value={xmlContent} {highlightLines} />
+  {:else}
+    <p class="test-validate__no-doc">No document loaded. Open a document to test your rule.</p>
   {/if}
 
   <div class="test-validate__actions">
@@ -82,11 +83,15 @@
         <span class="result__value">The rule passed successfully for the provided document.</span>
       {:else}
         <ul class="result__errors">
-          {#each result.errors as err (err.xpath + err.message)}
+          {#each result.errors as err (String(err.lineNumber) + err.message)}
+            {@const display = resolveErrorDisplay(err, validationEditor.entry.message ?? '')}
             <li class="result__error-item">
-              <span class="result__error-message">{err.message}</span>
-              {#if err.xpath}
-                <code class="result__error-xpath">{err.xpath}</code>
+              {#if err.lineNumber != null}
+                <span class="result__error-line">Line {err.lineNumber}</span>
+              {/if}
+              <span class="result__error-message">{display.message}</span>
+              {#if display.note}
+                <span class="result__error-note">{display.note}</span>
               {/if}
             </li>
           {/each}
@@ -196,18 +201,29 @@
     gap: 0.2rem;
   }
 
+  .result__error-line {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.75rem;
+    font-family: monospace;
+    font-weight: 600;
+    color: #b33a3a;
+    background: #fbe8e8;
+    border: 1px solid #e08080;
+    border-radius: 3px;
+    padding: 1px 6px;
+  }
+
   .result__error-message {
     font-family: 'Roboto', sans-serif;
     font-size: 0.875rem;
     color: #b33a3a;
   }
 
-  .result__error-xpath {
+  .result__error-note {
+    font-family: 'Roboto', sans-serif;
     font-size: 0.8rem;
-    color: #6b9197;
-    background: #fbe8e8;
-    padding: 1px 4px;
-    border-radius: 3px;
-    align-self: flex-start;
+    font-style: italic;
+    color: #7a5800;
   }
 </style>

@@ -1,14 +1,21 @@
 import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 import { documentStore } from '../documentStore.svelte';
 
-const API_URL = 'http://localhost:8081/api/v1/validate';
+const API_URL =
+  import.meta.env.VITE_VALIDATION_API_URL ?? 'http://localhost:8081/api/v1/validate';
+
+if (!import.meta.env.DEV && API_URL.startsWith('http://')) {
+  console.warn(
+    '[validationService] Insecure HTTP endpoint in use. Set VITE_VALIDATION_API_URL to an HTTPS URL for production.',
+  );
+}
 
 export interface ValidationError {
   ruleName: string;
   message: string;
   xpath: string;
   severity: string;
-  lineNumber: number;
+  lineNumber: number | null;
 }
 
 export interface ValidationResult {
