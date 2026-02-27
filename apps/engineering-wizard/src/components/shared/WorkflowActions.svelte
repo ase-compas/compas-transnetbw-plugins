@@ -9,6 +9,7 @@
     previousDisabled?: boolean;
     isAtFirstStep?: boolean;
     isAtLastStep?: boolean;
+    nextDisabled?: boolean;
     doneDisabled?: boolean;
     showDone?: boolean;
 
@@ -33,6 +34,7 @@
     onDone,
     isAtFirstStep = false,
     isAtLastStep = false,
+    nextDisabled = false,
     doneDisabled = false,
     showDone = true,
 
@@ -78,6 +80,7 @@
     <Button
       class="next-btn"
       onclick={onGoToNextStep}
+      disabled={nextDisabled}
       aria-label={isAtLastStep && nextLabelWhenLastStep ? nextLabelWhenLastStep : 'Next step'}
       style={nextStyles}
     >

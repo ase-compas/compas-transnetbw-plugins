@@ -16,7 +16,7 @@
       placeholder="Rule Name"
       variant="outlined"
       bind:value={validationEditor.entry.title}
-      required
+      invalid={!validationEditor.entry.title?.trim()}
     />
 
     <Textfield textarea bind:value={validationEditor.entry.description} label="Description" />

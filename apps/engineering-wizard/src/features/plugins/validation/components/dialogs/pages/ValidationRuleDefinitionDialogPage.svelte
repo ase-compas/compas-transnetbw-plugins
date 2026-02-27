@@ -32,6 +32,7 @@
     bind:value={validationEditor.ruleUi.message}
     label="Error Message"
     variant="outlined"
+    invalid={!validationEditor.ruleUi.message?.trim()}
   />
 
   <PreviewBox label="Live Code Preview" value={validationEditor.entry.assert} />

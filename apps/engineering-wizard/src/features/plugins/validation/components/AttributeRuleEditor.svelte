@@ -33,6 +33,7 @@
   label="Attribute"
   variant="outlined"
   placeholder="@name"
+  invalid={!ruleUi.attribute?.trim()}
   class="rule-editor__full"
 />
 

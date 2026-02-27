@@ -22,11 +22,35 @@
 
   initValidationEditor(process.id, plugin.id, initialValidation);
 
+  const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
+  type Step = (typeof steps)[number];
+
+  let currentStepIndex = $state(0);
+  const currentStep: Step = $derived(steps[currentStepIndex]);
+  const isAtFirstStep = $derived(currentStepIndex === 0);
+  const isAtLastStep = $derived(currentStepIndex === steps.length - 1);
+
   const isValid = $derived(
     !!validationEditor.entry.title?.trim() &&
     !!validationEditor.entry.assert?.trim() &&
     !!validationEditor.entry.message?.trim(),
   );
+
+  const isStepValid = $derived.by(() => {
+    if (currentStep === 'basic') {
+      return !!validationEditor.entry.title?.trim();
+    }
+    if (currentStep === 'rule-definition') {
+      const hasMessage = !!validationEditor.ruleUi.message?.trim();
+      if (validationEditor.ruleUi.mode === 'attribute') {
+        return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
+      }
+      return !!validationEditor.ruleUi.elementName?.trim() && hasMessage;
+    }
+    return true;
+  });
+
+  const isNextDisabled = $derived(isAtLastStep ? !isValid : !isStepValid);
 
   function saveValidation() {
     closeDialog('confirm', {
@@ -43,12 +67,6 @@
     closeDialog('cancel');
   }
 
-  const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
-  type Step = (typeof steps)[number];
-
-  let currentStepIndex = $state(0);
-  const currentStep: Step = $derived(steps[currentStepIndex]);
-
   function onGoToPreviousStep() {
     if (currentStepIndex > 0) currentStepIndex -= 1;
   }
@@ -60,9 +78,6 @@
       saveValidation();
     }
   }
-
-  const isAtFirstStep = $derived(currentStepIndex === 0);
-  const isAtLastStep = $derived(currentStepIndex === steps.length - 1);
 </script>
 
 <OscdBaseDialog
@@ -97,6 +112,7 @@
         onDone={() => {}}
         isAtFirstStep={isAtFirstStep}
         isAtLastStep={isAtLastStep}
+        nextDisabled={isNextDisabled}
         showDone={false}
         backBg="rgb(from var(--base0) r g b / 0.5)"
         backColor="var(--white)"
@@ -117,5 +133,9 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.5rem 1rem;
+  }
+
+  .dialog-actions :global(.mdc-button) {
+    margin-bottom: 0;
   }
 </style>

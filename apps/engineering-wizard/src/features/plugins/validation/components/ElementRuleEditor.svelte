@@ -16,7 +16,7 @@
 </script>
 
 <div class="element-editor__section">
-  <Select bind:value={ruleUi.elementName} label="Element" variant="outlined">
+  <Select bind:value={ruleUi.elementName} label="Element" variant="outlined" invalid={!ruleUi.elementName?.trim()}>
     {#each ELEMENT_OPTIONS as el}
       <Option value={el}>{el}</Option>
     {/each}

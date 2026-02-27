@@ -18,6 +18,7 @@
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess } from '../../features/processes/mutations.svelte';
   import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
@@ -117,10 +118,19 @@
     }
   }
 
-  function handleDeleteValidationClick(entry: XPathValidation, index: number) {
+  async function handleDeleteValidationClick(entry: XPathValidation, index: number) {
     const proc = selectedEngineeringProcess.process;
     const pl = selectedPlugin;
     if (!pl || !proc) return;
+
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Remove validation',
+      message: `Are you sure you want to remove "${entry.title}"? This cannot be undone.`,
+      confirmActionText: 'Remove',
+      confirmActionColor: 'danger',
+    });
+
+    if (result?.type !== 'confirm') return;
 
     removeValidationFromPluginInProcess(proc.id, pl.id, index);
     refreshSelectedProcess(proc.id);
