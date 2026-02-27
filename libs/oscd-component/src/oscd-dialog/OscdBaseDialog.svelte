@@ -2,6 +2,7 @@
   import Dialog, { Actions, Content, Header } from '@smui/dialog';
   import Button from '@smui/button';
   import { OscdIconActionButton } from '../index';
+  import LeaveConfirmDialog from './LeaveConfirmDialog.svelte';
 
   interface Props {
     open?: boolean;
@@ -16,9 +17,9 @@
     confirmDisabled?: boolean;
     color?: string;
     showCloseButton?: boolean;
+    confirmClose?: boolean;
     content?: import('svelte').Snippet;
-    actions?: import('svelte').Snippet;
-
+    actions?: import('svelte').Snippet<[{ requestClose: () => void }]>;
     onClose?: () => void;
     onCancel?: () => void;
     onConfirm?: () => void;
@@ -37,55 +38,86 @@
     confirmDisabled = false,
     color = 'var(--mdc-theme-primary, #ff3e00)',
     showCloseButton = true,
+    confirmClose = false,
     content,
     actions,
-
     onClose = () => {},
     onCancel = () => {},
     onConfirm = () => {},
   }: Props = $props();
 
-  function handleClose(e: CustomEvent<{action: string}>) {
-    if (e.detail.action === 'cancel') onCancel()
-    else if (e.detail.action === 'confirm') onConfirm()
-    else if (e.detail.action === 'close') onClose()
-    else onClose();
+  let leaveConfirmOpen = $state(false);
+  let pendingCloseAction: (() => void) | null = $state(null);
+  let suppressNextClose = $state(false);
+
+  function initiateClosure(callback: () => void) {
+    if (confirmClose) {
+      pendingCloseAction = callback;
+      leaveConfirmOpen = true;
+    } else {
+      suppressNextClose = true;
+      callback();
+    }
   }
 
-  let confirmButtonStyle = $derived.by(() => {
-    let confirmColor;
-    if (confirmActionColor === 'primary') {
-      confirmColor = color;
-    } else {
-      confirmColor = '#FF203A'
-    }
+  function handleClose(e: CustomEvent<{ action: string }>) {
+    if (suppressNextClose) { suppressNextClose = false; return; }
+    if (e.detail.action === 'confirm') onConfirm();
+    else initiateClosure(onClose);
+  }
 
-    return confirmDisabled ? '' : `background-color: ${confirmColor}; color: white;`
-  })
+  function handleDialogClick(e: MouseEvent) {
+    if (confirmClose && (e.target as Element).classList.contains('mdc-dialog__scrim')) {
+      initiateClosure(onClose);
+    }
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (confirmClose && open && e.key === 'Escape' && !leaveConfirmOpen) {
+      e.preventDefault();
+      initiateClosure(onClose);
+    }
+  }
+
+  function confirmLeave() {
+    suppressNextClose = true;
+    leaveConfirmOpen = false;
+    const action = pendingCloseAction ?? onClose;
+    pendingCloseAction = null;
+    action();
+  }
+
+  const confirmButtonStyle = $derived(
+    confirmDisabled
+      ? ''
+      : `background-color: ${confirmActionColor === 'primary' ? color : '#FF203A'}; color: white;`
+  );
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <Dialog
   bind:open
   aria-labelledby="large-scroll-title"
   aria-describedby="large-scroll-content"
   onSMUIDialogClosed={handleClose}
+  escapeKeyAction={confirmClose ? '' : 'close'}
+  scrimClickAction={confirmClose ? '' : 'close'}
+  onclick={handleDialogClick}
   surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight};`}
 >
-
   <Header>
     <div class="dialog__title" style={`background-color: ${color};`}>
       <h4>{title}</h4>
       {#if showCloseButton}
-      <OscdIconActionButton
-        tabindex="-1"
-        onClick={() => {
-          open = false;
-          onClose();
-        }}
-        tooltip="Close"
-        tooltipSide="left"
-        type="close"
-        fillColor="white"/>
+        <OscdIconActionButton
+          tabindex="-1"
+          onClick={() => initiateClosure(onClose)}
+          tooltip="Close"
+          tooltipSide="left"
+          type="close"
+          fillColor="white"
+        />
       {/if}
     </div>
   </Header>
@@ -96,23 +128,15 @@
 
   <div class="dialog__actions">
     {#if actions}
-      {@render actions()}
+      {@render actions({ requestClose: () => initiateClosure(onCancel) })}
     {:else}
       <Actions class="oscd-dialog__actions">
         {#if cancelActionText}
-          <Button
-            type="button"
-            action="cancel"
-            color="secondary">
+          <Button type="button" onclick={() => initiateClosure(onCancel)} color="secondary">
             {cancelActionText}
           </Button>
         {/if}
-        <Button
-          type="button"
-          action="confirm"
-          disabled={confirmDisabled}
-          style={confirmButtonStyle}
-        >
+        <Button type="button" action="confirm" disabled={confirmDisabled} style={confirmButtonStyle}>
           {confirmActionText}
         </Button>
       </Actions>
@@ -120,10 +144,17 @@
   </div>
 </Dialog>
 
-<style lang="css">
-  :global(.mdc-dialog) {
-    z-index: 5000 !important;
-  }
+{#if confirmClose}
+  <LeaveConfirmDialog
+    bind:open={leaveConfirmOpen}
+    onStay={() => { leaveConfirmOpen = false; }}
+    onLeave={confirmLeave}
+  />
+{/if}
+
+<style>
+  :global(.mdc-dialog) { z-index: 5000 !important; }
+
   :global(.oscd-dialog__actions) {
     display: flex;
     justify-content: flex-end;
@@ -131,22 +162,19 @@
     gap: 1rem;
   }
 
-  :global(.oscd-dialog__actions > button) {
-    margin: 0;
-  }
+  :global(.oscd-dialog__actions > button) { margin: 0; }
 
   .dialog__title {
     font-size: 20px;
     font-weight: 500;
     border-bottom: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bottom shadow */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     color: white;
     padding: 1.2rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    font-family: Roboto, sans-serif;
   }
 
   .dialog__actions {
@@ -160,5 +188,3 @@
     font-weight: 500;
   }
 </style>
-
-

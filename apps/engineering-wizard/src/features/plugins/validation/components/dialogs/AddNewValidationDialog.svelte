@@ -20,7 +20,6 @@
 
   let { open = $bindable(false), plugin, process, initialValidation }: Props = $props();
 
-  // Initialise shared store once when the dialog mounts.
   initValidationEditor(process.id, plugin.id, initialValidation);
 
   const isValid = $derived(
@@ -76,6 +75,7 @@
   onCancel={cancel}
   onClose={cancel}
   confirmDisabled={!isValid}
+  confirmClose={true}
 >
   {#snippet content()}
     {#if currentStep === 'basic'}
@@ -87,9 +87,9 @@
     {/if}
   {/snippet}
 
-  {#snippet actions()}
+  {#snippet actions({ requestClose })}
     <div class="dialog-actions">
-      <Button onclick={cancel}>Cancel</Button>
+      <Button onclick={requestClose}>Cancel</Button>
 
       <WorkflowActions
         onGoToPreviousStep={onGoToPreviousStep}
