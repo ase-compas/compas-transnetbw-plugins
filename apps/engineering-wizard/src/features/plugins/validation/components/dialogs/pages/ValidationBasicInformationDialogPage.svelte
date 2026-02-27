@@ -48,7 +48,7 @@
 
       <XMLContextSelector bind:value={validationEditor.entry.context} />
 
-      <PreviewBox label="XPath context preview" value={validationEditor.entry.context || 'SCL//'} />
+      <PreviewBox label="XPath context preview" value={validationEditor.entry.context} />
     {:else}
       <PreviewBox label="Auto-derived context" value='//SCL' />
     {/if}
@@ -78,8 +78,4 @@
     --mdc-segmented-button-selected-ink-color: var(--white);
   }
 
-  .info-box__body {
-    color: var(--base01, #586e75);
-    line-height: 1.5;
-  }
 </style>

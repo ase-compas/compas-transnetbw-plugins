@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Plugin, PluginGroup, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
@@ -8,21 +8,18 @@
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
-    pluginGroups?: PluginGroup[];
     selectedPlugin?: Plugin | null;
     onEditEntry?: (item: XPathValidation, index: number) => void;
+    onDeleteEntry?: (item: XPathValidation, index: number) => void;
   }
 
-  let { pluginGroups = [], selectedPlugin = null, onEditEntry }: Props = $props();
+  let { selectedPlugin = null, onEditEntry, onDeleteEntry }: Props = $props();
 
   const validationEntries = $derived.by(() => {
     const procId = selectedEngineeringProcess?.process?.id;
-    const pluginId = selectedPlugin?.id;
-    if (!procId || !pluginId) return [] as XPathValidation[];
+    if (!procId || !selectedPlugin) return [] as XPathValidation[];
 
-    return (selectedPlugin?.validations ?? []).filter(
-      (v) => v.processId === procId && v.pluginId === pluginId
-    );
+    return (selectedPlugin.validations ?? []).filter((v) => v.processId === procId);
   });
 
   const columns = [
@@ -30,11 +27,6 @@
     { key: 'context', header: 'Scope' },
     { key: 'assert', header: 'Condition' },
   ] as const;
-
-  function onDelete(index: number) {
-    const entry = validationEntries[index];
-    console.log('delete validation entry', entry);
-  }
 
   async function handleValidate(entry: XPathValidation) {
     try {
@@ -45,10 +37,8 @@
         const detail = formatToastDetail(result.errors, entry.message ?? '');
         toastService.error('Validation failed', detail || `"${entry.title}" failed`);
       }
-      console.log('Validation result for', entry.title, ':', result);
     } catch (err) {
       toastService.error('Validation error', String(err));
-      console.error('Validation error:', err);
     }
   }
 </script>
@@ -90,6 +80,10 @@
         class="action-btn action-btn--delete"
         title="Remove"
         aria-label="Remove validation"
+        onclick={() => {
+          const index = validationEntries.indexOf(item);
+          onDeleteEntry?.(item, index);
+        }}
       >
         <OscdDeleteIcon svgStyles="fill: var(--red)" />
       </button>

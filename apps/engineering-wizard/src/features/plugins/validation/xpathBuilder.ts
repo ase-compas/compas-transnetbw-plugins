@@ -28,7 +28,6 @@ function buildAttributeAssertion(ui: RuleUiState): string {
 
   if (!attr && !expectedText) return '';
   if (attr && !expectedText) return valueExpr;
-  if (!expectedText) return '';
 
   const expectedLit = toXPathStringLiteral(expectedText);
 
