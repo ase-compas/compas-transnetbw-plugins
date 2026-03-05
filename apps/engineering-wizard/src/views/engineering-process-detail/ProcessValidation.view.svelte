@@ -3,9 +3,15 @@
   import { OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { validateEntry } from '../../services/validationService';
-  import { formatToastDetail } from '../../services/validationMessages';
+  import { validateEntry, type ValidationError } from '../../services/validationService';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+
+  function formatToastDetail(errors: ValidationError[], userMessage: string): string {
+    if (errors.length === 0) return '';
+    const msg = userMessage.trim();
+    const parts = errors.map((e) => (msg.length > 0 ? msg : e.message));
+    return [...new Set(parts)].join('; ');
+  }
 
   interface Props {
     selectedPlugin?: Plugin | null;

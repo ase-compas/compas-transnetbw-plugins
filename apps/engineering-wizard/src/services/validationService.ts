@@ -41,14 +41,24 @@ export async function validateWithContent(
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
 
-  return response.json();
+  const data: unknown = await response.json();
+  if (!isValidationResult(data)) {
+    throw new Error('Unexpected response shape from validation API');
+  }
+  return data;
 }
 
 export async function validateEntry(entry: XPathValidation): Promise<ValidationResult> {
   const doc = documentStore.doc;
   if (!doc) throw new Error('No SCL document loaded');
+  return validateWithContent(entry, new XMLSerializer().serializeToString(doc));
+}
 
-  const sclContent = new XMLSerializer().serializeToString(doc);
-
-  return validateWithContent(entry, sclContent);
+function isValidationResult(data: unknown): data is ValidationResult {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as Record<string, unknown>).valid === 'boolean' &&
+    Array.isArray((data as Record<string, unknown>).errors)
+  );
 }

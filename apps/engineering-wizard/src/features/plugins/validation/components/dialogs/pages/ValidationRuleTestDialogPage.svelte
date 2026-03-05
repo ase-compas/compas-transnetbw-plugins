@@ -5,8 +5,17 @@
   import {
     validateWithContent,
     type ValidationResult,
+    type ValidationError,
   } from '../../../../../../services/validationService';
-  import { resolveErrorDisplay } from '../../../../../../services/validationMessages';
+
+  function resolveErrorDisplay(err: ValidationError, userMessage: string) {
+    const msg = userMessage.trim();
+    const message = msg.length > 0 ? msg : err.message;
+    const note = (err.lineNumber === null && err.message.startsWith('No context nodes found'))
+      ? 'No context nodes found'
+      : undefined;
+    return { message, note };
+  }
   import { validationEditor } from '../../../validationEditorStore.svelte';
   import XmlViewer from '../../XmlViewer.svelte';
 

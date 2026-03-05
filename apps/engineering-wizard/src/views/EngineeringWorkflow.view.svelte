@@ -10,6 +10,7 @@
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { editorTabs } from '../features/workflow/layout.svelte';
   import { runningEngineeringProcess } from '../features/processes/stores.svelte';
+  import { pluginValidationStatuses } from '../services/validationStatusStore.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -152,6 +153,7 @@
     expandedGroupBorderColor="white"
     bind:selectedGroupIndex
     bind:selectedPluginIndex
+    validationStatuses={pluginValidationStatuses.statuses}
   />
 
   <WorkflowActions

@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { PluginGroup, Plugin } from '@oscd-transnet-plugins/shared';
+  import type { RuleResult } from '../../services/validationStatusStore.svelte';
+  import ValidationBadgePopover from './ValidationBadgePopover.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -8,6 +10,7 @@
     expandedGroupBackground?: string;
     expandedGroupBorderColor?: string;
     selectPlugin?: (plugin: Plugin) => void;
+    validationStatuses?: Record<string, RuleResult[]>;
   }
 
   let {
@@ -16,7 +19,8 @@
     selectedPluginIndex = $bindable<number>(0),
     expandedGroupBackground = 'var(--primary-base)',
     expandedGroupBorderColor = 'var(--primary-base)',
-    selectPlugin
+    selectPlugin,
+    validationStatuses = {},
   }: Props = $props();
 
   let lastSelectedPluginId: string | null = null;
@@ -83,6 +87,10 @@
       selectPlugin?.(plugin);
     }
   }
+
+  function failureCount(pluginId: string): number {
+    return (validationStatuses[pluginId] ?? []).filter((r) => !r.passed).length;
+  }
 </script>
 
 <div
@@ -108,6 +116,12 @@
             onclick={() => onSelectPlugin(groupIndex, pluginIndex)}
           >
             <span>{plugin.name}</span>
+            {#if failureCount(plugin.id) > 0}
+              <ValidationBadgePopover
+                rules={validationStatuses[plugin.id] ?? []}
+                active={pluginIndex === selectedPluginIndex}
+              />
+            {/if}
           </button>
         {/each}
       {/if}
@@ -187,6 +201,7 @@
     border: none;
     font-family: Roboto, sans-serif;
     font-size: 16px;
+    overflow: visible;
   }
 
   .validation-groups__plugin.active {
