@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { DataTypeKind } from '../domain';
   import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
-  import { openSelectInstanceTypeDialog } from '../utils/overlayUitils';
   import { SetDefaultButton, TypeActionMenu } from '@oscd-transnet-plugins/oscd-template-generator';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { TypeKind } from './model';
+  import ChooseInstanceTypeDialog from './ChooseInstanceTypeDialog.svelte';
 
   interface Props {
-    type: DataTypeKind;
+    type: TypeKind;
     typeId: string;
     instanceType?: string | null;
     isEditMode?: boolean;
@@ -38,28 +38,16 @@
 
   const handleChange = (checked) => onModeChange(checked ? 'edit' : 'view');
 
-  function getTypeText(type: DataTypeKind): string {
-    switch (type) {
-      case DataTypeKind.LNodeType: return 'LN';
-      case DataTypeKind.DOType: return 'DO';
-      case DataTypeKind.DAType: return 'DA';
-      case DataTypeKind.EnumType: return 'Enum';
-      default: return 'Unknown';
+
+  async function handleInstanceTypeSelect() {
+    const result = await openDialog(ChooseInstanceTypeDialog, {
+      typeKind: type
+    })
+
+    if (result.type !== 'confirm') {
+      return;
     }
-  }
-
-  function getInstanceText(type: DataTypeKind): string {
-    switch (type) {
-      case DataTypeKind.LNodeType: return 'ln-Class';
-      case DataTypeKind.DOType: return 'cdc';
-      case DataTypeKind.DAType:
-      case DataTypeKind.EnumType:
-      default: return 'Instance';
-    }
-  }
-
-  function handleInstanceTypeSelect() {
-
+    onInstanceTypeChange(result.data.instance);
   }
 
 </script>
@@ -70,7 +58,7 @@
     <!-- Type section -->
     <div class="section">
       <span class="label">Type</span>
-      <span class="value strong">{getTypeText(type)}</span>
+      <span class="value strong">{TypeKind.abbreviation(type)}</span>
     </div>
 
     <!-- Type ID section -->
@@ -81,7 +69,7 @@
 
     <!-- Instance section -->
     <div class="section">
-      <span class="label">{getInstanceText(type)}</span>
+      <span class="label">{TypeKind.toTypeKindLabel(type)}</span>
       {#if instanceType}
         <span class="instance-badge static">{instanceType}</span>
       {:else}
@@ -111,7 +99,7 @@
         {/if}
       {/if}
     {:else}
-      <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose {getInstanceText(type)} to Edit</Button>
+      <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose Instance Type to Edit</Button>
     {/if}
     <TypeActionMenu
       onDelete={onDelete}

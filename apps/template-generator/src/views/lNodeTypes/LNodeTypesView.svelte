@@ -1,5 +1,6 @@
 <script lang="ts">
   // ===== Imports =====
+  import { get} from 'svelte/store';
   import { OscdButton, OscdFilterTab } from '@oscd-transnet-plugins/oscd-component';
   import {
     type BasicType,
@@ -25,6 +26,7 @@
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { FilterDefinition } from '../../../../../libs/oscd-component/src/oscd-filter-builder/types';
   import { lnClassDescriptions } from '../../../../../libs/oscd-template-generator/src/lib/data/lnClassDescriptions';
+  import TypeDetails from '../../v2/TypeDetails.svelte';
 
   // ===== Store and Service Instances =====
   const lNodeTypeService: ILNodeTypeService = getLNodeTypeService();
@@ -36,6 +38,7 @@
   let sortDirection: Lowercase<keyof typeof SortValue> = $state('ascending');
   let items: BasicType[] = $state([]);
   let isLoading = false;
+  let selectedId: string | null = $state(null);
 
   // ===== Derived State =====
   let filteredAndSortedItems = $derived.by(() => {
@@ -117,7 +120,8 @@
   }
 
   function handleNodeClick(lNodeTypeId: string) {
-    navigateToLNodeTypeDetail('view', lNodeTypeId);
+    //navigateToLNodeTypeDetail('view', lNodeTypeId);
+    selectedId = lNodeTypeId === selectedId ? null : lNodeTypeId;
   }
 
   async function openCreateDialog() {
@@ -221,6 +225,11 @@
     </DataTable>
   </div>
 </div>
+
+<TypeDetails
+  doc={pluginStore.state.doc}
+  typeId={selectedId}
+/>
 
 <style>
   .overview-toolbar {

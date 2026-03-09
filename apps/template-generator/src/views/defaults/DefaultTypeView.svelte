@@ -4,13 +4,12 @@
   import { DataTypeKind, getDefaultTypeService, route } from '@oscd-transnet-plugins/oscd-template-generator';
   import {
     OscdBasicDataTable,
-    OscdBreadcrumbs,
     OscdConfirmDialog,
-    OscdFilterTab,
     OscdIconActionButton
   } from '@oscd-transnet-plugins/oscd-component';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import type { FilterDefinition } from '../../../../../libs/oscd-component/src/oscd-filter-builder/types';
+  import DataTypeFilter from '../../v2/DataTypeFilter.svelte';
+  import { TypeKind } from '../../v2/model';
 
   type DefaultTypeRow = {
     id: string;
@@ -26,15 +25,9 @@
   let data: DefaultTypeRow[] = $state([]);
   let errorMsg = $state('');
   let loading = $state(true);
-  let searchText = $state('');
-  let filters: FilterDefinition[] = $state([
-      { key: "type", type: 'select', label: 'Data Type ', options: [
-          { label: 'LNodeType', value: DataTypeKind.LNodeType },
-          { label: 'DOType', value: DataTypeKind.DOType },
-          { label: 'DAType', value: DataTypeKind.DAType },
-          { label: 'EnumType', value: DataTypeKind.EnumType }
-        ]},
-  ]);
+  let query = $state('');
+  let typeKind = $state<TypeKind | undefined>(undefined);
+  let instance = $state<string | undefined>(undefined);
 
   const columns = [
     { header: 'Type', key: 'type' },
@@ -48,23 +41,37 @@
     loadDefaultTypes();
   });
 
+  function toDataTypeKind(v2TypeKind?: TypeKind): DataTypeKind | undefined {
+    switch (v2TypeKind) {
+      case TypeKind.LNodeType:
+        return DataTypeKind.LNodeType;
+      case TypeKind.DOType:
+        return DataTypeKind.DOType;
+      case TypeKind.DAType:
+        return DataTypeKind.DAType;
+      case TypeKind.EnumType:
+        return DataTypeKind.EnumType;
+      default:
+        return undefined;
+    }
+  }
+
   // reactive sorted & filtered data
   let sortedData: DefaultTypeRow[] = $derived.by(() => {
+    const selectedDataTypeKind = toDataTypeKind(typeKind);
+
     // apply search filter
     let filtered = data.filter(item => {
       // free-text search on root or instance
-      const matchesSearch = searchText
-        ? item.root.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.instance.toLowerCase().includes(searchText.toLowerCase())
+      const matchesSearch = query
+        ? item.root.toLowerCase().includes(query.toLowerCase()) ||
+        item.instance.toLowerCase().includes(query.toLowerCase())
         : true;
 
-      // apply selected filters
-      const matchesFilters = filters.every(f => {
-        if (!f.value) return true; // no filter applied
-        return item[f.key] === f.value;
-      });
+      const matchesTypeKind = selectedDataTypeKind ? item.type === selectedDataTypeKind : true;
+      const matchesInstance = instance ? item.instance === instance : true;
 
-      return matchesSearch && matchesFilters;
+      return matchesSearch && matchesTypeKind && matchesInstance;
     });
 
     // sort filtered data
@@ -119,25 +126,7 @@
 </script>
 
 <div style="margin-bottom: 1rem;">
-  <OscdBreadcrumbs
-    color='var(--primary-base)'
-    breadcrumbs={[
-      { label: 'Logical Node Types', enabled: true },
-      { label: 'Default Types', enabled: false },
-    ]}
-    activeIndex={1}
-    handleClick={(idx) => {
-      if (idx === 0) route.set({path: ["overview"]});
-    }}
-  />
-</div>
-
-<div style="margin-bottom: 1rem;">
-  <OscdFilterTab
-    bind:searchText
-    bind:filters
-    searchLabel="Search ID or instance..."
-  />
+  <DataTypeFilter bind:query bind:dataTypeKind={typeKind} bind:instance />
 </div>
 
 <OscdBasicDataTable

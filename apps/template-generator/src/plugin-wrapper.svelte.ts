@@ -1,6 +1,7 @@
 import Plugin from './plugin.svelte'; import * as pkg from '../package.json';
 import { mount, unmount } from 'svelte';
 import { pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
+import { initializeDataTypeService } from './v2/type.service';
 
 export default class NewOSCDPlugin extends HTMLElement {
 
@@ -8,10 +9,17 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
-    this.app = mount(Plugin, { target: this.shadowRoot! });
-    pluginStore.setPluginState({host: this, doc: this._doc})
+    this.addEventListener('oscd-edit-v2', (event: CustomEvent) => {
+      console.log("Received edit event in plugin wrapper", event.detail);
+    });
+
     const linkElement = createStyleLinkElement();
     this.shadowRoot?.appendChild(linkElement);
+    
+    initializeDataTypeService(this._doc!, this);
+    pluginStore.setPluginState({host: this, doc: this._doc})
+
+    this.app = mount(Plugin, { target: this.shadowRoot! });
   }
 
   disconnectedCallback() {

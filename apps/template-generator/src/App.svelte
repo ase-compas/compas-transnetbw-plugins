@@ -1,7 +1,5 @@
 <script lang="ts">
-  import LNodeTypesView from './views/lNodeTypes/LNodeTypesView.svelte';
-  import LNodeTypeDetailView from './views/lNodeTypeDetails/LNodeTypeDetailView.svelte';
-  import { pluginStore, route } from '@oscd-transnet-plugins/oscd-template-generator';
+  import { pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { DrawerStack, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
@@ -11,20 +9,25 @@
   import '../public/smui.css';
   import '../public/global.css';
   import '../../../libs/theme/src/lib/global.css';
+  import DataTypesListView from './v2/DataTypesListView.svelte';
+  import NavigationHeader from './v2/NavigationHeader.svelte';
+
+  let activeTab = $state('Data Types');
 </script>
 
 <div class="oscd-app">
   {#if pluginStore.state.doc !== null && pluginStore.ready}
     <div class="template-generator-container">
-      {#if $route.path[0] === 'overview'}
-        <LNodeTypesView />
-      {:else if $route.path[0] === 'defaults'}
+      <NavigationHeader bind:activeTab={activeTab} title="Template Generator" />
+
+      {#if activeTab === 'Data Types'}
+        <DataTypesListView />
+      {:else if activeTab === 'Default Types'}
         <DefaultTypeView />
-      {:else if $route.path[0] === 'id-builder'}
+      {:else if activeTab === 'ID Builder'}
         <IDBuilderView />
-      {:else}
-        <LNodeTypeDetailView />
       {/if}
+
     </div>
   {/if}
 </div>

@@ -219,7 +219,7 @@ function handleBackdropKeydown(event: KeyboardEvent) {
           <Button
             variant="unelevated"
             onclick={() => closeDrawer('save')}
-          >Save & Close</Button>
+          >Ok</Button>
         </div>
        </div>
       <!-- End: Drawer Footer -->

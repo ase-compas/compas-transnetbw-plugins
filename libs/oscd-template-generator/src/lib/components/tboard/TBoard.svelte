@@ -16,7 +16,7 @@
 
   interface Props {
     columns?: TColumnConfig[];
-    data?: TData[];
+    data?: TData;
 
     // Callbacks
     onItemDragChange?: (event: EventDetails) => void;

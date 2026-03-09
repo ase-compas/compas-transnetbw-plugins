@@ -47,4 +47,6 @@ const createPluginStore = (callback: PluginCallback) => {
    };
 }
 
-export const pluginStore = createPluginStore((doc, host) => initServices(doc, host));
+export const pluginStore = createPluginStore((doc, host) => {
+  initServices(doc, host)
+});
