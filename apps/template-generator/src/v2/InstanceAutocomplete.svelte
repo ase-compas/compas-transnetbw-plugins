@@ -27,7 +27,10 @@
   const service = getDataTypeService();
 
   let options: InstanceDetails[] = $state([]);
-  let autocompleteEl;
+
+    // svelte-ignore non_reactive_update
+    /** @type {HTMLElement} */
+    let autocompleteEl;
 
   const getOptionLabel = (opt: InstanceDetails) => opt ? opt.instance : '';
 

@@ -40,6 +40,8 @@
   const selectNotAvailable = $derived(assignableTypes.length === 0);
   const isCreateValid = $derived(!!createFormDetails?.valid);
 
+  // svelte-ignore non_reactive_update
+  /** @type {HTMLElement} */
   let selectAutocompleteEl;
 
   const confirmDisabled = $derived(
