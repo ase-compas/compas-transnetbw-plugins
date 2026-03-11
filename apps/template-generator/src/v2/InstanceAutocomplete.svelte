@@ -17,7 +17,7 @@
   let {
     typeKind,
     initialInstanceType,
-    value = $bindable(),
+    value = $bindable(undefined),
     label = 'Choose Instance Type',
     disabled = false,
     required = true,
@@ -26,16 +26,17 @@
 
   const service = getDataTypeService();
 
-  let options = $derived<InstanceDetails[]>(service.listInstanceTypeDetails(typeKind));
+  let options: InstanceDetails[] = $state([]);
   let autocompleteEl;
 
-  const getOptionLabel = (opt: InstanceDetails) => opt?.instance ?? '';
+  const getOptionLabel = (opt: InstanceDetails) => opt ? opt.instance : '';
 
   export function focus() {
     autocompleteEl?.focus?.();
   }
 
   onMount(() => {
+    options = getDataTypeService().listInstanceTypeDetails(typeKind);
     if (initialInstanceType) {
       const initialOption = options.find((opt) => opt.instance === initialInstanceType);
       if (initialOption) {
@@ -45,6 +46,7 @@
   });
 </script>
 
+{#if options.length !== 0}
 <Autocomplete
   bind:this={autocompleteEl}
   bind:value={value}
@@ -58,9 +60,8 @@
       onEnter();
     }
   }}
-  textfield$required={required}
   menu$style="max-height: 500px;"
->
+  >
   {#snippet match(item: InstanceDetails)}
     <div class="custom-item">
       <div class="title">{item.instance}</div>
@@ -69,8 +70,11 @@
       {/if}
     </div>
   {/snippet}
+  {#snippet noMatches()}
+    <div style="padding: 1rem;">No instances available</div>
+  {/snippet}
 </Autocomplete>
-
+{/if}
 <style>
   .title {
     font-weight: bold;
