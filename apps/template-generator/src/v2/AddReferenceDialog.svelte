@@ -40,6 +40,8 @@
   const selectNotAvailable = $derived(assignableTypes.length === 0);
   const isCreateValid = $derived(!!createFormDetails?.valid);
 
+  let selectAutocompleteEl;
+
   const confirmDisabled = $derived(
     mode === 'select' ? !selectedReferenceType : !isCreateValid,
   );
@@ -70,6 +72,11 @@
 
   onMount(() => {
     loadDialogData();
+    if(mode === 'select') {
+      setTimeout(() => {
+        selectAutocompleteEl?.focus?.();
+      }, 200);
+    }
   });
 
   function handleFormChange(details: CreateTypeFormSubmitDetails): void {
@@ -148,9 +155,11 @@
 
         {#if mode === 'select'}
           <Autocomplete
+            bind:this={selectAutocompleteEl}
             label="Select Type"
             bind:value={selectedReferenceType}
             options={assignableTypes}
+            showMenuWithNoInput={true}
             {getOptionLabel}
             onkeydown={(e) => {
               if (e.key === 'Enter') {
