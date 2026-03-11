@@ -164,7 +164,7 @@ export class DataTypeService {
         // Collect all required reference types from NSD definitions
         const requiredReferences = Object.values(nsdTypeDefinitions)
             .filter(def => !focusMemberName || def.name === focusMemberName)
-            .filter(def => def.requiresReference && def.refTypeKind && def.objectType)
+            .filter(def => def.requiresReference && def.refTypeKind)
             .map(def => ({
                 typeKind: def.refTypeKind,
                 instanceType: def.objectType
@@ -431,10 +431,6 @@ export class DataTypeService {
     setReference(id: string, memberName: string, referenceId: string): void {
         const { element, memberDefinition } = this.getMemberContext(id, memberName);
 
-        if (!memberDefinition.requiresReference || !memberDefinition.refTypeKind || !memberDefinition.objectType) {
-            throw new Error(`Member ${memberName} of DataType ${id} does not support references`);
-        }
-
         this.assertReferenceAssignable(
             referenceId,
             memberDefinition.refTypeKind,
@@ -605,9 +601,12 @@ export class DataTypeService {
         const referencedType = findDataTypeElement(this.doc, referenceId);
         const referencedTypeInfo = getDataTypeBaseInfo(referencedType);
 
-        const isAssignable =
-            referencedTypeInfo.typeKind === expectedTypeKind &&
-            referencedTypeInfo.instanceType === expectedInstanceType;
+        const isAssignable = isTypeAssignable(expectedTypeKind, expectedInstanceType, {
+            id: referencedTypeInfo.id,
+            typeKind: referencedTypeInfo.typeKind,
+            instanceType: referencedTypeInfo.instanceType,
+            references: 0,
+        });
 
         if (!isAssignable) {
             throw new Error(

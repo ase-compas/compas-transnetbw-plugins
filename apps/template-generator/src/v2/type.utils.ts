@@ -25,12 +25,12 @@ export function sortSimpleDataTypes(dataTypes: SimpleDataType[]): SimpleDataType
 
 export function isTypeAssignable(
     expected: TypeKind,
-    expectedInstance: string,
+    expectedInstance: string | undefined,
     toRefernece: SimpleDataType
 ): boolean {
     if (!toRefernece) {
         return false;
     }
 
-    return toRefernece.typeKind === expected && (expectedInstance === toRefernece.instanceType || toRefernece.instanceType === undefined);
+    return toRefernece.typeKind === expected && (!expectedInstance || expectedInstance === toRefernece.instanceType || toRefernece.instanceType === undefined);
 }

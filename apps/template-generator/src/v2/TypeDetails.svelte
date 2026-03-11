@@ -89,11 +89,9 @@
 
     if (result.data.mode === 'create') {
       getDataTypeService().create(member.refKind, result.data.instanceType, result.data.id)
+      await openTypeById(result.data.id, 'edit');
     }
-
     typeDetailsState.setRefernence(memberId, result.data.id);
-
-    await openTypeById(result.data.id, 'edit');
   }
 
 

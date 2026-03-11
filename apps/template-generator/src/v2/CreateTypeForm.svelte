@@ -102,7 +102,7 @@
     bind:value={selectedInstance}
 
     required
-    disabled={!canChooseInstaceType}
+    disabled={!canChooseInstaceType && !!instanceType}
   />
 
   <TypeIdInput
