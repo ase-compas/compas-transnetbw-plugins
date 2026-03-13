@@ -104,6 +104,20 @@
     }
   }
 
+  /**
+   * Unmaks the current marked member if clicked outside of a reference item in the details drawer.
+   * @param e the click event
+   */
+  function handleUnMakenWhenClickedOutside(e: MouseEvent) {
+    const isInside = e.composedPath().some(
+        el => el instanceof HTMLElement && el.classList.contains('oscd-card-item')
+      );
+
+      if (!isInside) {
+        typeDetailsState.clearMarkedMember();
+      }
+  }
+
   $effect(() => {
     if (typeId) {
       console.debug('loading form effect', typeId)
@@ -112,6 +126,10 @@
   });
 
   onMount(() => {
+
+    document.addEventListener('click', handleUnMakenWhenClickedOutside);
+
+
     typeDetailsState.setViewMode(mode);
     const unsubscribe = pluginStore.updates.subscribe(() => {
       if (suspendedReloadDepth > 0) {
@@ -124,6 +142,7 @@
       }
     });
     return () => {
+      document.removeEventListener('click', handleUnMakenWhenClickedOutside);
       unsubscribe();
     };
   });
