@@ -1,7 +1,7 @@
 import Plugin from './plugin.svelte'; import * as pkg from '../package.json';
 import { mount, unmount } from 'svelte';
-import { pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
-import { initializeDataTypeService } from './v2/type.service';
+import { initializeDataTypeService } from './features/type-details/services/type.service';
+import { pluginStore } from './shared/states/plugin.state.svelte';
 
 export default class NewOSCDPlugin extends HTMLElement {
 
@@ -15,7 +15,7 @@ export default class NewOSCDPlugin extends HTMLElement {
 
     const linkElement = createStyleLinkElement();
     this.shadowRoot?.appendChild(linkElement);
-    
+
     initializeDataTypeService(this._doc!, this);
     pluginStore.setPluginState({host: this, doc: this._doc})
 
