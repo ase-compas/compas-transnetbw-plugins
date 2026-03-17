@@ -8,6 +8,9 @@
   import CreateTypeForm, { type CreateTypeFormSubmitDetails } from './CreateTypeForm.svelte';
   import { getDataTypeService } from './type.service';
   import type { SimpleDataType, TypeKind } from './model';
+  import { getIdSettingsState } from './id-format-settings/id-format-settings.state.svelte';
+
+  const idSettingsState = getIdSettingsState();
 
   type Mode = 'select' | 'create';
 
@@ -183,6 +186,7 @@
             canChooseInstaceType={false}
             onChange={handleFormChange}
             onSubmit={handleFormSubmit}
+            generateId={(instance) => idSettingsState.generateReferenceId(refTypeKind, { instance, reference: memberName })}
           />
         {/if}
       {/if}

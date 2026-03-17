@@ -8,7 +8,7 @@
     OscdIconActionButton,
   } from '@oscd-transnet-plugins/oscd-component';
   import {
-  createDataTypeWorkflow,
+    createDataTypeWorkflow,
     deleteDataTypeWorkflow,
     duplicateDataType,
     renameDataTypeWorkflow,
@@ -18,6 +18,7 @@
   import { setHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { openTypeDetailsDrawer } from './type-details.drawer';
   import DataTypeFilter from './DataTypeFilter.svelte';
+  import { getIdSettingsState } from './id-format-settings/id-format-settings.state.svelte';
 
   const service = getDataTypeService();
 
@@ -80,17 +81,22 @@
   async function createLNodeType() {
     const createResult = await createDataTypeWorkflow(TypeKind.LNodeType);
     if (!createResult) {
-        return;
+      return;
     }
   }
 
   $effect(() => {
-    if (query !== undefined || dataTypeKind !== undefined || instance !== undefined) {
+    if (
+      query !== undefined ||
+      dataTypeKind !== undefined ||
+      instance !== undefined
+    ) {
       loadDataTypes();
     }
   });
 
   onMount(() => {
+    getIdSettingsState().load();
     loadDataTypes();
     const unsubscribe = pluginStore.updates.subscribe(() => {
       if (suspendedReloadDepth > 0) {
@@ -110,7 +116,6 @@
   <OscdButton variant="unelevated" callback={createLNodeType}>
     ADD NEW LNODE TYPE
   </OscdButton>
-
 </div>
 
 <OscdBasicDataTable

@@ -23,6 +23,7 @@
     createFromDefault?: boolean;
     onChange?: (event: CreateTypeFormSubmitDetails) => void;
     onSubmit?: (event: CreateTypeFormSubmitDetails) => void;
+    generateId?: (instance: string) => string;
   }
 
   let {
@@ -35,6 +36,7 @@
     createFromDefault = $bindable(false),
     onChange = (_event: CreateTypeFormSubmitDetails) => {},
     onSubmit = (_event: CreateTypeFormSubmitDetails) => {},
+    generateId = (_instance: string) => '',
   }: Props = $props();
 
   let selectedInstance = $state<InstanceDetails | undefined>(undefined);
@@ -88,45 +90,58 @@
     }
     loading = false;
     focusElement();
+    autoGenerateId(selectedInstance?.instance);
+  });
+
+  function autoGenerateId(instance: string | undefined) {
+    if (generateId && instance) {
+      typeId = generateId(instance);
+    }
+  }
+
+  $effect(() => {
+    if (selectedInstance) {
+      autoGenerateId(selectedInstance.instance);
+    }
   });
 </script>
 
 {#if !loading}
-<form onsubmit={handleSubmit}>
-  <InstanceAutocomplete 
-    bind:this={instanceTypeSelectEl}
+  <form onsubmit={handleSubmit}>
+    <InstanceAutocomplete
+      bind:this={instanceTypeSelectEl}
+      {typeKind}
+      initialInstanceType={instanceType}
+      bind:value={selectedInstance}
+      required
+      disabled={!canChooseInstaceType && !!instanceType}
+    />
 
-    {typeKind}
-    initialInstanceType={instanceType}
+    <TypeIdInput
+      bind:this={idInputEl}
+      bind:typeId
+      bind:valid={isTypeIdValid}
+      showErrorsOnInput
+      disabled={!selectedInstance}
+      generateId={generateId
+        ? () => autoGenerateId(selectedInstance?.instance)
+        : undefined}
+    />
 
-    bind:value={selectedInstance}
+    {#if showCreateFromDefaultOption && !!selectedInstance}
+      <div style="margin-top: 0.5rem;">
+        <FormField align="start">
+          <Checkbox bind:checked={createFromDefault} />
+          {#snippet label()}
+            <span>Create from Default</span>
+          {/snippet}
+        </FormField>
+      </div>
+    {/if}
 
-    required
-    disabled={!canChooseInstaceType && !!instanceType}
-  />
-
-  <TypeIdInput
-    bind:this={idInputEl}
-    bind:typeId
-    bind:valid={isTypeIdValid}
-    showErrorsOnInput
-    disabled={!selectedInstance}
-  />
-
-  {#if showCreateFromDefaultOption && !!selectedInstance}
-    <div style="margin-top: 0.5rem;">
-      <FormField align="start">
-        <Checkbox bind:checked={createFromDefault} />
-        {#snippet label()}
-          <span>Create from Default</span>
-        {/snippet}
-      </FormField>
-    </div>
-  {/if}
-
-  <button type="submit" style="display: none" aria-label="submit button"
-  ></button>
-</form>
+    <button type="submit" style="display: none" aria-label="submit button"
+    ></button>
+  </form>
 {/if}
 
 <style>

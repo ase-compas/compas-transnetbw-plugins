@@ -15,7 +15,7 @@
     valid?: boolean;
     idLabel?: string;
     showErrorsOnInput?: boolean;
-    generateId?: () => string;
+    generateId?: () => void;
     disabled?: boolean;
   }
 
@@ -40,18 +40,6 @@
 
   function typeIdExists(candidateId: string): boolean {
     return dataTypeService.exists(candidateId);
-  }
-
-  function generateTypeId(): void {
-    if(!generateId) return;
-
-    try {
-        typeId = generateId()
-    } catch (err) {
-      console.error('Error generating ID:', err);
-    }
-    //typeId = candidate;
-    typeIdTouched = true;
   }
 
   $effect(() => {

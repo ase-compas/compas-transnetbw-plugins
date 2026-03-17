@@ -3,6 +3,9 @@
   import OscdBaseDialog from "libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte";
   import CreateTypeForm, { type CreateTypeFormSubmitDetails } from "./CreateTypeForm.svelte";
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
+  import { getIdSettingsState } from "./id-format-settings/id-format-settings.state.svelte";
+
+  const idSettingsState = getIdSettingsState();
 
     interface Props {
         open?: boolean;
@@ -62,6 +65,7 @@
                 showCreateFromDefaultOption={typeKind === TypeKind.LNodeType}
                 onChange={handleFormChange}
                 onSubmit={handleFormSubmit}
+                generateId={(instance) => idSettingsState.generateId(typeKind, { instance })}
             />
         </div>
       {/snippet}

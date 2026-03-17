@@ -1,9 +1,11 @@
 <script lang="ts">
   import { pluginStore } from '@oscd-transnet-plugins/oscd-template-generator';
   import { DialogHost } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { DrawerStack, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
+  import {
+    DrawerStack,
+    OscdToastHost,
+  } from '@oscd-transnet-plugins/oscd-component';
   import DefaultTypeView from './views/defaults/DefaultTypeView.svelte';
-  import IDBuilderView from './views/id-builder/IDBuilderView.svelte';
   import 'svelte-material-ui/bare.css';
   import '../public/material-icon.css';
   import '../public/smui.css';
@@ -11,23 +13,25 @@
   import '../../../libs/theme/src/lib/global.css';
   import DataTypesListView from './v2/DataTypesListView.svelte';
   import NavigationHeader from './v2/NavigationHeader.svelte';
+  import IdFormatSettings from './v2/id-format-settings/IdFormatSettings.svelte';
+  import { setIdSettingsState } from './v2/id-format-settings/id-format-settings.state.svelte';
 
   let activeTab = $state('Data Types');
+  setIdSettingsState();
 </script>
 
 <div class="oscd-app">
   {#if pluginStore.state.doc !== null && pluginStore.ready}
     <div class="template-generator-container">
-      <NavigationHeader bind:activeTab={activeTab} title="Template Generator" />
+      <NavigationHeader bind:activeTab title="Template Generator" />
 
       {#if activeTab === 'Data Types'}
         <DataTypesListView />
       {:else if activeTab === 'Default Types'}
         <DefaultTypeView />
       {:else if activeTab === 'ID Builder'}
-        <IDBuilderView />
+        <IdFormatSettings />
       {/if}
-
     </div>
   {/if}
 </div>
