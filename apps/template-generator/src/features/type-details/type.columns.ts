@@ -1,5 +1,5 @@
-import type { TColumnConfig } from "@oscd-transnet-plugins/oscd-template-generator";
 import { TypeKind } from "../../shared/model";
+import type { TColumnConfig } from './components/tboard/types';
 
 type TypeColumnDefinition = {
     id: TypeKind;
@@ -106,6 +106,7 @@ export function buildColumns(typeKind: TypeKind, isEditMode: boolean): TColumnCo
     const typeColumns: TColumnConfig[] = layout.columns.map((column) => ({
         id: column.id,
         title: column.title,
+        actionDisabled: !isEditMode,
         searchPlaceholder: column.searchPlaceholder,
         actionLabel: 'Create',
         hasSearch: true,

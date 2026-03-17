@@ -74,6 +74,10 @@
   }
 
   async function createDataTypeFromReference(memberId: string) {
+    if(!typeDetailsState.isEditMode) {
+      return;
+    }
+
     const member = typeDetailsState.getMember(memberId);
     if (!member) return;
 

@@ -9,6 +9,7 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionDisabled?: boolean;
     hasSearch?: boolean;
     searchPlaceHolder?: string;
     hasAction?: boolean;
@@ -45,6 +46,7 @@
     hasSearch = false,
     searchPlaceHolder = 'Search...',
     hasAction = false,
+    actionDisabled = false,
     showApplyDefaults = false,
     highlighted = false,
     dragAndDropBorder = false,
@@ -78,7 +80,7 @@
   function matchesQuery(item: TItem, query: string): boolean {
     const q = query.toLowerCase().trim();
 
-    return item.title.toLowerCase().includes(q) || 
+    return item.title.toLowerCase().includes(q) ||
       item.subtitle?.toLowerCase().includes(q)  ||
       item.badgeText?.toLocaleLowerCase().includes(q);
   }
@@ -100,6 +102,7 @@
     searchPlaceHolder={searchPlaceHolder}
     hasSearch={hasSearch}
     hasAction={hasAction}
+    actionDisabled={actionDisabled}
     actionLabel={actionLabel}
     bind:search={searchQuery}
     onAction={onColumnActionClick}

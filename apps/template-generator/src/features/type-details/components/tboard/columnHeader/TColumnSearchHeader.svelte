@@ -6,6 +6,7 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionDisabled?: boolean;
     search?: string;
     hasSearch?: boolean;
     searchPlaceHolder?: string;
@@ -19,6 +20,7 @@
     title,
     subtitle = null,
     actionLabel = null,
+    actionDisabled = false,
     search = $bindable(''),
     hasSearch = false,
     searchPlaceHolder = 'Search...',
@@ -33,6 +35,7 @@
 <TColumnHeaderLayout
   {title}
   {subtitle}
+  {actionDisabled}
   {actionLabel}
   {hasAction}
   onAction={onAction}

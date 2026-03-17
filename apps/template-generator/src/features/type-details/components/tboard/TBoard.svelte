@@ -126,6 +126,7 @@
   {#each columns as column, index (column.id)}
     <TColumn
       title={column.title}
+      actionDisabled={column.actionDisabled}
       subtitle={column.subtitle}
       highlighted={column.highlighted}
       dragAndDropBorder={column.dragAndDropBorder}

@@ -1,6 +1,6 @@
 <script lang="ts">
   import TBoard from './tboard/TBoard.svelte';
-  import type { TColumnConfig, TData } from '@oscd-transnet-plugins/oscd-template-generator';
+  import type { TColumnConfig, TData } from './tboard/types';
 
   interface Props {
     columns: TColumnConfig[];

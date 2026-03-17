@@ -7,6 +7,7 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionDisabled?: boolean;
     hasAction?: boolean;
     botAction?: Snippet;
 
@@ -17,6 +18,7 @@
     title,
     subtitle = null,
     actionLabel = null,
+    actionDisabled = false,
     hasAction = false,
     botAction,
 
@@ -37,6 +39,7 @@
       <OscdButton
         callback={onAction}
         backgroundColor="white"
+        disabled={actionDisabled}
       >
         {actionLabel}
       </OscdButton>
