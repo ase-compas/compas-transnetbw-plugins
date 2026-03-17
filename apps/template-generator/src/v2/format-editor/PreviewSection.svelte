@@ -1,11 +1,9 @@
 <script>
-import Card from '@smui/card';
-import { getIdFormatEditorState } from './format-editor.state.svelte';
+  import Card from '@smui/card';
+  import { getIdFormatEditorState } from './format-editor.state.svelte';
 
-const state = getIdFormatEditorState();
-
+  const state = getIdFormatEditorState();
 </script>
-
 
 <Card class="id-builder-card">
   <h3>Preview</h3>
@@ -19,7 +17,6 @@ const state = getIdFormatEditorState();
     </ul>
   {/if}
 </Card>
-
 
 <style>
   li {

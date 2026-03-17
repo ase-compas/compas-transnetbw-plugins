@@ -5,7 +5,9 @@
   import FormField from '@smui/form-field';
   import OscdBaseDialog from 'libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import CreateTypeForm, { type CreateTypeFormSubmitDetails } from './CreateTypeForm.svelte';
+  import CreateTypeForm, {
+    type CreateTypeFormSubmitDetails,
+  } from './CreateTypeForm.svelte';
   import { getDataTypeService } from './type.service';
   import type { SimpleDataType, TypeKind } from './model';
   import { getIdSettingsState } from './id-format-settings/id-format-settings.state.svelte';
@@ -20,11 +22,7 @@
     memberName: string;
   }
 
-  let {
-    open = $bindable(false),
-    typeId,
-    memberName,
-  }: Props = $props();
+  let { open = $bindable(false), typeId, memberName }: Props = $props();
 
   const service = getDataTypeService();
 
@@ -59,7 +57,9 @@
 
     try {
       const sourceType = service.getById(typeId);
-      const member = sourceType.members.find((item) => item.name === memberName);
+      const member = sourceType.members.find(
+        (item) => item.name === memberName,
+      );
       refTypeKind = member?.refKind ?? null;
       refInstanceType = member?.refInstance ?? null;
 
@@ -77,7 +77,7 @@
 
   onMount(() => {
     loadDialogData();
-    if(mode === 'select') {
+    if (mode === 'select') {
       setTimeout(() => {
         selectAutocompleteEl?.focus?.();
       }, 200);
@@ -133,7 +133,9 @@
   {confirmDisabled}
 >
   {#snippet content()}
-    <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+    <div
+      style="padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;"
+    >
       {#if loading}
         <p>Loading references…</p>
       {:else if error}
@@ -141,7 +143,12 @@
       {:else}
         <div style="display: flex; gap: 1rem; align-items: center;">
           <FormField>
-            <Radio bind:group={mode} value="select" touch disabled={selectNotAvailable} />
+            <Radio
+              bind:group={mode}
+              value="select"
+              touch
+              disabled={selectNotAvailable}
+            />
             {#snippet label()}
               Select
             {/snippet}
@@ -155,7 +162,10 @@
         </div>
 
         {#if selectNotAvailable}
-          <p>No compatible DataTypes are available. Create a new DataType to continue.</p>
+          <p>
+            No compatible DataTypes are available. Create a new DataType to
+            continue.
+          </p>
         {/if}
 
         {#if mode === 'select'}
@@ -186,7 +196,11 @@
             canChooseInstaceType={false}
             onChange={handleFormChange}
             onSubmit={handleFormSubmit}
-            generateId={(instance) => idSettingsState.generateReferenceId(refTypeKind, { instance, reference: memberName })}
+            generateId={(instance) =>
+              idSettingsState.generateReferenceId(refTypeKind, {
+                instance,
+                reference: memberName,
+              })}
           />
         {/if}
       {/if}

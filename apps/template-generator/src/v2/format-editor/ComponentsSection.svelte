@@ -1,64 +1,69 @@
 <script lang="ts">
-  import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
-import Card from '@smui/card';
-import Chip, { LeadingIcon, Text } from '@smui/chips';
-import TextField from '@smui/textfield';
-import Button from '@smui/button';
-import HelperText from '@smui/textfield/helper-text';
-import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
-import { getIdFormatEditorState } from './format-editor.state.svelte';
-import { label } from './utils';
+  import {
+    dndzone,
+    SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    TRIGGERS,
+  } from 'svelte-dnd-action';
+  import Card from '@smui/card';
+  import Chip, { LeadingIcon, Text } from '@smui/chips';
+  import TextField from '@smui/textfield';
+  import Button from '@smui/button';
+  import HelperText from '@smui/textfield/helper-text';
+  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
+  import { getIdFormatEditorState } from './format-editor.state.svelte';
+  import { label } from './utils';
 
+  const idFormatEditorState = getIdFormatEditorState();
 
-const idFormatEditorState = getIdFormatEditorState();
+  let customText = $state('');
+  let textError = $state<string | null>('');
 
-let customText = $state('');
-let textError = $state<string | null>('');
+  const ID_PATTERN = /^\S+$/;
 
-const ID_PATTERN = /^\S+$/;
+  function addTextSegment(e: Event) {
+    e.preventDefault();
+    if (customText === '') {
+      textError = null;
+      return;
+    }
 
-function addTextSegment(e: Event) {
-  e.preventDefault()
-  if (customText === '') {
+    if (!ID_PATTERN.test(customText)) {
+      textError = 'Text cannot contain spaces';
+      return;
+    }
+
     textError = null;
-    return;
+    idFormatEditorState.addTextSegment(customText);
+    customText = '';
   }
 
-  if(!ID_PATTERN.test(customText)) {
-    textError = 'Text cannot contain spaces';
-    return;
-  }
-
-  textError = null;
-  idFormatEditorState.addTextSegment(customText);
-  customText = '';
-}
-
-function handleFinalize(e) {
-  idFormatEditorState.components = e.detail.items;
-}
-
-function handleConsider(e: any) {
-  const { trigger, id } = e.detail.info;
-
-  if (trigger === TRIGGERS.DRAG_STARTED) {
-    const idx = idFormatEditorState.components.findIndex(i => i.id === id);
-    if (idx < 0) return;
-
-    const newId = `${id}_copy`;
-
-    // remove previous shadow items then insert a fresh copy at drag start index
-    e.detail.items = e.detail.items.filter(
-      (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
-    );
-    e.detail.items.splice(idx, 0, { ...idFormatEditorState.components[idx], id: newId });
-
+  function handleFinalize(e) {
     idFormatEditorState.components = e.detail.items;
-  } else {
-    idFormatEditorState.components = [...idFormatEditorState.components];
   }
-}
 
+  function handleConsider(e: any) {
+    const { trigger, id } = e.detail.info;
+
+    if (trigger === TRIGGERS.DRAG_STARTED) {
+      const idx = idFormatEditorState.components.findIndex((i) => i.id === id);
+      if (idx < 0) return;
+
+      const newId = `${id}_copy`;
+
+      // remove previous shadow items then insert a fresh copy at drag start index
+      e.detail.items = e.detail.items.filter(
+        (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME],
+      );
+      e.detail.items.splice(idx, 0, {
+        ...idFormatEditorState.components[idx],
+        id: newId,
+      });
+
+      idFormatEditorState.components = e.detail.items;
+    } else {
+      idFormatEditorState.components = [...idFormatEditorState.components];
+    }
+  }
 </script>
 
 <Card class="id-builder-card">
@@ -66,20 +71,33 @@ function handleConsider(e: any) {
 
   <div
     class="id-field-set"
-    use:dndzone={{items: idFormatEditorState.components, flipDurationMs: 100, dropFromOthersDisabled: true, dropTargetStyle: {}}}
-    onconsider={e => handleConsider(e)}
-    onfinalize={e => handleFinalize(e)}
+    use:dndzone={{
+      items: idFormatEditorState.components,
+      flipDurationMs: 100,
+      dropFromOthersDisabled: true,
+      dropTargetStyle: {},
+    }}
+    onconsider={(e) => handleConsider(e)}
+    onfinalize={(e) => handleFinalize(e)}
   >
     {#each idFormatEditorState.components as component (component.id)}
-      <OscdTooltip disabled={!component.description} side="right" content={component.description} hoverDelay={500}>
-        <Chip chip={component.id} class="id-builder-component-chip" onclick={() => idFormatEditorState.addSegment(component)}>
+      <OscdTooltip
+        disabled={!component.description}
+        side="right"
+        content={component.description}
+        hoverDelay={500}
+      >
+        <Chip
+          chip={component.id}
+          class="id-builder-component-chip"
+          onclick={() => idFormatEditorState.addSegment(component)}
+        >
           <LeadingIcon class="material-icons">add</LeadingIcon>
           <Text>{label(component.segment)}</Text>
         </Chip>
       </OscdTooltip>
     {/each}
   </div>
-
 
   <h4>Custom Text</h4>
   <form onsubmit={(e) => addTextSegment(e)} class="custom-text-form">
@@ -91,7 +109,8 @@ function handleConsider(e: any) {
         placeholder="Enter text"
         bind:value={customText}
         invalid={!!textError}
-        style="flex: 1;">
+        style="flex: 1;"
+      >
         {#snippet helper()}
           <HelperText validationMsg persistent>
             {textError}

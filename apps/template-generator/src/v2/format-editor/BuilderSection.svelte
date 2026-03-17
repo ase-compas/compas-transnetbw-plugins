@@ -20,48 +20,46 @@
       state.segments = e.detail.items;
     }
   }
-
 </script>
 
 <Card class="id-builder-card">
   <h3>Compose ID</h3>
 
   {#if state.segments && state}
-  <div
-    class="id-field-set"
-    use:dndzone={{items: state.segments, flipDurationMs: 100}}
-    onconsider={e => handleSort(e)}
-    onfinalize={e => handleFinalize(e)}
-  >
-    {#each state.segments as segment (segment.id)}
-      <div animate:flip={{duration: 100}} data-id={segment.id}>
-        <Chip chip class="id-field-chip">
-          <Text>{label(segment.segment)}</Text>
-          <LeadingIcon
-            class="material-icons remove-icon"
-            onclick={() => state.removeSegment(segment.id)}
-          >
-            cancel
-          </LeadingIcon>
-        </Chip>
-      </div>
-    {/each}
-  </div>
+    <div
+      class="id-field-set"
+      use:dndzone={{ items: state.segments, flipDurationMs: 100 }}
+      onconsider={(e) => handleSort(e)}
+      onfinalize={(e) => handleFinalize(e)}
+    >
+      {#each state.segments as segment (segment.id)}
+        <div animate:flip={{ duration: 100 }} data-id={segment.id}>
+          <Chip chip class="id-field-chip">
+            <Text>{label(segment.segment)}</Text>
+            <LeadingIcon
+              class="material-icons remove-icon"
+              onclick={() => state.removeSegment(segment.id)}
+            >
+              cancel
+            </LeadingIcon>
+          </Chip>
+        </div>
+      {/each}
+    </div>
   {/if}
 </Card>
 
 <style>
-
-.id-field-set {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.3rem;
-  background-color: #f5f5f5;
-  padding: 0.5rem;
-  border-radius: 8px;
-  min-height: 2.5rem;
-  align-items: center;
-}
+  .id-field-set {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.3rem;
+    background-color: #f5f5f5;
+    padding: 0.5rem;
+    border-radius: 8px;
+    min-height: 2.5rem;
+    align-items: center;
+  }
 
   :global(.id-field-chip) {
     width: fit-content !important;
@@ -70,12 +68,14 @@
     background-color: #ffffff;
     border: 1px solid #cfd8dc;
     border-radius: 6px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     font-weight: 500;
     cursor: default;
     display: flex;
     align-items: center;
     gap: 4px;
-    transition: background-color 0.1s, box-shadow 0.1s;
+    transition:
+      background-color 0.1s,
+      box-shadow 0.1s;
   }
 </style>

@@ -34,9 +34,13 @@
   let typeIdTouched = $state<boolean>(false);
   let isTypeIdAvailable = $state<boolean>(true);
 
-  let isTypeIdRequiredValid = $derived<boolean>(!!typeId && typeId.trim().length > 0);
+  let isTypeIdRequiredValid = $derived<boolean>(
+    !!typeId && typeId.trim().length > 0,
+  );
   let isTypeIdFormatValid = $derived<boolean>(/^\S+$/.test(typeId));
-  let isTypeIdValid = $derived<boolean>(isTypeIdRequiredValid && isTypeIdFormatValid && isTypeIdAvailable);
+  let isTypeIdValid = $derived<boolean>(
+    isTypeIdRequiredValid && isTypeIdFormatValid && isTypeIdAvailable,
+  );
 
   function typeIdExists(candidateId: string): boolean {
     return dataTypeService.exists(candidateId);
