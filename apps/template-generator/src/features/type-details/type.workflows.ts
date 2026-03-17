@@ -30,10 +30,6 @@ export async function createDataTypeWorkflow(
             result.data.instanceType,
             result.data.id
         );
-        toastService.success(
-            'Created',
-            `${TypeKind.toTypeKindLabel(typeKind)} "${result.data.id}" was created successfully.`,
-        );
     } catch (err) {
         console.error(err);
         toastService.error(
