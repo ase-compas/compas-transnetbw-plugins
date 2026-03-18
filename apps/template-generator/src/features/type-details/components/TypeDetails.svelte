@@ -52,8 +52,6 @@
    */
   async function openTypeDetails(memberId: string, mode: ViewMode = 'view') {
     const referenceType = typeDetailsState.getMemberReference(memberId);
-    if (!referenceType) return;
-    console.log('Opening type details for member:', memberId, 'in mode:', mode, 'with reference type:', referenceType);
 
     await openTypeById(referenceType.id, referenceType.typeKind, mode);
   }
@@ -122,19 +120,10 @@
       }
   }
 
-  $effect(() => {
-    if (typeId) {
-      console.debug('loading form effect', typeId)
-      typeDetailsState.loadById(typeId);
-    }
-  });
-
   onMount(() => {
-
     document.addEventListener('click', handleUnMakenWhenClickedOutside);
-
-
     typeDetailsState.setViewMode(mode);
+
     const unsubscribe = pluginStore.updates.subscribe(() => {
       if (suspendedReloadDepth > 0) {
         hasPendingReload = true;
