@@ -55,13 +55,14 @@
     if (!referenceType) return;
     console.log('Opening type details for member:', memberId, 'in mode:', mode, 'with reference type:', referenceType);
 
-    await openTypeById(referenceType.id, mode);
+    await openTypeById(referenceType.id, referenceType.typeKind, mode);
   }
 
-  async function openTypeById(typeIdToOpen: string, mode: ViewMode = 'view') {
+  async function openTypeById(typeIdToOpen: string, typeKind: TypeKind, mode: ViewMode = 'view') {
     suspendedReloadDepth += 1;
+
     try {
-      await openTypeDetailsDrawer(typeIdToOpen, mode, 'Type Details');
+      await openTypeDetailsDrawer(typeIdToOpen, typeKind, mode);
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {
@@ -92,7 +93,7 @@
 
     if (result.data.mode === 'create') {
       getDataTypeService().create(member.refKind, result.data.instanceType, result.data.id)
-      await openTypeById(result.data.id, 'edit');
+      await openTypeById(result.data.id, member.refKind, 'edit');
     }
     typeDetailsState.setRefernence(memberId, result.data.id);
   }
@@ -184,7 +185,10 @@
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}
       onColumnActionClick={createNewDataType}
-      onItemEditClick={(itemId) => openTypeById(itemId, typeDetailsState.viewMode)}
+      onItemEditClick={(itemId) => {
+        const typeKind = typeDetailsState.getType(itemId)?.typeKind;
+        openTypeById(itemId, typeKind, typeDetailsState.viewMode)
+      }}
     />
   {/if}
 </TypeDetailsLayout>

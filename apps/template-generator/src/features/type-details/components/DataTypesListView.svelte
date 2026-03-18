@@ -14,7 +14,6 @@
   } from '../type.workflows';
   import { sortSimpleDataTypes } from '../../../shared/utils/data-type.utils';
   import OscdButton from '../../../../../../libs/oscd-component/src/oscd-button/OscdButton.svelte';
-  import { setHomeTitle } from '@oscd-transnet-plugins/oscd-services/drawer';
   import { openTypeDetailsDrawer } from '../type-details.drawer';
   import DataTypeFilter from './ui/DataTypeFilter.svelte';
   import { getIdSettingsState } from '../../id-format-settings/id-format-settings.state.svelte';
@@ -65,10 +64,9 @@
   }
 
   async function openTypeDetails(type: SimpleDataType) {
-    setHomeTitle('Type ' + type.id);
     suspendedReloadDepth += 1;
     try {
-      await openTypeDetailsDrawer(type.id);
+      await openTypeDetailsDrawer(type.id, type.typeKind, 'edit');
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {

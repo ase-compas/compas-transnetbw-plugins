@@ -125,6 +125,10 @@ export class DataTypeDetailsState {
         }
     }
 
+    public getType(typeId: string): SimpleDataType | null {
+        return this.simpleTypesMap.get(typeId) ?? null;
+    }
+
     public toggleMember(memberId: string) {
         if (!this.loadedType) return;
 

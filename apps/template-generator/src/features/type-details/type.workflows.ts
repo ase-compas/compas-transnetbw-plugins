@@ -5,8 +5,9 @@ import { TypeKind, type SimpleDataType } from "../../shared/model";
 import { getDataTypeService, type DataTypeService } from "./services/type.service";
 import CreateTypeDialog from "./components/dialogs/CreateTypeDialog.svelte";
 import TypeDetails from "./components/TypeDetails.svelte";
-import { openDrawer, setHomeTitle } from "@oscd-transnet-plugins/oscd-services/drawer";
+import { openDrawer } from "@oscd-transnet-plugins/oscd-services/drawer";
 import TypeRenameDialog from './components/dialogs/TypeRenameDialog.svelte';
+import { openTypeDetailsDrawer } from "./type-details.drawer";
 
 
 export async function createDataTypeWorkflow(
@@ -24,7 +25,6 @@ export async function createDataTypeWorkflow(
 
 
     try {
-        setHomeTitle('Type ' + result.data.id);
         getDataTypeService().create(
             typeKind,
             result.data.instanceType,
@@ -39,14 +39,7 @@ export async function createDataTypeWorkflow(
         );
     }
 
-    openDrawer({
-        component: TypeDetails,
-        title: `Create ${TypeKind.toTypeKindLabel(typeKind)}`,
-        props: {
-            typeId: result.data.id,
-            mode: 'edit'
-        },
-    });
+    await openTypeDetailsDrawer(result.data.id, typeKind, 'edit');
 
     return result.data;
 }

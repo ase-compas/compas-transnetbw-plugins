@@ -13,8 +13,7 @@
   let innerWidth = $state(window.innerWidth);
 
   let breadcrumbs = $derived.by(() => {
-    const drawerTitles = $drawers.map(d => d.title);
-    return [getHomeTitle(), ...drawerTitles]
+    return $drawers.map(d => d.title);
 });
 
 

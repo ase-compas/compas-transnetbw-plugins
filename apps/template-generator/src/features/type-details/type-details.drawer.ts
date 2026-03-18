@@ -1,10 +1,10 @@
 import { openDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
-import type { ViewMode } from '../../shared/model';
+import { TypeKind, type ViewMode } from '../../shared/model';
 import TypeDetails from './components/TypeDetails.svelte';
 
-export function openTypeDetailsDrawer(typeId: string, mode: ViewMode = 'view', title?: string) {
+export function openTypeDetailsDrawer(typeId: string, typeKind: TypeKind, mode: ViewMode = 'view') {
   return openDrawer({
-    title: title ?? `Type ${typeId}`,
+    title: `${TypeKind.abbreviation(typeKind)}[${typeId}]`,
     component: TypeDetails,
     props: { typeId, mode },
   });
