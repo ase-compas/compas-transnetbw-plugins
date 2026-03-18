@@ -4,8 +4,6 @@ import { OscdConfirmDialog } from "@oscd-transnet-plugins/oscd-component";
 import { TypeKind, type SimpleDataType } from "../../shared/model";
 import { getDataTypeService, type DataTypeService } from "./services/type.service";
 import CreateTypeDialog from "./components/dialogs/CreateTypeDialog.svelte";
-import TypeDetails from "./components/TypeDetails.svelte";
-import { openDrawer } from "@oscd-transnet-plugins/oscd-services/drawer";
 import TypeRenameDialog from './components/dialogs/TypeRenameDialog.svelte';
 import { openTypeDetailsDrawer } from "./type-details.drawer";
 
@@ -39,7 +37,7 @@ export async function createDataTypeWorkflow(
         );
     }
 
-    await openTypeDetailsDrawer(result.data.id, typeKind, 'edit');
+    openTypeDetailsDrawer(result.data.id, typeKind, 'edit');
 
     return result.data;
 }

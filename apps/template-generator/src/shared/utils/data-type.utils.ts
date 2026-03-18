@@ -32,5 +32,5 @@ export function isTypeAssignable(
         return false;
     }
 
-    return toRefernece.typeKind === expected && (!expectedInstance || expectedInstance === toRefernece.instanceType || toRefernece.instanceType === undefined);
+    return toRefernece.typeKind === expected && (!expectedInstance || expectedInstance === toRefernece.instanceType || !toRefernece?.instanceType);
 }

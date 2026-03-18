@@ -175,7 +175,7 @@ export class DataTypeService {
         // Find all types in the SCL document that match any required reference
         const allTypes = listDataTypeElements(this.doc)
             .map(el => elementToSimpleDataType(el))
-            .filter(dt => dt.id && dt.typeKind && dt.instanceType);
+            .filter(dt => dt.id && dt.typeKind);
 
         const assignableTypes: SimpleDataType[] = [];
         for (const dt of allTypes) {
@@ -542,6 +542,8 @@ export class DataTypeService {
             title: `Set configured members in DataType ${id}`,
             createHistoryEntry: true,
         });
+
+        console.log(`Set configured members of DataType ${id}. Added: ${addedCount}, Removed: ${removedCount}, Total changed: ${changedMemberCount}`);
 
         return changedMemberCount;
     }

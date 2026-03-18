@@ -203,11 +203,6 @@ export class DataTypeDetailsState {
     }
 
     public setViewMode(mode: ViewMode) {
-        if (!this.loadedType?.instanceType && mode === 'edit') {
-            this.viewMode = 'view';
-            return;
-        }
-
         this.viewMode = mode;
         this.data = this.data; // trigger update
     }
