@@ -69,26 +69,12 @@ export const ELEMENT_CHECK_TYPES: { key: ElementCheckType; label: string; hasCou
   { key: 'atMost',    label: 'At most N',      hasCount: true  },
 ];
 
-export const ELEMENT_PARENT: Record<string, string | null> = {
-  Substation:          null,
-  VoltageLevel:        'Substation',
-  Bay:                 'VoltageLevel',
-  ConductingEquipment: 'Bay',
-  Terminal:            'ConductingEquipment',
-  ConnectivityNode:    'Bay',
-};
+export { ALL_SCL_ELEMENTS as ELEMENT_OPTIONS } from './scl-schema';
 
-export function getElementContext(elementName: string): string {
-  const ancestors: string[] = [];
-  let current: string | null = ELEMENT_PARENT[elementName] ?? null;
-  while (current !== null) {
-    ancestors.unshift(current);
-    current = ELEMENT_PARENT[current] ?? null;
-  }
-  return ancestors.length === 0 ? '//SCL' : `//SCL/${ancestors.join('/')}`;
+/** Returns `//SCL` as a safe default context for element-count checks. */
+export function getElementContext(_elementName: string): string {
+  return '//SCL';
 }
-
-export const ELEMENT_OPTIONS = Object.keys(ELEMENT_PARENT);
 
 export const CHECK_DEFS: Record<CheckKey, string> = {
   noSpecial:    'No special characters',

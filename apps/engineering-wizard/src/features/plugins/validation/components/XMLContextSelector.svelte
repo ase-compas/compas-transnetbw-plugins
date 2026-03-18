@@ -1,6 +1,7 @@
 <script lang="ts">
   import { OscdSmartSelect, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { OscdChevronRightIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { getChildElements, SCL_SCHEMA } from '../scl-schema';
 
   type NodeName = string;
   type MaybeNode = NodeName | null;
@@ -10,15 +11,6 @@
   }
 
   let { value = $bindable('//SCL') }: Props = $props();
-
-  const nodeOptions: NodeName[] = [
-    'Substation',
-    'VoltageLevel',
-    'Bay',
-    'ConductingEquipment',
-    'Terminal',
-    'ConnectivityNode',
-  ];
 
   let contextPath = $state<MaybeNode[]>([null]);
 
@@ -34,9 +26,24 @@
     return [...values, null];
   }
 
+  /** Returns the valid child options for the dropdown at a given index. */
+  function getOptionsForIndex(index: number): string[] {
+    if (index === 0) return getChildElements('SCL');
+    const parent = contextPath[index - 1];
+    if (!parent) return [];
+    return getChildElements(parent);
+  }
+
+  /** Whether the last selected node has any possible children (to show trailing null). */
+  function lastNodeHasChildren(selected: NodeName[]): boolean {
+    if (selected.length === 0) return true; // SCL root always has children
+    const last = selected[selected.length - 1];
+    return (SCL_SCHEMA[last]?.children?.length ?? 0) > 0;
+  }
+
   function normalizeContextPath(values: MaybeNode[]): MaybeNode[] {
     const selected = removeNulls(values);
-    return withTrailingNull(selected);
+    return lastNodeHasChildren(selected) ? withTrailingNull(selected) : selected;
   }
 
   $effect(() => {
@@ -85,13 +92,12 @@
 
   function valueToNodes(v: string): NodeName[] {
     if (!v?.trim()) return [];
-    let cleanValue = v
-      .replace(/^\/\/SCL\//, '')
-      .replace(/^SCL\/\//, '');
+    // Strip "//SCL" prefix with or without trailing slash so "//SCL" → []
+    const cleanValue = v.replace(/^\/\/SCL(\/|$)/, '');
     if (!cleanValue) return [];
 
     const parts = cleanValue.split('/').map((s) => s.trim()).filter(Boolean);
-    return parts.filter((p): p is NodeName => nodeOptions.includes(p));
+    return parts.filter((p): p is NodeName => p in SCL_SCHEMA);
   }
 
   let hydrated = $state(false);
@@ -102,7 +108,7 @@
     lastSeenValue = value;
 
     const nodes = valueToNodes(value);
-    contextPath = withTrailingNull(nodes);
+    contextPath = lastNodeHasChildren(nodes) ? withTrailingNull(nodes) : nodes;
     hydrated = true;
   });
 
@@ -136,7 +142,7 @@
         placeholder="Select next node"
         clearable
         bind:value={contextPath[index]}
-        options={nodeOptions}
+        options={getOptionsForIndex(index)}
       />
 
       {#if hasChevronAfter(index)}

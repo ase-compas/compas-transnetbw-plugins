@@ -22,7 +22,7 @@
   <p class="rule-info">Define what the rule checks and the message shown if it fails</p>
 
   {#if validationEditor.ruleUi.mode === 'attribute'}
-    <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} />
+    <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
   {:else}
     <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} />
   {/if}
