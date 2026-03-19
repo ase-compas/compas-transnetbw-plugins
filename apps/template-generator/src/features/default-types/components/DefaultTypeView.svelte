@@ -40,9 +40,8 @@
 
 </script>
 
-<div style="margin-bottom: 1rem;">
+<div class="container">
   <DataTypeFilter bind:query bind:dataTypeKind={typeKind} bind:instance />
-</div>
 
 <OscdBasicDataTable
   items={[]}
@@ -57,3 +56,12 @@
     <OscdIconActionButton type="delete" fillColor="red" tooltip="Delete Default" onClick={() => handleOnDelete(item)} />
   {/snippet}
 </OscdBasicDataTable>
+</div>
+
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+</style>

@@ -129,7 +129,7 @@
     />
 
     {#if showCreateFromDefaultOption && !!selectedInstance}
-      <div style="margin-top: 0.5rem;">
+      <div class="create-from-default-option">
         <FormField align="start">
           <Checkbox bind:checked={createFromDefault} />
           {#snippet label()}
@@ -149,5 +149,9 @@
     display: flex;
     gap: 0.5rem;
     flex-direction: column;
+  }
+
+  .create-from-default-option {
+    margin-top: 0.5rem;
   }
 </style>

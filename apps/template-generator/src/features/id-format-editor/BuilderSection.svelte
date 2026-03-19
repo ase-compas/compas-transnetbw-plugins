@@ -65,7 +65,7 @@
     width: fit-content !important;
     align-self: flex-start !important;
     padding: 0 8px;
-    background-color: #ffffff;
+    background-color: var(--white);
     border: 1px solid #cfd8dc;
     border-radius: 6px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);

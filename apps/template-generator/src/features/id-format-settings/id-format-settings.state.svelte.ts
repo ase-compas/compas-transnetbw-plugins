@@ -120,7 +120,6 @@ class IdFormatSettingsState {
         if (settingsString) {
             try {
                 const settings = JSON.parse(settingsString) as TypeIdFormatSettings;
-                console.log(settings)
                 return settings;
             } catch (error) {
                 console.error('Failed to parse ID format settings from local storage:', error);
