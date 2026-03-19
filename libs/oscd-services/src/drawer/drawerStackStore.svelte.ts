@@ -39,6 +39,8 @@ export interface Drawer<T = any> {
   ref?: SvelteComponent; // reference to the mounted component
 }
 
+type DrawerCloseResolver = (reason: CloseReason) => void;
+
 const drawerStore = writable<Drawer[]>([]);
 export const drawers: Readable<Drawer[]> = {
   subscribe: drawerStore.subscribe
@@ -50,11 +52,24 @@ export const freezeEvents = $state<{freeze: boolean}>({freeze: false}); // state
 export const getHomeTitle = (): string | undefined  => { return _homeTitle; }
 export function setHomeTitle(homeTitle: string) { _homeTitle = homeTitle; }
 
+const drawerCloseResolvers = new WeakMap<Drawer, DrawerCloseResolver>();
+
+function registerDrawerClosePromise<T>(drawer: Drawer<T>): Promise<CloseReason> {
+  return new Promise<CloseReason>((resolve) => {
+    drawerCloseResolvers.set(drawer, resolve);
+  });
+}
+
 /**
  * Open a new drawer by pushing it to the stack.
+ *
+ * Returns a Promise that resolves once this specific drawer is closed.
  */
-export function openDrawer<T>(drawer: Drawer<T>) {
+export function openDrawer<T>(drawer: Drawer<T>): Promise<CloseReason> {
+  const closePromise = registerDrawerClosePromise(drawer);
+
   drawerStore.update(list => [...list, drawer]);
+  return closePromise;
 }
 
 /**
@@ -81,6 +96,12 @@ export async function closeDrawer(reason: CloseReason = 'button') {
   const allowed = await canCloseDrawer(topDrawer, reason);
   if (!allowed) return;
 
+  const resolveClose = drawerCloseResolvers.get(topDrawer);
+  if (resolveClose) {
+    resolveClose(reason);
+    drawerCloseResolvers.delete(topDrawer);
+  }
+
   drawerStore.update(list => list.slice(0, -1));
 }
 
@@ -91,13 +112,21 @@ export async function replaceTopDrawer<T>(drawer: Drawer<T>, reason: CloseReason
   const drawerList = get(drawers);
 
   if (!drawerList.length) {
-    drawerStore.update(() => [drawer]);
-    return;
+    return openDrawer(drawer);
   }
 
   const topDrawer = drawerList[drawerList.length - 1];
   const allowed = await canCloseDrawer(topDrawer, reason);
   if (!allowed) return; // canceled, do not replace
 
+  const resolveClose = drawerCloseResolvers.get(topDrawer);
+  if (resolveClose) {
+    resolveClose(reason);
+    drawerCloseResolvers.delete(topDrawer);
+  }
+
+  const closePromise = registerDrawerClosePromise(drawer);
   drawerStore.update(list => [...list.slice(0, -1), drawer]);
+
+  return closePromise;
 }

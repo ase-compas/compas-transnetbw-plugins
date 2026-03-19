@@ -8,7 +8,7 @@
     hoverDelay?: number;
     transitionDuration?: number;
     children?: import('svelte').Snippet;
-    disabled: boolean;
+    disabled?: boolean;
   }
 
   let {
