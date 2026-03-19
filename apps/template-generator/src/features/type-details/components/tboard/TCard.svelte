@@ -1,7 +1,8 @@
 <script lang="ts">
   import { OscdIconActionButton, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Checkbox from '@smui/checkbox';
-  import { OscdWarningIcon, OscdLockIcon, OscdCallMadeIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import Button, {Icon, Label} from '@smui/button';
+  import { OscdLockIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   interface Props {
     title: string;
@@ -92,6 +93,16 @@
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
   let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
+  let referenceButtonState = $derived.by(() => {
+    if (referencable) {
+      if (isDragTarget && canDrop) return 'drop';
+      if (subtitle) return 'has-reference';
+      if (isMandatory || selected) return 'needs-reference';
+      return 'no-reference';
+    }
+    return 'not-referencable';
+
+  });
 </script>
 
 <div
@@ -179,40 +190,33 @@
     <div class="sub-row">
 
   {#if referencable}
-  <span
-    class="oscd-card-subtitle"
-    class:error-state={(isMandatory ||selected) && !subtitle && referencable}
-    class:empty={!subtitle && referencable && !isMandatory && !selected}
-    class:drop={isDragTarget && canDrop}
-  >
-    {#if subtitle}
-      <OscdTooltip content={subtitle} hoverDelay={500} side="right">
-        <button class="oscd-card-subtitle--with-tooltip" onclick={e => handleOnReferenceClick(e)} class:pointer={canClickReference}>
-          {#if canClickReference}
-            <OscdCallMadeIcon fill={onPrimaryColor} size="15px" />
+    <OscdTooltip content={subtitle ? subtitle : 'Add reference'} hoverDelay={500} side="right">
+      <Button
+        variant={subtitle ? "outlined" : "raised"}
+        class="reference-button {referenceButtonState ? referenceButtonState : ''}"
+        onclick={(e) => {
+          e.stopPropagation();
+          if (subtitle) {
+            handleOnReferenceClick(e);
+          } else {
+            onAddReferenceClick();
+          }
+        }}
+        >
+        {#if subtitle}
+          <Icon class="material-icons">call_made</Icon>
+          <Label>{subtitle.length > 25 ? subtitle.slice(0, 20) + '...' : subtitle}</Label>
+        {:else}
+          {#if referenceButtonState === 'needs-reference'}
+            <Icon class="material-icons">warning</Icon>
+          {:else}
+            <Icon class="material-icons">add_circle</Icon>
           {/if}
-          {subtitle.length > 25 ? subtitle.slice(0, 25) + '...' : subtitle}
-        </button>
-        </OscdTooltip>
-    {:else if !subtitle && referencable}
-      <button
-      class="oscd-card-subtitle__add-reference"
-      onclick={(e) => {
-        e.stopPropagation();
-        onAddReferenceClick();
-      }}>
-        {#if isMandatory || selected }
-          <OscdWarningIcon fill="#FF6B6B" size="15px" />
+          <Label>Add Reference</Label>
         {/if}
-        Add reference
-      </button>
-    {/if}
-  </span>
-    {:else}
-    <span></span>
-    {/if}
-
-
+      </Button>
+    </OscdTooltip>
+  {/if}
       {#if badgeText}<span class="oscd-card-chip">{badgeText}</span>{/if}
     </div>
   </div>
@@ -251,10 +255,8 @@
   }
 
   .oscd-card-item.selected .oscd-card-title,
-  .oscd-card-item.selected .oscd-card-subtitle,
   .oscd-card-item.selected .oscd-references,
-  .oscd-card-item.mandatory .oscd-card-title,
-  .oscd-card-item.mandatory .oscd-card-subtitle {
+  .oscd-card-item.mandatory .oscd-card-title {
     color: white;
   }
 
@@ -263,7 +265,6 @@
 
     outline: 1px solid #E0E0E0;
     border-left: 4px solid var(--mdc-theme-primary, #004552); /* clickable accent */
-    padding-left: 0.75rem; /* space for stripe */
     transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
@@ -362,31 +363,10 @@
 
   /* Error / required state */
   .oscd-card-subtitle.error-state {
-    color: #FF6B6B;
+    color: var(--oscd-error);
     font-style: italic;
-    outline: 2px dashed #FF6B6B;
+    outline: 2px dashed var(--oscd-error);
     background: rgba(255, 76, 76, 0.05);
-  }
-
-  /* ✅ Override for selected & mandatory cards */
-  .oscd-card-item.selected .oscd-card-subtitle,
-  .oscd-card-item.mandatory .oscd-card-subtitle {
-    color: white;
-    outline: 2px solid white;
-  }
-
-  .oscd-card-item.selected .oscd-card-subtitle.empty,
-  .oscd-card-item.mandatory .oscd-card-subtitle.empty {
-    color: #E0E0E0; /* softer neutral gray for contrast */
-    outline: 1px dashed #E0E0E0;
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .oscd-card-item.selected .oscd-card-subtitle.error-state,
-  .oscd-card-item.mandatory .oscd-card-subtitle.error-state {
-    color: #FF6B6B; /* softened red for dark bg */
-    outline: 2px dashed #FF6B6B;
-    opacity: 1;
   }
 
   .oscd-card-subtitle.drop {
@@ -451,5 +431,38 @@
 
   :global(.oscd-card-item .selection .oscd-icon svg) {
     all: unset;
+  }
+
+  :global(.oscd-card-item .reference-button) {
+    min-height: 28px !important;
+    padding: 1px 8px !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+    letter-spacing: 0.02em !important;
+    border-radius: 6px !important;
+
+  }
+
+  :global(.oscd-card-item .reference-button.has-reference) {
+    color: var(--on-primary) !important;
+    border-color: var(--on-primary) !important;
+  }
+
+  :global(.oscd-card-item .reference-button.needs-reference) {
+    background: var(--oscd-error) !important;
+  }
+
+  :global(.oscd-card-item .reference-button.no-reference) {
+    background: var(--primary) !important;
+  }
+
+  :global(.oscd-card-item .reference-button.drop) {
+    background: none !important;
+    outline: 2px dashed #9dcaf5;
+    color: var(--mdc-theme-primary, #004552);
+  }
+
+  :global(.oscd-card-item .reference-button.has-reference:hover .mdc-button__label) {
+    text-decoration: underline !important;
   }
 </style>
