@@ -16,8 +16,9 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
-  import { addValidationToPluginInProcess } from '../../features/processes/mutations.svelte';
-  import type { Plugin } from '@oscd-transnet-plugins/shared';
+  import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess } from '../../features/processes/mutations.svelte';
+  import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
@@ -52,12 +53,6 @@
     };
   });
 
-  function handleBreadcrumbClick(index: number) {
-    if (index !== 0) return;
-    editorTabs.visible = true;
-    selectedEngineeringProcess.process = null;
-  }
-
   function goToNextStep() {
     if (isAtLastStep) return;
     markStepVisited(currentStepId);
@@ -88,6 +83,11 @@
     selectedPluginId = plugin.id;
   }
 
+  function refreshSelectedProcess(procId: string) {
+    selectedEngineeringProcess.process =
+      engineeringProcesses.processes?.find((p) => p.id === procId) ?? null;
+  }
+
   async function handleAddValidationClick() {
     const proc = selectedEngineeringProcess.process;
     const pl = selectedPlugin;
@@ -97,10 +97,43 @@
 
     if (result?.type === 'confirm') {
       addValidationToPluginInProcess(proc.id, pl.id, result.data);
-
-      selectedEngineeringProcess.process =
-        engineeringProcesses.processes?.find((p) => p.id === proc.id) ?? null;
+      refreshSelectedProcess(proc.id);
     }
+  }
+
+  async function handleEditValidationClick(entry: XPathValidation, index: number) {
+    const proc = selectedEngineeringProcess.process;
+    const pl = selectedPlugin;
+    if (!pl || !proc) return;
+
+    const result = await openDialog(AddNewValidationDialog, {
+      plugin: pl,
+      process: proc,
+      initialValidation: { ...entry },
+    });
+
+    if (result?.type === 'confirm') {
+      updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
+      refreshSelectedProcess(proc.id);
+    }
+  }
+
+  async function handleDeleteValidationClick(entry: XPathValidation, index: number) {
+    const proc = selectedEngineeringProcess.process;
+    const pl = selectedPlugin;
+    if (!pl || !proc) return;
+
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Remove validation',
+      message: `Are you sure you want to remove "${entry.title}"? This cannot be undone.`,
+      confirmActionText: 'Remove',
+      confirmActionColor: 'danger',
+    });
+
+    if (result?.type !== 'confirm') return;
+
+    removeValidationFromPluginInProcess(proc.id, pl.id, index);
+    refreshSelectedProcess(proc.id);
   }
 
 </script>
@@ -142,10 +175,8 @@
     </div>
     <ProcessValidationView
       {selectedPlugin}
-      {pluginGroups}
-      activeBreadcrumbIndex={2}
-      on:addValidation={handleAddValidationClick}
-      on:breadcrumbClick={handleBreadcrumbClick}
+      onEditEntry={handleEditValidationClick}
+      onDeleteEntry={handleDeleteValidationClick}
     />
   {/if}
 </div>
@@ -153,7 +184,7 @@
 <style>
   * { font-family: 'Roboto', sans-serif; }
 
-  .step-content { padding: 1.5rem 1.5rem; }
+  .step-content { padding: 1rem; }
 
   .stepper {
     height: 4rem;

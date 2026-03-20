@@ -3,22 +3,26 @@ import * as pkg from '../package.json';
 import { mount } from 'svelte';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
+import { scheduleEditValidation, cancelPendingValidation } from './services/editValidationHandler';
+
+interface PluginProps {
+  doc?: XMLDocument;
+  editCount: number;
+  host: NewOSCDPlugin;
+  plugins: CoMPASPlugin[];
+  docId?: string;
+  pluginId?: string;
+  docName?: string;
+  nsdoc?: unknown;
+  docs?: Record<string, XMLDocument>;
+  locale?: string;
+  oscdApi?: unknown;
+}
 
 export default class NewOSCDPlugin extends HTMLElement {
   private _doc?: XMLDocument;
-  private _props: {
-    doc?: XMLDocument;
-    editCount: number;
-    host: NewOSCDPlugin;
-    plugins: any[];
-    docId?: string;
-    pluginId?: string;
-    docName?: string;
-    nsdoc?: any;
-    docs?: Record<string, XMLDocument>;
-    locale?: string;
-    oscdApi?: any;
-  };
+
+  private _props: PluginProps;
 
   constructor() {
     super();
@@ -28,13 +32,8 @@ export default class NewOSCDPlugin extends HTMLElement {
       editCount: -1,
       host: this as NewOSCDPlugin,
       plugins: [],
-      docId: null,
-      pluginId: null,
-      docName: null,
-      nsdoc: null,
       docs: {},
       locale: navigator.language ?? 'en-US',
-      oscdApi: null,
     });
   }
 
@@ -42,14 +41,14 @@ export default class NewOSCDPlugin extends HTMLElement {
     if (this.shadowRoot) return;
 
     this.attachShadow({ mode: 'open' });
+    const shadowRoot = this.shadowRoot!;
 
-    mount(Plugin, {
-      target: this.shadowRoot!,
-      props: this._props,
-    });
+    mount(Plugin, { target: shadowRoot, props: this._props });
+    shadowRoot.appendChild(createStyleLinkElement());
+  }
 
-    const linkElement = createStyleLinkElement();
-    this.shadowRoot!.appendChild(linkElement);
+  disconnectedCallback() {
+    cancelPendingValidation();
   }
 
   set doc(newDoc: XMLDocument) {
@@ -61,16 +60,14 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   set plugins(newPlugins: unknown[]) {
-    this._props.plugins = newPlugins as any[];
-
-    const editorPlugins = (newPlugins as CoMPASPlugin[])
-      .filter(p => p.kind === 'editor');
-
-    setInternalPlugins(editorPlugins)
+    const typedPlugins = newPlugins as CoMPASPlugin[];
+    this._props.plugins = typedPlugins;
+    setInternalPlugins(typedPlugins.filter((p) => p.kind === 'editor'));
   }
 
   set editCount(newCount: number) {
     this._props.editCount = newCount;
+    if (newCount >= 0) scheduleEditValidation();
   }
 
   set docId(v: string) {
@@ -85,7 +82,7 @@ export default class NewOSCDPlugin extends HTMLElement {
     this._props.docName = v;
   }
 
-  set nsdoc(v: any) {
+  set nsdoc(v: unknown) {
     this._props.nsdoc = v;
   }
 
@@ -97,30 +94,16 @@ export default class NewOSCDPlugin extends HTMLElement {
     this._props.locale = v;
   }
 
-  set oscdApi(v: any) {
+  set oscdApi(v: unknown) {
     this._props.oscdApi = v;
   }
 }
 
-function createStyleLinkElement(): HTMLElement {
-  const id = `${pkg.name}-v${pkg.version}-style`;
-  const stylePath = generateStylePath();
-
-  const linkElement = document.createElement('link');
-  linkElement.rel = 'stylesheet';
-  linkElement.type = 'text/css';
-  linkElement.href = stylePath;
-  linkElement.id = id;
-  return linkElement;
-}
-
-function generateStylePath(): string {
-  const srcUrl = new URL(import.meta.url);
-  const origin = srcUrl.origin;
-  const path = srcUrl.pathname
-    .split('/')
-    .slice(0, -1)
-    .filter(Boolean)
-    .join('/');
-  return [origin, path, 'style.css'].filter(Boolean).join('/');
+function createStyleLinkElement(): HTMLLinkElement {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = new URL('./style.css', import.meta.url).href;
+  link.id = `${pkg.name}-v${pkg.version}-style`;
+  return link;
 }

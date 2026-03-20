@@ -3,7 +3,7 @@
   import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
-  import type { Process } from '@oscd-transnet-plugins/shared';
+  import { getXPathRules, type Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
@@ -17,6 +17,7 @@
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
+  import { documentStore } from './documentStore.svelte';
 
   import 'svelte-material-ui/bare.css';
   import "../public/material-icon.css"
@@ -108,6 +109,7 @@
 
   $effect(() => {
     updateDialogProps({ editCount, doc });
+    documentStore.doc = doc ?? null;
   });
 
   function handleView(process: Process) {

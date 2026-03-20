@@ -1,158 +1,120 @@
 <script lang="ts">
-  import type { Plugin, PluginGroup, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import { OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
+  import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { validateEntry, type ValidationError } from '../../services/validationService';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
-  interface Props {
-    pluginGroups?: PluginGroup[];
-    selectedPlugin?: Plugin | null;
+  function formatToastDetail(errors: ValidationError[], userMessage: string): string {
+    if (errors.length === 0) return '';
+    const msg = userMessage.trim();
+    const parts = errors.map((e) => (msg.length > 0 ? msg : e.message));
+    return [...new Set(parts)].join('; ');
   }
 
-  let { pluginGroups = [], selectedPlugin = null }: Props = $props();
+  interface Props {
+    selectedPlugin?: Plugin | null;
+    onEditEntry?: (item: XPathValidation, index: number) => void;
+    onDeleteEntry?: (item: XPathValidation, index: number) => void;
+  }
+
+  let { selectedPlugin = null, onEditEntry, onDeleteEntry }: Props = $props();
 
   const validationEntries = $derived.by(() => {
     const procId = selectedEngineeringProcess?.process?.id;
-    const pluginId = selectedPlugin?.id;
-    if (!procId || !pluginId) return [] as XPathValidation[];
+    if (!procId || !selectedPlugin) return [] as XPathValidation[];
 
-    return (selectedPlugin?.validations ?? []).filter(
-      (v) => v.processId === procId && v.pluginId === pluginId
-    );
+    return (selectedPlugin.validations ?? []).filter((v) => v.processId === procId);
   });
 
-  function onDelete(index: number) {
+  const columns = [
+    { key: 'title', header: 'Name', bold: true, width: '220px' },
+    { key: 'context', header: 'Scope' },
+    { key: 'assert', header: 'Condition' },
+  ] as const;
+
+  async function handleValidate(entry: XPathValidation) {
+    try {
+      const result = await validateEntry(entry);
+      if (result.valid) {
+        toastService.success('Validation passed', `"${entry.title}" passed successfully`);
+      } else {
+        const detail = formatToastDetail(result.errors, entry.message ?? '');
+        toastService.error('Validation failed', detail || `"${entry.title}" failed`);
+      }
+    } catch (err) {
+      toastService.error('Validation error', String(err));
+    }
   }
 </script>
 
 {#if selectedPlugin}
-  {#if validationEntries.length === 0}
-    <div class="empty-state">
-      <p>No validations configured for "{selectedPlugin.name}" yet.</p>
-    </div>
-  {:else}
-    <div class="validation-xml-list">
-      {#each validationEntries as validationEntry, index}
-        <div class="validation-xml-container">
-          <div class="validation-xml-container__meta">
-            <span class="validation-xml-container__name">{validationEntry.title}</span>
-
-            <div class="validation-xml-container__actions">
-              <button type="button" class="delete-btn" title="Remove" onclick={() => onDelete(index)}>
-                <OscdDeleteIcon svgStyles="fill: #FF203A" />
-              </button>
-            </div>
-          </div>
-
-          <div class="xml-viewer">
-            <div class="xml-viewer__box">
-              <div class="xml-viewer__label">
-                Scope
-              </div>
-              <pre>{validationEntry.context}</pre>
-            </div>
-
-            <div class="xml-viewer__box">
-              <div class="xml-viewer__label">
-                Rule
-              </div>
-              <pre>{validationEntry.assert}</pre>
-            </div>
-
-            <div class="xml-viewer__box">
-              <div class="xml-viewer__label">
-                Failure message
-              </div>
-              <pre>{validationEntry.message}</pre>
-            </div>
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
+  <OscdBasicDataTable
+    items={validationEntries}
+    {columns}
+    emptyText={`No validations configured for "${selectedPlugin.name}" yet.`}
+    hasActions
+    headerBg="var(--base3)"
+    rowBg="var(--white)"
+    getRowId={(item, i) => `${item.processId}:${item.pluginId}:${item.title}:${i}`}
+  >
+    {#snippet actions({ item })}
+      <button
+        type="button"
+        class="action-btn action-btn--run"
+        title="Run validation"
+        aria-label="Run validation"
+        onclick={() => handleValidate(item)}
+      >
+        <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
+      </button>
+      <button
+        type="button"
+        class="action-btn action-btn--edit"
+        title="Edit"
+        aria-label="Edit validation"
+        onclick={() => {
+          const index = validationEntries.indexOf(item);
+          onEditEntry?.(item, index);
+        }}
+      >
+        <OscdEditIcon svgStyles="fill: var(--primary-base)" />
+      </button>
+      <button
+        type="button"
+        class="action-btn action-btn--delete"
+        title="Remove"
+        aria-label="Remove validation"
+        onclick={() => {
+          const index = validationEntries.indexOf(item);
+          onDeleteEntry?.(item, index);
+        }}
+      >
+        <OscdDeleteIcon svgStyles="fill: var(--red)" />
+      </button>
+    {/snippet}
+  </OscdBasicDataTable>
 {/if}
 
 <style>
-  .validation-xml-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 8px;
-  }
-
-  .validation-xml-container__actions {
-    display: flex;
-    flex-direction: row;
-    margin-left: auto;
-    gap: 6px;
-  }
-
-  .validation-xml-container {
-    border-radius: 4px;
-    background: #fff;
-    padding: 8px;
-  }
-
-  .validation-xml-container__meta {
-    display: flex;
-    flex-direction: row;
-    gap: 6rem;
-    padding: 12px 0;
-  }
-
-  .validation-xml-container__meta span {
-    align-self: center;
-  }
-
-  .validation-xml-container__name {
-    font-size: 16px;
-    font-weight: 500;
-    color: #002b37;
-  }
-
-  .delete-btn {
+  .action-btn {
     background: transparent;
     border: none;
-    padding: 4px;
+    border-radius: 4px;
+    padding: 0.25rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    transition: background-color 0.15s ease;
   }
 
-  .xml-viewer {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+  .action-btn:hover {
+    background-color: var(--base3);
   }
 
-  .xml-viewer__box {
-    background: #edf1f2;
-    border-radius: 6px;
-    padding: 12px;
-    overflow: auto;
-    max-height: 50vh;
-  }
-
-  .xml-viewer__box pre {
-    margin: 0;
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-family: 'Roboto', sans-serif;
-    color: #004552;
-    font-weight: 400;
-  }
-
-  .xml-viewer__label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #002b37;
-    margin-bottom: 6px;
-  }
-
-  .empty-state {
-    padding: 0.5rem 0.75rem;
-    color: #004552;
-    background: #edf1f2;
-    border-radius: 6px;
+  .action-btn:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 2px;
   }
 </style>

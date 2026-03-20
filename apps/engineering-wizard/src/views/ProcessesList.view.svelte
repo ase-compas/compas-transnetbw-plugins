@@ -203,14 +203,4 @@
     color: var(--white);
     font-weight: 500;
   }
-
-  .banner-continue {
-    border: none;
-    cursor: pointer;
-    padding: 8px 14px;
-    background: var(--white);
-    color: var(--primary-base);
-    border-radius: 4px;
-    font-weight: 600;
-  }
 </style>

@@ -9,9 +9,8 @@
   import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { editorTabs } from '../features/workflow/layout.svelte';
-  import {validateXPath } from '../features/plugins/validation/validatePluginXML.svelte';
-  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { runningEngineeringProcess } from '../features/processes/stores.svelte';
+  import { pluginValidationStatuses } from '../services/validationStatusStore.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -71,19 +70,6 @@
 
     if (selectedPlugin?.id === plugin.id) return;
 
-    const previous = selectedPlugin;
-    if (doc && previous?.validations?.length) {
-      const results = validateXPath(doc, previous.validations);
-
-      results.forEach(r => {
-        if(r.ok) {
-          toastService.success("Validation passed", r.validation.title)
-        } else {
-          toastService.error("Validation failed ", r.validation.message);
-        }
-      });
-    }
-
     await ensureCustomElementDefined(plugin);
     selectedPlugin = plugin;
 
@@ -101,10 +87,16 @@
   function advance(step: number) {
     if (!hasPlugins) return;
 
-    const baseIndex = currentIndex < 0 ? 0 : currentIndex;
-    const nextIndex = (baseIndex + step + plugins.length) % plugins.length;
+    const baseIndex = currentIndex >= 0 ? currentIndex : (step > 0 ? 0 : plugins.length - 1);
+    const nextIndexUnbounded = baseIndex + step;
 
-    void onSelectPlugin(plugins[nextIndex]);
+    let nextIndex = nextIndexUnbounded;
+    if (nextIndexUnbounded < 0) nextIndex = 0;
+    else if (nextIndexUnbounded >= plugins.length) nextIndex = plugins.length - 1;
+
+    if (nextIndex !== currentIndex) {
+      void onSelectPlugin(plugins[nextIndex]);
+    }
   }
 
   const nextPlugin = () => advance(1);
@@ -161,14 +153,15 @@
     expandedGroupBorderColor="white"
     bind:selectedGroupIndex
     bind:selectedPluginIndex
+    validationStatuses={pluginValidationStatuses.statuses}
   />
 
   <WorkflowActions
     onGoToPreviousStep={previousPlugin}
     onGoToNextStep={nextPlugin}
     onDone={exitWorkflow}
-    isAtFirstStep={!hasPlugins}
-    isAtLastStep={!hasPlugins}
+    isAtFirstStep={currentIndex <= 0}
+    isAtLastStep={currentIndex === plugins.length - 1}
   />
 </div>
 

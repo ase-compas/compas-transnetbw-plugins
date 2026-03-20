@@ -66,7 +66,7 @@
     flex-direction: column;
   }
 
-  .step-content { padding: 1.5rem 1.5rem; }
+  .step-content { padding: 1rem; }
 
   .header {
     display: flex;
