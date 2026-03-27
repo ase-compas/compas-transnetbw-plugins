@@ -5,6 +5,7 @@
   import InstanceAutocomplete from './InstanceAutocomplete.svelte';
   import type { InstanceDetails, TypeKind } from '../../../../shared/model';
   import TypeIdInput from './TypeIdInput.svelte';
+  import type { DataTypeService } from '../../services/type.service';
 
   export interface CreateTypeFormSubmitDetails {
     id: string;
@@ -24,6 +25,8 @@
     onChange?: (event: CreateTypeFormSubmitDetails) => void;
     onSubmit?: (event: CreateTypeFormSubmitDetails) => void;
     generateId?: (instance: string) => string;
+
+    service: DataTypeService;
   }
 
   let {
@@ -37,6 +40,7 @@
     onChange = (_event: CreateTypeFormSubmitDetails) => {},
     onSubmit = (_event: CreateTypeFormSubmitDetails) => {},
     generateId = (_instance: string) => '',
+    service,
   }: Props = $props();
 
   let selectedInstance = $state<InstanceDetails | undefined>(undefined);
@@ -115,6 +119,7 @@
       bind:value={selectedInstance}
       required
       disabled={!canChooseInstaceType && !!instanceType}
+      {service}
     />
 
     <TypeIdInput
@@ -126,6 +131,7 @@
       generateId={generateId
         ? () => autoGenerateId(selectedInstance?.instance)
         : undefined}
+      {service}
     />
 
     {#if showCreateFromDefaultOption && !!selectedInstance}

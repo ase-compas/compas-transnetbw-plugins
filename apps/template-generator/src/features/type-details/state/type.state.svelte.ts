@@ -1,5 +1,5 @@
 import { TypeKind, type DataTypeDetails, type DataTypeMember, type SimpleDataType, type ViewMode } from "../../../shared/model";
-import { getDataTypeService, type DataTypeService } from "../services/type.service";
+import { type DataTypeService } from "../services/type.service";
 import { buildColumns } from "../type.columns";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import type {
@@ -16,7 +16,7 @@ export class DataTypeDetailsState {
 
     private readonly dataTypeService: DataTypeService;
 
-    constructor(dataTypeService: DataTypeService = getDataTypeService()) {
+    constructor(dataTypeService: DataTypeService) {
         this.dataTypeService = dataTypeService;
     }
 

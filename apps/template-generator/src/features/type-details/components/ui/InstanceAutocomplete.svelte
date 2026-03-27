@@ -1,8 +1,8 @@
 <script lang="ts">
   import Autocomplete from '@smui-extra/autocomplete';
   import { type InstanceDetails, type TypeKind } from '../../../../shared/model';
-  import { getDataTypeService } from '../../services/type.service';
   import { onMount } from 'svelte';
+  import type { DataTypeService } from '../../services/type.service';
 
   interface Props {
     typeKind: TypeKind;
@@ -12,6 +12,7 @@
     disabled?: boolean;
     required?: boolean;
     onEnter?: () => void;
+    service: DataTypeService;
   }
 
   let {
@@ -22,9 +23,8 @@
     disabled = false,
     required = true,
     onEnter = () => {},
+    service
   }: Props = $props();
-
-  const service = getDataTypeService();
 
   let options: InstanceDetails[] = $state([]);
 
@@ -39,7 +39,7 @@
   }
 
   onMount(() => {
-    options = getDataTypeService().listInstanceTypeDetails(typeKind);
+    options = service.listInstanceTypeDetails(typeKind);
     if (initialInstanceType) {
       const initialOption = options.find((opt) => opt.instance === initialInstanceType);
       if (initialOption) {

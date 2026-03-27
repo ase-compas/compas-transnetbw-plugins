@@ -1,19 +1,21 @@
 <script lang="ts">
-  import { TypeKind, type InstanceDetails } from "../../../../shared/model";
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
-  import InstanceAutocomplete from "../ui/InstanceAutocomplete.svelte";
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import TypeIdInput from '../ui/TypeIdInput.svelte';
   import { onMount } from 'svelte';
+  import type { DataTypeService } from "../../services/type.service";
 
   interface Props {
     open?: boolean;
     typeId: string;
+    service: DataTypeService;
   }
 
   let {
     open = $bindable(false),
-    typeId
+    typeId,
+    service
+
   }: Props = $props();
 
 
@@ -48,7 +50,8 @@
         bind:typeId={value}
         bind:valid
         idLabel="Rename Type ID"
-        showErrorOnInput
+        showErrorsOnInput
+        {service}
       />
     </div>
   {/snippet}

@@ -2,6 +2,7 @@
   import type { Snippet } from 'svelte';
   import { TypeKind, type ViewMode } from '../../../shared/model';
   import TypeHeader from './ui/TypeHeader.svelte';
+  import type { DataTypeService } from '../services/type.service';
 
   interface Props {
     loading: boolean;
@@ -15,6 +16,8 @@
     onRename: () => void;
     onDelete: () => void;
     children?: Snippet;
+
+    service: DataTypeService
   }
 
   let {
@@ -29,6 +32,7 @@
     onRename,
     onDelete,
     children,
+    service
   }: Props = $props();
 </script>
 
@@ -46,6 +50,7 @@
     onInstanceTypeChange={(value) => onInstanceTypeChange(value)}
     onRename={onRename}
     onDelete={onDelete}
+    {service}
   />
   {@render children?.()}
 {/if}

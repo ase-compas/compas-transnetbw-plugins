@@ -6,6 +6,7 @@
   import ChooseInstanceTypeDialog from '../dialogs/ChooseInstanceTypeDialog.svelte';
   import SetDefaultButton from './SetDefaultButton.svelte';
   import TypeActionMenu from './TypeActionMenu.svelte';
+  import type { DataTypeService } from '../../services/type.service';
 
   interface Props {
     type: TypeKind;
@@ -20,6 +21,8 @@
     onClickDefault?: () => void;
     onDelete?: () => void;
     onRename?: () => void;
+
+    service: DataTypeService
   }
 
   let {
@@ -34,7 +37,9 @@
     onInstanceTypeChange = (_: string) => {},
     onClickDefault = () => {},
     onDelete = () => {},
-    onRename = () => {}
+    onRename = () => {},
+
+    service
   }: Props = $props();
 
   const handleChange = (checked) => onModeChange(checked ? 'edit' : 'view');
@@ -42,7 +47,8 @@
 
   async function handleInstanceTypeSelect() {
     const result = await openDialog(ChooseInstanceTypeDialog, {
-      typeKind: type
+      typeKind: type,
+      service: service
     })
 
     if (result.type !== 'confirm') {

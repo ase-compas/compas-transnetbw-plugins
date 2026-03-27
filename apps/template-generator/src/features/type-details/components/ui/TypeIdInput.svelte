@@ -4,9 +4,8 @@
   import TextField from '@smui/textfield';
   import { Icon } from '@smui/button';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
-  import { getDataTypeService } from '../../services/type.service';
+  import { DataTypeService } from '../../services/type.service';
 
-  const dataTypeService = getDataTypeService();
   const ID_MAX_LENGTH = 64;
 
   interface Props {
@@ -16,6 +15,7 @@
     showErrorsOnInput?: boolean;
     generateId?: () => void;
     disabled?: boolean;
+    service: DataTypeService;
   }
 
   let {
@@ -25,6 +25,7 @@
     showErrorsOnInput = false,
     generateId,
     disabled = false,
+    service
   }: Props = $props();
 
   let inputEl;
@@ -42,7 +43,7 @@
   );
 
   function typeIdExists(candidateId: string): boolean {
-    return dataTypeService.exists(candidateId);
+    return service.exists(candidateId);
   }
 
   $effect(() => {

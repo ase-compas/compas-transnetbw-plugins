@@ -6,6 +6,7 @@
   } from '@oscd-transnet-plugins/oscd-component';
   import DataTypeFilter from '../../type-details/components/ui/DataTypeFilter.svelte';
   import { TypeKind } from '../../../shared/model';
+  import { DataTypeService } from '../../type-details/services/type.service';
 
   type DefaultTypeRow = {
     id: string;
@@ -41,7 +42,7 @@
 </script>
 
 <div class="container">
-  <DataTypeFilter bind:query bind:dataTypeKind={typeKind} bind:instance />
+<DataTypeFilter bind:query bind:dataTypeKind={typeKind} bind:instance service={new DataTypeService(null, null)}/>
 
 <OscdBasicDataTable
   items={[]}
