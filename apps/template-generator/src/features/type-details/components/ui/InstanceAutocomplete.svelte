@@ -38,18 +38,29 @@
     autocompleteEl?.focus?.();
   }
 
-  onMount(() => {
-    options = service.listInstanceTypeDetails(typeKind);
-    if (initialInstanceType) {
-      const initialOption = options.find((opt) => opt.instance === initialInstanceType);
-      if (initialOption) {
-        value = initialOption;
-      }
+ 
+function loadOptions(kind: TypeKind, initial?: string) {
+    const nextOptions = service.listInstanceTypeDetails(kind);
+    options = nextOptions;
+    if (initial) {
+      const initialOption = nextOptions.find(opt => opt.instance === initial) ?? null;
+      value = initialOption;
     }
+  }
+
+
+  $effect(() => {
+    if (typeKind) {
+      loadOptions(typeKind, initialInstanceType);
+    }
+  });
+
+  onMount(() => {
+    loadOptions(typeKind, initialInstanceType);
   });
 </script>
 
-{#if options.length !== 0}
+{#if disabled || options.length !== 0}
 <Autocomplete
   bind:this={autocompleteEl}
   bind:value={value}
