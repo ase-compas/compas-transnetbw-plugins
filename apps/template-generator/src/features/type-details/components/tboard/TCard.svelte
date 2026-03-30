@@ -446,6 +446,7 @@
   :global(.oscd-card-item .reference-button.has-reference) {
     color: var(--on-primary) !important;
     border-color: var(--on-primary) !important;
+    text-transform: none !important;
   }
 
   :global(.oscd-card-item .reference-button.needs-reference) {
