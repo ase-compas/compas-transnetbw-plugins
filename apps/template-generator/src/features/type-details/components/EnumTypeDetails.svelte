@@ -37,14 +37,27 @@
 		return String(literalValue ?? ord ?? '');
 	}
 
-	$effect(() => {
+	function handleChangeMember() {
 		if (onMemberChange) {
 			onMemberChange($state.snapshot(selected));
 		}
-	});
+	}
+
+	function handleBulkChangeMember(checked: boolean) {
+		if (checked) {
+			selected = filteredMembers.map(member => member.name);
+		} else {
+			selected = [];
+		}
+		handleChangeMember();
+	}
+
+
 
 	$effect(() => {
-		selected = members.filter(member => member.isConfigured).map(member => member.name);
+		// When members change, update the selected array to include only the names of the configured members
+		const memberNames = members.filter(member => member.isConfigured).map(member => member.name);
+		selected = memberNames
 	});
 </script>
 
@@ -61,7 +74,14 @@
 		<Head style="font-weight: bold;">
 			<Row>
 				{#if isEditMode}
-					<Cell checkbox><Checkbox/></Cell>
+					<Cell>
+						<Checkbox 
+							checked={selected.length > 0}
+							indeterminate={selected.length > 0 && selected.length < filteredMembers.length}
+							onchange={(e: any) => {
+								handleBulkChangeMember(e.target.checked);
+							}}
+					/></Cell>
 				{/if}
 				<Cell numeric><strong>Ord</strong></Cell>
 				<Cell><strong>Label</strong></Cell>
@@ -72,10 +92,13 @@
 			{#each filteredMembers as item (item.name)}
 				<Row style="background: white">
 					{#if isEditMode}
-						<Cell checkbox>
+						<Cell>
 							<Checkbox
 								bind:group={selected}
 								value={item.name}
+								onchange={(e) => {
+									handleChangeMember();
+								}}
 							/>
 						</Cell>
 					{/if}
