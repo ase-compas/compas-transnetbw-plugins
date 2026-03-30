@@ -78,9 +78,7 @@
 						<Checkbox 
 							checked={selected.length > 0}
 							indeterminate={selected.length > 0 && selected.length < filteredMembers.length}
-							onchange={(e: any) => {
-								handleBulkChangeMember(e.target.checked);
-							}}
+							onchange={(e: any) => handleBulkChangeMember(e.target.checked)}
 					/></Cell>
 				{/if}
 				<Cell numeric><strong>Ord</strong></Cell>
@@ -96,9 +94,7 @@
 							<Checkbox
 								bind:group={selected}
 								value={item.name}
-								onchange={(e) => {
-									handleChangeMember();
-								}}
+								onchange={() => handleChangeMember()}
 							/>
 						</Cell>
 					{/if}
