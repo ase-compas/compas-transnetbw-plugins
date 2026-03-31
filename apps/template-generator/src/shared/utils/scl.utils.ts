@@ -72,3 +72,12 @@ export function getDocumentDefaultNamespace(doc: XMLDocument): string {
     const root = doc.documentElement;
     return root?.lookupNamespaceURI(null) ?? root?.namespaceURI ?? '';
 }
+
+
+export function createEmptySCLDocument(headerId: string): XMLDocument {
+    const parser = new DOMParser();
+    const sclString = `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+        <Header id="${headerId}"/>
+    </SCL>`;
+    return parser.parseFromString(sclString, "application/xml");
+}
