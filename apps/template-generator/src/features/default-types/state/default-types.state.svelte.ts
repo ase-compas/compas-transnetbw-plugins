@@ -1,0 +1,37 @@
+import type { DefaultTypeList } from "../../types";
+import { defaultTypeService } from "../../../bootstrap";
+import type { TypeKind } from "apps/template-generator/src/shared/model";
+
+export class DefaultTypesState {
+
+    loading: boolean = $state(false)
+    error: string | null = $state(null)
+    data: DefaultTypeList | null = $state(null)
+
+    kindFilter: TypeKind | undefined = $state(undefined)
+    instanceFilter: string | undefined = $state(undefined)
+
+    async load() {
+        this.loading = true;
+        this.error = null;
+        try {
+            this.data = await defaultTypeService.list({ page: 0, size: 100 });
+        } catch (error) {
+            this.error = "Failed to load default types";
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    filteredTypes = $derived.by(() => {
+        if (!this.data) return [];
+
+        return this.data.content?.filter((item) => {
+            const matchesKind = !this.kindFilter || item.kind === this.kindFilter;
+            const matchesInstance = !this.instanceFilter
+                || item.instance === this.instanceFilter;
+
+            return matchesKind && matchesInstance;
+        }) || [];
+    });
+}
