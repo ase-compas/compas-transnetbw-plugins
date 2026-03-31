@@ -36,6 +36,13 @@ export namespace TypeKind {
                 return "Data Type";
         }
     }
+
+  export function toTypeKind(value: string): TypeKind | undefined {
+    return (Object.values(TypeKind) as string[]).includes(value)
+      ? (value as TypeKind)
+      : undefined;
+  }
+
 }
 
 export interface SimpleDataType {
