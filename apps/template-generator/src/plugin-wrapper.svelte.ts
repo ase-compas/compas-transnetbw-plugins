@@ -16,6 +16,10 @@ export default class NewOSCDPlugin extends HTMLElement {
     const linkElement = createStyleLinkElement();
     this.shadowRoot?.appendChild(linkElement);
 
+    const themeEl = document.createElement('style');
+    themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
+    this.shadowRoot!.appendChild(themeEl);
+
     initializeDataTypeService(this._doc!, this);
     pluginStore.setPluginState({host: this, doc: this._doc})
 
@@ -38,26 +42,11 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 }
 
-function createStyleLinkElement(): HTMLElement {
-  const id = `${pkg.name}-v${pkg.version}-style`;
-  const stylePath = generateStylePath();
-
-  const linkElement = document.createElement('link');
-  linkElement.rel = 'stylesheet';
-  linkElement.type = 'text/css';
-  linkElement.href = stylePath;
-  linkElement.id = id;
-
-  return linkElement;
-}
-
-function generateStylePath(): string {
-  const srcUrl = new URL(import.meta.url);
-  const origin = srcUrl.origin;
-  const path = srcUrl.pathname
-    .split('/')
-    .slice(0, -1)
-    .filter(Boolean)
-    .join('/');
-  return [origin, path, 'style.css'].filter(Boolean).join('/');
+function createStyleLinkElement(): HTMLLinkElement {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = new URL('./style.css', import.meta.url).href;
+  link.id = `${pkg.name}-v${pkg.version}-style`;
+  return link;
 }

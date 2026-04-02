@@ -45,6 +45,10 @@ export default class NewOSCDPlugin extends HTMLElement {
 
     mount(Plugin, { target: shadowRoot, props: this._props });
     shadowRoot.appendChild(createStyleLinkElement());
+    
+    const themeEl = document.createElement('style');
+    themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
+    shadowRoot.appendChild(themeEl);
   }
 
   disconnectedCallback() {

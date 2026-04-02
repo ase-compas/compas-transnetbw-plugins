@@ -9,7 +9,6 @@
   import '../public/material-icon.css';
   import '../public/smui.css';
   import '../public/global.css';
-  import '../../../libs/theme/src/lib/global.css';
   import DataTypesListView from './features/type-details/components/DataTypesListView.svelte';
   import NavigationHeader from './shared/ui/NavigationHeader.svelte';
   import IdFormatSettings from './features/id-format-settings/IdFormatSettings.svelte';
