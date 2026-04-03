@@ -33145,6 +33145,8 @@ class oD extends HTMLElement {
     this.attachShadow({ mode: "open" });
     const t = this.shadowRoot;
     ky(Zk, { target: t, props: this._props }), t.appendChild(tD());
+    const n = document.createElement("style");
+    n.textContent = ":host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }", t.appendChild(n);
   }
   disconnectedCallback() {
     Jk();
