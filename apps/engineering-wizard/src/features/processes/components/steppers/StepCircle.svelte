@@ -43,7 +43,7 @@
   }
 
   .step-circle.active {
-    background-color: var(--bright-yellow);
+    background-color: #D9D800;
     color: var(--primary-base);
   }
 
