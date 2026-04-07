@@ -14,16 +14,30 @@ export default class NewOSCDPlugin extends HTMLElement {
     });
 
     const linkElement = createStyleLinkElement();
-    this.shadowRoot?.appendChild(linkElement);
+    this.shadowRoot!.appendChild(linkElement);
 
     const themeEl = document.createElement('style');
     themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
     this.shadowRoot!.appendChild(themeEl);
 
     initializeDataTypeService(this._doc!, this);
-    pluginStore.setPluginState({host: this, doc: this._doc})
+    pluginStore.setPluginState({host: this, doc: this._doc});
 
-    this.app = mount(Plugin, { target: this.shadowRoot! });
+    linkElement.addEventListener(
+      'load',
+      () => {
+        this.app = mount(Plugin, { target: this.shadowRoot! });
+      },
+      { once: true },
+    );
+
+    linkElement.addEventListener(
+      'error',
+      () => {
+        this.app = mount(Plugin, { target: this.shadowRoot! });
+      },
+      { once: true },
+    );
   }
 
   disconnectedCallback() {

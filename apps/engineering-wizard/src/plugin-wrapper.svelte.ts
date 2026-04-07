@@ -3,7 +3,10 @@ import * as pkg from '../package.json';
 import { mount } from 'svelte';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
-import { scheduleEditValidation, cancelPendingValidation } from './services/editValidationHandler';
+import {
+  cancelPendingValidation,
+  scheduleEditValidation,
+} from './services/editValidationHandler';
 
 interface PluginProps {
   doc?: XMLDocument;
@@ -43,12 +46,24 @@ export default class NewOSCDPlugin extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     const shadowRoot = this.shadowRoot!;
 
-    mount(Plugin, { target: shadowRoot, props: this._props });
-    shadowRoot.appendChild(createStyleLinkElement());
-    
+    const linkElement = createStyleLinkElement();
+    shadowRoot.appendChild(linkElement);
+
     const themeEl = document.createElement('style');
     themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
     shadowRoot.appendChild(themeEl);
+
+    linkElement.addEventListener(
+      'load',
+      () => mount(Plugin, { target: shadowRoot, props: this._props }),
+      { once: true },
+    );
+
+    linkElement.addEventListener(
+      'error',
+      () => mount(Plugin, { target: shadowRoot, props: this._props }),
+      { once: true },
+    );
   }
 
   disconnectedCallback() {
