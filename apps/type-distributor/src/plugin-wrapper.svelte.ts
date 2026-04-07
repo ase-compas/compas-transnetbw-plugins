@@ -41,13 +41,12 @@ export default class NewOSCDPlugin extends HTMLElement {
 
     this.attachShadow({ mode: 'open' });
 
-    mount(Plugin, {
-      target: this.shadowRoot!,
-      props: this._props,
-    });
-
     const linkElement = createStyleLinkElement();
     this.shadowRoot!.appendChild(linkElement);
+
+    const mountPlugin = () => mount(Plugin, { target: this.shadowRoot!, props: this._props });
+    linkElement.addEventListener('load', mountPlugin, { once: true });
+    linkElement.addEventListener('error', mountPlugin, { once: true });
   }
 
   set doc(newDoc: XMLDocument) {

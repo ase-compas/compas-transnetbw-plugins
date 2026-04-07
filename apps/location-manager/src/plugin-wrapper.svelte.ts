@@ -22,15 +22,14 @@ export default class NewOSCDPlugin extends HTMLElement {
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
     this.props.doc = this._doc;
-    this.props.editCount = this.editCount;
-
-    mount(Plugin, {
-      target: this.shadowRoot!,
-      props: this.props,
-    });
+    this.props.editCount = this._editCount;
 
     const linkElement = createStyleLinkElement();
-    this.shadowRoot?.appendChild(linkElement);
+    this.shadowRoot!.appendChild(linkElement);
+
+    const mountPlugin = () => mount(Plugin, { target: this.shadowRoot!, props: this.props });
+    linkElement.addEventListener('load', mountPlugin, { once: true });
+    linkElement.addEventListener('error', mountPlugin, { once: true });
   }
 
   private _doc?: XMLDocument;

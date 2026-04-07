@@ -23,24 +23,25 @@ export default class NewOSCDPlugin extends HTMLElement {
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
     this.props.doc = this._doc;
-    this.props.editCount = this.editCount;
-
-    mount(Plugin, {
-      target: this.shadowRoot!,
-      props: this.props,
-    });
+    this.props.editCount = this._editCount;
 
     const linkElement = createStyleLinkElement();
-    this.shadowRoot?.appendChild(linkElement);
+    this.shadowRoot!.appendChild(linkElement);
+
+    const mountPlugin = () => mount(Plugin, { target: this.shadowRoot!, props: this.props });
+    linkElement.addEventListener('load', mountPlugin, { once: true });
+    linkElement.addEventListener('error', mountPlugin, { once: true });
   }
 
   private _doc?: XMLDocument;
   public set doc(newDoc: XMLDocument) {
     this._doc = newDoc;
-    this.props.doc = newDoc
+    this.props.doc = newDoc;
   }
 
+  private _editCount?: number;
   public set editCount(newCount: number) {
+    this._editCount = newCount;
     this.props.editCount = newCount;
   }
 }
