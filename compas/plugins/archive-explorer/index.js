@@ -20904,10 +20904,11 @@ class fI extends HTMLElement {
     X(re(this, Vi), n, !0);
   }
   connectedCallback() {
-    var r;
-    this.attachShadow({ mode: "open" }), this.props.doc = this._doc, this.props.editCount = this.editCount, zf(sI, { target: this.shadowRoot, props: this.props });
+    this.attachShadow({ mode: "open" }), this.props.doc = this._doc, this.props.editCount = this.editCount;
     const n = lI();
-    (r = this.shadowRoot) == null || r.appendChild(n);
+    this.shadowRoot.appendChild(n);
+    const r = () => zf(sI, { target: this.shadowRoot, props: this.props });
+    n.addEventListener("load", r, { once: !0 }), n.addEventListener("error", r, { once: !0 });
   }
   set doc(n) {
     this._doc = n, this.props.doc = n;

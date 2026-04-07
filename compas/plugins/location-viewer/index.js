@@ -20561,16 +20561,17 @@ class cI extends HTMLElement {
     K(ne(this, Bi), n, !0);
   }
   connectedCallback() {
-    var r;
-    this.attachShadow({ mode: "open" }), this.props.doc = this._doc, this.props.editCount = this.editCount, Hf(nI, { target: this.shadowRoot, props: this.props });
+    this.attachShadow({ mode: "open" }), this.props.doc = this._doc, this.props.editCount = this._editCount;
     const n = rI();
-    (r = this.shadowRoot) == null || r.appendChild(n);
+    this.shadowRoot.appendChild(n);
+    const r = () => Hf(nI, { target: this.shadowRoot, props: this.props });
+    n.addEventListener("load", r, { once: !0 }), n.addEventListener("error", r, { once: !0 });
   }
   set doc(n) {
     this._doc = n, this.props.doc = n;
   }
   set editCount(n) {
-    this.props.editCount = n;
+    this._editCount = n, this.props.editCount = n;
   }
 }
 Bi = new WeakMap();
