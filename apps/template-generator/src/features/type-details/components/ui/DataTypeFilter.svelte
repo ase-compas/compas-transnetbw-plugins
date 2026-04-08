@@ -6,6 +6,7 @@
 
   interface Props {
     query?: string;
+    queryLabel?: string;
     dataTypeKind?: TypeKind;
     instance?: string;
     service: DataTypeService;
@@ -15,6 +16,7 @@
 
   let {
     query = $bindable(''),
+    queryLabel = "Search by name, type kind, or instance type",
     dataTypeKind = $bindable(),
     instance = $bindable(),
     service,
@@ -105,7 +107,7 @@
 </script>
 
 <OscdFilterTab
-  searchLabel="Search by name, type kind, or instance type"
+  searchLabel={queryLabel}
   bind:searchText={query}
   {navigationTabs}
   bind:activeNavigationTab={activeNavigationTab}
