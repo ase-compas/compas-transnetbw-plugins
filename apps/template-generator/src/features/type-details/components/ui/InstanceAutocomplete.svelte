@@ -12,6 +12,7 @@
     disabled?: boolean;
     required?: boolean;
     onEnter?: () => void;
+    onChange?: (value: InstanceDetails) => void;
     service: DataTypeService;
   }
 
@@ -23,10 +24,12 @@
     disabled = false,
     required = true,
     onEnter = () => {},
+    onChange = () => {},
     service
   }: Props = $props();
 
   let options: InstanceDetails[] = $state([]);
+  let mounted = $state(false);
 
     // svelte-ignore non_reactive_update
     /** @type {HTMLElement} */
@@ -48,6 +51,11 @@ function loadOptions(kind: TypeKind, initial?: string) {
     }
   }
 
+  $effect(() => {
+    if (mounted) {
+      onChange(value);
+    }
+  });
 
   $effect(() => {
     if (typeKind) {
@@ -57,6 +65,7 @@ function loadOptions(kind: TypeKind, initial?: string) {
 
   onMount(() => {
     loadOptions(typeKind, initialInstanceType);
+    mounted = true;
   });
 </script>
 
