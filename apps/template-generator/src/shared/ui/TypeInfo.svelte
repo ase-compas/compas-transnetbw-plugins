@@ -1,82 +1,109 @@
-<script lang=ts>
-  import Textfield from "@smui/textfield";
-  import { TypeKind } from "../model";
-  import OscdIconActionButton from "libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte";
-    
-    interface Props {
-        kind: TypeKind;
-        typeId: string;
-        instance?: string | null;
-        canEditId?: boolean;
-    }
-    
-    let { kind: type, typeId = $bindable(''), instance: instanceType = null, canEditId = false }: Props = $props();
+<script lang="ts">
+  import Textfield from '@smui/textfield';
+  import { TypeKind } from '../model';
+  import OscdIconActionButton from 'libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte';
+  import { onMount, tick } from 'svelte';
 
-    let idTextFieldElement: Textfield | null = $state(null);
-    let idEditMode = $state(false);
+  interface Props {
+    kind: TypeKind;
+    typeId: string;
+    instance?: string | null;
+    canEditId?: boolean;
+    onIdChange?: (newId: string) => void;
+  }
 
+  let {
+    kind: type,
+    typeId = $bindable(''),
+    instance: instanceType = null,
+    canEditId = false,
+    onIdChange,
+  }: Props = $props();
+
+  let idTextFieldElement: Textfield | null = $state(null);
+  let idEditMode = $state(false);
+  let typeIdRequiredButMissing = $state(false);
+
+  const showIdEditor = $derived(idEditMode || typeIdRequiredButMissing);
+
+  function isTypeIdMissing(): boolean {
+    return !typeId.trim();
+  }
+
+  function submitTypeId() {
+    idEditMode = false;
+    typeIdRequiredButMissing = isTypeIdMissing();
+    onIdChange?.(typeId);
+  }
+
+  async function enterIdEditMode() {
+    idEditMode = true;
+    await tick();
+    idTextFieldElement?.focus();
+  }
+
+  function onTypeIdKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Enter') return;
+    event.stopPropagation();
+    submitTypeId();
+  }
+
+  onMount(() => {
+    if (!isTypeIdMissing()) return;
+    typeIdRequiredButMissing = true;
+    idEditMode = true;
+  });
 </script>
   
 
-  <div class="info-section">
-    <!-- Type section -->
+<div class="info-section">
     <div class="section">
       <span class="label">Type</span>
       <span class="value strong">{TypeKind.abbreviation(type)}</span>
     </div>
 
-    <!-- Type ID section -->
-
-    <!-- Instance section -->
     <div class="section">
       <span class="label">{TypeKind.toTypeKindLabel(type)}</span>
       {#if instanceType}
         <span class="instance-badge static">{instanceType}</span>
       {:else}
         <span class="instance-badge unknown">Unknown</span>
-        {/if}
+      {/if}
     </div>
 
     <div class="section">
-    {#if idEditMode}
-    <Textfield
+      {#if showIdEditor}
+      <Textfield
         bind:this={idTextFieldElement}
         variant="outlined"
         bind:value={typeId}
+        required
+        initialInvalid
         label="Type ID"
         style="min-width: 250px;"
-        onblur={() => idEditMode = false}
-        onkeydown={(e) => {
-            if (e.key === 'Enter') {
-                e.stopPropagation();
-                idEditMode = false;
-            }
-        }}
+        onblur={submitTypeId}
+        onkeydown={onTypeIdKeydown}
       />
-    {:else}
-      <span class="label">Type ID</span>
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span class="value mono">{typeId}</span>
-        {#if canEditId}
+      {:else}
+        <span class="label">Type ID</span>
+        <div class="type-id-row">
+          <span class="value mono">{typeId}</span>
+          {#if canEditId}
             <OscdIconActionButton
-                type="edit"
-                tooltip="Edit"
-                tooltipSide="bottom"
-                size="20px"
-                onClick={() => {
-                    idEditMode = true;
-                    setTimeout(() => idTextFieldElement?.focus(), 100);
-                }}
+              type="edit"
+              tooltip="Edit"
+              tooltipSide="bottom"
+              size="20px"
+              onClick={enterIdEditMode}
             />
+          {/if}
+        </div>
       {/if}
-      </div>
-    {/if}
     </div>
-  </div>
+</div>
 
-  <style>
+<style>
 
-  /* Info section grid */
   .info-section {
     display: grid;
     grid-auto-flow: column;
@@ -85,13 +112,11 @@
     min-height: 57px;
   }
 
-  /* Each section: label top, value/badge bottom */
   .section {
     display: grid;
     row-gap: 0.2rem;
   }
 
-  /* Label styling */
   .label {
     font-size: 0.7rem;
     font-weight: 600;
@@ -100,9 +125,8 @@
     letter-spacing: 0.06em;
   }
 
-  /* Value styling */
   .value {
-    font-size: 1.1rem; /* bigger value text */
+    font-size: 1.1rem;
     color: var(--mdc-theme-primary, #ff3e00);
     align-self: end;
   }
@@ -116,7 +140,6 @@
     font-size: 1.1rem;
   }
 
-  /* Instance badges */
   .instance-badge {
     display: inline-flex;
     align-items: center;
@@ -127,16 +150,14 @@
     color: white;
     font-weight: 500;
     white-space: nowrap;
-    font-size: 0.8rem
+    font-size: 0.8rem;
   }
 
-  /* Known instance badge */
   .instance-badge.static {
     background: var(--mdc-theme-primary, #ff3e00);
     color: white;
   }
 
-  /* Unknown/editable instance badge */
   .instance-badge.unknown {
     white-space: nowrap;
     color: var(--mdc-theme-primary, #ff3e00);
@@ -144,4 +165,10 @@
     transition: background 0.2s, border-color 0.2s;
   }
 
-  </style>
+  .type-id-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+</style>
