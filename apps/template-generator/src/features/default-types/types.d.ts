@@ -2,6 +2,32 @@ import type {
   UploadDataNextVersionTypeEnum
 } from '@oscd-transnet-plugins/api-compas-custom-resource'
 
+export interface CreateDefaultTypeInfo {
+    kind: TypeKind;
+    instance: string;
+    version: string;
+};
+
+export type DefaulteTypeSaveInfo =
+    | {
+          initialVersion: string;
+          versionUpdate?: never;
+          description?: string;
+      }
+    | {
+          initialVersion?: never;
+          versionUpdate: 'major' | 'minor' | 'patch';
+          description?: string;
+};
+
+export interface CreateDefaultTypeDialogResult {
+    action: 'create' | 'open-existing';
+    kind?: TypeKind;
+    instance?: string;
+    initialVersion?: string;
+    existingDefaultTypeId?: string;
+  }
+
 export interface DefaultTypeFilterParam {
   kind?: TypeKind
   instance?: string;
@@ -15,6 +41,7 @@ export interface DefaultTypeUploadParams {
   description?: string;
   doc: XMLDocument;
   nextVersionType?: UploadDataNextVersionTypeEnum
+  version?: string; // only for create mode, ignored in edit mode
 }
 
 export interface DefaultType {
@@ -47,4 +74,6 @@ export interface DefaultTypeList {
   size?: number;
 }
 
-
+export interface DetailsConfig {
+  includeHeader?: boolean;
+}

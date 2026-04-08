@@ -1,4 +1,4 @@
-import {type CustomResourceService,} from '@oscd-transnet-plugins/api-compas-custom-resource';
+import {type CustomResourceService, type PagedDataEntryResponse,} from '@oscd-transnet-plugins/api-compas-custom-resource';
 import type {
   DefaultType,
   DefaultTypeDetails,
@@ -6,7 +6,7 @@ import type {
   DefaultTypeList,
   DefaultTypeUploadParams,
   DefaultTypeUploadResponse,
-} from '../../types';
+} from '../types';
 import { TypeKind } from '../../../shared/model';
 import { UploadDataContentTypeEnum } from '@oscd-transnet-plugins/api-compas-custom-resource';
 
@@ -36,26 +36,7 @@ export class DefaultTypeService {
       size: params.size
     }
     const result = await this.customResourceService.listData(listDataParams);
-    const content = result.content?.map((entry) => {
-      const key = this.nameToKey(entry.name);
-      return {
-        id: entry.id,
-        kind: key.kind,
-        instance: key.instance,
-        description: entry.description,
-        version: entry.version,
-        dataCompatibilityVersion: entry.dataCompatibilityVersion,
-        updatedAt: entry.uploadedAt
-      } as DefaultType;
-    });
-
-    return {
-      content: content,
-      totalElements: result.totalElements,
-      totalPages: result.totalPages,
-      page: result.page,
-      size: result.size
-    }
+    return this.mapListResponseDefaultTypeList(result);
   }
 
   async upload(params: DefaultTypeUploadParams): Promise<DefaultTypeUploadResponse> {
@@ -66,7 +47,8 @@ export class DefaultTypeService {
       content: new Blob([new XMLSerializer().serializeToString(params.doc)], { type: "application/xml" }),
       dataCompatibilityVersion: DefaultTypeService.DATA_COMPATIBILITY_VERSION,
       description: params.description,
-      nextVersionType: params.nextVersionType
+      nextVersionType: params.nextVersionType,
+      version: params.version
     };
     return this.customResourceService.upload(uploadDataParams) as Promise<DefaultTypeUploadResponse>;
   }
@@ -88,6 +70,64 @@ export class DefaultTypeService {
       dataCompatibilityVersion: result.dataCompatibilityVersion,
       updatedAt: result.uploadedAt,
       doc: doc
+    }
+  }
+
+  async getLatestVersionByKindAndInstance(kind: TypeKind, instance: string): Promise<DefaultType | null> {
+    const list = await this.getByKindAndInstance(kind, instance);
+    if (list.content === undefined || list.content.length === 0) {
+      return null;
+    }
+
+    const sorted = this.sortByVersionDescending(list.content);
+    return this.getById(sorted[0].id);
+  }
+
+  async getByKindAndInstance(kind: TypeKind, instance: string): Promise<DefaultTypeList> {
+    const name = this.keyToName(kind, instance);
+    const result = await this.customResourceService.listData({
+      type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
+      name
+    });
+    return this.mapListResponseDefaultTypeList(result);
+  }
+
+  private sortByVersionDescending(types: DefaultType[]): DefaultType[] {
+    return types.sort((a, b) => {
+      const aParts = a.version.split('.').map(Number);
+      const bParts = b.version.split('.').map(Number);
+      for (let i = 0; i < 3; i++) {
+        if (aParts[i] > bParts[i]) {
+          return -1;
+        } else if (aParts[i] < bParts[i]) {
+          return 1;
+        }
+      }
+      return 0;
+    });
+
+  }
+
+  private mapListResponseDefaultTypeList(result: PagedDataEntryResponse): DefaultTypeList {
+    const content = result.content?.map((entry) => {
+      const key = this.nameToKey(entry.name);
+      return {
+        id: entry.id,
+        kind: key.kind,
+        instance: key.instance,
+        description: entry.description,
+        version: entry.version,
+        dataCompatibilityVersion: entry.dataCompatibilityVersion,
+        updatedAt: entry.uploadedAt
+      } as DefaultType;
+    });
+
+    return {
+      content: content,
+      totalElements: result.totalElements,
+      totalPages: result.totalPages,
+      page: result.page,
+      size: result.size
     }
   }
 
