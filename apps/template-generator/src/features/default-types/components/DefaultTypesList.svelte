@@ -1,12 +1,12 @@
-
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { DefaultTypesState } from "../state/default-types.state.svelte";
-  import DataTypeFilter from "../../type-details/components/ui/DataTypeFilter.svelte";
-  import OscdButton from "libs/oscd-component/src/oscd-button/OscdButton.svelte";
-  import { DataTypeService } from "../../type-details/services/type.service";
-  import OscdBasicDataTable from "libs/oscd-component/src/oscd-basic-data-table/OscdBasicDataTable.svelte";
-  import OscdIconActionButton from "libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte";
+  import { onMount } from 'svelte';
+  import { DefaultTypesState } from '../state/default-types.state.svelte';
+  import DataTypeFilter from '../../type-details/components/ui/DataTypeFilter.svelte';
+  import OscdButton from 'libs/oscd-component/src/oscd-button/OscdButton.svelte';
+  import { DataTypeService } from '../../type-details/services/type.service';
+  import OscdBasicDataTable from 'libs/oscd-component/src/oscd-basic-data-table/OscdBasicDataTable.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { untrack } from 'svelte';
 
   const defaultTypesState = new DefaultTypesState();
 
@@ -15,34 +15,44 @@
     onEditDefaultType?: (id: string) => void;
   }
 
-  let { onCreateDefaultType = () => {}, onEditDefaultType = () => {} }: Props = $props();
-
-  let query = $state('');
+  let { onCreateDefaultType = () => {}, onEditDefaultType = () => {} }: Props =
+    $props();
 
   const columns = [
     { header: 'Kind', key: 'kind' },
     { header: 'Instance', key: 'instance' },
+    { header: 'Latest Version', key: 'version' },
     { header: 'Description', key: 'description' },
-    { header: 'Version', key: 'version' },
   ];
+
+  $effect(() => {
+    if (defaultTypesState.error !== null) {
+      untrack(() =>
+        toastService.error(
+          'Loading Failed',
+          'Failed to load default types. Please try again later.',
+        ),
+      );
+    }
+  });
 
   onMount(() => {
     defaultTypesState.load();
   });
-
 </script>
 
 <div class="toolbar">
   <DataTypeFilter
-    bind:query 
+    queryLabel="Search by kind, instance, description, or version"
+    bind:query={defaultTypesState.query}
     bind:dataTypeKind={defaultTypesState.kindFilter}
     bind:instance={defaultTypesState.instanceFilter}
-    service={new DataTypeService(null, null)}/>
+    service={new DataTypeService(null, null)}
+  />
   <OscdButton variant="unelevated" callback={onCreateDefaultType}>
     New Default Type
   </OscdButton>
 </div>
-
 
 <OscdBasicDataTable
   items={defaultTypesState.filteredTypes}
@@ -53,15 +63,7 @@
   rowBg="#ffffff"
   hasActions
   onRowClick={(item) => onEditDefaultType(item.id)}
->
-  {#snippet actions(item)}
-    <OscdIconActionButton
-        type="delete"
-        fillColor="red"
-        tooltip="Delete Default"
-        onClick={() => console.warn("Delete default type: NOT IMPLEMENTED", item)} />
-  {/snippet}
-</OscdBasicDataTable>
+></OscdBasicDataTable>
 
 <style>
   .toolbar {

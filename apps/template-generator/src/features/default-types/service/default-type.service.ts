@@ -39,6 +39,51 @@ export class DefaultTypeService {
     return this.mapListResponseDefaultTypeList(result);
   }
 
+  async listLatest(params: DefaultTypeFilterParam): Promise<DefaultTypeList> {
+    const listDataParams = {
+      type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
+      kind: params.kind,
+      instance: params.instance,
+      page: params.page,
+      size: params.size
+    }
+    const result = await this.customResourceService.listData(listDataParams);
+    const defaultTypeList = this.mapListResponseDefaultTypeList(result);
+    if (defaultTypeList.content === undefined) {
+      return defaultTypeList;
+    }
+
+    const latestDefaultTypesMap = new Map<string, DefaultType>();
+    for (const defaultType of defaultTypeList.content) {
+      const key = `${defaultType.kind}:${defaultType.instance}`;
+      const existing = latestDefaultTypesMap.get(key);
+      if (existing === undefined || this.isVersionGreater(defaultType.version, existing.version)) {
+        latestDefaultTypesMap.set(key, defaultType);
+      }
+    }
+
+    return {
+      content: Array.from(latestDefaultTypesMap.values()),
+      totalElements: latestDefaultTypesMap.size,
+      totalPages: 1,
+      page: 0,
+      size: latestDefaultTypesMap.size
+    }
+  }
+  
+  private isVersionGreater(versionA: string, versionB: string): boolean {
+    const aParts = versionA.split('.').map(Number);
+    const bParts = versionB.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if (aParts[i] > bParts[i]) {
+        return true;
+      } else if (aParts[i] < bParts[i]) {
+        return false;
+      }
+    }
+    return false;
+  }
+
   async upload(params: DefaultTypeUploadParams): Promise<DefaultTypeUploadResponse> {
     const uploadDataParams = {
       type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
