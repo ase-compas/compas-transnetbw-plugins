@@ -62,6 +62,8 @@
 
   async function handleInstanceChange(details: InstanceDetails) {
     instance = details.instance;
+    initialVersion = DEFAULT_INITIAL_VERSION;
+    initialVersionInvalid = false;
     checkDefaultTypeExists();
   }
 
