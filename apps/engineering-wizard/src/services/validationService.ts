@@ -2,7 +2,8 @@ import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 import { documentStore } from '../documentStore.svelte';
 
 const API_URL =
-  import.meta.env.VITE_VALIDATION_API_URL ?? 'http://localhost:8081/api/v1/validate';
+  import.meta.env.VITE_VALIDATION_API_URL ??
+  'http://compas.northeurope.cloudapp.azure.com/compas-validation-service/api/v1/validate';
 
 if (!import.meta.env.DEV && API_URL.startsWith('http://')) {
   console.warn(
