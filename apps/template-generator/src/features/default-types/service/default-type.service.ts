@@ -9,6 +9,7 @@ import type {
 } from '../types';
 import { TypeKind } from '../../../shared/model';
 import { UploadDataContentTypeEnum } from '@oscd-transnet-plugins/api-compas-custom-resource';
+import { isVersionGreater, sortByVersionDescending } from '../utils/version.utils';
 
 interface DefaultKey {
   kind: TypeKind;
@@ -57,7 +58,7 @@ export class DefaultTypeService {
     for (const defaultType of defaultTypeList.content) {
       const key = `${defaultType.kind}:${defaultType.instance}`;
       const existing = latestDefaultTypesMap.get(key);
-      if (existing === undefined || this.isVersionGreater(defaultType.version, existing.version)) {
+      if (existing === undefined || isVersionGreater(defaultType.version, existing.version)) {
         latestDefaultTypesMap.set(key, defaultType);
       }
     }
@@ -82,19 +83,6 @@ export class DefaultTypeService {
     return this.mapListResponseDefaultTypeList(result);
   }
   
-  private isVersionGreater(versionA: string, versionB: string): boolean {
-    const aParts = versionA.split('.').map(Number);
-    const bParts = versionB.split('.').map(Number);
-    for (let i = 0; i < 3; i++) {
-      if (aParts[i] > bParts[i]) {
-        return true;
-      } else if (aParts[i] < bParts[i]) {
-        return false;
-      }
-    }
-    return false;
-  }
-
   async upload(params: DefaultTypeUploadParams): Promise<DefaultTypeUploadResponse> {
     const uploadDataParams = {
       type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
@@ -135,7 +123,7 @@ export class DefaultTypeService {
       return null;
     }
 
-    const sorted = this.sortByVersionDescending(list.content);
+    const sorted = sortByVersionDescending(list.content);
     return this.getById(sorted[0].id);
   }
 
@@ -146,22 +134,6 @@ export class DefaultTypeService {
       name
     });
     return this.mapListResponseDefaultTypeList(result);
-  }
-
-  private sortByVersionDescending(types: DefaultType[]): DefaultType[] {
-    return types.sort((a, b) => {
-      const aParts = a.version.split('.').map(Number);
-      const bParts = b.version.split('.').map(Number);
-      for (let i = 0; i < 3; i++) {
-        if (aParts[i] > bParts[i]) {
-          return -1;
-        } else if (aParts[i] < bParts[i]) {
-          return 1;
-        }
-      }
-      return 0;
-    });
-
   }
 
   private mapListResponseDefaultTypeList(result: PagedDataEntryResponse): DefaultTypeList {

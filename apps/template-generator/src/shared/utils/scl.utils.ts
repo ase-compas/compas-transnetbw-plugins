@@ -74,6 +74,41 @@ export function getDocumentDefaultNamespace(doc: XMLDocument): string {
 }
 
 
+/**
+ * Collects all data type IDs reachable from a root ID via `type` attribute references.
+ * Traversal follows direct non-Private children of each type element (matching SCL structure).
+ * The root ID itself is always included in the result set.
+ */
+export function collectReachableTypeIds(doc: XMLDocument, rootId: string): Set<string> {
+    const reachable = new Set<string>();
+    if (!rootId) {
+        return reachable;
+    }
+
+    const queue: string[] = [rootId];
+    reachable.add(rootId);
+
+    while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        const typeElement = doc.querySelector(`DataTypeTemplates > [id="${currentId}"]`);
+        if (!typeElement) {
+            continue;
+        }
+
+        Array.from(typeElement.children)
+            .filter(child => child.tagName !== 'Private')
+            .forEach(child => {
+                const refId = child.getAttribute('type');
+                if (refId && !reachable.has(refId)) {
+                    reachable.add(refId);
+                    queue.push(refId);
+                }
+            });
+    }
+
+    return reachable;
+}
+
 export function createEmptySCLDocument(headerId: string): XMLDocument {
     const parser = new DOMParser();
     const sclString = `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">

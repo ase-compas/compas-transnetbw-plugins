@@ -40,6 +40,9 @@
   let host: HTMLDivElement | undefined = undefined;
 
   const detailsState = new DefaultTypeDetailsState();
+  let saveButtonProps = $derived.by(() => ({
+    disabled: !detailsState.canSave,
+  }));
 
   function isApiCallError<T>(
     result: ApiCallResult<T>,
@@ -53,12 +56,14 @@
     }
 
     const mode = detailsState.isCreateMode ? 'create' : 'update';
+    const summary = detailsState.getSaveSummary();
 
     const result = await openDialog(SaveDefaultTypeDialog, {
       mode: mode,
       initialVersion: detailsState.isCreateMode
         ? detailsState.info.version
         : undefined,
+      summary,
     });
 
     if (result.type !== 'confirm') {
@@ -228,7 +233,7 @@
         >
           <Button
             variant="unelevated"
-            disabled={!detailsState.canSave}
+            {...saveButtonProps}
             onclick={saveDefaultType}
           >
             {#if detailsState.saving}

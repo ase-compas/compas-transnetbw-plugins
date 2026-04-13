@@ -1,8 +1,9 @@
 import { defaultTypeService } from "../../../bootstrap";
 import type { TypeKind } from "../../../shared/model";
-import { createEmptySCLDocument } from "../../../shared/utils/scl.utils";
+import { collectReachableTypeIds, createEmptySCLDocument, listDataTypeElements } from "../../../shared/utils/scl.utils";
 import type { CreateDefaultTypeInfo, DefaulteTypeSaveInfo, DefaultTypeList } from "../types";
-import { mapDefaulTypesListToVersions } from "../utils";
+import { excractRootIdFromXml } from "../utils/default-type-scl.utils";
+import { mapDefaulTypesListToVersions } from "../utils/version.utils";
 
 export interface DefaultTypeInfo {
     kind: TypeKind;
@@ -10,6 +11,16 @@ export interface DefaultTypeInfo {
     description: string;
     rootId: string;
     version: string;
+}
+
+export interface SaveDefaultTypeSummary {
+    rootId: string;
+    totalDataTypeCount: number;
+    reachableDataTypeCount: number;
+    removableDataTypeCount: number;
+    removableTypeIds: string[];
+    currentVersion?: string;
+    mode: 'create' | 'update';
 }
 
 export type ApiCallResult<T = void> =
@@ -78,7 +89,7 @@ export class DefaultTypeDetailsState {
                 kind: result.kind,
                 instance: result.instance,
                 description: result.description || '',
-                rootId: this.excractRootIdFromXml(result.doc) || '',
+                rootId: excractRootIdFromXml(result.doc) || '',
                 version: result.version || ''
             }
             this.typeVersions = await defaultTypeService.listVersions(result.kind, result.instance);
@@ -173,7 +184,7 @@ export class DefaultTypeDetailsState {
         const updploadInfo = {
             kind: infoSnapshot.kind,
             instance: infoSnapshot.instance,
-            description: saveInfo?.description,
+            description: saveInfo.description?.trim() || undefined,
             doc: this.doc,
             nextVersionType: this.isEditMode ? saveInfo?.versionUpdate : undefined,
             version: this.isCreateMode ? infoSnapshot.version : undefined,
@@ -204,6 +215,34 @@ export class DefaultTypeDetailsState {
     }
 
     /**
+     * Computes a pre-save summary for UI display in save dialogs.
+     * Reachability is calculated from the root type id via `type` references.
+     */
+    getSaveSummary(): SaveDefaultTypeSummary | null {
+        if (!this.doc || !this.info) {
+            return null;
+        }
+
+        const rootId = this.info.rootId || this.loadedDocRootId || DefaultTypeDetailsState.DRAFT_ROOT_ID;
+        const dataTypeElements = listDataTypeElements(this.doc);
+        const reachableIds = collectReachableTypeIds(this.doc, rootId);
+        const removableTypeIds = dataTypeElements.flatMap((element) => {
+            const id = element.getAttribute('id');
+            return id && !reachableIds.has(id) ? [id] : [];
+        }).sort((a, b) => a.localeCompare(b));
+
+        return {
+            rootId,
+            totalDataTypeCount: dataTypeElements.length,
+            reachableDataTypeCount: Math.min(reachableIds.size, dataTypeElements.length),
+            removableDataTypeCount: removableTypeIds.length,
+            removableTypeIds,
+            currentVersion: this.info.version,
+            mode: this.isCreateMode ? 'create' : 'update',
+        };
+    }
+
+    /**
      * Updates the root id of the XML document to match the one in the UI state.
      */
     private updateRootId() {
@@ -223,7 +262,9 @@ export class DefaultTypeDetailsState {
     }
 
     /**
-     * Ensures the XML root has the ID from UI state before upload.
+     * Preparse the XML document for upload.
+     * - Ensures root id is updated in the document
+     * - Removes unreferenced types
      */
     private prepareDocForUpload() {
         this.updateRootId();
@@ -236,45 +277,20 @@ export class DefaultTypeDetailsState {
             throw new Error("Document is not defined");
         }
 
-        const root = this.doc.documentElement;
-        const dataTypeTemplates = root.querySelector("DataTypeTemplates");
-        if (!dataTypeTemplates) {
+        const dataTypeElements = listDataTypeElements(this.doc);
+        if (dataTypeElements.length === 0) {
             return;
         }
 
-        const referencedIds = new Set<string>();
-        // Collect all referenced type IDs from the document
-        const collectReferences = (element: Element) => {
-            const refId = element.getAttribute("type");
-            if (refId) {
-                referencedIds.add(refId);
-            }
-            element.childNodes.forEach(child => {
-                if (child.nodeType === Node.ELEMENT_NODE) {
-                    collectReferences(child as Element);
-                }
-            });
-        };
-        collectReferences(root);
+        const rootId = this.info?.rootId || this.loadedDocRootId || DefaultTypeDetailsState.DRAFT_ROOT_ID;
+        const reachableIds = collectReachableTypeIds(this.doc, rootId);
 
-        // Remove unreferenced DataType elements
-        const dataTypes = dataTypeTemplates.querySelectorAll("DataType");
-        dataTypes.forEach(dataType => {
-            const id = dataType.getAttribute("id");
-            if (id && !referencedIds.has(id)) {
+        dataTypeElements.forEach((dataType) => {
+            const id = dataType.getAttribute('id');
+            if (id && !reachableIds.has(id)) {
                 dataType.remove();
             }
         });
     }
 
-    /**
-     * Extracts root element ID from XML document if present.
-     */
-    private excractRootIdFromXml(doc: XMLDocument): string | undefined {
-        const root = doc.documentElement;
-        if (root.hasAttribute("id")) {
-            return root.getAttribute("id") || undefined;
-        }
-        return undefined;
-    }
 }
