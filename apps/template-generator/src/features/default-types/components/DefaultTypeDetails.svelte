@@ -169,6 +169,13 @@
   });
 </script>
 
+<div class="default-type-back-button">
+  <Button variant="text" onclick={onBack}>
+    <Icon class="material-icons">arrow_back</Icon>
+    Back to List
+  </Button>
+</div>
+
 {#if detailsState.error}
   <p>{detailsState.error}</p>
 {:else if detailsState.loading}
