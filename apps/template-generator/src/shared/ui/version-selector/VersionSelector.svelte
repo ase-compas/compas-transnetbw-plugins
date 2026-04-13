@@ -10,6 +10,7 @@
     currentVersion: Version;
     onVersionChange?: (version: Version) => void;
     loading?: boolean;
+    loadingCurrentVersion?: boolean;
     onOpenMenu?: () => void;
   }
 
@@ -18,6 +19,7 @@
     currentVersion,
     onVersionChange = () => {},
     loading = false,
+    loadingCurrentVersion = false,
     onOpenMenu = () => {},
   }: Props = $props();
 
@@ -31,7 +33,13 @@
     surface.setOpen(true);
   }}
 >
-  <Label>{currentVersion.version}</Label>
+  <Label>
+    {#if loadingCurrentVersion}
+      <CircularProgress style="height: 16px; width: 16px;" indeterminate />
+    {:else}
+      {currentVersion.version}
+    {/if}
+  </Label>
   <Icon class="material-icons">expand_more</Icon>
 </Button>
 <MenuSurface bind:this={surface} anchorCorner="BOTTOM_RIGHT" maxHeight={300}>
