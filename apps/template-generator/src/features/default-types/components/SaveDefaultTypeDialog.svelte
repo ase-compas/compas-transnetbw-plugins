@@ -48,7 +48,7 @@
   title={ mode === 'update' ? "Save as new version" : "Create new default type" }
   confirmActionText="Save"
   maxWidth="500px"
-  maxHeight="800px"
+  maxHeight="850px"
   bind:open
   onConfirm={handleConfirm}
   onCancel={handleClose}
@@ -57,7 +57,7 @@
   {#snippet content()}
     <div class="content">
       <section class="summary">
-        <p class="summary__title">Save Summary</p>
+        <p class="summary__title">Summary</p>
         {#if summary}
           <div class="summary__grid">
             <div class="summary__item">
@@ -114,6 +114,8 @@
         {/if}
       </section>
       <div class="update-info">
+      <h4>Versioning</h4>
+      <div class="update-info__content">
       {#if mode === 'update'}
         <List class="demo-list" radioList>
           <Item>
@@ -159,19 +161,20 @@
         {#if error}
           <HelperText validationMsg>{error}</HelperText>
         {/if}
+      </div>
     </div>
   {/snippet}
 </OscdBaseDialog>
 
 <style>
   .content {
-    padding: 1rem;
+    padding: 0.5rem 0;
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
 
-  .update-info {
+  .update-info__content {
     display: flex;
     flex-direction: column;
     gap: 1rem;
