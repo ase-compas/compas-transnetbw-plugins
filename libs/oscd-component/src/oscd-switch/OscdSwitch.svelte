@@ -25,7 +25,7 @@
     formFieldClass = '',
     icons = false,
     preventToggleOnClick = false,
-    disabled = true,
+    disabled = false,
 
     onChange = (_) => {},
   }: Props = $props();
