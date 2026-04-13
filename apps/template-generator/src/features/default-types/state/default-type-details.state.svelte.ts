@@ -223,7 +223,10 @@ export class DefaultTypeDetailsState {
             return null;
         }
 
-        const rootId = this.info.rootId || this.loadedDocRootId || DefaultTypeDetailsState.DRAFT_ROOT_ID;
+        const rootId = this.loadedDocRootId;
+        if(!rootId) {
+            throw new Error("Root ID is not defined");
+        }
         const dataTypeElements = listDataTypeElements(this.doc);
         const reachableIds = collectReachableTypeIds(this.doc, rootId);
         const removableTypeIds = dataTypeElements.flatMap((element) => {
@@ -234,7 +237,7 @@ export class DefaultTypeDetailsState {
         return {
             rootId,
             totalDataTypeCount: dataTypeElements.length,
-            reachableDataTypeCount: Math.min(reachableIds.size, dataTypeElements.length),
+            reachableDataTypeCount: Math.min(reachableIds.size, dataTypeElements.length) - 1,
             removableDataTypeCount: removableTypeIds.length,
             removableTypeIds,
             currentVersion: this.info.version,
