@@ -22,7 +22,7 @@
   let showRemovableTypeIds = $state(false);
 
   let description: string = $state('');
-  let selectedVersionUpdate = $state(''); 
+  let selectedVersionUpdate = $state('');
   function validateSave(): boolean {
     if (mode === 'update' && !selectedVersionUpdate) {
       error = "Please select a version update type.";
@@ -246,7 +246,7 @@
   .summary__toggle {
     border: none;
     background: transparent;
-    color: #0f766e;
+    color: var(--primary);
     font-size: 0.82rem;
     font-weight: 600;
     text-align: left;
