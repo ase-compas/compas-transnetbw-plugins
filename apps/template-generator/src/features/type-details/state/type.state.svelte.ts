@@ -170,7 +170,7 @@ export class DataTypeDetailsState {
             this.dataTypeService.delete(this.loadedType.id);
             this.loadedType = null;
         } catch (err) {
-            console.error(`Error deleting type ${this.loadedType.id}:`, err instanceof Error ? err.message : String(err));
+            console.error(`Error deleting type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
         }
     }
 
