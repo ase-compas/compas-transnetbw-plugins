@@ -1,4 +1,4 @@
-import {type CustomResourceService, type PagedDataEntryResponse,} from '@oscd-transnet-plugins/api-compas-custom-resource';
+import {type CustomResourceService, type ListDataParams, type PagedDataEntryResponse,} from '@oscd-transnet-plugins/api-compas-custom-resource';
 import type {
   DefaultType,
   DefaultTypeDetails,
@@ -41,10 +41,8 @@ export class DefaultTypeService {
   }
 
   async listLatest(params: DefaultTypeFilterParam): Promise<DefaultTypeList> {
-    const listDataParams = {
+    const listDataParams: ListDataParams = {
       type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
-      kind: params.kind,
-      instance: params.instance,
       page: params.page,
       size: params.size
     }
