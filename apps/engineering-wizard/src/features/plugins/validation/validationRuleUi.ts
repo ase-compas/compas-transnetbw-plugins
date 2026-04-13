@@ -10,20 +10,9 @@ export type ConditionKey =
   | 'startsWith'
   | 'endsWith';
 
-export type CheckKey =
-  | 'noSpecial'
-  | 'noSpaces'
-  | 'noLetters'
-  | 'noNumbers'
-  | 'noAccented'
-  | 'noXmlCritical'
-  | 'hasLetters'
-  | 'hasNumbers';
-
 export type RuleUiState = {
   mode: RuleMode;
   condition: ConditionKey;
-  checks: Record<CheckKey, boolean>;
   specificText: string;
   attribute: string;
   elementCheckType: ElementCheckType;
@@ -31,26 +20,6 @@ export type RuleUiState = {
   elementCount: number;
   message: string;
 };
-
-export const ALL_CHECKS = [
-  'noSpecial',
-  'noSpaces',
-  'noLetters',
-  'noNumbers',
-  'noAccented',
-  'noXmlCritical',
-  'hasLetters',
-  'hasNumbers',
-] as const satisfies readonly CheckKey[];
-
-export function makeChecks(
-  init: Partial<Record<CheckKey, boolean>> = {},
-): Record<CheckKey, boolean> {
-  return Object.fromEntries(ALL_CHECKS.map((k) => [k, !!init[k]])) as Record<
-    CheckKey,
-    boolean
-  >;
-}
 
 export const CONDITIONS = [
   { key: 'contains',    label: 'Contains' },
@@ -76,23 +45,4 @@ export function getElementContext(_elementName: string): string {
   return '//SCL';
 }
 
-export const CHECK_DEFS: Record<CheckKey, string> = {
-  noSpecial:    'No special characters',
-  noSpaces:     'No blank spaces',
-  noLetters:    'No letters',
-  noNumbers:    'No numbers',
-  noAccented:   'No accented characters',
-  noXmlCritical:`No XML critical characters (<, >, &, ", ')`,
-  hasLetters:   'Must contain letters',
-  hasNumbers:   'Must contain numbers',
-};
-
-export const DEFAULT_PALETTE: Record<ConditionKey, CheckKey[]> = {
-  notContains: ['noSpecial', 'noSpaces', 'noLetters', 'noNumbers', 'noAccented', 'noXmlCritical'],
-  contains:    ['hasLetters', 'hasNumbers', 'noXmlCritical'],
-  equals:      ['noXmlCritical'],
-  notEquals:   ['noXmlCritical'],
-  startsWith:  ['noXmlCritical'],
-  endsWith:    ['noXmlCritical'],
-};
 

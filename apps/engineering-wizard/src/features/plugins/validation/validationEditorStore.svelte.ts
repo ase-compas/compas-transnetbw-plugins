@@ -1,5 +1,4 @@
 import {
-  makeChecks,
   type RuleUiState,
   type ConditionKey,
   type ElementCheckType,
@@ -22,7 +21,6 @@ function defaultRuleUi(): RuleUiState {
   return {
     mode: 'attribute',
     condition: 'notContains',
-    checks: makeChecks({}),
     specificText: '',
     attribute: '',
     elementCheckType: 'exists',
@@ -61,7 +59,6 @@ function restoreRuleUi(stored: Record<string, unknown>): RuleUiState {
   return {
     mode: (stored.mode as RuleUiState['mode']) ?? 'attribute',
     condition: (stored.condition as RuleUiState['condition']) ?? 'notContains',
-    checks: makeChecks(stored.checks as Parameters<typeof makeChecks>[0]),
     specificText: (stored.specificText as string) ?? '',
     attribute: (stored.attribute as string) ?? '',
     elementCheckType:
@@ -103,7 +100,6 @@ function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
     return {
       mode: 'element',
       condition: 'notContains',
-      checks: makeChecks({}),
       specificText: '',
       attribute: '',
       elementCheckType,
@@ -119,7 +115,6 @@ function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
       return {
         mode: 'attribute',
         condition,
-        checks: makeChecks({}),
         specificText: m[2],
         attribute: m[1].replace(/^@/, ''),
         elementCheckType: 'exists',
