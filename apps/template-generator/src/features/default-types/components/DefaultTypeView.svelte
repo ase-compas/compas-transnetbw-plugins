@@ -1,62 +1,61 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import {
-    OscdBasicDataTable,
-    OscdIconActionButton
-  } from '@oscd-transnet-plugins/oscd-component';
-  import DataTypeFilter from '../../type-details/components/ui/DataTypeFilter.svelte';
-  import { TypeKind } from '../../../shared/model';
-  import { DataTypeService } from '../../type-details/services/type.service';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import DefaultTypeDetails from './DefaultTypeDetails.svelte';
+  import DefaultTypesList from './DefaultTypesList.svelte';
+  import CreateDefaultTypeDialog from './CreateDefaultTypeDialog.svelte';
+  import type { CreateDefaultTypeDialogResult, CreateDefaultTypeInfo } from '../types';
 
-  type DefaultTypeRow = {
-    id: string;
-    instance: string;
-    version?: string;
-    root: string;
-    description: string;
-    subtypes: number;
+  interface View {
+    mode: 'list' | 'details';
+    selectedId?: string;
+    createInfo?: CreateDefaultTypeInfo;
   }
 
-  let data: DefaultTypeRow[] = $state([]);
-  let errorMsg = $state('');
-  let loading = $state(true);
-  let query = $state('');
-  let typeKind = $state<TypeKind | undefined>(undefined);
-  let instance = $state<string | undefined>(undefined);
+  let view: View = $state({ mode: 'list', selectedId: undefined, createInfo: undefined });
 
-  const columns = [
-    { header: 'Type', key: 'type' },
-    { header: 'Instance', key: 'instance' },
-    { header: 'Root-ID', key: 'root' },
-    { header: 'Version', key: 'version' },
-    { header: 'Sub-Types', key: 'subtypes' }
-  ];
+  const navigateToDetails = (id?: string) => {
+    view = { mode: 'details', selectedId: id, createInfo: undefined };
+  };
 
-  onMount(() => {
-  });
+  const navigateToCreate = (createInfo: CreateDefaultTypeInfo) => {
+    view = { mode: 'details', createInfo, selectedId: undefined };
+  };
 
-
-  function handleOnDelete(event: {item: DefaultTypeRow}) {
+  const navigateToList = () => {
+    view = { mode: 'list', selectedId: undefined, createInfo: undefined };
   }
 
+  async function createDefaultType() {
+    const result = await openDialog(CreateDefaultTypeDialog)
+    if (result.type !== 'confirm') {
+      return;
+    }
+    const info = result.data as CreateDefaultTypeDialogResult;
+    if (info.action === 'open-existing') {
+      navigateToDetails(info.existingDefaultTypeId);
+    } else if (info.action === 'create') {
+      navigateToCreate({
+        kind: info.kind!,
+        instance: info.instance!,
+        version: info.initialVersion!,
+      });
+    }
+  }
 </script>
 
 <div class="container">
-<DataTypeFilter bind:query bind:dataTypeKind={typeKind} bind:instance service={new DataTypeService(null, null)}/>
-
-<OscdBasicDataTable
-  items={[]}
-  {columns}
-  {loading}
-  emptyText="No default types found."
-  headerBg="rgba(0,0,0,0.1)"
-  rowBg="#ffffff"
-  hasActions
->
-  {#snippet actions(item)}
-    <OscdIconActionButton type="delete" fillColor="red" tooltip="Delete Default" onClick={() => handleOnDelete(item)} />
-  {/snippet}
-</OscdBasicDataTable>
+{#if view.mode === 'details'}
+  <DefaultTypeDetails
+    id={view.selectedId}
+    createInfo={view.createInfo}
+    onBack={navigateToList}
+  />
+{:else}
+  <DefaultTypesList 
+    onCreateDefaultType={createDefaultType}
+    onEditDefaultType={(id) => navigateToDetails(id)}
+  />
+{/if}
 </div>
 
 <style>
