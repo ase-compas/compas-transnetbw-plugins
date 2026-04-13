@@ -29,10 +29,8 @@ export class DefaultTypeService {
   constructor(private customResourceService: CustomResourceService) {}
 
   async list(params: DefaultTypeFilterParam): Promise<DefaultTypeList> {
-    const listDataParams = {
+    const listDataParams: ListDataParams = {
       type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
-      kind: params.kind,
-      instance: params.instance,
       page: params.page,
       size: params.size
     }
