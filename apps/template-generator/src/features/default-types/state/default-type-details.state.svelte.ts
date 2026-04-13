@@ -223,7 +223,7 @@ export class DefaultTypeDetailsState {
             return null;
         }
 
-        const rootId = this.loadedDocRootId;
+        const rootId = this.info.rootId;
         if(!rootId) {
             throw new Error("Root ID is not defined");
         }
