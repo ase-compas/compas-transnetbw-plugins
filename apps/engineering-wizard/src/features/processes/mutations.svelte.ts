@@ -244,10 +244,10 @@ export function setInternalPlugins(plugins: CoMPASPlugin[]) {
 
 export function setRunningProcess(
   process: Process | null,
-  lastSelectedPluginId: string | null = null,
+  lastPluginId: string | null = null,
 ): void {
   runningEngineeringProcess.process = process ?? null;
-  runningEngineeringProcess.lastSelectedPluginId = lastSelectedPluginId ?? null;
+  runningEngineeringProcess.lastSelectedPluginId = lastPluginId ?? null;
 }
 
 export function setLastSelectedPluginId(pluginId: string | null): void {

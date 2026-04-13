@@ -4,7 +4,6 @@
   import WorkflowActions from '../../components/shared/WorkflowActions.svelte';
   import {
     engineeringProcessEditing,
-    engineeringProcesses,
     selectedEngineeringProcess
   } from '../../features/processes/stores.svelte';
   import { editorTabs } from '../../features/workflow/layout.svelte';
@@ -83,10 +82,6 @@
     selectedPluginId = plugin.id;
   }
 
-  function refreshSelectedProcess(procId: string) {
-    selectedEngineeringProcess.process =
-      engineeringProcesses.processes?.find((p) => p.id === procId) ?? null;
-  }
 
   async function handleAddValidationClick() {
     const proc = selectedEngineeringProcess.process;
@@ -97,7 +92,6 @@
 
     if (result?.type === 'confirm') {
       addValidationToPluginInProcess(proc.id, pl.id, result.data);
-      refreshSelectedProcess(proc.id);
     }
   }
 
@@ -114,7 +108,6 @@
 
     if (result?.type === 'confirm') {
       updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
-      refreshSelectedProcess(proc.id);
     }
   }
 
@@ -133,7 +126,6 @@
     if (result?.type !== 'confirm') return;
 
     removeValidationFromPluginInProcess(proc.id, pl.id, index);
-    refreshSelectedProcess(proc.id);
   }
 
 </script>

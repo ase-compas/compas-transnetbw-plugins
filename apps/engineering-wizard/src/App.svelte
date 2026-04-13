@@ -3,7 +3,7 @@
   import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
-  import { getXPathRules, type Process } from '@oscd-transnet-plugins/shared';
+  import { type Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
@@ -99,9 +99,7 @@
       if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id });
     }
 
-    if (!selectedEngineeringProcess.process || selectedEngineeringProcess.process.id !== process.id) {
-      selectedEngineeringProcess.process = process;
-    }
+    selectedEngineeringProcess.process = process;
 
     const plugins = getPluginsForProcess(selectedEngineeringProcess.process);
     openDialog(WorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
