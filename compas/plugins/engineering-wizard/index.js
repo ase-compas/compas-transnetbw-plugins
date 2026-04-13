@@ -16185,7 +16185,7 @@ function Jf(i, e) {
   }
   E(i, d);
 }
-const Zo = _e({ doc: null }), Pv = "http://localhost:8081/api/v1/validate";
+const Zo = _e({ doc: null }), Pv = "http://compas.northeurope.cloudapp.azure.com/compas-validation-service/api/v1/validate";
 Pv.startsWith("http://") && console.warn(
   "[validationService] Insecure HTTP endpoint in use. Set VITE_VALIDATION_API_URL to an HTTPS URL for production."
 );
