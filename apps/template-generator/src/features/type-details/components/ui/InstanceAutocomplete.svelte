@@ -12,7 +12,7 @@
     disabled?: boolean;
     required?: boolean;
     onEnter?: () => void;
-    onChange?: (value: InstanceDetails) => void;
+    onChange?: (value: InstanceDetails | null | undefined) => void;
     service: DataTypeService;
   }
 
@@ -41,7 +41,7 @@
     autocompleteEl?.focus?.();
   }
 
- 
+
 function loadOptions(kind: TypeKind, initial?: string) {
     const nextOptions = service.listInstanceTypeDetails(kind);
     options = nextOptions;
