@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { tick } from 'svelte';
   import { OscdArrowDownIcon, OscdCloseIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   let {
@@ -14,11 +14,6 @@
     value?: string | null;
   }>();
 
-  let uuid = $state(null);
-
-  onMount(() => {
-    uuid = crypto.randomUUID();
-  });
 
   const hasValue = $derived(value !== null);
 
