@@ -32,7 +32,7 @@
     "run:location-viewer": "nx run location-viewer:serve",
     "run:template-generator": "nx run template-generator:serve",
     "run:type-distributor": "nx run type-distributor:serve",
-    "test:all": "nx run-many --target=test --projects='oscd-template-generator,oscd-services'"
+    "test:all": "nx run-many --target=test --projects='template-generator,oscd-services'"
   },
   "private": true,
   "dependencies": {
