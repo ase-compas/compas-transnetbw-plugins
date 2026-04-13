@@ -12,6 +12,10 @@ export interface DefaultTypeInfo {
     version: string;
 }
 
+export type ApiCallResult<T = void> =
+    | { ok: true; data: T }
+    | { ok: false; message: string; cause?: unknown };
+
 /**
  * UI state for DefaultTypeDetails.
  *
@@ -32,6 +36,7 @@ export class DefaultTypeDetailsState {
     dirty: boolean = $state(false); // true if doc has unsaved changes
 
     loading: boolean = $state(false);
+    saving: boolean = $state(false);
     error: string | null = $state(null);
     info: DefaultTypeInfo | undefined = $state(undefined);
     loadedDocRootId: string | undefined = $state(undefined);
@@ -50,7 +55,7 @@ export class DefaultTypeDetailsState {
     currentVersion: Version | null = $state(null);
 
     canSave = $derived.by(() => {
-        return ((this.isEditMode && this.dirty) || this.isCreateMode) && this.info?.rootId !== ''; 
+        return !this.saving && ((this.isEditMode && this.dirty) || this.isCreateMode) && this.info?.rootId !== '';
     });
 
     /**
@@ -61,7 +66,7 @@ export class DefaultTypeDetailsState {
      * - populates info/doc
      * - sets docIsReady
      */
-    async loadById(id: string) {
+    async loadById(id: string): Promise<ApiCallResult<{ id: string }>> {
         this.dirty = false;
         this.mode = 'edit';
         this.loading = true;
@@ -84,9 +89,11 @@ export class DefaultTypeDetailsState {
 
             this.doc = result.doc;
             this.loadedDocRootId = this.info.rootId;
+            return { ok: true, data: { id } };
         } catch (error) {
-            console.log(error)
-            this.error = "Failed to load default type";
+            const message = 'Failed to load default type';
+            this.error = message;
+            return { ok: false, message, cause: error };
         } finally {
             this.loading = false;
         }
@@ -102,11 +109,20 @@ export class DefaultTypeDetailsState {
      * Loads a specific version of the default type.
      * @param version 
      */
-    async loadByVersion(version: string) {
+    async loadByVersion(version: string): Promise<ApiCallResult<{ version: string }>> {
         const versionInfo = $state.snapshot(this.typeVersions)?.content?.find(v => v.version === version);
-        if (versionInfo && versionInfo.id) {
-            await this.loadById(versionInfo.id);
+        if (!versionInfo?.id) {
+            const message = `Version "${version}" not found.`;
+            this.error = message;
+            return { ok: false, message };
         }
+
+        const result = await this.loadById(versionInfo.id);
+        if (!result.ok) {
+            return result;
+        }
+
+        return { ok: true, data: { version } };
     }   
 
     /**
@@ -136,8 +152,7 @@ export class DefaultTypeDetailsState {
      * Uploads current in-memory document as a new default type version,
      * then reloads the persisted entity to refresh local state.
      */
-    async saveAsNewVersion(saveInfo: DefaulteTypeSaveInfo) {
-        this.prepareDocForUpload();
+    async saveAsNewVersion(saveInfo: DefaulteTypeSaveInfo): Promise<ApiCallResult<{ id: string }>> {
         const infoSnapshot = $state.snapshot(this.info);
 
         if (!infoSnapshot) {
@@ -152,6 +167,9 @@ export class DefaultTypeDetailsState {
             throw new Error("Cannot save in view mode");
         }
 
+        this.error = null;
+        this.saving = true;
+
         const updploadInfo = {
             kind: infoSnapshot.kind,
             instance: infoSnapshot.instance,
@@ -161,8 +179,28 @@ export class DefaultTypeDetailsState {
             version: this.isCreateMode ? infoSnapshot.version : undefined,
         };
 
-        const result = await defaultTypeService.upload(updploadInfo);
-        await this.loadById(result.id!);
+        try {
+            this.prepareDocForUpload();
+            const result = await defaultTypeService.upload(updploadInfo);
+
+            if (!result.id) {
+                return { ok: false, message: 'Failed to save default type.' };
+            }
+
+            const reloadResult = await this.loadById(result.id);
+            if (!reloadResult.ok) {
+                return { ok: false, message: `Failed to reload latest state: ${reloadResult.message}` };
+            }
+
+            this.dirty = false;
+            return { ok: true, data: { id: result.id } };
+        } catch (error) {
+            const message = 'Failed to save default type';
+            this.error = message;
+            return { ok: false, message, cause: error };
+        } finally {
+            this.saving = false;
+        }
     }
 
     /**
@@ -239,5 +277,4 @@ export class DefaultTypeDetailsState {
         }
         return undefined;
     }
-
 }
