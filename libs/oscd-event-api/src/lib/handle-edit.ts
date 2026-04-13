@@ -9,24 +9,24 @@ import {
   type RemoveV2,
   type SetAttributesV2,
   type SetTextContentV2,
-} from './edit.js';
+} from './edit';
 
 function handleSetTextContent({
   element,
   textContent,
 }: SetTextContentV2): (SetTextContentV2 | InsertV2)[] {
   const { childNodes } = element;
-  
+
   const restoreChildNodes: InsertV2[] = Array.from(childNodes).map((node) => ({
     parent: element,
     node,
     reference: null,
   }));
-  
+
   element.textContent = textContent;
-  
+
   const undoTextContent: SetTextContentV2 = { element, textContent: '' };
-  
+
   return [undoTextContent, ...restoreChildNodes];
 }
 
@@ -56,14 +56,14 @@ function handleSetAttributes({
 }: SetAttributesV2): SetAttributesV2 {
   const oldAttributes = { ...attributes };
   const oldAttributesNS = { ...attributesNS };
-  
+
   // save element's non-prefixed attributes for undo
   Object.keys(attributes)
     .reverse()
     .forEach((name) => {
       oldAttributes[name] = element.getAttribute(name);
     });
-  
+
   // change element's non-prefixed attributes
   for (const entry of Object.entries(attributes)) {
     try {
@@ -75,7 +75,7 @@ function handleSetAttributes({
       delete oldAttributes[entry[0]];
     }
   }
-  
+
   // save element's namespaced attributes for undo
   Object.entries(attributesNS).forEach(([ns, attrs]) => {
     Object.keys(attrs!)
@@ -93,7 +93,7 @@ function handleSetAttributes({
         delete oldAttributesNS[ns]![name];
       });
   });
-  
+
   // change element's namespaced attributes
   for (const nsEntry of Object.entries(attributesNS)) {
     const [ns, attrs] = nsEntry as [
@@ -184,6 +184,6 @@ export function handleEditV2(edit: EditV2): EditV2 {
   if (isSetAttributesV2(edit)) return handleSetAttributes(edit);
   if (isSetTextContentV2(edit)) return handleSetTextContent(edit);
   if (isComplexV2(edit)) return edit.map((edit) => handleEditV2(edit)).reverse();
-  
+
   return [];
 }
