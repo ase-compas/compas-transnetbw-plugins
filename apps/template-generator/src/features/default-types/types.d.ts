@@ -73,7 +73,3 @@ export interface DefaultTypeList {
   page?: number;
   size?: number;
 }
-
-export interface DetailsConfig {
-  includeHeader?: boolean;
-}

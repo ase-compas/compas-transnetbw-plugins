@@ -13,18 +13,33 @@
   import { closeDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
   import TypeRenameDialog from './dialogs/TypeRenameDialog.svelte';
   import type { DocState } from 'apps/template-generator/src/shared/states/doc.state.svelte';
+  import type { DetailsConfig } from '../types';
 
   interface Props {
     typeId: string;
     mode?: ViewMode
     service: DataTypeService
     docState: DocState
+    config?: DetailsConfig
   }
 
-  let { typeId, mode = 'view', service, docState }: Props = $props();
+  let { typeId, mode = 'view', service, docState, config }: Props = $props();
   const typeDetailsState = new DataTypeDetailsState(service);
   let suspendedReloadDepth = 0;
   let hasPendingReload = false;
+
+  function getPropagatedConfig(): DetailsConfig | undefined {
+    const propagated = config?.propagateToChildren;
+    if (!propagated) {
+      return undefined;
+    }
+
+    return {
+      ...propagated,
+      // Keep propagation active for all descendants opened from this details view.
+      propagateToChildren: propagated,
+    };
+  }
 
   async function renameType() {
     if (!typeId) {
@@ -62,7 +77,7 @@
     suspendedReloadDepth += 1;
 
     try {
-      await openTypeDetailsDrawer(typeIdToOpen, typeKind, service, docState, mode);
+      await openTypeDetailsDrawer(typeIdToOpen, typeKind, service, docState, mode, getPropagatedConfig());
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {
@@ -124,7 +139,7 @@
   }
 
   $effect(() => {
-    if(docState && docState.editCount) {
+    if(docState && docState.editCount >= -1) {
       if (suspendedReloadDepth > 0) {
         hasPendingReload = true;
         return;
@@ -138,6 +153,7 @@
 
   onMount(() => {
     document.addEventListener('click', handleUnMakenWhenClickedOutside);
+    typeDetailsState.setConfig(config);
     typeDetailsState.setViewMode(mode);
     typeDetailsState.loadById(typeId);
     return () => {
@@ -162,6 +178,7 @@
   }}
   onInstanceTypeChange={(instanceType) => typeDetailsState.updateInstanceType(instanceType)}
   service={service}
+  config={config}
 >
   {#if typeDetailsState.loadedType?.typeKind === TypeKind.EnumType}
     <EnumTypeDetails

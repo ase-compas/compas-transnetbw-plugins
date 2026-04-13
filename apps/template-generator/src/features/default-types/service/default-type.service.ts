@@ -70,6 +70,17 @@ export class DefaultTypeService {
       size: latestDefaultTypesMap.size
     }
   }
+
+  async listVersions(kind: TypeKind, instance: string): Promise<DefaultTypeList> {
+    const name = this.keyToName(kind, instance);
+    const result = await this.customResourceService.listData({
+      type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
+      name,
+      page: 0,
+      size: 100
+    });
+    return this.mapListResponseDefaultTypeList(result);
+  }
   
   private isVersionGreater(versionA: string, versionB: string): boolean {
     const aParts = versionA.split('.').map(Number);

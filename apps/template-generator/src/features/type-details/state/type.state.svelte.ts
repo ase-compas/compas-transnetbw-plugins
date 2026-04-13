@@ -7,6 +7,7 @@ import type {
   TData,
   TItem,
 } from '../components/tboard/types';
+import type { DetailsConfig } from "../types";
 
 /**
  * State management for DataType details view.
@@ -34,6 +35,7 @@ export class DataTypeDetailsState {
     viewMode = $state<ViewMode>('view');
 
     data = $state<TData>({ refs: [], DOType: [], DAType: [], EnumType: [] });
+    config: DetailsConfig = $state({});
 
     error = $state<string | null>(null);
     loading = $state<boolean>(true);
@@ -44,7 +46,7 @@ export class DataTypeDetailsState {
     // ==================
 
     // Columns depend on the loaded type's kind and the current view mode (edit/view)
-    columns = $derived.by(() => buildColumns(this.loadedType?.typeKind ?? TypeKind.LNodeType, this.isEditMode));
+    columns = $derived.by(() => buildColumns(this.loadedType?.typeKind ?? TypeKind.LNodeType, this.isEditMode, this.config));
 
     isEditMode = $derived<boolean>(this.viewMode === 'edit');
 
@@ -230,6 +232,10 @@ export class DataTypeDetailsState {
         return this.simpleTypesMap.get(member.reference) ?? null;
     }
 
+    public setConfig(config: DetailsConfig) {
+        this.config = config;
+    }
+
     // ==================
     // helper functions
     // ==================
@@ -304,6 +310,7 @@ export class DataTypeDetailsState {
             canSelect: this.isEditMode,
             canUnlink: this.isEditMode && ref.requiresReference && ref.isConfigured && !!ref.reference, // can only unlink if there is a reference to clear
             referencable: ref.requiresReference,
+            canApplyDefaults: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
             acceptDrop: (target: TBoardItemContext) => {
                 const targetType = this.simpleTypesMap.get(target.itemId);
                 if (!targetType) return false;
@@ -321,7 +328,7 @@ export class DataTypeDetailsState {
             canClick: this.isEditMode,
             canUnlink: false,
             canEdit: true,
-            canSetDefault: this.isEditMode,
+            canSetDefault: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
         };
     }
 }

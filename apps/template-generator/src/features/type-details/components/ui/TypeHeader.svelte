@@ -14,6 +14,7 @@
     typeId: string;
     instanceType?: string | null;
     isEditMode?: boolean;
+    toggleEditModeSwitchDisabled?: boolean;
     showSetAsDefault?: boolean;
     setAsDefaultDisabled?: boolean;
 
@@ -33,6 +34,8 @@
     isEditMode = $bindable(false),
     showSetAsDefault = true,
     setAsDefaultDisabled = false,
+    toggleEditModeSwitchDisabled = false,
+
 
     onModeChange = (_: 'edit' | 'view') => {},
     onInstanceTypeChange = (_: string) => {},
@@ -74,6 +77,7 @@
         id={`edit-mode-switch-${typeId}`}
         label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
+        disabled={toggleEditModeSwitchDisabled}
       />
       {#if showSetAsDefault}
         {#if setAsDefaultDisabled}
