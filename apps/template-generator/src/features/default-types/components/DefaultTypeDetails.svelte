@@ -212,6 +212,7 @@
               versions={detailsState.versions}
               currentVersion={detailsState.currentVersion}
               onVersionChange={async (version) => await loadVersion(version)}
+              disabled={detailsState.isCreateMode}
             />
           </div>
         </div>

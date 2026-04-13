@@ -11,6 +11,7 @@
     onVersionChange?: (version: Version) => void;
     loading?: boolean;
     loadingCurrentVersion?: boolean;
+    disabled?: boolean;
     onOpenMenu?: () => void;
   }
 
@@ -20,6 +21,7 @@
     onVersionChange = () => {},
     loading = false,
     loadingCurrentVersion = false,
+    disabled = false,
     onOpenMenu = () => {},
   }: Props = $props();
 
@@ -28,6 +30,7 @@
 
 <Button
   variant="unelevated"
+  disabled={disabled}
   onclick={() => {
     onOpenMenu();
     surface.setOpen(true);
