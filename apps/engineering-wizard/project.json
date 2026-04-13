@@ -52,11 +52,11 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "engineering-wizard:build"
+        "buildTarget": "engineering-wizard:build:production"
       },
       "configurations": {
         "development": {
-          "buildTarget": "engineering-wizard:build:development"
+          "buildTarget": "engineering-wizard:build:production"
         },
         "production": {
           "buildTarget": "engineering-wizard:build:production"

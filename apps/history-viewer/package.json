@@ -1,6 +1,7 @@
 {
   "name": "version-editor",
   "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "prepare": "npm run smui-theme-light && npm run smui-theme-dark",
     "smui-theme-light": "smui-theme compile public/smui.css -i src/theme",

@@ -31,6 +31,7 @@ export default defineConfig(async () => {
 
     build: {
       outDir: '../../dist/apps/template-generator',
+      emptyOutDir: true,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,

@@ -27,6 +27,7 @@ export default (defineConfig as any)(async () => {
 
     build: {
       outDir: '../../dist/apps/engineering-wizard',
+      emptyOutDir: true,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,

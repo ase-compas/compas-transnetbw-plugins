@@ -52,11 +52,11 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "location-viewer:build"
+        "buildTarget": "location-viewer:build:production"
       },
       "configurations": {
         "development": {
-          "buildTarget": "location-viewer:build:development"
+          "buildTarget": "location-viewer:build:production"
         },
         "production": {
           "buildTarget": "location-viewer:build:production"

@@ -52,11 +52,11 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "archive-explorer:build"
+        "buildTarget": "archive-explorer:build:production"
       },
       "configurations": {
         "development": {
-          "buildTarget": "archive-explorer:build:development"
+          "buildTarget": "archive-explorer:build:production"
         },
         "production": {
           "buildTarget": "archive-explorer:build:production"

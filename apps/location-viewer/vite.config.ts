@@ -26,6 +26,7 @@ export default defineConfig(async () => {
 
     build: {
       outDir: '../../dist/apps/location-viewer',
+      emptyOutDir: true,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,

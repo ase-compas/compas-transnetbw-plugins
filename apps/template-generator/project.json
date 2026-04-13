@@ -52,11 +52,11 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "template-generator:build"
+        "buildTarget": "template-generator:build:production"
       },
       "configurations": {
         "development": {
-          "buildTarget": "template-generator:build:development"
+          "buildTarget": "template-generator:build:production"
         },
         "production": {
           "buildTarget": "template-generator:build:production"

@@ -26,6 +26,7 @@ export default defineConfig(async () => {
 
     build: {
       outDir: '../../dist/apps/archive-explorer',
+      emptyOutDir: true,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,

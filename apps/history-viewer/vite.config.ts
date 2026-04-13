@@ -26,6 +26,7 @@ export default defineConfig(async () => {
 
     build: {
       outDir: '../../dist/apps/version-editor',
+      emptyOutDir: true,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,

@@ -26,6 +26,7 @@ export default (defineConfig as any)(async () => {
 
     build: {
       outDir: '../../dist/apps/type-distributor',
+      emptyOutDir: true,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,

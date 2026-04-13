@@ -52,11 +52,11 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "history-viewer:build"
+        "buildTarget": "history-viewer:build:production"
       },
       "configurations": {
         "development": {
-          "buildTarget": "history-viewer:build:development"
+          "buildTarget": "history-viewer:build:production"
         },
         "production": {
           "buildTarget": "history-viewer:build:production"

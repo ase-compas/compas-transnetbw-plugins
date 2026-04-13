@@ -52,11 +52,11 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "type-distributor:build"
+        "buildTarget": "type-distributor:build:production"
       },
       "configurations": {
         "development": {
-          "buildTarget": "type-distributor:build:development"
+          "buildTarget": "type-distributor:build:production"
         },
         "production": {
           "buildTarget": "type-distributor:build:production"

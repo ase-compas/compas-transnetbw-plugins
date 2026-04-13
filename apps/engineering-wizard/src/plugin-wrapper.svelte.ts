@@ -122,7 +122,7 @@ function createStyleLinkElement(): HTMLLinkElement {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.type = 'text/css';
-  link.href = new URL('./style.css', import.meta.url).href;
+  link.href = new URL(/* @vite-ignore */ './style.css', import.meta.url).href;
   link.id = `${pkg.name}-v${pkg.version}-style`;
   return link;
 }
