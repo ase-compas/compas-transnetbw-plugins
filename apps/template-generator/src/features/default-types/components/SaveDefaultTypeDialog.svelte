@@ -5,6 +5,8 @@
   import Radio from '@smui/radio';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import HelperText from '@smui/textfield/helper-text';
+  import CharacterCounter from '@smui/textfield/character-counter';
+
 
   interface Props {
     open?: boolean;
@@ -89,8 +91,11 @@
           input$maxlength={100}
           bind:value={description}
           label="Description (optional)"
-          style="width: 100%;"
-        />
+          style="width: 100%;">
+          {#snippet helper()}
+            <CharacterCounter>0 / 100</CharacterCounter>
+          {/snippet}
+        </Textfield>
       </div>
         {#if error}
           <HelperText validationMsg>{error}</HelperText>
