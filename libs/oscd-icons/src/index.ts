@@ -35,3 +35,4 @@ export { default as OscdArrowForwardIcon } from './oscd-arrow-forward-icon/OscdA
 export { default as OscdArrowBackIcon } from './oscd-arrow-back-icon/OscdArrowBackIcon.svelte'
 export { default as OscdHomeIcon } from './oscd-home-icon/OscdHomeIcon.svelte';
 export { default as OscdChevronRightIcon } from './oscd-chevron-right-icon/OscdChevronRightIcon.svelte';
+export { default as OscdArchiveIcon } from './oscd-archive-icon/OscdArchiveIcon.svelte';

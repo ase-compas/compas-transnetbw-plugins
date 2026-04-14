@@ -98,6 +98,8 @@
                             <OscdEditIcon svgStyles="margin: unset" />
                           {:else if action.icon === "delete"}
                             <OscdDeleteIcon svgStyles="margin: unset" />
+                          {:else if action.icon === "archive"}
+                            <OscdArchiveIcon svgStyles="margin: unset" />
                           {:else}
                             <OscdRefreshIcon svgStyles="margin: unset" />
                           {/if}
@@ -154,6 +156,7 @@
     OscdRemoveIcon,
     OscdEditIcon,
     OscdDeleteIcon,
+    OscdArchiveIcon 
   } from "@oscd-transnet-plugins/oscd-icons";
   import { OscdButton, OscdIconButton } from '@oscd-transnet-plugins/oscd-component';
   import { v4 as uuidv4 } from 'uuid';

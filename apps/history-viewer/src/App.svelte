@@ -35,8 +35,12 @@
   import type { FilterDefinition } from '../../../libs/oscd-component/src/oscd-filter-builder/types';
   import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+    import {
+    ArchiveExplorerService,
+  } from '@oscd-transnet-plugins/oscd-archive-explorer';
 
   const versionEditorDataService = VersionEditorFileService.getInstance();
+  const archiveExplorerService = ArchiveExplorerService.getInstance();
 
   let rowData: FileSearchResult[] = [];
   let historyData: FileSearchResult[] = [];
@@ -124,7 +128,8 @@
     { icon: 'edit', tooltip: 'Open', callback: (row) => openDoc(row), disabled: (row) => !row.available },
     { icon: 'find-in-page', tooltip: 'View History', callback: (row) => getHistoryByUuid(row), disabled: () => false },
     { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
-    { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false }
+    { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false },
+    { icon: 'archive', tooltip: 'Archive', callback: (row) => archiveFile(row), disabled: () => false }
   ];
 
   const historyRowActions = [
@@ -176,6 +181,35 @@
        }
      });
   }
+
+  async function archiveFile(row: FileSearchResult) {
+    console.debug('archiveResource: ', row);
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Confirm Archiving',
+      message: `Archive latest version "${row.filename}" (v${row.version})? This keeps the file in History and does not delete it.`,
+      confirmActionText: 'Archive',
+      cancelActionText: 'Cancel',
+    });
+    if (result.type !== 'confirm') return;
+
+    archiveExplorerService.archiveSclFile(row.uuid, row.version)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          searchTrigger$.next(null);
+          toastService.success("Archived resource", `Resource "${row.filename} (${row.uuid})" has been archived.`);
+        },
+        error: (err) => {
+          console.error(`Failed to archive resource "${row.filename} (${row.uuid})":`, err);
+          const errResponse = err?.response;
+          if (errResponse?.errorMessages && errResponse?.errorMessages.length > 0) {
+            toastService.error("Archiving failed", errResponse.errorMessages[0].message);
+          } else {
+            toastService.error("Archiving failed", `Failed to archive resource "${row.filename} (${row.uuid})".`);
+          }
+        }
+      });
+   }
 
 
   function downloadBlob(row: FileSearchResult) {
