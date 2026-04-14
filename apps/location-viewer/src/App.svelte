@@ -56,7 +56,7 @@
     switchMap(searchParams =>
       locationViewerService.searchResources(searchParams).pipe(
         tap((data: SclResourceModel[]) => {
-          searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID));
+          searchResourceStore.set(data.filter((item) => item.location !== selectedLocationUUID && item.deleted === false));
         }),
         finalize(() => {
           loading = false;
