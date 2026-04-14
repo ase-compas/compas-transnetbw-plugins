@@ -227,8 +227,12 @@ export class DefaultTypeDetailsState {
         if(!rootId) {
             throw new Error("Root ID is not defined");
         }
+        if (!this.loadedDocRootId) {
+            throw new Error("Document root element is not defined");
+        }
+
         const dataTypeElements = listDataTypeElements(this.doc);
-        const reachableIds = collectReachableTypeIds(this.doc, rootId);
+        const reachableIds = collectReachableTypeIds(this.doc, this.loadedDocRootId);
         const removableTypeIds = dataTypeElements.flatMap((element) => {
             const id = element.getAttribute('id');
             return id && !reachableIds.has(id) ? [id] : [];
