@@ -151,11 +151,11 @@
         bind:value={initialVersion}
         bind:invalid={initialVersionInvalid}
         updateInvalid
-        input$pattern="[0-9]+\.[0-9]+\.[0-9]+"
+        input$pattern="[1-9]\d*\.[0-9]+\.[0-9]+"
       >
         {#snippet helper()}
           <HelperText validationMsg>
-            Version must follow semantic versioning (e.g. 1.0.0)
+            Enter a version in the format Major.Minor.Patch (e.g. 1.0.0). Major must be 1 or higher.
           </HelperText>
         {/snippet}
       </Textfield>
