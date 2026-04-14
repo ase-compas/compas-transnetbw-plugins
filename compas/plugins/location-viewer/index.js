@@ -20368,7 +20368,7 @@ function nI(t, e) {
     }),
     my((A) => a.searchResources(A).pipe(
       du((M) => {
-        h.set(M.filter((G) => G.location !== u));
+        h.set(M.filter((G) => G.location !== u && G.deleted === !1));
       }),
       fy(() => {
         K(l, !1);
