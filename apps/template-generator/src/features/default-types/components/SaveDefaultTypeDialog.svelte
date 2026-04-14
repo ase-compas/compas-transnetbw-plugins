@@ -42,6 +42,14 @@
     closeDialog('cancel');
   }
 
+  let valid = $derived.by(() => {
+    if (mode === 'update') {
+      return selectedVersionUpdate !== '' && selectedVersionUpdate !== null;
+    } else {
+      return true;
+    }
+  });
+
 </script>
 
 <OscdBaseDialog
@@ -53,6 +61,7 @@
   onConfirm={handleConfirm}
   onCancel={handleClose}
   onClose={handleClose}
+  confirmDisabled={!valid}
 >
   {#snippet content()}
     <div class="content">
@@ -114,7 +123,7 @@
         {/if}
       </section>
       <div class="update-info">
-      <h4>Versioning</h4>
+      <h4>Versioning <span class="required-indicator" aria-hidden="true">*</span></h4>
       <div class="update-info__content">
       {#if mode === 'update'}
         <List class="demo-list" radioList>
@@ -137,6 +146,7 @@
             <Label>Patch change</Label>
           </Item>
         </List>
+        <HelperText>Choose one: Major, Minor, or Patch.</HelperText>
       {:else}
       <Textfield
           variant="outlined"
@@ -178,6 +188,11 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .required-indicator {
+    font-weight: 700;
+    margin-left: 0.15rem;
   }
 
   .summary {
