@@ -2,21 +2,24 @@
   import OscdFilterTab from '../../../../../../../libs/oscd-component/src/oscd-filter-tab/OscdFilterTab.svelte';
   import type { FilterDefinition } from '../../../../../../../libs/oscd-component/src/oscd-filter-builder/types';
   import { TypeKind } from '../../../../shared/model';
-  import { getDataTypeService } from '../../services/type.service';
+  import { DataTypeService } from '../../services/type.service';
 
   interface Props {
     query?: string;
+    queryLabel?: string;
     dataTypeKind?: TypeKind;
     instance?: string;
+    service: DataTypeService;
   }
 
-  const service = getDataTypeService();
   const navigationTabs = ['LNode Types', 'DO Types', 'DA Types', 'Enum Types', 'All Types'];
 
   let {
     query = $bindable(''),
+    queryLabel = "Search by name, type kind, or instance type",
     dataTypeKind = $bindable(),
     instance = $bindable(),
+    service,
   }: Props = $props();
 
   let activeNavigationTab = $state<string>(typeKindToTab(dataTypeKind));
@@ -104,7 +107,7 @@
 </script>
 
 <OscdFilterTab
-  searchLabel="Search by name, type kind, or instance type"
+  searchLabel={queryLabel}
   bind:searchText={query}
   {navigationTabs}
   bind:activeNavigationTab={activeNavigationTab}

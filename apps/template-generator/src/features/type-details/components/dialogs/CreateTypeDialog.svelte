@@ -6,15 +6,17 @@
   } from '../ui/CreateTypeForm.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { getIdSettingsState } from '../../../id-format-settings/id-format-settings.state.svelte.js';
+  import type { DataTypeService } from '../../services/type.service';
 
   const idSettingsState = getIdSettingsState();
 
   interface Props {
     open?: boolean;
     typeKind: TypeKind;
+    service: DataTypeService; 
   }
 
-  let { open = $bindable(false), typeKind }: Props = $props();
+  let { open = $bindable(false), typeKind, service }: Props = $props();
 
   let valid = $state<boolean>(false);
   let formDetails = $state<CreateTypeFormSubmitDetails | null>(null);
@@ -65,6 +67,7 @@
         onSubmit={handleFormSubmit}
         generateId={(instance) =>
           idSettingsState.generateId(typeKind, { instance })}
+        {service}
       />
     </div>
   {/snippet}

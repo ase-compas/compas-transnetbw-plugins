@@ -1,17 +1,20 @@
 <script lang="ts">
-    import { TypeKind, type InstanceDetails } from "../../../../shared/model";
+  import { TypeKind, type InstanceDetails } from "../../../../shared/model";
   import OscdBaseDialog from "../../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte";
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
   import InstanceAutocomplete from "../ui/InstanceAutocomplete.svelte";
+  import type { DataTypeService } from "../../services/type.service";
 
     interface Props {
         open?: boolean;
         typeKind: TypeKind;
+        service: DataTypeService
     }
 
     let {
         open = $bindable(false),
-        typeKind
+        typeKind,
+        service
     }: Props = $props();
 
     let selectedInstance: InstanceDetails | undefined = $state(undefined);
@@ -37,6 +40,7 @@
                 {typeKind}
                 bind:value={selectedInstance}
                 required
+                {service}
             />
         </div>
       {/snippet}

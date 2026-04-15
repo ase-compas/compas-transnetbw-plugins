@@ -1,5 +1,5 @@
 import { TypeKind, type DataTypeDetails, type DataTypeMember, type SimpleDataType, type ViewMode } from "../../../shared/model";
-import { getDataTypeService, type DataTypeService } from "../services/type.service";
+import { type DataTypeService } from "../services/type.service";
 import { buildColumns } from "../type.columns";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import type {
@@ -7,6 +7,7 @@ import type {
   TData,
   TItem,
 } from '../components/tboard/types';
+import type { DetailsConfig } from "../types";
 
 /**
  * State management for DataType details view.
@@ -16,7 +17,7 @@ export class DataTypeDetailsState {
 
     private readonly dataTypeService: DataTypeService;
 
-    constructor(dataTypeService: DataTypeService = getDataTypeService()) {
+    constructor(dataTypeService: DataTypeService) {
         this.dataTypeService = dataTypeService;
     }
 
@@ -34,6 +35,7 @@ export class DataTypeDetailsState {
     viewMode = $state<ViewMode>('view');
 
     data = $state<TData>({ refs: [], DOType: [], DAType: [], EnumType: [] });
+    config: DetailsConfig = $state({});
 
     error = $state<string | null>(null);
     loading = $state<boolean>(true);
@@ -44,7 +46,7 @@ export class DataTypeDetailsState {
     // ==================
 
     // Columns depend on the loaded type's kind and the current view mode (edit/view)
-    columns = $derived.by(() => buildColumns(this.loadedType?.typeKind ?? TypeKind.LNodeType, this.isEditMode));
+    columns = $derived.by(() => buildColumns(this.loadedType?.typeKind ?? TypeKind.LNodeType, this.isEditMode, this.config));
 
     isEditMode = $derived<boolean>(this.viewMode === 'edit');
 
@@ -168,7 +170,7 @@ export class DataTypeDetailsState {
             this.dataTypeService.delete(this.loadedType.id);
             this.loadedType = null;
         } catch (err) {
-            console.error(`Error deleting type ${this.loadedType.id}:`, err instanceof Error ? err.message : String(err));
+            console.error(`Error deleting type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
         }
     }
 
@@ -228,6 +230,10 @@ export class DataTypeDetailsState {
         const member = this.getMember(memberName);
         if (!member || !member.reference) return null;
         return this.simpleTypesMap.get(member.reference) ?? null;
+    }
+
+    public setConfig(config: DetailsConfig) {
+        this.config = config;
     }
 
     // ==================
@@ -304,6 +310,7 @@ export class DataTypeDetailsState {
             canSelect: this.isEditMode,
             canUnlink: this.isEditMode && ref.requiresReference && ref.isConfigured && !!ref.reference, // can only unlink if there is a reference to clear
             referencable: ref.requiresReference,
+            canApplyDefaults: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
             acceptDrop: (target: TBoardItemContext) => {
                 const targetType = this.simpleTypesMap.get(target.itemId);
                 if (!targetType) return false;
@@ -321,7 +328,7 @@ export class DataTypeDetailsState {
             canClick: this.isEditMode,
             canUnlink: false,
             canEdit: true,
-            canSetDefault: this.isEditMode,
+            canSetDefault: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
         };
     }
 }

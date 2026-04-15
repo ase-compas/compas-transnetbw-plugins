@@ -440,12 +440,11 @@
     line-height: 16px !important;
     letter-spacing: 0.02em !important;
     border-radius: 6px !important;
-
   }
 
   :global(.oscd-card-item .reference-button.has-reference) {
-    color: var(--on-primary) !important;
-    border-color: var(--on-primary) !important;
+    color: var(--mdc-theme-on-primary) !important;
+    border-color: var(--mdc-theme-on-primary) !important;
     text-transform: none !important;
   }
 

@@ -11,6 +11,7 @@
     formFieldClass?: string;
     icons?: boolean;
     preventToggleOnClick?: boolean;
+    disabled?: boolean;
 
     onChange?: (newChecked: boolean) => void;
   }
@@ -24,6 +25,7 @@
     formFieldClass = '',
     icons = false,
     preventToggleOnClick = false,
+    disabled = false,
 
     onChange = (_) => {},
   }: Props = $props();
@@ -41,6 +43,7 @@
 <FormField class={formFieldClass}>
   <Switch
     id={id}
+    disabled={disabled}
     class={switchClass}
     bind:checked
     {icons}

@@ -2,19 +2,23 @@ import { openDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
 import { toastService } from "@oscd-transnet-plugins/oscd-services/toast";
 import { OscdConfirmDialog } from "@oscd-transnet-plugins/oscd-component";
 import { TypeKind, type SimpleDataType } from "../../shared/model";
-import { getDataTypeService, type DataTypeService } from "./services/type.service";
+import { type DataTypeService } from "./services/type.service";
 import CreateTypeDialog from "./components/dialogs/CreateTypeDialog.svelte";
 import TypeRenameDialog from './components/dialogs/TypeRenameDialog.svelte';
 import { openTypeDetailsDrawer } from "./type-details.drawer";
+import { DocState } from "../../shared/states/doc.state.svelte";
 
 
 export async function createDataTypeWorkflow(
     typeKind: TypeKind,
+    service: DataTypeService,
+    docState: DocState,
     instanceType?: string
 ): Promise<{ id: string, instanceType: string, createFromDefault: boolean } | null> {
     const result = await openDialog(CreateTypeDialog, {
         typeKind,
         instanceType,
+        service
     });
 
     if (result.type !== 'confirm') {
@@ -23,7 +27,7 @@ export async function createDataTypeWorkflow(
 
 
     try {
-        getDataTypeService().create(
+        service.create(
             typeKind,
             result.data.instanceType,
             result.data.id
@@ -37,14 +41,14 @@ export async function createDataTypeWorkflow(
         );
     }
 
-    openTypeDetailsDrawer(result.data.id, typeKind, 'edit');
+    openTypeDetailsDrawer(result.data.id, typeKind, service, docState, 'edit');
 
     return result.data;
 }
 
 export async function renameDataTypeWorkflow(
     dataType: SimpleDataType,
-    service: DataTypeService = getDataTypeService(),
+    service: DataTypeService,
 ): Promise<string | null> {
     const result = await openDialog(TypeRenameDialog, {
         typeId: dataType.id,
@@ -75,7 +79,7 @@ export async function renameDataTypeWorkflow(
 
 export async function deleteDataTypeWorkflow(
     dataType: SimpleDataType,
-    service: DataTypeService = getDataTypeService(),
+    service: DataTypeService,
 ): Promise<boolean> {
     const result = await openDialog(OscdConfirmDialog, {
         title: `Confirm Delete ${TypeKind.toTypeKindLabel(dataType.typeKind)}`,
@@ -108,7 +112,7 @@ export async function deleteDataTypeWorkflow(
 
 export function duplicateDataType(
     dataType: SimpleDataType,
-    service: DataTypeService = getDataTypeService(),
+    service: DataTypeService,
 ): void {
     try {
         service.duplicate(dataType.id);

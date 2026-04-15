@@ -6,23 +6,40 @@
   import { createDataTypeWorkflow } from '../type.workflows';
   import { openTypeDetailsDrawer } from '../type-details.drawer';
   import AddReferenceDialog from './dialogs/AddReferenceDialog.svelte';
-  import { getDataTypeService } from '../services/type.service';
+  import { DataTypeService } from '../services/type.service';
   import TypeDetailsLayout from './TypeDetailsLayout.svelte';
   import TBoardTypeDetailsView from './TBoardTypeDetailsView.svelte';
   import EnumTypeDetails from './EnumTypeDetails.svelte';
   import { closeDrawer } from '@oscd-transnet-plugins/oscd-services/drawer';
-  import { pluginStore } from '../../../shared/states/plugin.state.svelte.js';
   import TypeRenameDialog from './dialogs/TypeRenameDialog.svelte';
+  import type { DocState } from 'apps/template-generator/src/shared/states/doc.state.svelte';
+  import type { DetailsConfig } from '../types';
 
   interface Props {
     typeId: string;
     mode?: ViewMode
+    service: DataTypeService
+    docState: DocState
+    config?: DetailsConfig
   }
 
-  let { typeId, mode = 'view' }: Props = $props();
-  const typeDetailsState = new DataTypeDetailsState();
+  let { typeId, mode = 'view', service, docState, config }: Props = $props();
+  const typeDetailsState = new DataTypeDetailsState(service);
   let suspendedReloadDepth = 0;
   let hasPendingReload = false;
+
+  function getPropagatedConfig(): DetailsConfig | undefined {
+    const propagated = config?.propagateToChildren;
+    if (!propagated) {
+      return undefined;
+    }
+
+    return {
+      ...propagated,
+      // Keep propagation active for all descendants opened from this details view.
+      propagateToChildren: propagated,
+    };
+  }
 
   async function renameType() {
     if (!typeId) {
@@ -42,7 +59,7 @@
   }
 
   async function createNewDataType(columnId: string) {
-    await createDataTypeWorkflow(columnId as TypeKind);
+    await createDataTypeWorkflow(columnId as TypeKind, service, docState);
   }
 
   /**
@@ -60,7 +77,7 @@
     suspendedReloadDepth += 1;
 
     try {
-      await openTypeDetailsDrawer(typeIdToOpen, typeKind, mode);
+      await openTypeDetailsDrawer(typeIdToOpen, typeKind, service, docState, mode, getPropagatedConfig());
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {
@@ -83,6 +100,7 @@
     const result = await openDialog(AddReferenceDialog, {
       typeId: typeId,
       memberName: memberId,
+      service
     });
 
     if (result.type !== 'confirm') {
@@ -90,7 +108,7 @@
     }
 
     if (result.data.mode === 'create') {
-      getDataTypeService().create(member.refKind, result.data.instanceType, result.data.id)
+      service.create(member.refKind, result.data.instanceType, result.data.id)
       await openTypeById(result.data.id, member.refKind, 'edit');
     }
     typeDetailsState.setRefernence(memberId, result.data.id);
@@ -120,11 +138,8 @@
       }
   }
 
-  onMount(() => {
-    document.addEventListener('click', handleUnMakenWhenClickedOutside);
-    typeDetailsState.setViewMode(mode);
-
-    const unsubscribe = pluginStore.updates.subscribe(() => {
+  $effect(() => {
+    if(docState && docState.editCount >= -1) {
       if (suspendedReloadDepth > 0) {
         hasPendingReload = true;
         return;
@@ -133,10 +148,16 @@
       if (typeId) {
         typeDetailsState.loadById(typeId);
       }
-    });
+    }
+  });
+
+  onMount(() => {
+    document.addEventListener('click', handleUnMakenWhenClickedOutside);
+    typeDetailsState.setConfig(config);
+    typeDetailsState.setViewMode(mode);
+    typeDetailsState.loadById(typeId);
     return () => {
       document.removeEventListener('click', handleUnMakenWhenClickedOutside);
-      unsubscribe();
     };
   });
 
@@ -156,6 +177,8 @@
     typeDetailsState.deleteType();
   }}
   onInstanceTypeChange={(instanceType) => typeDetailsState.updateInstanceType(instanceType)}
+  service={service}
+  config={config}
 >
   {#if typeDetailsState.loadedType?.typeKind === TypeKind.EnumType}
     <EnumTypeDetails

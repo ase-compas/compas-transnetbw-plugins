@@ -1,0 +1,36 @@
+{
+  "name": "api-compas-custom-resource",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/compas/custom-resource/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": [
+          "openapi-generator-cli generate -g typescript-fetch -i docs/plugins-custom-resources.yaml --additional-properties \"hideGenerationTimestamp=true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/api/compas/custom-resource/src/generated"
+        ],
+        "parallel": false
+      },
+      "inputs": [
+        "{workspaceRoot}/docs/plugin-custom-resources.yaml",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{projectRoot}/src/generated"]
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["generate"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/api/compas/custom-resource",
+        "main": "libs/api/compas/custom-resource/src/index.ts",
+        "tsConfig": "libs/api/compas/custom-resource/tsconfig.lib.json",
+        "assets": ["libs/api/compas/custom-resource/*.md"]
+      }
+    }
+  }
+}

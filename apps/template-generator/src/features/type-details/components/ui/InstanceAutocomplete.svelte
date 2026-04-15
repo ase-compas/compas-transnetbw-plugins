@@ -1,8 +1,8 @@
 <script lang="ts">
   import Autocomplete from '@smui-extra/autocomplete';
   import { type InstanceDetails, type TypeKind } from '../../../../shared/model';
-  import { getDataTypeService } from '../../services/type.service';
   import { onMount } from 'svelte';
+  import type { DataTypeService } from '../../services/type.service';
 
   interface Props {
     typeKind: TypeKind;
@@ -12,6 +12,8 @@
     disabled?: boolean;
     required?: boolean;
     onEnter?: () => void;
+    onChange?: (value: InstanceDetails | null | undefined) => void;
+    service: DataTypeService;
   }
 
   let {
@@ -22,11 +24,12 @@
     disabled = false,
     required = true,
     onEnter = () => {},
+    onChange = () => {},
+    service
   }: Props = $props();
 
-  const service = getDataTypeService();
-
   let options: InstanceDetails[] = $state([]);
+  let mounted = $state(false);
 
     // svelte-ignore non_reactive_update
     /** @type {HTMLElement} */
@@ -38,18 +41,35 @@
     autocompleteEl?.focus?.();
   }
 
-  onMount(() => {
-    options = getDataTypeService().listInstanceTypeDetails(typeKind);
-    if (initialInstanceType) {
-      const initialOption = options.find((opt) => opt.instance === initialInstanceType);
-      if (initialOption) {
-        value = initialOption;
-      }
+
+function loadOptions(kind: TypeKind, initial?: string) {
+    const nextOptions = service.listInstanceTypeDetails(kind);
+    options = nextOptions;
+    if (initial) {
+      const initialOption = nextOptions.find(opt => opt.instance === initial) ?? null;
+      value = initialOption;
     }
+  }
+
+  $effect(() => {
+    if (mounted) {
+      onChange(value);
+    }
+  });
+
+  $effect(() => {
+    if (typeKind) {
+      loadOptions(typeKind, initialInstanceType);
+    }
+  });
+
+  onMount(() => {
+    loadOptions(typeKind, initialInstanceType);
+    mounted = true;
   });
 </script>
 
-{#if options.length !== 0}
+{#if disabled || options.length !== 0}
 <Autocomplete
   bind:this={autocompleteEl}
   bind:value={value}

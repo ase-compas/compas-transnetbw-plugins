@@ -1,5 +1,6 @@
 import { TypeKind } from "../../shared/model";
 import type { TColumnConfig } from './components/tboard/types';
+import type { DetailsConfig } from "./types";
 
 type TypeColumnDefinition = {
     id: TypeKind;
@@ -88,7 +89,7 @@ const COLUMN_LAYOUT_BY_TYPE: Record<TypeKind, ColumnLayoutDefinition> = {
     },
 };
 
-export function buildColumns(typeKind: TypeKind, isEditMode: boolean): TColumnConfig[] {
+export function buildColumns(typeKind: TypeKind, isEditMode: boolean, config: DetailsConfig): TColumnConfig[] {
     const layout = COLUMN_LAYOUT_BY_TYPE[typeKind];
 
     const refsColumn: TColumnConfig = {

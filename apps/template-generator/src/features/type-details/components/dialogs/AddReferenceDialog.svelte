@@ -5,7 +5,7 @@
   import FormField from '@smui/form-field';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import CreateTypeForm, { type CreateTypeFormSubmitDetails } from '../ui/CreateTypeForm.svelte';
-  import { getDataTypeService } from '../../services/type.service';
+  import { DataTypeService } from '../../services/type.service';
   import type { SimpleDataType, TypeKind } from '../../../../shared/model';
   import { getIdSettingsState } from '../../../id-format-settings/id-format-settings.state.svelte.js';
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -18,11 +18,11 @@
     open?: boolean;
     typeId: string;
     memberName: string;
+    service: DataTypeService;
   }
 
-  let { open = $bindable(false), typeId, memberName }: Props = $props();
+  let { open = $bindable(false), typeId, memberName, service }: Props = $props();
 
-  const service = getDataTypeService();
 
   let mode = $state<Mode>('select');
   let loading = $state<boolean>(true);
@@ -199,6 +199,7 @@
                 instance,
                 reference: memberName,
               })}
+            {service}
           />
         {/if}
       {/if}

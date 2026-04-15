@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { TypeKind, type SimpleDataType } from '../../../shared/model';
-  import { getDataTypeService } from '../services/type.service';
+  import { DataTypeService } from '../services/type.service';
   import {
     OscdBasicDataTable,
     OscdIconActionButton,
@@ -17,9 +17,15 @@
   import { openTypeDetailsDrawer } from '../type-details.drawer';
   import DataTypeFilter from './ui/DataTypeFilter.svelte';
   import { getIdSettingsState } from '../../id-format-settings/id-format-settings.state.svelte';
-  import { pluginStore } from '../../../shared/states/plugin.state.svelte.js';
+  import { DocState } from '../../../shared/states/doc.state.svelte';
 
-  const service = getDataTypeService();
+  interface Props {
+    service: DataTypeService;
+    docState: DocState;
+  } 
+
+  let { service, docState }: Props = $props();
+
 
   let dataTypes = $state<SimpleDataType[]>([]);
   let error = $state<string | null>(null);
@@ -66,7 +72,7 @@
   async function openTypeDetails(type: SimpleDataType) {
     suspendedReloadDepth += 1;
     try {
-      await openTypeDetailsDrawer(type.id, type.typeKind, 'edit');
+      await openTypeDetailsDrawer(type.id, type.typeKind, service, docState, 'edit');
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {
@@ -77,7 +83,7 @@
   }
 
   async function createLNodeType() {
-    const createResult = await createDataTypeWorkflow(TypeKind.LNodeType);
+    const createResult = await createDataTypeWorkflow(TypeKind.LNodeType, service, docState);
     if (!createResult) {
       return;
     }
@@ -93,23 +99,31 @@
     }
   });
 
-  onMount(() => {
-    getIdSettingsState().load();
-    loadDataTypes();
-    const unsubscribe = pluginStore.updates.subscribe(() => {
+    $effect(() => {
+    if(docState && docState.editCount > -1) {
       if (suspendedReloadDepth > 0) {
         hasPendingReload = true;
         return;
       }
-
       loadDataTypes();
-    });
-    return () => unsubscribe();
+    }
+  });
+
+  $effect(() => {
+    if(docState.doc) {
+      loadDataTypes();
+    }
+  });
+
+
+  onMount(() => {
+    getIdSettingsState().load();
+    loadDataTypes();
   });
 </script>
 
 <div class="toolbar">
-  <DataTypeFilter bind:query bind:dataTypeKind bind:instance />
+  <DataTypeFilter bind:query bind:dataTypeKind bind:instance {service} />
 
   <OscdButton variant="unelevated" callback={createLNodeType}>
     ADD NEW LNODE TYPE
