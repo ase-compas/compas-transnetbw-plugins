@@ -137,6 +137,14 @@
         typeDetailsState.clearMarkedMember();
       }
   }
+  
+  function hanldeColumnActionClick(columnId: string) {
+    if (columnId === 'refs') {
+      typeDetailsState.applyAllDefaultTypes();
+    } else {
+      createNewDataType(columnId);
+    }
+  }
 
   $effect(() => {
     if(docState && docState.editCount >= -1) {
@@ -196,7 +204,7 @@
       onItemSelectChange={(itemId) => typeDetailsState.toggleMember(itemId)}
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}
-      onColumnActionClick={createNewDataType}
+      onColumnActionClick={(columnId) => hanldeColumnActionClick(columnId)}
       onItemApplyDefaults={(itemId) => typeDetailsState.applyDefaultType(itemId)}
       onItemEditClick={(itemId) => {
         const typeKind = typeDetailsState.getType(itemId)?.typeKind;

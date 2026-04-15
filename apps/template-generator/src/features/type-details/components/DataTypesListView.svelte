@@ -72,7 +72,12 @@
   async function openTypeDetails(type: SimpleDataType) {
     suspendedReloadDepth += 1;
     try {
-      await openTypeDetailsDrawer(type.id, type.typeKind, service, docState, 'edit');
+      await openTypeDetailsDrawer(type.id, type.typeKind, service, docState, 'edit', {
+        defaultTypeFeatureEnabled: true,
+        propagateToChildren: {
+          defaultTypeFeatureEnabled: true
+        }
+      });
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {

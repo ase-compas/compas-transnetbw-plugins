@@ -108,6 +108,16 @@ export class DataTypeDetailsState {
         }
     }
 
+    public applyAllDefaultTypes() {
+        if (!this.loadedType) return;
+        const memberNames = this.loadedType.members.map(m => m.name);
+        try {
+            this.dataTypeService.applyDefaultTypes(this.loadedType.id, memberNames);
+        } catch (err) {
+            console.error(`Error applying default types for type ${this.loadedType.id}:`, err instanceof Error ? err.message : String(err));
+        }
+    }
+
     public setReferenceToMarkedMember(typeId: string) {
         if (!this.markedMemberId) {
             console.warn('No member is marked to set reference');

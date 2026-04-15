@@ -41,7 +41,12 @@ export async function createDataTypeWorkflow(
         );
     }
 
-    openTypeDetailsDrawer(result.data.id, typeKind, service, docState, 'edit');
+    openTypeDetailsDrawer(result.data.id, typeKind, service, docState, 'edit', {
+        defaultTypeFeatureEnabled: true,
+        propagateToChildren: {
+            defaultTypeFeatureEnabled: true
+        }
+    });
 
     return result.data;
 }
