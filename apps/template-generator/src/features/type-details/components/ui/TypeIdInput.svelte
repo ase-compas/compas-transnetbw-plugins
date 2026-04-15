@@ -85,6 +85,7 @@
   input$maxlength={ID_MAX_LENGTH}
   {disabled}
   onblur={() => (typeIdTouched = true)}
+  invalid={!isTypeIdValid}
 >
   {#snippet trailingIcon()}
     {#if generateId}
