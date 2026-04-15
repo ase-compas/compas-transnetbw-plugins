@@ -63,6 +63,7 @@ export interface DefaultTypeUploadResponse {
 
 
 export interface DefaultTypeDetails extends DefaultType {
+  rootId: string;
   doc: XMLDocument
 }
 

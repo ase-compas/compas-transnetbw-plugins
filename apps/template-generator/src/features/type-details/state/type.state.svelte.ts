@@ -99,6 +99,15 @@ export class DataTypeDetailsState {
         }
     }
 
+    public applyDefaultType(memberName: string) {
+        if (!this.loadedType) return;
+        try {
+            this.dataTypeService.applyDefaultTypes(this.loadedType.id, [memberName]);
+        } catch (err) {
+            console.error(`Error applying default type for member ${memberName} in type ${this.loadedType.id}:`, err instanceof Error ? err.message : String(err));
+        }
+    }
+
     public setReferenceToMarkedMember(typeId: string) {
         if (!this.markedMemberId) {
             console.warn('No member is marked to set reference');

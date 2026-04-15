@@ -13,6 +13,7 @@
     onItemAddReferenceClick: (itemId: string) => void;
     onColumnActionClick: (columnId: string) => void;
     onItemEditClick: (itemId: string) => void;
+    onItemApplyDefaults: (itemId: string) => void;
   }
 
   let {
@@ -26,6 +27,7 @@
     onItemAddReferenceClick,
     onColumnActionClick,
     onItemEditClick,
+    onItemApplyDefaults,
   }: Props = $props();
 </script>
 
@@ -40,4 +42,5 @@
   onItemAddReferenceClick={(e) => onItemAddReferenceClick(e.itemId)}
   onItemEdit={(e) => onItemEditClick(e.itemId)}
   onColumnActionClick={(e) => onColumnActionClick(e.columnId)}
+  onItemApplyDefaults={(e) => onItemApplyDefaults(e.itemId)}
 />

@@ -10,6 +10,7 @@ import type {
 import { TypeKind } from '../../../shared/model';
 import { UploadDataContentTypeEnum } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import { isVersionGreater, sortByVersionDescending } from '../utils/version.utils';
+import { excractRootIdFromXml } from '../utils/default-type-scl.utils';
 
 interface DefaultKey {
   kind: TypeKind;
@@ -101,8 +102,14 @@ export class DefaultTypeService {
       throw Error("could not parse default type content. invalid xml format")
     }
 
+    const rootId = excractRootIdFromXml(doc);
+    if (!rootId) {
+      throw Error("could not extract root ID from default type XML document. Missing 'id' attribute on root element");
+    }
+
     return {
       id: result.id,
+      rootId: rootId,
       kind: key.kind,
       instance: key.instance,
       description: result.description,
@@ -113,7 +120,7 @@ export class DefaultTypeService {
     }
   }
 
-  async getLatestVersionByKindAndInstance(kind: TypeKind, instance: string): Promise<DefaultType | null> {
+  async getLatestByKindAndInstance(kind: TypeKind, instance: string): Promise<DefaultTypeDetails | null> {
     const list = await this.getByKindAndInstance(kind, instance);
     if (list.content === undefined || list.content.length === 0) {
       return null;

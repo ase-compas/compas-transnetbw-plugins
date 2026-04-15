@@ -197,6 +197,7 @@
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}
       onColumnActionClick={createNewDataType}
+      onItemApplyDefaults={(itemId) => typeDetailsState.applyDefaultType(itemId)}
       onItemEditClick={(itemId) => {
         const typeKind = typeDetailsState.getType(itemId)?.typeKind;
         openTypeById(itemId, typeKind, typeDetailsState.viewMode)
