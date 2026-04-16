@@ -80,7 +80,7 @@
     }
 
     try {
-      const result = await defaultTypeService.getLatestVersionByKindAndInstance(
+      const result = await defaultTypeService.getLatestByKindAndInstance(
         snapshotKind,
         snapshotInstance,
       );
