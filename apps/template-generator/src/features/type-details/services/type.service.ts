@@ -6,26 +6,39 @@ import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, element
 import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../../../shared/constants";
 import { INSTANCE_DESCRIPTIONS } from "../../../assets/instance-descriptions";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
-import { defaultTypeService as bootstrapDefaultTypeService } from "../../../bootstrap";
-import type { DefaultTypeService } from "../../default-types/service/default-type.service";
-import type { DefaultTypeDetails } from "../../default-types/types";
+import { DefaultTypeManagerService, type ResolveDefaultPlan } from "./default-type-manager-service";
+
+export interface ApplyDefaultTypesPreviewEntry {
+    refTypeKey: string;
+    refTypeKind: TypeKind;
+    objectType: string;
+    memberNames: string[];
+    plan: ResolveDefaultPlan;
+}
+
+export interface ApplyDefaultTypesPreview {
+    dataTypeId: string;
+    entries: ApplyDefaultTypesPreviewEntry[];
+}
 
 
 
 export class DataTypeService {
 
     private readonly nsdSchemaRegistry: NsdSchemaRegistry;
+    private readonly defaultTypeManagerService: DefaultTypeManagerService;
 
     constructor(
         private doc: XMLDocument,
         private readonly hostElement: HTMLElement,
-        private readonly defaultTypeService: DefaultTypeService = bootstrapDefaultTypeService
     ) {
         this.nsdSchemaRegistry = new NsdSchemaRegistry();
+        this.defaultTypeManagerService = new DefaultTypeManagerService(doc);
     }
 
     setDoc(doc: XMLDocument): void {
         this.doc = doc;
+        this.defaultTypeManagerService.setDocument(doc);
     }
 
     // Queries
@@ -561,56 +574,126 @@ export class DataTypeService {
     }
 
     /**
-     * This applies the default types to the givem member names of the given data type.
+     * This applies the default types to the given member names of the given data type.
      * Collect members with the same (typeKind, instanceType) and applies the default type for this combination.
      * Look up if an existing default type exists in the document (specified in private field)
      * fetch the current default type from the service
      * validate if the local default type version is valid
      * if latest use existing, if not use the new one
      * set reference of the member to the default type
-     * find a nice abstraction:
-     * 1. load details
-     * 2. edit pahse take the detials and creat the edit events
-     * @param id 
-     * @param memberNames 
+     * @param id The ID of the DataType to apply default types to.
+     * @param memberNames The names of the members to apply default types to.
      */
     async applyDefaultTypes(id: string, memberNames: string[]): Promise<void> {
-        const memberByRefName = this.getMembersByRefType(id, memberNames);
-        const defaultTypeByRefTypeKey = await this.getDefaultTypesByTypeKey(memberByRefName);
-        const edits: EditV2[] = this.buildApplyDefaultEdits(id, memberByRefName, defaultTypeByRefTypeKey);
-        if(edits.length === 0) {
-            console.warn(`No edits to apply default types for DataType ${id} and members ${memberNames.join(', ')}`);
+        const preview = await this.getApplyDefaultTypesPreview(id, memberNames);
+        this.applyDefaultTypesFromPreview(preview);
+    }
+
+    /**
+     * Step 1 of default application workflow.
+     * Builds preview entries that can be shown to the user for confirmation.
+     */
+    async getApplyDefaultTypesPreview(id: string, memberNames: string[]): Promise<ApplyDefaultTypesPreview> {
+        const memberByRefType = this.getMembersByRefType(id, memberNames);
+        if (memberByRefType.size === 0) {
+            return { dataTypeId: id, entries: [] };
+        }
+
+        const plansByRefType = await this.resolveDefaultTypePlans(memberByRefType);
+        const entries: ApplyDefaultTypesPreviewEntry[] = Array.from(memberByRefType.entries())
+            .map(([refTypeKey, memberInfo]) => {
+                const plan = plansByRefType.get(refTypeKey);
+                if (!plan) {
+                    return null;
+                }
+
+                return {
+                    refTypeKey,
+                    refTypeKind: memberInfo.refTypeKind,
+                    objectType: memberInfo.objectType,
+                    memberNames: [...memberInfo.memberNames],
+                    plan,
+                };
+            })
+            .filter((entry): entry is ApplyDefaultTypesPreviewEntry => !!entry);
+
+        return { dataTypeId: id, entries };
+    }
+
+    /**
+     * Step 2 of default application workflow.
+     * Applies a previously built preview.
+     */
+    applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
+        if (preview.entries.length === 0) {
+            console.warn(`No members with reference types found for DataType ${preview.dataTypeId}`);
             return;
         }
+
+        const members = new Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>();
+        const plans = new Map<string, ResolveDefaultPlan>();
+
+        preview.entries.forEach(entry => {
+            members.set(entry.refTypeKey, {
+                refTypeKind: entry.refTypeKind,
+                objectType: entry.objectType,
+                memberNames: [...entry.memberNames],
+            });
+            plans.set(entry.refTypeKey, entry.plan);
+        });
+
+        const edits = this.buildApplyDefaultEditsFromPlans(preview.dataTypeId, members, plans);
+        if (edits.length === 0) {
+            console.warn(`No edits to apply default types for DataType ${preview.dataTypeId}`);
+            return;
+        }
+
         createAndDispatchEditEvent(this.hostElement, edits, {
-            title: `Apply default types to members of DataType ${id}`,
+            title: `Apply default types to members of DataType ${preview.dataTypeId}`,
             createHistoryEntry: true,
         });
     }
 
-    private buildApplyDefaultEdits(
+    /**
+     * Resolves default type plans for each reference type key.
+     * Returns a map keyed by reference type key (e.g., "DOType:Measurement").
+     */
+    private async resolveDefaultTypePlans(
+        memberByRefType: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
+    ): Promise<Map<string, ResolveDefaultPlan>> {
+        const plans = new Map<string, ResolveDefaultPlan>();
+
+        await Promise.all(
+            Array.from(memberByRefType.entries()).map(async ([refTypeKey, { refTypeKind, objectType }]) => {
+                const plan = await this.defaultTypeManagerService.resolve({ kind: refTypeKind, instance: objectType });
+                plans.set(refTypeKey, plan);
+            })
+        );
+
+        return plans;
+    }
+
+    private buildApplyDefaultEditsFromPlans(
         id: string,
         members: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
-        defaults: Map<string, DefaultTypeDetails>,
+        plans: Map<string, ResolveDefaultPlan>,
     ): EditV2[] {
-        const edits: EditV2[] = [];
+        const allEdits: EditV2[] = [];
 
-        // Phase 1: import all data type elements from every default type document
-        const typeElements = Array.from(defaults.values()).flatMap(dt => listDataTypeElements(dt.doc));
+        // 1: Apply all plans in batch (type elements inserted once, respecting order)
+        const plansArray = Array.from(plans.values());
+        const { edits: planEdits, effectiveRootIds } = this.defaultTypeManagerService.applyPlans(plansArray);
+        allEdits.push(...planEdits);
 
-        this.handleIdConflictsForImportedTypes(typeElements);
-
-        edits.push(...insertTypeElements(this.doc, typeElements));
-
-        // Phase 2: set the rootId reference on each member of the target DataType
+        // 2: Build and add member reference edits
         const parentElement = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(parentElement);
         const nsdDefinitions = instanceType ? this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType) : null;
 
         for (const [refTypeKey, { memberNames }] of members) {
-            const defaultType = defaults.get(refTypeKey);
-            if (!defaultType) {
-                console.warn(`No default type found for ${refTypeKey}, skipping members: ${memberNames.join(', ')}`);
+            const effectiveRootId = effectiveRootIds.get(refTypeKey);
+            if (!effectiveRootId) {
+                console.warn(`No effective root ID for ${refTypeKey}, skipping members: ${memberNames.join(', ')}`);
                 continue;
             }
 
@@ -620,11 +703,11 @@ export class DataTypeService {
                     console.warn(`No NSD definition found for member ${memberName} in DataType ${id}, skipping`);
                     continue;
                 }
-                edits.push(...this.buildSetMemberTypeEdits(parentElement, memberName, memberDefinition, defaultType.rootId));
+                allEdits.push(...this.buildSetMemberTypeEdits(parentElement, memberName, memberDefinition, effectiveRootId));
             }
         }
 
-        return edits;
+        return allEdits;
     }
 
     private buildSetMemberTypeEdits(
@@ -647,46 +730,6 @@ export class DataTypeService {
             node: newMemberElement,
             reference: null,
         }];
-    }
-
-    private handleIdConflictsForImportedTypes(typeElements: Element[]): void {
-        const existingIds = new Set(listDataTypeElements(this.doc).map(el => el.getAttribute('id')).filter((id): id is string => !!id));
-        typeElements.forEach(el => {
-            const id = el.getAttribute('id');
-            if (id && existingIds.has(id)) {
-                const newId = this.generateDuplicateId(id);
-                console.warn(`ID conflict for imported DataType ${id}, renaming to ${newId}`);
-                el.setAttribute('id', newId);
-                existingIds.add(newId);
-        }
-        });
-    }
-
-    /**
-     * Fetches the latest DefaultTypeDetails for each unique reference type key in parallel.
-     * Keys for which the fetch fails or returns null are omitted from the result.
-     */
-    private async getDefaultTypesByTypeKey(
-        membersByRefType: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
-    ): Promise<Map<string, DefaultTypeDetails>> {
-        const result = new Map<string, DefaultTypeDetails>();
-
-        await Promise.all(
-            Array.from(membersByRefType.entries()).map(async ([key, { refTypeKind, objectType }]) => {
-                try {
-                    const latestDefault = await this.defaultTypeService.getLatestByKindAndInstance(refTypeKind, objectType);
-                    if (latestDefault) {
-                        result.set(key, latestDefault);
-                    } else {
-                        console.warn(`No default type found for ${refTypeKind}:${objectType}`);
-                    }
-                } catch (err) {
-                    console.error(`Failed to fetch default type for ${refTypeKind}:${objectType}:`, err instanceof Error ? err.message : String(err));
-                }
-            }),
-        );
-
-        return result;
     }
 
     /**

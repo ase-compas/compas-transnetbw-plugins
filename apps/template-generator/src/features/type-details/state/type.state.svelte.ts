@@ -1,5 +1,5 @@
 import { TypeKind, type DataTypeDetails, type DataTypeMember, type SimpleDataType, type ViewMode } from "../../../shared/model";
-import { type DataTypeService } from "../services/type.service";
+import { type ApplyDefaultTypesPreview, type DataTypeService } from "../services/type.service";
 import { buildColumns } from "../type.columns";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import type {
@@ -99,23 +99,44 @@ export class DataTypeDetailsState {
         }
     }
 
-    public applyDefaultType(memberName: string) {
-        if (!this.loadedType) return;
+    public async applyDefaultType(memberName: string) {
         try {
-            this.dataTypeService.applyDefaultTypes(this.loadedType.id, [memberName]);
+            const preview = await this.getApplyDefaultTypesPreview([memberName]);
+            if (!preview) return;
+            this.applyDefaultTypesFromPreview(preview);
         } catch (err) {
-            console.error(`Error applying default type for member ${memberName} in type ${this.loadedType.id}:`, err instanceof Error ? err.message : String(err));
+            console.error(`Error applying default type for member ${memberName} in type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
         }
     }
 
-    public applyAllDefaultTypes() {
-        if (!this.loadedType) return;
-        const memberNames = this.loadedType.members.map(m => m.name);
+    public async applyAllDefaultTypes() {
         try {
-            this.dataTypeService.applyDefaultTypes(this.loadedType.id, memberNames);
+            const preview = await this.getApplyDefaultTypesPreview();
+            if (!preview) return;
+            this.applyDefaultTypesFromPreview(preview);
         } catch (err) {
-            console.error(`Error applying default types for type ${this.loadedType.id}:`, err instanceof Error ? err.message : String(err));
+            console.error(`Error applying default types for type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
         }
+    }
+
+    /**
+     * Build preview for applying default types.
+     * If memberNames is omitted, preview includes all members of the loaded type.
+     */
+    public async getApplyDefaultTypesPreview(memberNames?: string[]): Promise<ApplyDefaultTypesPreview | null> {
+        if (!this.loadedType) {
+            return null;
+        }
+
+        const targetMemberNames = memberNames ?? this.loadedType.members.map(member => member.name);
+        return this.dataTypeService.getApplyDefaultTypesPreview(this.loadedType.id, targetMemberNames);
+    }
+
+    /**
+     * Apply a previously built preview.
+     */
+    public applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
+        this.dataTypeService.applyDefaultTypesFromPreview(preview);
     }
 
     public setReferenceToMarkedMember(typeId: string) {

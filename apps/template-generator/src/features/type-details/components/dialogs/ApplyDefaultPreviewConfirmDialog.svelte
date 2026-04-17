@@ -1,0 +1,357 @@
+<script lang="ts">
+  import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
+  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
+  import type { ApplyScenario } from '../../services/default-type-manager-service';
+  import type { ApplyDefaultTypesPreview, ApplyDefaultTypesPreviewEntry } from "../../services/type.service";
+
+  interface Props {
+    open?: boolean;
+    applyDefaultPreview: ApplyDefaultTypesPreview
+  }
+
+  let {
+    open = $bindable(false),
+    applyDefaultPreview,
+  }: Props = $props();
+
+  const scenarioMeta: Record<ApplyScenario, { label: string; tone: 'neutral' | 'success' | 'warning' | 'danger' }> = {
+    ADD_DB_DEFAULT: { label: 'Add DB default', tone: 'success' },
+    USE_LOCAL_DEFAULT: { label: 'Use local default', tone: 'neutral' },
+    UPGRADE_TO_DB_DEFAULT: { label: 'Upgrade to DB default', tone: 'warning' },
+    REMOVE_LOCAL_DEFAULT: { label: 'No default available', tone: 'danger' },
+  };
+
+  type MemberPreviewRow = {
+    memberName: string;
+    refTypeKey: string;
+    refTypeLabel: string;
+    scenario: ApplyScenario;
+    source: 'DB' | 'Local' | 'None';
+    version: string | null;
+    localVersion: string | null;
+    dbVersion: string | null;
+    referenceId: string | null;
+    willApply: boolean;
+  };
+
+  const entries = $derived(applyDefaultPreview?.entries ?? []);
+
+  function buildMemberRows(previewEntries: ApplyDefaultTypesPreviewEntry[]): MemberPreviewRow[] {
+    return previewEntries
+      .flatMap((entry) =>
+        entry.memberNames.map((memberName) => {
+          const scenario = entry.plan.scenario;
+          const source = scenario === 'USE_LOCAL_DEFAULT'
+            ? 'Local'
+            : scenario === 'ADD_DB_DEFAULT' || scenario === 'UPGRADE_TO_DB_DEFAULT'
+              ? 'DB'
+              : 'None';
+          const version = source === 'Local'
+            ? entry.plan.localBefore?.version ?? null
+            : source === 'DB'
+              ? entry.plan.dbBefore?.version ?? null
+              : null;
+
+          return {
+            memberName,
+            refTypeKey: entry.refTypeKey,
+            refTypeLabel: `${entry.refTypeKind} / ${entry.objectType}`,
+            scenario,
+            source,
+            version,
+            localVersion: entry.plan.localBefore?.version ?? null,
+            dbVersion: entry.plan.dbBefore?.version ?? null,
+            referenceId: entry.plan.effectiveRootId,
+            willApply: !!entry.plan.effectiveRootId,
+          } satisfies MemberPreviewRow;
+        }),
+      )
+      .sort((a, b) => a.memberName.localeCompare(b.memberName));
+  }
+
+  const memberRows = $derived(buildMemberRows(entries));
+  const applicableRows = $derived(memberRows.filter((row) => row.willApply));
+  const unavailableRows = $derived(memberRows.filter((row) => !row.willApply));
+  const totalMembers = $derived(memberRows.length);
+</script>
+
+<OscdBaseDialog
+  title="Apply Default Preview"
+  confirmActionText='Apply'
+  maxWidth="1000px"
+  bind:open
+  onConfirm={() => {closeDialog('confirm')}}
+  onCancel={() => closeDialog('cancel')}
+  onClose={() => closeDialog('exit')}
+>
+  {#snippet content()}
+    <div class="preview-dialog-content">
+      <div class="summary-grid">
+        <article class="summary-card">
+          <div class="summary-label">DataType</div>
+          <div class="summary-value">{applyDefaultPreview?.dataTypeId ?? '-'}</div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-label">Will Be Assigned</div>
+          <div class="summary-value success-text">{applicableRows.length}</div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-label">No Default Available</div>
+          <div class="summary-value muted-text">{unavailableRows.length}</div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-label">Members Considered</div>
+          <div class="summary-value">{totalMembers}</div>
+        </article>
+      </div>
+
+      {#if memberRows.length === 0}
+        <div class="empty-state">No applicable default updates found for the selected members.</div>
+      {:else}
+        <section>
+          <div class="section-title">Will Be Applied</div>
+          {#if applicableRows.length === 0}
+            <div class="empty-state">No members.</div>
+          {:else}
+            <div class="rows-list">
+              {#each applicableRows as row}
+                <article class="row-card">
+                  <header class="row-header">
+                    <div class="row-title">{row.memberName}</div>
+                    <span class={`chip chip-${scenarioMeta[row.scenario].tone}`}>
+                      {scenarioMeta[row.scenario].label}
+                    </span>
+                  </header>
+                  <div class="row-grid">
+                    <div>
+                      <div class="field-label">Reference ID</div>
+                      <div class="field-value mono">{row.referenceId}</div>
+                    </div>
+                    <div>
+                      <div class="field-label">Version Source</div>
+                      <div class="field-value">{row.source}</div>
+                    </div>
+                    <div>
+                      <div class="field-label">Version To Apply</div>
+                      <div class="field-value">{row.version ?? '-'}</div>
+                    </div>
+                    <div>
+                      <div class="field-label">Reference Type</div>
+                      <div class="field-value">{row.refTypeLabel}</div>
+                    </div>
+                    <div>
+                      <div class="field-label">Local Version</div>
+                      <div class="field-value">{row.localVersion ?? '-'}</div>
+                    </div>
+                    <div>
+                      <div class="field-label">DB Version</div>
+                      <div class="field-value">{row.dbVersion ?? '-'}</div>
+                    </div>
+                  </div>
+                </article>
+              {/each}
+            </div>
+          {/if}
+        </section>
+
+        {#if unavailableRows.length > 0}
+          <section>
+            <div class="section-title muted-title">No Default Available</div>
+            <div class="rows-list">
+              {#each unavailableRows as row}
+                <article class="row-card unavailable">
+                  <header class="row-header">
+                    <div class="row-title muted-text">{row.memberName}</div>
+                    <span class="chip chip-muted">No assignment</span>
+                  </header>
+                  <div class="row-grid">
+                    <div>
+                      <div class="field-label">Reference Type</div>
+                      <div class="field-value muted-text">{row.refTypeLabel}</div>
+                    </div>
+                    <div>
+                      <div class="field-label">Reason</div>
+                      <div class="field-value muted-text">No default exists in DB/local for this reference type.</div>
+                    </div>
+                  </div>
+                </article>
+              {/each}
+            </div>
+          </section>
+        {/if}
+      {/if}
+    </div>
+  {/snippet}
+</OscdBaseDialog>
+
+<style>
+  .preview-dialog-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: min(70vh, 900px);
+    overflow: auto;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .summary-card {
+    background: #f7fafc;
+    border: 1px solid #d7dde5;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .summary-label {
+    font-size: 0.75rem;
+    color: #5b6470;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .summary-value {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2933;
+    word-break: break-word;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid transparent;
+    font-weight: 600;
+  }
+
+  .chip-neutral {
+    background: #eef1f5;
+    border-color: #d0d7e1;
+    color: #445266;
+  }
+
+  .chip-success {
+    background: #e8f7ee;
+    border-color: #bde8cd;
+    color: #276749;
+  }
+
+  .chip-warning {
+    background: #fff4e5;
+    border-color: #ffd9a8;
+    color: #9c5a11;
+  }
+
+  .chip-danger {
+    background: #fdecec;
+    border-color: #f8c8c8;
+    color: #a63131;
+  }
+
+  .chip-muted {
+    background: #eef1f4;
+    border-color: #d6dde5;
+    color: #708090;
+  }
+
+  .section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #3b4a5a;
+    margin: 0.25rem 0 0.35rem;
+    font-weight: 700;
+  }
+
+  .rows-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .row-card {
+    border: 1px solid #d7dde5;
+    border-radius: 10px;
+    padding: 0.75rem;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .row-card.unavailable {
+    background: #f6f8fa;
+    border-color: #dce3eb;
+  }
+
+  .row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .row-title {
+    font-weight: 700;
+    color: #202b36;
+  }
+
+  .row-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .field-label {
+    font-size: 0.72rem;
+    color: #697786;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .field-value {
+    margin-top: 0.15rem;
+    color: #1f2933;
+    font-size: 0.9rem;
+    word-break: break-word;
+  }
+
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  }
+
+  .success-text {
+    color: #276749;
+  }
+
+  .muted-text {
+    color: #718096;
+  }
+
+  .muted-title {
+    color: #718096;
+  }
+
+  .empty-state {
+    padding: 0.9rem;
+    border: 1px dashed #c9d3df;
+    border-radius: 8px;
+    color: #5f6b7a;
+    background: #f9fbfd;
+  }
+
+  @media (max-width: 760px) {
+    .summary-grid,
+    .row-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

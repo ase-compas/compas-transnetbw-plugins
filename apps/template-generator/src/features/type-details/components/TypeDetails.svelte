@@ -14,6 +14,8 @@
   import TypeRenameDialog from './dialogs/TypeRenameDialog.svelte';
   import type { DocState } from 'apps/template-generator/src/shared/states/doc.state.svelte';
   import type { DetailsConfig } from '../types';
+  import ApplyDefaultPreviewConfirmDialog from './dialogs/ApplyDefaultPreviewConfirmDialog.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
     typeId: string;
@@ -140,7 +142,7 @@
   
   function hanldeColumnActionClick(columnId: string) {
     if (columnId === 'refs') {
-      typeDetailsState.applyAllDefaultTypes();
+      applyDefaults();
     } else {
       createNewDataType(columnId);
     }
@@ -168,6 +170,22 @@
       document.removeEventListener('click', handleUnMakenWhenClickedOutside);
     };
   });
+
+  async function applyDefaults(members: string[]  | undefined = undefined) {
+    try {
+      const preview = await typeDetailsState.getApplyDefaultTypesPreview(members);
+      const result = await openDialog(ApplyDefaultPreviewConfirmDialog, {
+        applyDefaultPreview: preview,
+      });
+    if(result.type === 'confirm') {
+      typeDetailsState.applyDefaultTypesFromPreview(preview);
+    }
+    } catch (e) {
+      console.error('Failed to get apply default types preview', e);
+      toastService.error('Apply default failed', 'Failed to get apply default types. Please try again.');
+      return;
+    }
+  }
 
 </script>
 
@@ -205,7 +223,7 @@
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}
       onColumnActionClick={(columnId) => hanldeColumnActionClick(columnId)}
-      onItemApplyDefaults={(itemId) => typeDetailsState.applyDefaultType(itemId)}
+      onItemApplyDefaults={(itemId) => applyDefaults([itemId])}
       onItemEditClick={(itemId) => {
         const typeKind = typeDetailsState.getType(itemId)?.typeKind;
         openTypeById(itemId, typeKind, typeDetailsState.viewMode)
