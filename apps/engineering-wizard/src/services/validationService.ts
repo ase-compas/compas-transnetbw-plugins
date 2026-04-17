@@ -3,13 +3,7 @@ import { documentStore } from '../documentStore.svelte';
 
 const API_URL =
   import.meta.env.VITE_VALIDATION_API_URL ??
-  'http://compas.northeurope.cloudapp.azure.com/compas-validation-service/api/v1/validate';
-
-if (!import.meta.env.DEV && API_URL.startsWith('http://')) {
-  console.warn(
-    '[validationService] Insecure HTTP endpoint in use. Set VITE_VALIDATION_API_URL to an HTTPS URL for production.',
-  );
-}
+  '/compas-validation-service/api/v1/validate';
 
 export interface ValidationError {
   ruleName: string;
