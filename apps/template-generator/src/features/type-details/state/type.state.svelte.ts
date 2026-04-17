@@ -350,7 +350,7 @@ export class DataTypeDetailsState {
             canSelect: this.isEditMode,
             canUnlink: this.isEditMode && ref.requiresReference && ref.isConfigured && !!ref.reference, // can only unlink if there is a reference to clear
             referencable: ref.requiresReference,
-            canApplyDefaults: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
+            canApplyDefaults: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true) && ref.requiresReference,
             acceptDrop: (target: TBoardItemContext) => {
                 const targetType = this.simpleTypesMap.get(target.itemId);
                 if (!targetType) return false;
