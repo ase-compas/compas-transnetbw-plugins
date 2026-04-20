@@ -16,6 +16,8 @@
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess } from '../../features/processes/mutations.svelte';
+  import { saveProcess } from '../../features/processes/repository.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
@@ -63,7 +65,21 @@
     currentStepIndex -= 1;
   }
 
-  function exitEditing() {
+  let saving = $state(false);
+
+  async function exitEditing() {
+    const proc = selectedEngineeringProcess.process;
+    if (proc) {
+      saving = true;
+      try {
+        await saveProcess(proc);
+        toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
+      } catch {
+        toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
+      } finally {
+        saving = false;
+      }
+    }
     engineeringProcessEditing.isEditing = false;
     editorTabs.visible = true;
     selectedEngineeringProcess.process = null;
@@ -141,6 +157,7 @@
 
     isAtFirstStep={isAtFirstStep}
     isAtLastStep={isAtLastStep}
+    doneDisabled={saving}
   />
 </div>
 

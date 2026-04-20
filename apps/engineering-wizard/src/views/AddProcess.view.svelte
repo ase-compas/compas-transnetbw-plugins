@@ -14,6 +14,8 @@
   import { corePlugins, engineeringProcessEditing } from '../features/processes/stores.svelte';
   import { createPluginId } from '../features/plugins/id';
   import { addProcess } from '../features/processes/mutations.svelte';
+  import { saveProcess } from '../features/processes/repository.svelte';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import HelperText from '@smui/textfield/helper-text';
 
   interface Props {
@@ -172,9 +174,10 @@
   });
 
   let canSave = $derived(Boolean(name.trim()));
+  let saving = $state(false);
 
-  function save() {
-    if (!canSave) return;
+  async function save() {
+    if (!canSave || saving) return;
 
     const draft: Process = {
       id: procId.trim() || slugify(name) || 'process',
@@ -185,8 +188,17 @@
     };
 
     const created = addProcess(draft);
-
     engineeringProcessEditing.isEditing = false;
+
+    saving = true;
+    try {
+      await saveProcess(created);
+      toastService.success('Process saved', `"${created.name}" was saved to the database.`);
+    } catch {
+      toastService.error('Save failed', `"${created.name}" was added locally but could not be saved to the database.`);
+    } finally {
+      saving = false;
+    }
 
     handleSaved(created);
   }
@@ -224,9 +236,9 @@
         variant="raised"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={save}
-        disabled={!canSave}
+        disabled={!canSave || saving}
       >
-        SAVE
+        {saving ? 'SAVING…' : 'SAVE'}
       </Button>
     </div>
   </div>
