@@ -2,10 +2,8 @@
   import Textfield from '@smui/textfield';
   import type { Process } from '@oscd-transnet-plugins/shared';
 
-  import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
-  import {
-    OscdInfoIcon
-  } from '../../../../libs/oscd-icons/src';
+  import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdInfoIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   import Button from '@smui/button';
   import {

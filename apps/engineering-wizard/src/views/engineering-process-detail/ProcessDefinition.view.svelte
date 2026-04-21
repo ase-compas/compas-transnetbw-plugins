@@ -1,6 +1,6 @@
 <script lang="ts">
   import PluginEditorPanel from '../../features/processes/components/panels/PluginEditorPanel.svelte';
-  import { OscdCompareArrowsIcon } from '../../../../../libs/oscd-icons/src';
+  import { OscdCompareArrowsIcon } from '@oscd-transnet-plugins/oscd-icons';
   import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import PluginExternalPanel from '../../features/processes/components/panels/PluginExternalPanel.svelte';
   import { corePlugins, selectedEngineeringProcess } from '../../features/processes/stores.svelte';
@@ -11,43 +11,36 @@
     pluginGroups?: PluginGroup[];
   };
 
-  let {
-    pluginGroups = [],
-  }: Props = $props();
+  let { pluginGroups = [] }: Props = $props();
 
   let searchTerm = $state('');
+
   let filteredPlugins = $derived.by(() => {
-    const compasPlugins = corePlugins.plugins;
-    const allPlugins = compasPlugins.map((compasPlugin) => ({
-    id: createPluginId(compasPlugin.name),
-    name: compasPlugin.name,
-    src: compasPlugin.src,
-    type: 'internal'
-  })) as Plugin[];
+    const allPlugins = (corePlugins.plugins ?? []).map((p) => ({
+      id: createPluginId(p.name),
+      name: p.name,
+      src: p.src,
+      type: 'internal',
+    })) as Plugin[];
 
-  const term = searchTerm.toLowerCase().trim();
-
-  if (!term) return allPlugins;
-
-  return allPlugins.filter((plugin) =>
-    plugin.name.toLowerCase().includes(term)
-  );
-});
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return allPlugins;
+    return allPlugins.filter((p) => p.name.toLowerCase().includes(term));
+  });
 
   function addPlugin(plugin: Plugin) {
-    const processId = selectedEngineeringProcess.process.id;
-    addPluginToProcess(processId, plugin);
+    const proc = selectedEngineeringProcess.process;
+    if (!proc) return;
+    addPluginToProcess(proc.id, plugin);
   }
 </script>
 
 <div class="process-definition-view">
-  <PluginEditorPanel
-    {pluginGroups}
-  />
+  <PluginEditorPanel {pluginGroups} />
 
   <div class="drag-and-drop-info">
-    <OscdCompareArrowsIcon svgStyles="fill: #6B9197"></OscdCompareArrowsIcon>
-    <p>SELECT OR DRAG & DROP PLUGINS</p>
+    <OscdCompareArrowsIcon svgStyles="fill: #6B9197" />
+    <p>SELECT OR DRAG &amp; DROP PLUGINS</p>
   </div>
 
   <PluginExternalPanel plugins={filteredPlugins} bind:searchTerm onAddPlugin={addPlugin} />
@@ -62,7 +55,7 @@
     align-items: flex-start;
   }
 
-  .drag-and-drop-info{
+  .drag-and-drop-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -71,7 +64,7 @@
     gap: 12px;
   }
 
-  .drag-and-drop-info p{
+  .drag-and-drop-info p {
     color: #6B9197;
     font-weight: 500;
   }

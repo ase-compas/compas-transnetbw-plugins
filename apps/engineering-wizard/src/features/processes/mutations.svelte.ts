@@ -11,32 +11,13 @@ import {
   runningEngineeringProcess,
 } from './stores.svelte';
 
-function ensureUniqueProcessId(base: string): string {
-  const normalized = (base || '').trim() || 'process';
-  const existing = new Set(
-    (engineeringProcesses.processes ?? []).map((p) => p.id),
-  );
-  if (!existing.has(normalized)) return normalized;
-
-  let i = 2;
-  let candidate = `${normalized}-${i}`;
-  while (existing.has(candidate)) {
-    i += 1;
-    candidate = `${normalized}-${i}`;
-  }
-  return candidate;
-}
-
 export function addProcess(process: Process): Process {
   const snap = $state.snapshot(process) as Process;
 
-  const baseId = (snap.id || snap.name || 'process').trim();
-  const id = ensureUniqueProcessId(baseId);
-
   const toInsert: Process = {
-    id,
+    id: snap.id || snap.name || 'process',
     version: snap.version || '1.0.0',
-    name: snap.name || id,
+    name: snap.name || snap.id || 'process',
     description: snap.description || '',
     pluginGroups: snap.pluginGroups?.length
       ? snap.pluginGroups
@@ -112,14 +93,12 @@ export function removeValidationFromPluginInProcess(
       const plugins = (g.plugins ?? []).map((pl) => {
         if (pl.id !== pluginId) return pl;
 
+        // entryIndex is within the process-filtered list; resolve to the full array index.
         const validations = [...(pl.validations ?? [])];
-        let matchCount = -1;
+        let filteredCount = -1;
         const targetIdx = validations.findIndex((v) => {
-          if (v.processId === procId && v.pluginId === pluginId) {
-            matchCount++;
-            if (matchCount === entryIndex) return true;
-          }
-          return false;
+          if (v.processId === procId && v.pluginId === pluginId) filteredCount++;
+          return filteredCount === entryIndex;
         });
 
         if (targetIdx !== -1) validations.splice(targetIdx, 1);
@@ -147,13 +126,10 @@ export function updateValidationInPluginInProcess(
         if (pl.id !== pluginId) return pl;
 
         const validations = [...(pl.validations ?? [])];
-        let matchCount = -1;
+        let filteredCount = -1;
         const targetIdx = validations.findIndex((v) => {
-          if (v.processId === procId && v.pluginId === pluginId) {
-            matchCount++;
-            if (matchCount === entryIndex) return true;
-          }
-          return false;
+          if (v.processId === procId && v.pluginId === pluginId) filteredCount++;
+          return filteredCount === entryIndex;
         });
 
         if (targetIdx !== -1) validations[targetIdx] = validation;
@@ -197,10 +173,8 @@ export function removePluginFromProcess(
 export function removeAllPluginsFromProcess(procId: string): void {
   const process = engineeringProcesses.processes.find((p) => p.id === procId);
   if (!process || !process.pluginGroups) return;
-
-  for (const group of process.pluginGroups) {
-    group.plugins?.splice(0, group.plugins.length);
-  }
+  // Clear all plugins and remove the now-empty groups entirely.
+  process.pluginGroups.splice(0, process.pluginGroups.length);
 }
 
 /**
@@ -252,4 +226,20 @@ export function setRunningProcess(
 
 export function setLastSelectedPluginId(pluginId: string | null): void {
   runningEngineeringProcess.lastSelectedPluginId = pluginId ?? null;
+}
+
+/**
+ * Updates the metadata (name, description, version) of an existing process.
+ * Does NOT touch pluginGroups.
+ */
+export function updateProcessMetadata(
+  procId: string,
+  updates: { name?: string; description?: string; version?: string },
+): void {
+  const process = engineeringProcesses.processes.find((p) => p.id === procId);
+  if (!process) return;
+
+  if (updates.name !== undefined) process.name = updates.name;
+  if (updates.description !== undefined) process.description = updates.description;
+  if (updates.version !== undefined) process.version = updates.version;
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
+  import { OscdBreadcrumbs } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import PluginViewPanel from '../../features/processes/components/panels/PluginViewPanel.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
@@ -16,7 +16,6 @@
     handleStart,
   }: Props = $props();
 
-  let currentStepIndex = $state(0);
 
   let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedEngineeringProcess.process, { edit: engineeringProcessEditing.isEditing }));
   let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
@@ -30,7 +29,6 @@
   function startEditing() {
     engineeringProcessEditing.isEditing = true;
     editorTabs.visible = false;
-    currentStepIndex = 0;
   }
 </script>
 
@@ -75,7 +73,7 @@
     margin-bottom: 1rem;
   }
 
-  .header Button {
+  .header :global(button) {
     margin-left: auto;
   }
 </style>

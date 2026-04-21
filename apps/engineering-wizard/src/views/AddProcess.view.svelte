@@ -11,7 +11,7 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import PluginExternalPanel from '../features/processes/components/panels/PluginExternalPanel.svelte';
-  import { corePlugins, engineeringProcessEditing } from '../features/processes/stores.svelte';
+  import { corePlugins, engineeringProcessEditing, engineeringProcesses } from '../features/processes/stores.svelte';
   import { createPluginId } from '../features/plugins/id';
   import { addProcess } from '../features/processes/mutations.svelte';
   import { saveProcess } from '../features/processes/repository.svelte';
@@ -28,7 +28,6 @@
   let name = $state('');
   let nameInvalid = $derived.by(() => name.trim().length === 0);
   let description = $state('');
-  let version = $state('1.0.0');
 
   let procId = $state('');
   let idTouched = $state(false);
@@ -179,12 +178,34 @@
   async function save() {
     if (!canSave || saving) return;
 
+    const baseId = procId.trim() || slugify(name) || 'process';
+
+    // Check for ID collision and prompt the user before proceeding.
+    const existingIds = new Set((engineeringProcesses.processes ?? []).map((p) => p.id));
+    let resolvedId = baseId;
+    if (existingIds.has(baseId)) {
+      let i = 2;
+      let suggested = `${baseId}-${i}`;
+      while (existingIds.has(suggested)) { i++; suggested = `${baseId}-${i}`; }
+
+      const collision = await openDialog(OscdConfirmDialog, {
+        title: 'Process ID already in use',
+        message: `A process with ID "${baseId}" already exists. Use "${suggested}" instead?`,
+        confirmActionText: 'Use suggested ID',
+        cancelActionText: 'Cancel',
+      });
+
+      if (collision?.type !== 'confirm') return; // user chose to cancel and fix manually
+      resolvedId = suggested;
+      procId = suggested; // reflect in the field
+    }
+
     const draft: Process = {
-      id: procId.trim() || slugify(name) || 'process',
-      version: version.trim() || '1.0.0',
+      id: resolvedId,
+      version: '1.0.0',
       name: name.trim(),
       description: description.trim(),
-      pluginGroups: $state.snapshot(pluginGroups) as PluginGroup[]
+      pluginGroups: $state.snapshot(pluginGroups) as PluginGroup[],
     };
 
     const created = addProcess(draft);
@@ -267,7 +288,7 @@
     </div>
 
     <div class="field">
-      <Textfield variant="outlined" label="Version" bind:value={version} />
+      <Textfield variant="outlined" label="Version" value="1.0.0" disabled />
     </div>
 
     <div class="field">

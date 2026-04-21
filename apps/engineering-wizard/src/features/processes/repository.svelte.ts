@@ -6,7 +6,8 @@ import {
 } from './stores.svelte';
 import { parseProcessesXml, parseXmlString } from './xml-parser';
 import { processService } from '../../bootstrap';
-import { UploadDataNextVersionTypeEnum } from '@oscd-transnet-plugins/api-compas-custom-resource';
+import type { VersionBump } from './process.service';
+import { updateProcessMetadata } from './mutations.svelte';
 
 function mergeById(primary: Process[], secondary: Process[]): Process[] {
   const byId = new Map<string, Process>();
@@ -30,33 +31,23 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
 
     const xmlText = await res.text();
     const xml = parseXmlString(xmlText);
-    const parsed = parseProcessesXml(xml);
+    let processes = parseProcessesXml(xml);
 
-    // 2. Merge localStorage snapshot (local edits survive a refresh).
-    const localSnapshot = $state.snapshot(
-      engineeringProcesses.processes,
-    ) as Process[];
-
-    let merged =
-      Array.isArray(localSnapshot) && localSnapshot.length
-        ? mergeById(parsed, localSnapshot)
-        : parsed;
-
-    // 3. Hydrate from backend — backend-saved processes win over everything else.
+    // 2. Hydrate from backend — backend-saved processes win over the static baseline.
     try {
       const entries = await processService.listLatest();
       if (entries.length > 0) {
         const backendProcesses = await Promise.all(
           entries.map((e) => processService.getById(e.resourceId)),
         );
-        merged = mergeById(merged, backendProcesses);
+        processes = mergeById(processes, backendProcesses);
       }
     } catch {
-      // Backend unavailable — continue with static + localStorage data.
+      // Backend unavailable — continue with the static baseline.
     }
 
-    engineeringProcesses.processes = merged;
-    return merged;
+    engineeringProcesses.processes = processes;
+    return processes;
   } catch (err) {
     engineeringProcessesStatus.error =
       err instanceof Error ? err.message : 'Failed to load processes.';
@@ -66,22 +57,21 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
   }
 }
 
-/**
- * Persists a single process to the backend custom-resource API.
- *
- * Uses `nextVersionType: 'patch'` so every save auto-increments the
- * semver patch segment without requiring the caller to manage versions.
- *
- * Sets `engineeringProcessesStatus.saving / saveError` for UI feedback.
- */
-export async function saveProcess(process: Process): Promise<void> {
+
+export async function saveProcess(
+  process: Process,
+  versionBump?: VersionBump,
+): Promise<void> {
   engineeringProcessesStatus.saving = true;
   engineeringProcessesStatus.saveError = '';
 
   try {
-    await processService.save($state.snapshot(process) as Process, {
-      nextVersionType: UploadDataNextVersionTypeEnum.Patch,
-    });
+    const { version } = await processService.save(
+      $state.snapshot(process) as Process,
+      versionBump,
+    );
+
+    updateProcessMetadata(process.id, { version });
   } catch (err) {
     engineeringProcessesStatus.saveError =
       err instanceof Error ? err.message : 'Failed to save process.';
@@ -90,4 +80,3 @@ export async function saveProcess(process: Process): Promise<void> {
     engineeringProcessesStatus.saving = false;
   }
 }
-

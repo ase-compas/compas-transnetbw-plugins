@@ -7,6 +7,9 @@ import {
 
 export type { UploadDataNextVersionTypeEnum };
 
+/** Semantic version bump direction — maps 1:1 to the API enum values. */
+export type VersionBump = 'major' | 'minor' | 'patch';
+
 export interface RemoteProcessEntry {
   /** Backend resource UUID */
   resourceId: string;
@@ -16,29 +19,21 @@ export interface RemoteProcessEntry {
   description: string;
 }
 
-/**
- * Domain service for storing and retrieving engineering processes via the
- * CoMPAS custom-resource API (`/plugins/resources/v1`).
- *
- * Each process is stored as a JSON blob with:
- *   type  = "engineering-wizard_process"
- *   name  = process.id   (stable, unique, queryable)
- */
+/** Returned by {@link ProcessService.save} after a successful upload. */
+export interface SaveResult {
+  /** Backend resource UUID */
+  resourceId: string;
+  /** The version the backend assigned (may be auto-incremented). */
+  version: string;
+}
+
+
 export class ProcessService {
   static readonly RESOURCE_TYPE = 'engineering-wizard_process';
   static readonly DATA_COMPATIBILITY_VERSION = '1.0.0';
 
   constructor(private readonly svc: CustomResourceService) {}
 
-  // ---------------------------------------------------------------------------
-  // Queries
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Returns lightweight metadata for all stored processes (no content body).
-   * The backend may return multiple versions per process name; only the latest
-   * for each `process.id` is included here.
-   */
   async listLatest(): Promise<RemoteProcessEntry[]> {
     const result = await this.svc.listData({
       type: ProcessService.RESOURCE_TYPE,
@@ -62,33 +57,15 @@ export class ProcessService {
     return Array.from(latestMap.values());
   }
 
-  /**
-   * Fetches a single process by its backend resource UUID and deserialises the
-   * JSON content body back into a `Process` object.
-   */
   async getById(resourceId: string): Promise<Process> {
     const entry = await this.svc.getById(resourceId);
     return JSON.parse(entry.content) as Process;
   }
 
-  // ---------------------------------------------------------------------------
-  // Mutations
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Uploads a process to the backend.
-   *
-   * - **First save**: leaves `nextVersionType` undefined and uses
-   *   `process.version` (or `'1.0.0'` as fallback) as the explicit version.
-   * - **Subsequent saves**: pass `nextVersionType: 'patch'` to let the backend
-   *   auto-increment the semver patch segment.
-   *
-   * Returns the backend-assigned resource UUID.
-   */
   async save(
     process: Process,
-    opts: { nextVersionType?: UploadDataNextVersionTypeEnum } = {},
-  ): Promise<string> {
+    versionBump?: VersionBump,
+  ): Promise<SaveResult> {
     const content = new Blob([JSON.stringify(process)], {
       type: 'application/json',
     });
@@ -100,15 +77,18 @@ export class ProcessService {
       content,
       dataCompatibilityVersion: ProcessService.DATA_COMPATIBILITY_VERSION,
       description: process.description ?? undefined,
-      version: opts.nextVersionType ? undefined : (process.version || '1.0.0'),
-      nextVersionType: opts.nextVersionType,
+      version: versionBump ? undefined : (process.version || '1.0.0'),
+      nextVersionType: versionBump ?? undefined,
     });
 
     if (!result.id) {
       throw new Error('Backend did not return a resource id after upload.');
     }
+    if (!result.version) {
+      throw new Error('Backend did not return a version after upload.');
+    }
 
-    return result.id;
+    return { resourceId: result.id, version: result.version };
   }
 }
 

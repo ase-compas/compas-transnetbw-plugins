@@ -10,6 +10,7 @@
   import Button from '@smui/button';
   import ProcessValidationView from './ProcessValidation.view.svelte';
   import ProcessDefinitionView from './ProcessDefinition.view.svelte';
+  import ProcessInfoBar from '../../components/shared/ProcessInfoBar.svelte';
   import PluginGroupsStepper from '../../components/shared/PluginGroupsStepper.svelte';
   import type { EditorStepIds } from '../../features/processes/editor/types';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
@@ -21,6 +22,8 @@
   import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
+  import VersionBumpDialog from '../../features/processes/components/dialogs/VersionBumpDialog.svelte';
+  import type { VersionBump } from '../../features/processes/process.service';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -47,12 +50,23 @@
       .find((p) => p.id === id) ?? null;
   });
 
+  // Snapshot taken when edit mode opens — used to detect actual changes.
+  let entrySnapshot: string | null = null;
+
   onMount(() => {
     editorTabs.visible = false;
+    const proc = selectedEngineeringProcess.process;
+    entrySnapshot = proc ? JSON.stringify($state.snapshot(proc)) : null;
     return () => {
       editorTabs.visible = true;
     };
   });
+
+  function hasChanges(): boolean {
+    const proc = selectedEngineeringProcess.process;
+    if (!proc) return false;
+    return JSON.stringify($state.snapshot(proc)) !== entrySnapshot;
+  }
 
   function goToNextStep() {
     if (isAtLastStep) return;
@@ -69,10 +83,17 @@
 
   async function exitEditing() {
     const proc = selectedEngineeringProcess.process;
-    if (proc) {
+    if (proc && hasChanges()) {
+      // Ask user how to bump the version before saving.
+      const result = await openDialog(VersionBumpDialog, {
+        currentVersion: proc.version || '1.0.0',
+      });
+      if (result?.type !== 'confirm') return; // user cancelled — stay in edit mode
+
+      const bump = result.data as VersionBump;
       saving = true;
       try {
-        await saveProcess(proc);
+        await saveProcess(proc, bump);
         toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
       } catch {
         toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
@@ -163,6 +184,7 @@
 
 <div class="step-content">
   {#if currentStepId === 'process-definition'}
+    <ProcessInfoBar />
     <ProcessDefinitionView {pluginGroups} />
   {:else if currentStepId === 'validator-configuration'}
     <div class="header">
@@ -211,7 +233,7 @@
     margin-bottom: 1rem;
   }
 
-  .header Button {
+  .header :global(button) {
     margin-left: auto;
   }
 </style>
