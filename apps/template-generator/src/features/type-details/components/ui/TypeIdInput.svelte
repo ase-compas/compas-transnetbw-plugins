@@ -14,8 +14,12 @@
     idLabel?: string;
     showErrorsOnInput?: boolean;
     generateId?: () => void;
+    generateFeedback?: string;
+    onIdInput?: () => void;
+    onIdBlur?: () => void;
     disabled?: boolean;
     service: DataTypeService;
+    required?: boolean;
   }
 
   let {
@@ -24,8 +28,12 @@
     idLabel = 'Enter Type ID',
     showErrorsOnInput = false,
     generateId,
+    generateFeedback = '',
+    onIdInput = () => {},
+    onIdBlur = () => {},
     disabled = false,
-    service
+    service,
+    required = false
   }: Props = $props();
 
   let inputEl;
@@ -41,6 +49,7 @@
   let isTypeIdValid = $derived<boolean>(
     isTypeIdRequiredValid && isTypeIdFormatValid && isTypeIdAvailable,
   );
+  let showValidationMessage = $derived<boolean>(showErrorsOnInput || typeIdTouched);
 
   function typeIdExists(candidateId: string): boolean {
     return service.exists(candidateId);
@@ -75,6 +84,15 @@
   export function select() {
     getInput().select();
   }
+  function handleBlur() {
+    typeIdTouched = true;
+    onIdBlur();
+  }
+
+  function handleInput() {
+    onIdInput();
+  }
+
 </script>
 
 <TextField
@@ -84,8 +102,10 @@
   style="width: 100%;"
   input$maxlength={ID_MAX_LENGTH}
   {disabled}
-  onblur={() => (typeIdTouched = true)}
+  onblur={handleBlur}
+  oninput={handleInput}
   invalid={!isTypeIdValid}
+  required={required}
 >
   {#snippet trailingIcon()}
     {#if generateId}
@@ -98,7 +118,7 @@
             generateId();
           }}
           style="all: unset; cursor: pointer;"
-          disabled={!generateId}
+          disabled={!generateId || disabled}
         >
           <Icon class="material-icons">autorenew</Icon>
         </button>
@@ -108,11 +128,13 @@
 
   {#snippet helper()}
     <HelperText validationMsg persistent>
-      {#if (showErrorsOnInput || typeIdTouched) && !isTypeIdRequiredValid}
+      {#if generateFeedback}
+        {generateFeedback}
+      {:else if showValidationMessage && !isTypeIdRequiredValid}
         Please enter an ID.
-      {:else if (showErrorsOnInput || typeIdTouched) && !isTypeIdFormatValid}
+      {:else if showValidationMessage && !isTypeIdFormatValid}
         ID must contain no spaces.
-      {:else if (showErrorsOnInput || typeIdTouched) && !isTypeIdAvailable}
+      {:else if showValidationMessage && !isTypeIdAvailable}
         That ID is already in use. Please choose a different one.
       {/if}
     </HelperText>

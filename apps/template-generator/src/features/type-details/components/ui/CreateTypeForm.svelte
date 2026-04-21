@@ -14,6 +14,11 @@
     valid: boolean;
   }
 
+  export interface GenerateIdResult {
+    id?: string;
+    message?: string;
+  }
+
   interface Props {
     typeKind: TypeKind;
 
@@ -24,7 +29,7 @@
     createFromDefault?: boolean;
     onChange?: (event: CreateTypeFormSubmitDetails) => void;
     onSubmit?: (event: CreateTypeFormSubmitDetails) => void;
-    generateId?: (instance: string) => string;
+    generateId?: (instance: string) => string | GenerateIdResult | undefined;
 
     service: DataTypeService;
   }
@@ -50,6 +55,7 @@
 
   let isTypeIdValid = $state<boolean>(false);
   let isFormValid = $derived<boolean>(!!selectedInstance && isTypeIdValid);
+  let generateFeedback = $state<string>('');
 
   let loading = $state<boolean>(false);
 
@@ -97,9 +103,24 @@
     autoGenerateId(selectedInstance?.instance);
   });
 
-  function autoGenerateId(instance: string | undefined) {
-    if (generateId && instance) {
-      typeId = generateId(instance);
+  function autoGenerateId(instance: string | undefined, fromUserClick = false) {
+    generateFeedback = '';
+    if (!generateId || !instance) {
+      return;
+    }
+
+    const generationResult = generateId(instance);
+    const normalizedResult = typeof generationResult === 'string'
+      ? { id: generationResult }
+      : (generationResult ?? {});
+
+    if (normalizedResult.id) {
+      typeId = normalizedResult.id;
+      return;
+    }
+
+    if (fromUserClick) {
+      generateFeedback = normalizedResult.message ?? 'Unable to auto-generate an ID.';
     }
   }
 
@@ -126,10 +147,17 @@
       bind:this={idInputEl}
       bind:typeId
       bind:valid={isTypeIdValid}
+      {generateFeedback}
+      onIdInput={() => {
+        generateFeedback = '';
+      }}
+      onIdBlur={() => {
+        generateFeedback = '';
+      }}
       showErrorsOnInput
       disabled={!selectedInstance}
       generateId={generateId
-        ? () => autoGenerateId(selectedInstance?.instance)
+        ? () => autoGenerateId(selectedInstance?.instance, true)
         : undefined}
       {service}
     />
