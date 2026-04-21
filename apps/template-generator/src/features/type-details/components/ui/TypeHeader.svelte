@@ -17,6 +17,7 @@
     toggleEditModeSwitchDisabled?: boolean;
     showSetAsDefault?: boolean;
     setAsDefaultDisabled?: boolean;
+    actionsDisabled?: boolean;
 
     onModeChange?: (mode: 'edit' | 'view') => void;
     onInstanceTypeChange?: (instanceType: string) => void;
@@ -35,6 +36,7 @@
     showSetAsDefault = true,
     setAsDefaultDisabled = false,
     toggleEditModeSwitchDisabled = false,
+    actionsDisabled = false,
 
 
     onModeChange = (_: 'edit' | 'view') => {},
@@ -79,6 +81,7 @@
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
         disabled={toggleEditModeSwitchDisabled}
       />
+      <!--
       {#if showSetAsDefault}
         {#if setAsDefaultDisabled}
           <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
@@ -88,12 +91,14 @@
           <SetDefaultButton onClick={onClickDefault} />
         {/if}
       {/if}
+      -->
     {:else}
       <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose Instance Type to Edit</Button>
     {/if}
     <TypeActionMenu
       onDelete={onDelete}
       onRename={onRename}
+      actionsDisabled={actionsDisabled}
     />
   </div>
 </div>

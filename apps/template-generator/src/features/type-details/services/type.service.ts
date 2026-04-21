@@ -59,12 +59,15 @@ export class DataTypeService {
             throw new Error(`DataType element is missing required attributes: ${element.outerHTML}`);
         }
 
+        const defaultTypeInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(id) || undefined;
+
         if (!instanceType) {
             return {
                 id,
                 typeKind,
                 instanceType: '',
                 members: this.mapMembersFromElementWithoutNsd(element),
+                defaultTypeInfo: defaultTypeInfo
             };
         }
 
@@ -111,7 +114,8 @@ export class DataTypeService {
             id,
             typeKind,
             instanceType,
-            members
+            members,
+            defaultTypeInfo: defaultTypeInfo
         };
     }
 

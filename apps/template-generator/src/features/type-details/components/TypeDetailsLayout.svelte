@@ -51,6 +51,7 @@
     {instanceType}
     {isEditMode}
     onModeChange={(mode) => onModeChange(mode)}
+    actionsDisabled={config?.actionsDisabled ?? false}
     onInstanceTypeChange={(value) => onInstanceTypeChange(value)}
     toggleEditModeSwitchDisabled={config?.toggleEditModeSwitchDisabled ?? false}
     showSetAsDefault={config?.defaultTypeFeatureEnabled ?? true}

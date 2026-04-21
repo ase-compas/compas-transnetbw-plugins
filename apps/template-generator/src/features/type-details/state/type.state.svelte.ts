@@ -68,6 +68,11 @@ export class DataTypeDetailsState {
                 this.viewMode = 'view';
             }
 
+            if(typeDetails.defaultTypeInfo) {
+                this.viewMode = 'view';
+                this.config.toggleEditModeSwitchDisabled = true;
+            }
+
             const otherTypesByKind = this.getOtherTypesByKind(id);
 
             // Cache all simple types for quick lookup when mapping members to TItems
@@ -274,6 +279,7 @@ export class DataTypeDetailsState {
 
     public setConfig(config: DetailsConfig) {
         this.config = config;
+        console.log("setting config from set", config);
     }
 
     // ==================

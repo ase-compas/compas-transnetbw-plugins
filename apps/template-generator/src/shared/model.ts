@@ -1,3 +1,5 @@
+import type { LocalDefaultInfo } from "../features/type-details/services/default-type-manager-service";
+
 export enum TypeKind {
     LNodeType = 'LNodeType',
     DOType = 'DOType',
@@ -58,6 +60,7 @@ export interface DataTypeDetails {
     typeKind: TypeKind;
     members: DataTypeMember[];
     private?: Record<string, string>;
+    defaultTypeInfo?: LocalDefaultInfo;
 }
 
 export interface DataTypeMember {

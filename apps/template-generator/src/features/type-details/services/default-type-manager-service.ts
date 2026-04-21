@@ -115,10 +115,10 @@ export class DefaultTypeManagerService {
      * Applies a list of resolve plans in batch.
      * All type elements are inserted once respecting kind order (via insertTypeElements),
      * and all Private elements are managed.
-     * 
+     *
      * Returns all edits needed to apply the plans and a map of effective root IDs
      * keyed by "kind:instance" (e.g., "DOType:Measurement").
-     * 
+     *
      * @param plans The resolve plans to apply
      * @returns Edits and effective root IDs for each reference type key
      */
@@ -190,7 +190,7 @@ export class DefaultTypeManagerService {
 
                 case "UPGRADE_TO_DB_DEFAULT":
                     // Remove old Private element
-                    const oldPrivate = this.getDefaultTypePrivateElement(plan.key);
+                    const oldPrivate = this.getDefaultTypeElement(plan.key);
                     if (oldPrivate) {
                         edits.push({ node: oldPrivate } as RemoveV2);
                     }
@@ -201,7 +201,7 @@ export class DefaultTypeManagerService {
                     break;
 
                 case "REMOVE_LOCAL_DEFAULT":
-                    const privateToRemove = this.getDefaultTypePrivateElement(plan.key);
+                    const privateToRemove = this.getDefaultTypeElement(plan.key);
                     if (privateToRemove) {
                         edits.push({ node: privateToRemove } as RemoveV2);
                     }
@@ -211,12 +211,66 @@ export class DefaultTypeManagerService {
 
         return { edits, effectiveRootIds };
     }
+    /**
+     * Gets the local default info for a given type reference key by searching the Private section of the document.
+     * @param key default type key
+     * @returns local default info if found, otherwise null
+     */
+    public getLocalDefault(key: DefaultTypeKey): LocalDefaultInfo | null {
+        if (!this.doc) {
+            throw new Error("Document not set");
+        }
+
+        const matchingDefaultType = this.getDefaultTypeElement(key)
+        if (!matchingDefaultType) {
+            return null;
+        }
+
+        return this.parseDefaultTypeElement(matchingDefaultType);
+    }
+
+    /**
+     * Gets the newest default meta for a given type reference key by querying the default type service.
+     * @param key default type key
+     * @returns newest default meta if found, otherwise null
+     */
+    public getNewestDefaultMeta(key: DefaultTypeKey) {
+        return this.defaultTypeService.getLatestByKindAndInstance(key.kind, key.instance);
+    }
+
+    /**
+     * Finds the local default info for a given type element ID by searching through the default-type Private section.
+     * @param typeId The ID of the type element to find default info for
+     * @returns default info if a default-type contains a type-element with the given ID, otherwise null
+     */
+    public getDefaultInfoByTypeId(typeId: string): LocalDefaultInfo | null {
+        const defaultTypeInfo = this.getDefaultTypeSectionPrivateElement();
+        if (!defaultTypeInfo) {
+            return null;
+        }
+
+        const defaultTypeElements = Array.from(defaultTypeInfo.children).filter((child) => {
+            const localName = (child.localName || child.tagName).toLowerCase();
+            return localName === "default-type";
+        });
+
+        // for each defaultType element look inside their children (type-elemnt) and check if the id matchs this is the if it matches. use the parent element to get the default info
+        const matchingDefaultType = defaultTypeElements.find((defaultTypeElement) => {
+            return Array.from(defaultTypeElement.children).some((child) => {
+                const localName = (child.localName || child.tagName).toLowerCase();
+                return localName === "type-element" && child.getAttribute("id") === typeId;
+            });
+        });
+
+
+        return matchingDefaultType ? this.parseDefaultTypeElement(matchingDefaultType) : null;
+    }
 
     /**
      * Resolves ID conflicts in imported type elements.
      * Renames elements if their IDs already exist in the document,
      * but preserves the rootId as-is.
-     * 
+     *
      * Returns a mapping of old IDs to new IDs and the effective root ID to use.
      */
     private resolveIdConflicts(
@@ -307,8 +361,8 @@ export class DefaultTypeManagerService {
             .filter((id): id is string => !!id);
     }
 
-    private getDefaultTypePrivateElement(key: DefaultTypeKey): Element | null {
-        const defaultTypeInfo = this.doc.querySelector(`SCL > Private[type="${SCL_PRIVATE_DEFAULT_TYPEINFO}"]`);
+    private getDefaultTypeElement(key: DefaultTypeKey): Element | null {
+        const defaultTypeInfo = this.getDefaultTypeSectionPrivateElement();
         if (!defaultTypeInfo) {
             return null;
         }
@@ -323,41 +377,24 @@ export class DefaultTypeManagerService {
         }) ?? null;
     }
 
-    public getLocalDefault(key: DefaultTypeKey): LocalDefaultInfo | null {
-        if (!this.doc) {
-            throw new Error("Document not set");
-        }
 
-        const defaultTypeInfo = this.doc.querySelector(`SCL > Private[type="${SCL_PRIVATE_DEFAULT_TYPEINFO}"]`);
-        if (!defaultTypeInfo) {
-            return null;
-        }
+    private getDefaultTypeSectionPrivateElement(): Element | null {
+        return this.doc.querySelector(`SCL > Private[type="${SCL_PRIVATE_DEFAULT_TYPEINFO}"]`);
+    }
 
-        const matchingDefaultType = Array.from(defaultTypeInfo.children).find((child) => {
-            const localName = (child.localName || child.tagName).toLowerCase();
-            if (localName !== "default-type") {
-                return false;
-            }
-
-            return child.getAttribute("kind") === key.kind && child.getAttribute("instance") === key.instance;
-        });
-
-        if (!matchingDefaultType) {
-            return null;
-        }
-
-        const kind = matchingDefaultType.getAttribute("kind");
-        const instance = matchingDefaultType.getAttribute("instance");
-        const resourceId = matchingDefaultType.getAttribute("resourceId") ?? matchingDefaultType.getAttribute("id");
-        const rootId = matchingDefaultType.getAttribute("rootId");
-        const version = matchingDefaultType.getAttribute("version");
+    private parseDefaultTypeElement(element: Element): LocalDefaultInfo | null {
+        const kind = element.getAttribute("kind");
+        const instance = element.getAttribute("instance");
+        const resourceId = element.getAttribute("resourceId") ?? element.getAttribute("id");
+        const rootId = element.getAttribute("rootId");
+        const version = element.getAttribute("version");
 
         if (!kind || !instance || !resourceId || !rootId || !version) {
-            console.warn("Invalid default type element, missing attributes", matchingDefaultType);
+            console.warn("Invalid default type element, missing attributes", element);
             return null;
         }
 
-        const typeElementIds = Array.from(matchingDefaultType.children)
+        const typeElementIds = Array.from(element.children)
             .filter((child) => {
                 const localName = (child.localName || child.tagName).toLowerCase();
                 return localName === "type-element";
@@ -373,9 +410,5 @@ export class DefaultTypeManagerService {
             version,
             typeElementIds,
         };
-    }
-
-    public getNewestDefaultMeta(key: DefaultTypeKey) {
-        return this.defaultTypeService.getLatestByKindAndInstance(key.kind, key.instance);
     }
 }

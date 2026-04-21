@@ -204,7 +204,7 @@
   }}
   onInstanceTypeChange={(instanceType) => typeDetailsState.updateInstanceType(instanceType)}
   service={service}
-  config={config}
+  config={typeDetailsState.config}
 >
   {#if typeDetailsState.loadedType?.typeKind === TypeKind.EnumType}
     <EnumTypeDetails

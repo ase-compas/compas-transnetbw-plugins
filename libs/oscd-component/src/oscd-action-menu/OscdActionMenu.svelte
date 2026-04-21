@@ -11,10 +11,11 @@
   interface Props {
     anchorCorner?: string;
     buttonVariant?: 'text' | 'outlined' | 'raised' | 'unelevated' | 'default';
+    disabled?: boolean;
     children: Snippet<[any]>;
   }
 
-  let { anchorCorner = 'BOTTOM_RIGHT', buttonVariant = 'unelevated', children }: Props = $props();
+  let { anchorCorner = 'BOTTOM_RIGHT', buttonVariant = 'unelevated', disabled = false, children }: Props = $props();
 
   let menu: Menu;
   let anchor: HTMLDivElement | undefined = $state();
@@ -37,7 +38,7 @@
   }}
   bind:this={anchor}
 >
-<OscdActionButton onClick={() => menu.setOpen(true)} variant={buttonVariant}/>
+<OscdActionButton onClick={() => menu.setOpen(true)} variant={buttonVariant} disabled={disabled}/>
   <Menu
     bind:this={menu}
     anchor={false}

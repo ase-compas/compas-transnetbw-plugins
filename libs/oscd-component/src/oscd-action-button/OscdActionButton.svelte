@@ -5,9 +5,10 @@
   interface Props {
     onClick?: () => void;
     variant?: 'text' | 'outlined' | 'raised' | 'unelevated' | 'default';
+    disabled?: boolean;
   }
 
-  let { onClick = () => {}, variant='unelevated'}: Props  = $props();
+  let { onClick = () => {}, variant='unelevated', disabled = false }: Props  = $props();
 </script>
 
   <Button
@@ -15,6 +16,7 @@
     class="button-shape-round"
     variant={variant}
     style={variant === 'default' ? 'background: white;' : '' }
+    disabled={disabled}
   >
     <OscdMoreVertIcon svgStyles={variant === 'text' || variant === 'outlined' || variant === 'default' ? 'fill: var(--primary-base)' : ''}/>
   </Button>

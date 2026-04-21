@@ -40,6 +40,33 @@ describe('DefaultTypeManagerService', () => {
 		});
 	});
 
+	test('getDefaultInfoByTypeId returns default info when a default-type contains matching type-element id', () => {
+		const doc = parseScl(`
+			<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" release="4" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+				<Private type="compas:default-type-info">
+					<compas:default-type kind="LNodeType" instance="LLN0" rootId="root-1" version="1.2.3" id="db-id-1">
+						<compas:type-element id="type-a"/>
+					</compas:default-type>
+					<compas:default-type kind="LNodeType" instance="XCBR" rootId="root-2" version="2.0.0" id="db-id-2">
+						<compas:type-element id="type-target"/>
+					</compas:default-type>
+				</Private>
+			</SCL>
+		`);
+
+		const service = new DefaultTypeManagerService(doc, {} as never);
+		const result = service.getDefaultInfoByTypeId('type-target');
+
+		expect(result).toEqual({
+			kind: 'LNodeType',
+			instance: 'XCBR',
+			resourceId: 'db-id-2',
+			rootId: 'root-2',
+			version: '2.0.0',
+			typeElementIds: ['type-target'],
+		});
+	});
+
 	describe('resolve', () => {
 		test('ADD_DB_DEFAULT: no local default, db default exists', async () => {
 			const doc = parseScl(`
