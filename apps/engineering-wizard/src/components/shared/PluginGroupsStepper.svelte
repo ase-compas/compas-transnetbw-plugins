@@ -23,13 +23,16 @@
     validationStatuses = {},
   }: Props = $props();
 
-  let lastSelectedPluginId: string | null = null;
+  // Track selection by position, not plugin ID, so duplicate plugins are handled correctly.
+  let lastSelectedGroupIndex: number | null = null;
+  let lastSelectedPluginIndex: number | null = null;
 
   $effect(() => {
     if (!pluginGroups?.length) {
       selectedGroupIndex = null;
       selectedPluginIndex = null;
-      lastSelectedPluginId = null;
+      lastSelectedGroupIndex = null;
+      lastSelectedPluginIndex = null;
       return;
     }
 
@@ -42,7 +45,8 @@
       if (withPluginsIndex === -1) {
         selectedGroupIndex = groupIdx;
         selectedPluginIndex = null;
-        lastSelectedPluginId = null;
+        lastSelectedGroupIndex = groupIdx;
+        lastSelectedPluginIndex = null;
         return;
       }
       groupIdx = withPluginsIndex;
@@ -57,8 +61,9 @@
     selectedPluginIndex = pluginIdx;
 
     const plugin = group.plugins?.[pluginIdx];
-    if (plugin && plugin.id !== lastSelectedPluginId) {
-      lastSelectedPluginId = plugin.id;
+    if (plugin && (groupIdx !== lastSelectedGroupIndex || pluginIdx !== lastSelectedPluginIndex)) {
+      lastSelectedGroupIndex = groupIdx;
+      lastSelectedPluginIndex = pluginIdx;
       selectPlugin?.(plugin);
     }
   });
@@ -70,10 +75,12 @@
 
     const plugin = group?.plugins?.[0];
     if (plugin) {
-      lastSelectedPluginId = plugin.id;
+      lastSelectedGroupIndex = groupIndex;
+      lastSelectedPluginIndex = 0;
       selectPlugin?.(plugin);
     } else {
-      lastSelectedPluginId = null;
+      lastSelectedGroupIndex = groupIndex;
+      lastSelectedPluginIndex = null;
     }
   }
 
@@ -83,7 +90,8 @@
 
     const plugin = pluginGroups[groupIndex]?.plugins?.[pluginIndex];
     if (plugin) {
-      lastSelectedPluginId = plugin.id;
+      lastSelectedGroupIndex = groupIndex;
+      lastSelectedPluginIndex = pluginIndex;
       selectPlugin?.(plugin);
     }
   }

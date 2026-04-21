@@ -10,6 +10,11 @@ import {
   engineeringProcesses,
   runningEngineeringProcess,
 } from './stores.svelte';
+import {
+  addPluginToGroups,
+  removePluginFromGroups,
+  addGroupToGroups,
+} from './pluginGroupOps';
 
 function getProcess(procId: string): Process | undefined {
   return engineeringProcesses.processes.find((p) => p.id === procId);
@@ -50,6 +55,13 @@ function mutatePluginValidations(
 // Process mutations
 // ---------------------------------------------------------------------------
 
+export function removeProcess(procId: string): boolean {
+  const idx = (engineeringProcesses.processes ?? []).findIndex((p) => p.id === procId);
+  if (idx === -1) return false;
+  engineeringProcesses.processes.splice(idx, 1);
+  return true;
+}
+
 export function addProcess(process: Process): Process {
   const snap = $state.snapshot(process) as Process;
 
@@ -89,40 +101,22 @@ export function addPluginToProcess(
 ): void {
   const process = getProcess(procId);
   if (!process) return;
-
-  const title = groupTitle?.trim() || 'Ungrouped';
-  const groups = (process.pluginGroups ??= []);
-  const group = groups.find((g) => g.title === title) ?? (() => {
-    const g: PluginGroup = { title, plugins: [] };
-    groups.push(g);
-    return g;
-  })();
-
-  (group.plugins ??= []).push(plugin);
+  process.pluginGroups = addPluginToGroups(process.pluginGroups ?? [], plugin, groupTitle);
 }
 
 export function removePluginFromProcess(procId: string, pluginId: string): boolean {
   const process = getProcess(procId);
   if (!process?.pluginGroups) return false;
-
-  for (const group of process.pluginGroups) {
-    const index = group.plugins?.findIndex((pl) => pl.id === pluginId) ?? -1;
-    if (index === -1) continue;
-
-    group.plugins.splice(index, 1);
-
-    if (group.plugins.length === 0) {
-      process.pluginGroups.splice(process.pluginGroups.indexOf(group), 1);
-    }
-    return true;
-  }
-  return false;
+  const updated = removePluginFromGroups(process.pluginGroups, pluginId);
+  if (updated.length === process.pluginGroups.length) return false;
+  process.pluginGroups = updated;
+  return true;
 }
 
 export function removeAllPluginsFromProcess(procId: string): void {
   const process = getProcess(procId);
-  if (!process?.pluginGroups) return;
-  process.pluginGroups.splice(0, process.pluginGroups.length);
+  if (!process) return;
+  process.pluginGroups = [];
 }
 
 // ---------------------------------------------------------------------------
@@ -171,14 +165,7 @@ export function addGroupToProcess(
 ): void {
   const process = getProcess(procId);
   if (!process) return;
-
-  const groups = (process.pluginGroups ??= []);
-  if (groups.some((g) => g.title === groupTitle)) return;
-
-  const newGroup: PluginGroup = { title: groupTitle, plugins: [] };
-  position === undefined
-    ? groups.push(newGroup)
-    : groups.splice(Math.max(0, position - 1), 0, newGroup);
+  process.pluginGroups = addGroupToGroups(process.pluginGroups ?? [], groupTitle, position);
 }
 
 export function updateGroupsOfProcess(procId: string, newGroups: PluginGroup[]): void {
