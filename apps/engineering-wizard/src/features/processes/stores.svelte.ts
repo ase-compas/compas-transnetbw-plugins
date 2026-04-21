@@ -21,65 +21,47 @@ export const engineeringProcessesStatus = $state<{
 });
 
 // ---------------------------------------------------------------------------
-// Selected & running process — stored as IDs.
-// The actual Process objects are always derived from `engineeringProcesses`
-// so they can never go stale after a mutation.
+// Selected & running process — stored as IDs so derived objects never go
+// stale after a mutation. Exposed as reactive objects with `.process` getters
+// that always resolve from the live process list.
 // ---------------------------------------------------------------------------
-
-const _selectedProcessId = $state<{ value: string | null }>({ value: null });
-const _isEditing = $state<{ value: boolean }>({ value: false });
-
-const _runningProcessId = $state<{ value: string | null }>({ value: null });
-const _lastSelectedPluginId = $state<{ value: string | null }>({ value: null });
 
 function findProcess(id: string | null): Process | null {
   if (!id) return null;
   return engineeringProcesses.processes?.find((p) => p.id === id) ?? null;
 }
 
-// ---------------------------------------------------------------------------
-// Read  `.process`  → always resolves from the process list (never stale).
-// Write `.process`  → sets the underlying ID.
-// ---------------------------------------------------------------------------
+class SelectedProcessState {
+  #id = $state<string | null>(null);
 
-class ProcessRef {
   get process(): Process | null {
-    return findProcess(_selectedProcessId.value);
+    return findProcess(this.#id);
   }
   set process(p: Process | null) {
-    _selectedProcessId.value = p?.id ?? null;
+    this.#id = p?.id ?? null;
   }
 }
 
-class RunningProcessRef {
+class EditingState {
+  isEditing = $state(false);
+}
+
+class RunningProcessState {
+  #id = $state<string | null>(null);
+  lastSelectedPluginId = $state<string | null>(null);
+
   get process(): Process | null {
-    return findProcess(_runningProcessId.value);
+    return findProcess(this.#id);
   }
   set process(p: Process | null) {
-    _runningProcessId.value = p?.id ?? null;
-  }
-  get lastSelectedPluginId(): string | null {
-    return _lastSelectedPluginId.value;
-  }
-  set lastSelectedPluginId(id: string | null) {
-    _lastSelectedPluginId.value = id;
+    this.#id = p?.id ?? null;
   }
 }
 
-class EditingRef {
-  get isEditing(): boolean {
-    return _isEditing.value;
-  }
-  set isEditing(v: boolean) {
-    _isEditing.value = v;
-  }
-}
-
-export const selectedEngineeringProcess = new ProcessRef();
-export const engineeringProcessEditing = new EditingRef();
-export const runningEngineeringProcess = new RunningProcessRef();
+export const selectedEngineeringProcess = new SelectedProcessState();
+export const engineeringProcessEditing = new EditingState();
+export const runningEngineeringProcess = new RunningProcessState();
 
 export const corePlugins = $state<{ plugins: CoMPASPlugin[] }>({
   plugins: [],
 });
-

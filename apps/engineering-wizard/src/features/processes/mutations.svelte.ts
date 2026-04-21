@@ -11,6 +11,45 @@ import {
   runningEngineeringProcess,
 } from './stores.svelte';
 
+function getProcess(procId: string): Process | undefined {
+  return engineeringProcesses.processes.find((p) => p.id === procId);
+}
+
+function findPlugin(procId: string, pluginId: string): Plugin | undefined {
+  return getProcess(procId)
+    ?.pluginGroups?.flatMap((g) => g.plugins ?? [])
+    .find((pl) => pl.id === pluginId);
+}
+
+
+function resolveValidationIndex(
+  validations: XPathValidation[],
+  procId: string,
+  pluginId: string,
+  entryIndex: number,
+): number {
+  let filteredCount = -1;
+  return validations.findIndex((v) => {
+    if (v.processId === procId && v.pluginId === pluginId) filteredCount++;
+    return filteredCount === entryIndex;
+  });
+}
+
+function mutatePluginValidations(
+  procId: string,
+  pluginId: string,
+  fn: (validations: XPathValidation[]) => void,
+): void {
+  const plugin = findPlugin(procId, pluginId);
+  if (!plugin) return;
+  plugin.validations ??= [];
+  fn(plugin.validations);
+}
+
+// ---------------------------------------------------------------------------
+// Process mutations
+// ---------------------------------------------------------------------------
+
 export function addProcess(process: Process): Process {
   const snap = $state.snapshot(process) as Process;
 
@@ -24,61 +63,78 @@ export function addProcess(process: Process): Process {
       : [{ title: 'Ungrouped', plugins: [] }],
   };
 
-  engineeringProcesses.processes = [
-    ...(engineeringProcesses.processes ?? []),
-    toInsert,
-  ];
+  engineeringProcesses.processes = [...(engineeringProcesses.processes ?? []), toInsert];
   return toInsert;
 }
 
-/**
- * Add a plugin to a process, creating the group if necessary.
- * groupTitle blank => "Ungrouped"
- */
+export function updateProcessMetadata(
+  procId: string,
+  updates: { name?: string; description?: string; version?: string },
+): void {
+  const process = getProcess(procId);
+  if (!process) return;
+  if (updates.name !== undefined) process.name = updates.name;
+  if (updates.description !== undefined) process.description = updates.description;
+  if (updates.version !== undefined) process.version = updates.version;
+}
+
+// ---------------------------------------------------------------------------
+// Plugin mutations
+// ---------------------------------------------------------------------------
+
 export function addPluginToProcess(
   procId: string,
   plugin: Plugin,
   groupTitle?: string,
 ): void {
-  const title = (groupTitle && groupTitle.trim()) || 'Ungrouped';
-  const process = engineeringProcesses.processes.find((p) => p.id === procId);
+  const process = getProcess(procId);
   if (!process) return;
 
-  const groups = process.pluginGroups ?? (process.pluginGroups = []);
-  let group = groups.find((g) => g.title === title);
+  const title = groupTitle?.trim() || 'Ungrouped';
+  const groups = (process.pluginGroups ??= []);
+  const group = groups.find((g) => g.title === title) ?? (() => {
+    const g: PluginGroup = { title, plugins: [] };
+    groups.push(g);
+    return g;
+  })();
 
-  if (!group) {
-    group = { title, plugins: [] };
-    groups.push(group);
-  }
-
-  group.plugins ??= [];
-  group.plugins.push(plugin);
+  (group.plugins ??= []).push(plugin);
 }
+
+export function removePluginFromProcess(procId: string, pluginId: string): boolean {
+  const process = getProcess(procId);
+  if (!process?.pluginGroups) return false;
+
+  for (const group of process.pluginGroups) {
+    const index = group.plugins?.findIndex((pl) => pl.id === pluginId) ?? -1;
+    if (index === -1) continue;
+
+    group.plugins.splice(index, 1);
+
+    if (group.plugins.length === 0) {
+      process.pluginGroups.splice(process.pluginGroups.indexOf(group), 1);
+    }
+    return true;
+  }
+  return false;
+}
+
+export function removeAllPluginsFromProcess(procId: string): void {
+  const process = getProcess(procId);
+  if (!process?.pluginGroups) return;
+  process.pluginGroups.splice(0, process.pluginGroups.length);
+}
+
+// ---------------------------------------------------------------------------
+// Validation mutations
+// ---------------------------------------------------------------------------
 
 export function addValidationToPluginInProcess(
   procId: string,
   pluginId: string,
   validation: XPathValidation,
 ): void {
-  const processes = engineeringProcesses.processes ?? [];
-
-  engineeringProcesses.processes = processes.map((p) => {
-    if (p.id !== procId || !p.pluginGroups) return p;
-
-    const pluginGroups = p.pluginGroups.map((g) => {
-      const plugins = (g.plugins ?? []).map((pl) => {
-        if (pl.id !== pluginId) return pl;
-
-        const existing = pl.validations ?? [];
-        return { ...pl, validations: [...existing, validation] };
-      });
-
-      return { ...g, plugins };
-    });
-
-    return { ...p, pluginGroups };
-  });
+  mutatePluginValidations(procId, pluginId, (v) => v.push(validation));
 }
 
 export function removeValidationFromPluginInProcess(
@@ -86,29 +142,9 @@ export function removeValidationFromPluginInProcess(
   pluginId: string,
   entryIndex: number,
 ): void {
-  engineeringProcesses.processes = (engineeringProcesses.processes ?? []).map((p) => {
-    if (p.id !== procId || !p.pluginGroups) return p;
-
-    const pluginGroups = p.pluginGroups.map((g) => {
-      const plugins = (g.plugins ?? []).map((pl) => {
-        if (pl.id !== pluginId) return pl;
-
-        // entryIndex is within the process-filtered list; resolve to the full array index.
-        const validations = [...(pl.validations ?? [])];
-        let filteredCount = -1;
-        const targetIdx = validations.findIndex((v) => {
-          if (v.processId === procId && v.pluginId === pluginId) filteredCount++;
-          return filteredCount === entryIndex;
-        });
-
-        if (targetIdx !== -1) validations.splice(targetIdx, 1);
-        return { ...pl, validations };
-      });
-
-      return { ...g, plugins };
-    });
-
-    return { ...p, pluginGroups };
+  mutatePluginValidations(procId, pluginId, (validations) => {
+    const idx = resolveValidationIndex(validations, procId, pluginId, entryIndex);
+    if (idx !== -1) validations.splice(idx, 1);
   });
 }
 
@@ -118,101 +154,44 @@ export function updateValidationInPluginInProcess(
   entryIndex: number,
   validation: XPathValidation,
 ): void {
-  engineeringProcesses.processes = (engineeringProcesses.processes ?? []).map((p) => {
-    if (p.id !== procId || !p.pluginGroups) return p;
-
-    const pluginGroups = p.pluginGroups.map((g) => {
-      const plugins = (g.plugins ?? []).map((pl) => {
-        if (pl.id !== pluginId) return pl;
-
-        const validations = [...(pl.validations ?? [])];
-        let filteredCount = -1;
-        const targetIdx = validations.findIndex((v) => {
-          if (v.processId === procId && v.pluginId === pluginId) filteredCount++;
-          return filteredCount === entryIndex;
-        });
-
-        if (targetIdx !== -1) validations[targetIdx] = validation;
-        return { ...pl, validations };
-      });
-
-      return { ...g, plugins };
-    });
-
-    return { ...p, pluginGroups };
+  mutatePluginValidations(procId, pluginId, (validations) => {
+    const idx = resolveValidationIndex(validations, procId, pluginId, entryIndex);
+    if (idx !== -1) validations[idx] = validation;
   });
 }
 
-export function removePluginFromProcess(
-  procId: string,
-  pluginId: string,
-): boolean {
-  const process = engineeringProcesses.processes.find((p) => p.id === procId);
-  if (!process || !process.pluginGroups) return false;
+// ---------------------------------------------------------------------------
+// Group mutations
+// ---------------------------------------------------------------------------
 
-  for (const group of process.pluginGroups) {
-    if (!group?.plugins) continue;
-
-    const index = group.plugins.findIndex((pl) => pl.id === pluginId);
-    if (index === -1) continue;
-
-    group.plugins.splice(index, 1);
-
-    // remove empty groups
-    if (group.plugins.length === 0) {
-      const groupIndex = process.pluginGroups.indexOf(group);
-      if (groupIndex !== -1) process.pluginGroups.splice(groupIndex, 1);
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
-export function removeAllPluginsFromProcess(procId: string): void {
-  const process = engineeringProcesses.processes.find((p) => p.id === procId);
-  if (!process || !process.pluginGroups) return;
-  // Clear all plugins and remove the now-empty groups entirely.
-  process.pluginGroups.splice(0, process.pluginGroups.length);
-}
-
-/**
- * Adds a plugin group to a process.
- * position is 1-based; undefined => append
- */
 export function addGroupToProcess(
   procId: string,
   groupTitle: string,
   position?: number,
 ): void {
-  const process = engineeringProcesses.processes.find((p) => p.id === procId);
+  const process = getProcess(procId);
   if (!process) return;
 
-  const groups = process.pluginGroups ?? (process.pluginGroups = []);
+  const groups = (process.pluginGroups ??= []);
   if (groups.some((g) => g.title === groupTitle)) return;
 
   const newGroup: PluginGroup = { title: groupTitle, plugins: [] };
-
-  if (position === undefined) {
-    groups.push(newGroup);
-  } else {
-    const idx = Math.max(0, position - 1);
-    groups.splice(idx, 0, newGroup);
-  }
+  position === undefined
+    ? groups.push(newGroup)
+    : groups.splice(Math.max(0, position - 1), 0, newGroup);
 }
 
-export function updateGroupsOfProcess(
-  procId: string,
-  newGroups: PluginGroup[],
-): void {
-  const process = engineeringProcesses.processes.find((p) => p.id === procId);
+export function updateGroupsOfProcess(procId: string, newGroups: PluginGroup[]): void {
+  const process = getProcess(procId);
   if (!process) return;
-  process.pluginGroups ??= [];
-  process.pluginGroups.splice(0, process.pluginGroups.length, ...newGroups);
+  (process.pluginGroups ??= []).splice(0, process.pluginGroups.length, ...newGroups);
 }
 
-export function setInternalPlugins(plugins: CoMPASPlugin[]) {
+// ---------------------------------------------------------------------------
+// Runtime / plugin store mutations
+// ---------------------------------------------------------------------------
+
+export function setInternalPlugins(plugins: CoMPASPlugin[]): void {
   corePlugins.plugins = [...plugins];
 }
 
@@ -220,26 +199,10 @@ export function setRunningProcess(
   process: Process | null,
   lastPluginId: string | null = null,
 ): void {
-  runningEngineeringProcess.process = process ?? null;
-  runningEngineeringProcess.lastSelectedPluginId = lastPluginId ?? null;
+  runningEngineeringProcess.process = process;
+  runningEngineeringProcess.lastSelectedPluginId = lastPluginId;
 }
 
 export function setLastSelectedPluginId(pluginId: string | null): void {
-  runningEngineeringProcess.lastSelectedPluginId = pluginId ?? null;
-}
-
-/**
- * Updates the metadata (name, description, version) of an existing process.
- * Does NOT touch pluginGroups.
- */
-export function updateProcessMetadata(
-  procId: string,
-  updates: { name?: string; description?: string; version?: string },
-): void {
-  const process = engineeringProcesses.processes.find((p) => p.id === procId);
-  if (!process) return;
-
-  if (updates.name !== undefined) process.name = updates.name;
-  if (updates.description !== undefined) process.description = updates.description;
-  if (updates.version !== undefined) process.version = updates.version;
+  runningEngineeringProcess.lastSelectedPluginId = pluginId;
 }
