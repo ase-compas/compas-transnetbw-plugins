@@ -35,6 +35,7 @@
   let instance = $state<string | undefined>(undefined);
   let suspendedReloadDepth = 0;
   let hasPendingReload = false;
+  const idSettingsState = getIdSettingsState();
 
   const sortedDataTypes = $derived.by(() => {
     return sortSimpleDataTypes(dataTypes);
@@ -72,6 +73,7 @@
   async function openTypeDetails(type: SimpleDataType) {
     suspendedReloadDepth += 1;
     try {
+      await idSettingsState.load();
       await openTypeDetailsDrawer(type.id, type.typeKind, service, docState, 'edit');
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
@@ -83,6 +85,7 @@
   }
 
   async function createLNodeType() {
+    await idSettingsState.load();
     const createResult = await createDataTypeWorkflow(TypeKind.LNodeType, service, docState);
     if (!createResult) {
       return;
@@ -117,7 +120,7 @@
 
 
   onMount(() => {
-    getIdSettingsState().load();
+    idSettingsState.load();
     loadDataTypes();
   });
 </script>

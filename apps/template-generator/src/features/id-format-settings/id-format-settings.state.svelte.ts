@@ -1,20 +1,9 @@
 import { OscdIdGenerator, type IdFormat } from "@oscd-transnet-plugins/oscd-services/id-generator";
 import { TypeKind } from "../../shared/model";
 import { getContext, setContext } from "svelte";
-
-interface TypeIdFormatSetting {
-    enabled: boolean;
-    format: IdFormat | null;
-    referenceFormatEnabled: boolean;
-    referenceFormat: IdFormat | null;
-}
-
-interface TypeIdFormatSettings {
-    global: TypeIdFormatSetting;
-    typeSpecific: {
-        [key in TypeKind]: TypeIdFormatSetting
-    }
-}
+import type { TypeIdFormatSetting, TypeIdFormatSettings } from "./types";
+import { idFormatSettingsService } from "../../bootstrap";
+import type { GenerateIdResult } from "../type-details/components/ui/CreateTypeForm.svelte";
 
 const TYPE_KINDS: TypeKind[] = [
     TypeKind.LNodeType,
@@ -43,7 +32,7 @@ function createDefaultSettings(): TypeIdFormatSettings {
 
 class IdFormatSettingsState {
 
-    public settingsCacheTtlSeconds: number = 60;
+    public settingsCacheTtlSeconds: number = 45;
 
     loading: boolean = $state(false);
     error: string | null = $state(null);
@@ -72,10 +61,15 @@ class IdFormatSettingsState {
 
         // storage
         localStorage.setItem('idFormatSettings', JSON.stringify(saveToSettings));
-
-        this.settings = saveToSettings;
-        this.hasLoadedSettings = true;
-        this.settingsLoadedAt = Date.now();
+        try {
+            idFormatSettingsService.saveSettings(saveToSettings);
+            this.settings = saveToSettings;
+            this.hasLoadedSettings = true;
+            this.settingsLoadedAt = Date.now();
+        } catch (error) {
+            console.error('Failed to save ID format settings:', error);
+            this.error = 'Failed to save settings';
+        }
     }
 
     public generateId(typeKind: TypeKind, ctx: { instance: string }): string | undefined {
@@ -108,6 +102,40 @@ class IdFormatSettingsState {
         return new OscdIdGenerator(format).generateId({ variables: ctx });
     }
 
+    /**
+     * Generate ID for a type and return result with user-facing error messages.
+     * Consolidates error handling for type ID generation across dialogs.
+     */
+    public generateIdWithResult(typeKind: TypeKind, ctx: { instance: string }): GenerateIdResult {
+        const generatedId = this.generateId(typeKind, ctx);
+        if (generatedId) {
+            return { id: generatedId };
+        }
+
+        if (this.error) {
+            return { message: 'ID format settings could not be loaded. Please try again.' };
+        }
+
+        return { message: 'No ID format is configured for this type. Configure it in ID Builder.' };
+    }
+
+    /**
+     * Generate reference ID for a type and return result with user-facing error messages.
+     * Consolidates error handling for reference ID generation across dialogs.
+     */
+    public generateReferenceIdWithResult(typeKind: TypeKind, ctx: { instance: string; reference: string }): GenerateIdResult {
+        const generatedId = this.generateReferenceId(typeKind, ctx);
+        if (generatedId) {
+            return { id: generatedId };
+        }
+
+        if (this.error) {
+            return { message: 'ID format settings could not be loaded. Please try again.' };
+        }
+
+        return { message: 'No ID format is configured for this type. Configure it in ID Builder.' };
+    }
+
     public setFormat(typeKind: TypeKind | 'global', idKind: 'format' | 'referenceFormat', format: IdFormat) {
         const setting = typeKind === 'global'
             ? this.settings.global
@@ -116,16 +144,16 @@ class IdFormatSettingsState {
     }
 
     private async fetchSettings(): Promise<TypeIdFormatSettings> {
-        const settingsString = localStorage.getItem('idFormatSettings');
-        if (settingsString) {
-            try {
-                const settings = JSON.parse(settingsString) as TypeIdFormatSettings;
-                return settings;
-            } catch (error) {
-                console.error('Failed to parse ID format settings from local storage:', error);
-                return createDefaultSettings();
+        try {
+            const fetchedSettings = await idFormatSettingsService.getSettings();
+            if (fetchedSettings) {
+                return fetchedSettings;
             }
+        } catch (error) {
+            this.error = 'Failed to fetch ID format settings';
+            console.error('Error fetching ID format settings:', error);
         }
+
         return createDefaultSettings();
     }
 
@@ -190,6 +218,6 @@ export function setIdSettingsState() {
     return setContext(ID_SETTINGS_STATE_KEY, new IdFormatSettingsState());
 }
 
-export function getIdSettingsState() {
-    return getContext<ReturnType<typeof setIdSettingsState>>(ID_SETTINGS_STATE_KEY);
+export function getIdSettingsState(): IdFormatSettingsState {
+    return getContext<IdFormatSettingsState>(ID_SETTINGS_STATE_KEY);
 }
