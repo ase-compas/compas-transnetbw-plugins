@@ -29,7 +29,7 @@
     createFromDefault?: boolean;
     onChange?: (event: CreateTypeFormSubmitDetails) => void;
     onSubmit?: (event: CreateTypeFormSubmitDetails) => void;
-    generateId?: (instance: string) => string | GenerateIdResult | undefined;
+    generateId?: (instance: string) => GenerateIdResult;
 
     service: DataTypeService;
   }
@@ -44,7 +44,7 @@
     createFromDefault = $bindable(false),
     onChange = (_event: CreateTypeFormSubmitDetails) => {},
     onSubmit = (_event: CreateTypeFormSubmitDetails) => {},
-    generateId = (_instance: string) => '',
+    generateId = (_instance: string) => ({ }),
     service,
   }: Props = $props();
 
@@ -110,17 +110,14 @@
     }
 
     const generationResult = generateId(instance);
-    const normalizedResult = typeof generationResult === 'string'
-      ? { id: generationResult }
-      : (generationResult ?? {});
 
-    if (normalizedResult.id) {
-      typeId = normalizedResult.id;
+    if (generationResult.id) {
+      typeId = generationResult.id;
       return;
     }
 
     if (fromUserClick) {
-      generateFeedback = normalizedResult.message ?? 'Unable to auto-generate an ID.';
+      generateFeedback = generationResult.message ?? 'Unable to auto-generate an ID.';
     }
   }
 
