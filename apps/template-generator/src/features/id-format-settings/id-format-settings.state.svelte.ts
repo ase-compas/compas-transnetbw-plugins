@@ -1,20 +1,8 @@
 import { OscdIdGenerator, type IdFormat } from "@oscd-transnet-plugins/oscd-services/id-generator";
 import { TypeKind } from "../../shared/model";
 import { getContext, setContext } from "svelte";
-
-interface TypeIdFormatSetting {
-    enabled: boolean;
-    format: IdFormat | null;
-    referenceFormatEnabled: boolean;
-    referenceFormat: IdFormat | null;
-}
-
-interface TypeIdFormatSettings {
-    global: TypeIdFormatSetting;
-    typeSpecific: {
-        [key in TypeKind]: TypeIdFormatSetting
-    }
-}
+import type { TypeIdFormatSetting, TypeIdFormatSettings } from "./types";
+import { idFormatSettingsService } from "../../bootstrap";
 
 const TYPE_KINDS: TypeKind[] = [
     TypeKind.LNodeType,
@@ -43,7 +31,7 @@ function createDefaultSettings(): TypeIdFormatSettings {
 
 class IdFormatSettingsState {
 
-    public settingsCacheTtlSeconds: number = 60;
+    public settingsCacheTtlSeconds: number = 45;
 
     loading: boolean = $state(false);
     error: string | null = $state(null);
@@ -72,10 +60,15 @@ class IdFormatSettingsState {
 
         // storage
         localStorage.setItem('idFormatSettings', JSON.stringify(saveToSettings));
-
-        this.settings = saveToSettings;
-        this.hasLoadedSettings = true;
-        this.settingsLoadedAt = Date.now();
+        try {
+            idFormatSettingsService.saveSettings(saveToSettings);
+            this.settings = saveToSettings;
+            this.hasLoadedSettings = true;
+            this.settingsLoadedAt = Date.now();
+        } catch (error) {
+            console.error('Failed to save ID format settings:', error);
+            this.error = 'Failed to save settings';
+        }
     }
 
     public generateId(typeKind: TypeKind, ctx: { instance: string }): string | undefined {
@@ -116,16 +109,16 @@ class IdFormatSettingsState {
     }
 
     private async fetchSettings(): Promise<TypeIdFormatSettings> {
-        const settingsString = localStorage.getItem('idFormatSettings');
-        if (settingsString) {
-            try {
-                const settings = JSON.parse(settingsString) as TypeIdFormatSettings;
-                return settings;
-            } catch (error) {
-                console.error('Failed to parse ID format settings from local storage:', error);
-                return createDefaultSettings();
+        try {
+            const fetchedSettings = await idFormatSettingsService.getSettings();
+            if (fetchedSettings) {
+                return fetchedSettings;
             }
+        } catch (error) {
+            this.error = 'Failed to fetch ID format settings';
+            console.error('Error fetching ID format settings:', error);
         }
+
         return createDefaultSettings();
     }
 
