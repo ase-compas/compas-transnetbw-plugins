@@ -14,11 +14,11 @@
     applyDefaultPreview,
   }: Props = $props();
 
-  const scenarioMeta: Record<ApplyScenario, { label: string; tone: 'neutral' | 'success' | 'warning' | 'danger' }> = {
-    ADD_DB_DEFAULT: { label: 'Add DB default', tone: 'success' },
-    USE_LOCAL_DEFAULT: { label: 'Use local default', tone: 'neutral' },
-    UPGRADE_TO_DB_DEFAULT: { label: 'Upgrade to DB default', tone: 'warning' },
-    REMOVE_LOCAL_DEFAULT: { label: 'No default available', tone: 'danger' },
+  const scenarioMeta: Record<ApplyScenario, { label: string; tone: 'success' | 'danger' }> = {
+    ADD_DB_DEFAULT: { label: 'To apply', tone: 'success' },
+    USE_LOCAL_DEFAULT: { label: 'To apply', tone: 'success' },
+    UPGRADE_TO_DB_DEFAULT: { label: 'To apply', tone: 'success' },
+    REMOVE_LOCAL_DEFAULT: { label: 'No default', tone: 'danger' },
   };
 
   type MemberPreviewRow = {
@@ -26,12 +26,11 @@
     refTypeKey: string;
     refTypeLabel: string;
     scenario: ApplyScenario;
-    source: 'DB' | 'Local' | 'None';
-    version: string | null;
-    localVersion: string | null;
-    dbVersion: string | null;
     referenceId: string | null;
     willApply: boolean;
+    versionFrom: string | null;
+    versionTo: string | null;
+    isUpgrade: boolean;
   };
 
   const entries = $derived(applyDefaultPreview?.entries ?? []);
@@ -41,15 +40,12 @@
       .flatMap((entry) =>
         entry.memberNames.map((memberName) => {
           const scenario = entry.plan.scenario;
-          const source = scenario === 'USE_LOCAL_DEFAULT'
-            ? 'Local'
-            : scenario === 'ADD_DB_DEFAULT' || scenario === 'UPGRADE_TO_DB_DEFAULT'
-              ? 'DB'
-              : 'None';
-          const version = source === 'Local'
-            ? entry.plan.localBefore?.version ?? null
-            : source === 'DB'
-              ? entry.plan.dbBefore?.version ?? null
+          const isUpgrade = scenario === 'UPGRADE_TO_DB_DEFAULT';
+          const versionFrom = isUpgrade ? (entry.plan.localBefore?.version ?? null) : null;
+          const versionTo = scenario === 'ADD_DB_DEFAULT' || scenario === 'UPGRADE_TO_DB_DEFAULT'
+            ? (entry.plan.dbBefore?.version ?? null)
+            : scenario === 'USE_LOCAL_DEFAULT'
+              ? (entry.plan.localBefore?.version ?? null)
               : null;
 
           return {
@@ -57,12 +53,11 @@
             refTypeKey: entry.refTypeKey,
             refTypeLabel: `${entry.refTypeKind} / ${entry.objectType}`,
             scenario,
-            source,
-            version,
-            localVersion: entry.plan.localBefore?.version ?? null,
-            dbVersion: entry.plan.dbBefore?.version ?? null,
             referenceId: entry.plan.effectiveRootId,
             willApply: !!entry.plan.effectiveRootId,
+            versionFrom,
+            versionTo,
+            isUpgrade,
           } satisfies MemberPreviewRow;
         }),
       )
@@ -128,24 +123,12 @@
                       <div class="field-value mono">{row.referenceId}</div>
                     </div>
                     <div>
-                      <div class="field-label">Version Source</div>
-                      <div class="field-value">{row.source}</div>
-                    </div>
-                    <div>
-                      <div class="field-label">Version To Apply</div>
-                      <div class="field-value">{row.version ?? '-'}</div>
-                    </div>
-                    <div>
                       <div class="field-label">Reference Type</div>
                       <div class="field-value">{row.refTypeLabel}</div>
                     </div>
                     <div>
-                      <div class="field-label">Local Version</div>
-                      <div class="field-value">{row.localVersion ?? '-'}</div>
-                    </div>
-                    <div>
-                      <div class="field-label">DB Version</div>
-                      <div class="field-value">{row.dbVersion ?? '-'}</div>
+                      <div class="field-label">Version <span class="version-note">(latest)</span></div>
+                      <div class="field-value">{row.versionTo ?? '-'}</div>
                     </div>
                   </div>
                 </article>
@@ -162,7 +145,7 @@
                 <article class="row-card unavailable">
                   <header class="row-header">
                     <div class="row-title muted-text">{row.memberName}</div>
-                    <span class="chip chip-muted">No assignment</span>
+                    <span class="chip chip-danger">No default</span>
                   </header>
                   <div class="row-grid">
                     <div>
@@ -322,6 +305,13 @@
     color: #1f2933;
     font-size: 0.9rem;
     word-break: break-word;
+  }
+
+  .version-note {
+    font-size: 0.65rem;
+    color: #a0aec0;
+    font-weight: 400;
+    letter-spacing: 0.02em;
   }
 
   .mono {
