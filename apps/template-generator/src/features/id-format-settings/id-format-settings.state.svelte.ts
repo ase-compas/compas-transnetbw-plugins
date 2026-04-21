@@ -3,6 +3,7 @@ import { TypeKind } from "../../shared/model";
 import { getContext, setContext } from "svelte";
 import type { TypeIdFormatSetting, TypeIdFormatSettings } from "./types";
 import { idFormatSettingsService } from "../../bootstrap";
+import type { GenerateIdResult } from "../type-details/components/ui/CreateTypeForm.svelte";
 
 const TYPE_KINDS: TypeKind[] = [
     TypeKind.LNodeType,
@@ -101,6 +102,40 @@ class IdFormatSettingsState {
         return new OscdIdGenerator(format).generateId({ variables: ctx });
     }
 
+    /**
+     * Generate ID for a type and return result with user-facing error messages.
+     * Consolidates error handling for type ID generation across dialogs.
+     */
+    public generateIdWithResult(typeKind: TypeKind, ctx: { instance: string }): GenerateIdResult {
+        const generatedId = this.generateId(typeKind, ctx);
+        if (generatedId) {
+            return { id: generatedId };
+        }
+
+        if (this.error) {
+            return { message: 'ID format settings could not be loaded. Please try again.' };
+        }
+
+        return { message: 'No ID format is configured for this type. Configure it in ID Builder.' };
+    }
+
+    /**
+     * Generate reference ID for a type and return result with user-facing error messages.
+     * Consolidates error handling for reference ID generation across dialogs.
+     */
+    public generateReferenceIdWithResult(typeKind: TypeKind, ctx: { instance: string; reference: string }): GenerateIdResult {
+        const generatedId = this.generateReferenceId(typeKind, ctx);
+        if (generatedId) {
+            return { id: generatedId };
+        }
+
+        if (this.error) {
+            return { message: 'ID format settings could not be loaded. Please try again.' };
+        }
+
+        return { message: 'No ID format is configured for this type. Configure it in ID Builder.' };
+    }
+
     public setFormat(typeKind: TypeKind | 'global', idKind: 'format' | 'referenceFormat', format: IdFormat) {
         const setting = typeKind === 'global'
             ? this.settings.global
@@ -183,6 +218,6 @@ export function setIdSettingsState() {
     return setContext(ID_SETTINGS_STATE_KEY, new IdFormatSettingsState());
 }
 
-export function getIdSettingsState() {
-    return getContext<ReturnType<typeof setIdSettingsState>>(ID_SETTINGS_STATE_KEY);
+export function getIdSettingsState(): IdFormatSettingsState {
+    return getContext<IdFormatSettingsState>(ID_SETTINGS_STATE_KEY);
 }

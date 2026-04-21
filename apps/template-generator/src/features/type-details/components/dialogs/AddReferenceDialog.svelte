@@ -127,20 +127,10 @@
       return { message: 'Unable to auto-generate an ID for this reference type.' };
     }
 
-    const generatedId = idSettingsState.generateReferenceId(refTypeKind, {
+    return idSettingsState.generateReferenceIdWithResult(refTypeKind, {
       instance,
       reference: memberName,
     });
-
-    if (generatedId) {
-      return { id: generatedId };
-    }
-
-    if (idSettingsState.error) {
-      return { message: 'ID format settings could not be loaded. Please try again.' };
-    }
-
-    return { message: 'No ID format is configured for this type. Configure it in ID Builder.' };
   }
 </script>
 

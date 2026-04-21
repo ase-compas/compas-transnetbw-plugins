@@ -49,16 +49,7 @@
   }
 
   function generateTypeId(instance: string): GenerateIdResult {
-    const generatedId = idSettingsState.generateId(typeKind, { instance });
-    if (generatedId) {
-      return { id: generatedId };
-    }
-
-    if (idSettingsState.error) {
-      return { message: 'ID format settings could not be loaded. Please try again.' };
-    }
-
-    return { message: 'No ID format is configured for this type. Configure it in ID Builder.' };
+    return idSettingsState.generateIdWithResult(typeKind, { instance });
   }
 </script>
 
