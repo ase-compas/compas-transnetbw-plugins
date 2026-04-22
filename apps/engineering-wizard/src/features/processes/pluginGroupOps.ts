@@ -11,6 +11,12 @@ export function addPluginToGroups(
   plugin: Plugin,
   groupTitle = 'Ungrouped',
 ): PluginGroup[] {
+  // Prevent duplicates — a plugin (by id) should only appear once in a process.
+  const alreadyExists = groups.some((g) =>
+    (g.plugins ?? []).some((p) => p.id === plugin.id),
+  );
+  if (alreadyExists) return groups;
+
   const title = groupTitle.trim() || 'Ungrouped';
   const existing = groups.find((g) => g.title === title);
   if (existing) {
@@ -27,8 +33,8 @@ export function removePluginFromGroups(groups: PluginGroup[], pluginId: string):
     .filter((g) => g.plugins.length > 0);
 }
 
-export function removeAllPluginsFromGroups(): PluginGroup[] {
-  return [];
+export function removeAllPluginsFromGroups(groups: PluginGroup[]): PluginGroup[] {
+  return groups.map((g) => ({ ...g, plugins: [] }));
 }
 
 export function addGroupToGroups(

@@ -27,7 +27,6 @@ export interface SaveResult {
   version: string;
 }
 
-
 export class ProcessService {
   static readonly RESOURCE_TYPE = 'engineering-wizard_process';
   static readonly DATA_COMPATIBILITY_VERSION = '1.0.0';

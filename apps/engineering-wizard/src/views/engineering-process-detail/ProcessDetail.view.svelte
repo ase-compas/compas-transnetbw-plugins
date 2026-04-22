@@ -18,7 +18,7 @@
 
 
   let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedEngineeringProcess.process, { edit: engineeringProcessEditing.isEditing }));
-  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
+  let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
 
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
@@ -28,7 +28,6 @@
 
   function startEditing() {
     engineeringProcessEditing.isEditing = true;
-    editorTabs.visible = false;
   }
 </script>
 

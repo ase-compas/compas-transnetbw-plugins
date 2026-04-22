@@ -50,7 +50,7 @@ async function validatePlugin(
   );
 
   if (validations.length === 0) {
-    setPluginValidationStatus(plugin.id, []);
+    setPluginValidationStatus(processId, plugin.id, []);
     return;
   }
 
@@ -72,5 +72,5 @@ async function validatePlugin(
     return { ...base, passed: result.value.valid, errors: result.value.errors, rejected: false };
   });
 
-  setPluginValidationStatus(plugin.id, ruleResults);
+  setPluginValidationStatus(processId, plugin.id, ruleResults);
 }

@@ -139,7 +139,7 @@
     <PluginEditorPanel
       {pluginGroups}
       onRemoveOne={(id) => { pluginGroups = removePluginFromGroups(pluginGroups, id); }}
-      onRemoveAll={() => { pluginGroups = removeAllPluginsFromGroups(); }}
+      onRemoveAll={() => { pluginGroups = removeAllPluginsFromGroups(pluginGroups); }}
       onAddGroup={(name, pos) => { pluginGroups = addGroupToGroups(pluginGroups, name, pos); }}
       onUpdateGroups={(updated) => { pluginGroups = updated; }}
     />

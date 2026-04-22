@@ -4,9 +4,10 @@
   import WorkflowActions from '../../components/shared/WorkflowActions.svelte';
   import {
     engineeringProcessEditing,
+    engineeringProcesses,
     selectedEngineeringProcess
   } from '../../features/processes/stores.svelte';
-  import { editorTabs } from '../../features/workflow/layout.svelte';
+  import { enterFullscreenView } from '../../features/workflow/layout.svelte';
   import Button from '@smui/button';
   import ProcessValidationView from './ProcessValidation.view.svelte';
   import ProcessDefinitionView from './ProcessDefinition.view.svelte';
@@ -19,7 +20,7 @@
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
   import VersionBumpDialog from '../../features/processes/components/dialogs/VersionBumpDialog.svelte';
@@ -32,7 +33,7 @@
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
-  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
+  let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
   let selectedPluginId: string | null = $state(null);
 
   let visitedSteps: EditorStepIds[] = $state([]);
@@ -54,12 +55,9 @@
   let entrySnapshot: string | null = null;
 
   onMount(() => {
-    editorTabs.visible = false;
     const proc = selectedEngineeringProcess.process;
     entrySnapshot = proc ? JSON.stringify($state.snapshot(proc)) : null;
-    return () => {
-      editorTabs.visible = true;
-    };
+    return enterFullscreenView();
   });
 
   function hasChanges(): boolean {
@@ -81,29 +79,57 @@
 
   let saving = $state(false);
 
+  function restoreSnapshot() {
+    if (!entrySnapshot) return;
+    try {
+      const original = JSON.parse(entrySnapshot) as Process;
+      const idx = engineeringProcesses.processes.findIndex((p) => p.id === original.id);
+      if (idx !== -1) {
+        engineeringProcesses.processes[idx] = original;
+      }
+    } catch { /* ignore parse errors */ }
+  }
+
+  function leaveEditMode() {
+    engineeringProcessEditing.isEditing = false;
+    selectedEngineeringProcess.process = null;
+  }
+
   async function exitEditing() {
     const proc = selectedEngineeringProcess.process;
     if (proc && hasChanges()) {
-      // Ask user how to bump the version before saving.
-      const result = await openDialog(VersionBumpDialog, {
-        currentVersion: proc.version || '1.0.0',
+      // First ask: save or discard?
+      const confirmResult = await openDialog(OscdConfirmDialog, {
+        title: 'Unsaved changes',
+        message: 'You have unsaved changes. Would you like to save them before leaving?',
+        confirmActionText: 'Save',
+        cancelActionText: 'Discard Changes',
       });
-      if (result?.type !== 'confirm') return; // user cancelled — stay in edit mode
 
-      const bump = result.data as VersionBump;
-      saving = true;
-      try {
-        await saveProcess(proc, bump);
-        toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
-      } catch {
-        toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
-      } finally {
-        saving = false;
+      if (confirmResult?.type === 'confirm') {
+        // User wants to save — show version bump dialog
+        const versionResult = await openDialog(VersionBumpDialog, {
+          currentVersion: proc.version || '1.0.0',
+        });
+        if (versionResult?.type !== 'confirm') return; // user cancelled — stay in edit mode
+
+        const bump = versionResult.data as VersionBump;
+        saving = true;
+        try {
+          await saveProcess(proc, bump);
+          toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
+        } catch {
+          toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
+          return; // stay in edit mode on failure
+        } finally {
+          saving = false;
+        }
+      } else {
+        // User chose to discard — restore original state
+        restoreSnapshot();
       }
     }
-    engineeringProcessEditing.isEditing = false;
-    editorTabs.visible = true;
-    selectedEngineeringProcess.process = null;
+    leaveEditMode();
   }
 
   function handleStepSelect(stepId: EditorStepIds) {

@@ -55,6 +55,18 @@
   let el: any = null;
   let currentTag = '';
 
+  function syncProps(target: any) {
+    target.doc = doc;
+    target.editCount = editCount;
+    target.plugins = plugins;
+    target.nsdoc = nsdoc;
+    target.docName = docName;
+    target.docId = docId;
+    target.docs = docs;
+    target.locale = locale;
+    if (oscdApi) target.oscdApi = oscdApi;
+  }
+
   $effect(() => {
     if (!container) return;
 
@@ -68,36 +80,13 @@
     const newTag = pluginTag(plugin.src);
 
     if (newTag !== currentTag) {
-      // Recreate element
       currentTag = newTag;
-
       container.innerHTML = '';
       el = document.createElement(newTag);
-
-      el.doc = doc;
-      el.editCount = editCount;
-      el.plugins = plugins;
-      el.nsdoc = nsdoc;
-      el.docName = docName;
-      el.docId = docId;
-      el.docs = docs;
-      el.locale = locale;
-      if (oscdApi) el.oscdApi = oscdApi;
-
+      syncProps(el);
       container.appendChild(el);
-    } else {
-      // Update attributes regardless
-      if (el) {
-        el.doc = doc;
-        el.editCount = editCount;
-        el.plugins = plugins;
-        el.nsdoc = nsdoc;
-        el.docName = docName;
-        el.docId = docId;
-        el.docs = docs;
-        el.locale = locale;
-        if (oscdApi) el.oscdApi = oscdApi;
-      }
+    } else if (el) {
+      syncProps(el);
     }
   });
 </script>

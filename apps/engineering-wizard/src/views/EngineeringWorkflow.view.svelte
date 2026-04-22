@@ -8,9 +8,9 @@
   import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
   import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
-  import { editorTabs } from '../features/workflow/layout.svelte';
+  import { enterFullscreenView } from '../features/workflow/layout.svelte';
   import { runningEngineeringProcess } from '../features/processes/stores.svelte';
-  import { pluginValidationStatuses } from '../services/validationStatusStore.svelte';
+  import { pluginValidationStatuses, validationKey } from '../services/validationStatusStore.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -48,7 +48,20 @@
     selectedPlugin && hasPlugins ? plugins.findIndex((p) => p.id === selectedPlugin!.id) : -1,
   );
 
-  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
+  let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
+
+  // Project composite-keyed validation statuses into a pluginId-keyed map for the stepper
+  let processValidationStatuses = $derived.by(() => {
+    const processId = runningEngineeringProcess.process?.id;
+    if (!processId) return {};
+    const result: Record<string, typeof pluginValidationStatuses.statuses[string]> = {};
+    for (const plugin of plugins) {
+      const key = validationKey(processId, plugin.id);
+      const status = pluginValidationStatuses.statuses[key];
+      if (status) result[plugin.id] = status;
+    }
+    return result;
+  });
 
   let selectedGroupIndex: number | null = $state(null);
   let selectedPluginIndex: number | null = $state(null);
@@ -79,7 +92,9 @@
 
     try {
       if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
-    } catch {}
+    } catch (e) {
+      console.warn('[EngineeringWizard] Failed to persist plugin selection:', e);
+    }
 
     setLastSelectedPluginId(plugin.id);
   }
@@ -120,7 +135,9 @@
       try {
         const { lastPluginId } = readEngineeringWorkflowState(doc);
         initialPluginId = lastPluginId;
-      } catch {}
+      } catch (e) {
+        console.warn('[EngineeringWizard] Failed to read initial plugin state:', e);
+      }
     }
 
     const initialPlugin = plugins.find(p => p.id === initialPluginId) ?? plugins[0];
@@ -131,14 +148,10 @@
       void onSelectPlugin(initialPlugin);
     }
 
-    editorTabs.visible = false;
-    return () => {
-      editorTabs.visible = true;
-    };
+    return enterFullscreenView();
   });
 
   function exitWorkflow() {
-    editorTabs.visible = true;
     onExit?.();
   }
 </script>
@@ -153,7 +166,7 @@
     expandedGroupBorderColor="white"
     bind:selectedGroupIndex
     bind:selectedPluginIndex
-    validationStatuses={pluginValidationStatuses.statuses}
+    validationStatuses={processValidationStatuses}
   />
 
   <WorkflowActions

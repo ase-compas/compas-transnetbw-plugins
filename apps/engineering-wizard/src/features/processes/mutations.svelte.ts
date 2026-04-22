@@ -26,18 +26,18 @@ function findPlugin(procId: string, pluginId: string): Plugin | undefined {
     .find((pl) => pl.id === pluginId);
 }
 
-
-function resolveValidationIndex(
+/**
+ * Returns the validations for a specific plugin scoped to a process,
+ * together with their original indices in the raw validations array.
+ */
+function getFilteredValidations(
   validations: XPathValidation[],
   procId: string,
   pluginId: string,
-  entryIndex: number,
-): number {
-  let filteredCount = -1;
-  return validations.findIndex((v) => {
-    if (v.processId === procId && v.pluginId === pluginId) filteredCount++;
-    return filteredCount === entryIndex;
-  });
+): { validation: XPathValidation; rawIndex: number }[] {
+  return validations
+    .map((v, rawIndex) => ({ validation: v, rawIndex }))
+    .filter(({ validation: v }) => v.processId === procId && v.pluginId === pluginId);
 }
 
 function mutatePluginValidations(
@@ -56,7 +56,7 @@ function mutatePluginValidations(
 // ---------------------------------------------------------------------------
 
 export function removeProcess(procId: string): boolean {
-  const idx = (engineeringProcesses.processes ?? []).findIndex((p) => p.id === procId);
+  const idx = engineeringProcesses.processes.findIndex((p) => p.id === procId);
   if (idx === -1) return false;
   engineeringProcesses.processes.splice(idx, 1);
   return true;
@@ -75,7 +75,7 @@ export function addProcess(process: Process): Process {
       : [{ title: 'Ungrouped', plugins: [] }],
   };
 
-  engineeringProcesses.processes = [...(engineeringProcesses.processes ?? []), toInsert];
+  engineeringProcesses.processes = [...engineeringProcesses.processes, toInsert];
   return toInsert;
 }
 
@@ -107,9 +107,7 @@ export function addPluginToProcess(
 export function removePluginFromProcess(procId: string, pluginId: string): boolean {
   const process = getProcess(procId);
   if (!process?.pluginGroups) return false;
-  const updated = removePluginFromGroups(process.pluginGroups, pluginId);
-  if (updated.length === process.pluginGroups.length) return false;
-  process.pluginGroups = updated;
+  process.pluginGroups = removePluginFromGroups(process.pluginGroups, pluginId);
   return true;
 }
 
@@ -137,8 +135,9 @@ export function removeValidationFromPluginInProcess(
   entryIndex: number,
 ): void {
   mutatePluginValidations(procId, pluginId, (validations) => {
-    const idx = resolveValidationIndex(validations, procId, pluginId, entryIndex);
-    if (idx !== -1) validations.splice(idx, 1);
+    const filtered = getFilteredValidations(validations, procId, pluginId);
+    const entry = filtered[entryIndex];
+    if (entry) validations.splice(entry.rawIndex, 1);
   });
 }
 
@@ -149,8 +148,9 @@ export function updateValidationInPluginInProcess(
   validation: XPathValidation,
 ): void {
   mutatePluginValidations(procId, pluginId, (validations) => {
-    const idx = resolveValidationIndex(validations, procId, pluginId, entryIndex);
-    if (idx !== -1) validations[idx] = validation;
+    const filtered = getFilteredValidations(validations, procId, pluginId);
+    const entry = filtered[entryIndex];
+    if (entry) validations[entry.rawIndex] = validation;
   });
 }
 
@@ -171,7 +171,7 @@ export function addGroupToProcess(
 export function updateGroupsOfProcess(procId: string, newGroups: PluginGroup[]): void {
   const process = getProcess(procId);
   if (!process) return;
-  (process.pluginGroups ??= []).splice(0, process.pluginGroups.length, ...newGroups);
+  process.pluginGroups = [...newGroups];
 }
 
 // ---------------------------------------------------------------------------
