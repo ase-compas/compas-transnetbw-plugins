@@ -1,6 +1,6 @@
 <script lang="ts">
   import ProcessesListView from './views/ProcessesList.view.svelte';
-  import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
+  import ProcessEditView from './views/engineering-process-detail/ProcessEdit.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
   import { type Process } from '@oscd-transnet-plugins/shared';
@@ -115,7 +115,8 @@
     selectedEngineeringProcess.process = process;
 
     const viewPlugins = getPluginsForProcess(selectedEngineeringProcess.process);
-    openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    await openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    selectedEngineeringProcess.process = null;
   }
 
   $effect(() => {
@@ -124,16 +125,12 @@
   });
 
   function handleView(process: Process) {
-    selectedEngineeringProcess.process = process;
+    handleEdit(process);
   }
 
   function handleEdit(process: Process) {
     engineeringProcessEditing.isEditing = true;
     selectedEngineeringProcess.process = process;
-  }
-
-  function goBack() {
-    selectedEngineeringProcess.process = null;
   }
 
   function addNewProcess() {
@@ -149,7 +146,6 @@
 
   function handleCreated(proc: Process) {
     isCreatingProcess = false;
-    selectedEngineeringProcess.process = proc;
   }
 </script>
 
@@ -158,8 +154,8 @@
 <div class="app-root">
   {#if isCreatingProcess}
     <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-  {:else if selectedEngineeringProcess.process}
-    <ProcessDetailView handleStart={startProcess} />
+  {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
+    <ProcessEditView />
   {:else}
     <ProcessesListView
       handleView={handleView}
