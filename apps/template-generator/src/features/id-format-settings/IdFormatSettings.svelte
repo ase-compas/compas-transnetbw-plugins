@@ -159,6 +159,12 @@
     state.load(true);
   });
 
+  $effect(() => {
+    if (state.error) {
+      toastService.error('ID Settings', state.error);
+    }
+  });
+
   function getSetting(kind: Kind) {
     return kind === 'global'
       ? state.settings.global

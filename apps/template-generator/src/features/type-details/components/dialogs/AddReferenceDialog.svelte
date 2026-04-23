@@ -4,7 +4,10 @@
   import Radio from '@smui/radio';
   import FormField from '@smui/form-field';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import CreateTypeForm, { type CreateTypeFormSubmitDetails } from '../ui/CreateTypeForm.svelte';
+  import CreateTypeForm, {
+    type CreateTypeFormSubmitDetails,
+    type GenerateIdResult,
+  } from '../ui/CreateTypeForm.svelte';
   import { DataTypeService } from '../../services/type.service';
   import type { SimpleDataType, TypeKind } from '../../../../shared/model';
   import { getIdSettingsState } from '../../../id-format-settings/id-format-settings.state.svelte.js';
@@ -118,6 +121,17 @@
       mode,
     });
   }
+
+  function generateReferenceTypeId(instance: string): GenerateIdResult {
+    if (!refTypeKind) {
+      return { message: 'Unable to auto-generate an ID for this reference type.' };
+    }
+
+    return idSettingsState.generateReferenceIdWithResult(refTypeKind, {
+      instance,
+      reference: memberName,
+    });
+  }
 </script>
 
 <OscdBaseDialog
@@ -194,11 +208,7 @@
             canChooseInstaceType={false}
             onChange={handleFormChange}
             onSubmit={handleFormSubmit}
-            generateId={(instance) =>
-              idSettingsState.generateReferenceId(refTypeKind, {
-                instance,
-                reference: memberName,
-              })}
+            generateId={generateReferenceTypeId}
             {service}
           />
         {/if}

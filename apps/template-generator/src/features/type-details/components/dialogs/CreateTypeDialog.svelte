@@ -7,6 +7,7 @@
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { getIdSettingsState } from '../../../id-format-settings/id-format-settings.state.svelte.js';
   import type { DataTypeService } from '../../services/type.service';
+  import type { GenerateIdResult } from '../ui/CreateTypeForm.svelte';
 
   const idSettingsState = getIdSettingsState();
 
@@ -46,6 +47,10 @@
   function handleClose() {
     closeDialog('exit');
   }
+
+  function generateTypeId(instance: string): GenerateIdResult {
+    return idSettingsState.generateIdWithResult(typeKind, { instance });
+  }
 </script>
 
 <OscdBaseDialog
@@ -65,8 +70,7 @@
         showCreateFromDefaultOption={typeKind === TypeKind.LNodeType}
         onChange={handleFormChange}
         onSubmit={handleFormSubmit}
-        generateId={(instance) =>
-          idSettingsState.generateId(typeKind, { instance })}
+        generateId={generateTypeId}
         {service}
       />
     </div>
