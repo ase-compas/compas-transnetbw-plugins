@@ -45723,10 +45723,8 @@ function Jm(n, e) {
   const t = qC(n), a = qC(e);
   for (let r = 0; r < 3; r++) {
     const s = t[r] ?? 0, o = a[r] ?? 0;
-    if (s > o)
-      return 1;
-    if (s < o)
-      return -1;
+    if (s > o) return 1;
+    if (s < o) return -1;
   }
   return 0;
 }
