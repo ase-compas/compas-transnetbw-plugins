@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Textfield from '@smui/textfield';
+  import SearchInput from '../../../../components/shared/SearchInput.svelte';
   import { OscdListItem, OscdPanel } from '@oscd-transnet-plugins/oscd-component';
   import { OscdAddCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
@@ -21,45 +21,50 @@
   }
 
   let {
-    plugins = [],
+    plugins,
     searchTerm = $bindable(''),
     onAddPlugin = () => {}
   }: Props = $props();
 
-  const handleDNDFinalize = (event: any) => {
-    plugins = event.detail.items;
-  };
+  // Local copy for DND — avoids mutating a $derived prop which corrupts
+  // Svelte 5's reactive graph and causes "Cannot read properties of undefined
+  // (reading 'prev')" crashes.
+  let localPlugins = $state<Plugin[]>([]);
+  let isDragging = $state(false);
 
-  /**
-   * Create a shadow element so the actual plugin never leaves this list.
-   */
+  // Sync from parent only when not mid-drag (drag has its own local mutations).
+  $effect(() => {
+    if (!isDragging) {
+      localPlugins = [...plugins];
+    }
+  });
+
   const handleDNDConsider = (e: any) => {
     const { trigger, id } = e.detail.info;
 
     if (trigger === TRIGGERS.DRAG_STARTED) {
-      const idx = plugins.findIndex(i => i.id === id);
+      isDragging = true;
+      const idx = localPlugins.findIndex(i => i.id === id);
       if (idx < 0) return;
 
       const newId = `${id}_copy`;
-
-      // remove previous shadow items then insert a fresh copy at drag start index
       e.detail.items = e.detail.items.filter(
         (item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
       );
-      e.detail.items.splice(idx, 0, { ...plugins[idx], id: newId });
-
-      plugins = e.detail.items;
-    } else {
-      plugins = [...plugins];
+      e.detail.items.splice(idx, 0, { ...localPlugins[idx], id: newId });
     }
+
+    localPlugins = e.detail.items;
+  };
+
+  const handleDNDFinalize = (e: any) => {
+    localPlugins = e.detail.items;
+    isDragging = false;
   };
 
   function normalizeOriginal(plugin: Plugin): Plugin {
-    // If user clicks add on a *_copy item, map back to original id
     const originalId = plugin.id.endsWith('_copy') ? plugin.id.slice(0, -5) : plugin.id;
-
-    // Prefer the original plugin object if it exists in the list
-    return plugins.find(p => p.id === originalId) ?? { ...plugin, id: originalId };
+    return localPlugins.find(p => p.id === originalId) ?? { ...plugin, id: originalId };
   }
 
   function handleAddClick(plugin: Plugin) {
@@ -73,7 +78,7 @@
   <div class="card-header">
     <p class="header-info">Add External Plugins</p>
     <div class="search-input">
-      <Textfield variant="outlined" label="Search Plugins" bind:value={searchTerm} />
+      <SearchInput bind:value={searchTerm} label="Search Plugins" />
     </div>
   </div>
 {/snippet}
@@ -82,7 +87,7 @@
   <div
     class="card-parent-content"
     use:dragHandleZone={{
-      items: plugins,
+      items: localPlugins,
       flipDurationMs: 100,
       dropTargetStyle: {},
       dropFromOthersDisabled: true
@@ -90,7 +95,7 @@
     onconsider={handleDNDConsider}
     onfinalize={handleDNDFinalize}
   >
-    {#each plugins as plugin (plugin.id)}
+    {#each localPlugins as plugin (plugin.id)}
       <div data-id={plugin.id} animate:flip={{ duration: 100 }}>
         <OscdListItem variant="secondary">
           <div class="card-item-content">
@@ -135,6 +140,7 @@
   .search-input {
     max-width: 500px;
   }
+
 
   .card-parent-content {
     display: flex;

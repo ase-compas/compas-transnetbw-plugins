@@ -1,0 +1,90 @@
+<script lang="ts">
+  import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
+  import { OscdCompareArrowsIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import PluginEditorPanel from './panels/PluginEditorPanel.svelte';
+  import PluginExternalPanel from './panels/PluginExternalPanel.svelte';
+  import { getFilteredCorePlugins } from '../../plugins/filteredPlugins.svelte';
+
+  interface Props {
+    pluginGroups?: PluginGroup[];
+    onRemoveOne: (pluginId: string) => void;
+    onRemoveAll: () => void;
+    onAddGroup: (name: string, position: number) => void;
+    onUpdateGroups: (updatedGroups: PluginGroup[]) => void;
+    onAddPlugin: (plugin: Plugin) => void;
+  }
+
+  let {
+    pluginGroups = [],
+    onRemoveOne,
+    onRemoveAll,
+    onAddGroup,
+    onUpdateGroups,
+    onAddPlugin,
+  }: Props = $props();
+
+  let searchTerm = $state('');
+  let filteredPlugins = $derived(getFilteredCorePlugins(searchTerm));
+</script>
+
+<div class="plugin-editor-row">
+  <PluginEditorPanel
+    {pluginGroups}
+    {onRemoveOne}
+    {onRemoveAll}
+    {onAddGroup}
+    {onUpdateGroups}
+  />
+
+  <div class="arrows-col">
+    <OscdCompareArrowsIcon svgStyles="fill: #6B9197" />
+    <p>SELECT OR DRAG &amp; DROP PLUGINS</p>
+  </div>
+
+  <PluginExternalPanel
+    plugins={filteredPlugins}
+    bind:searchTerm
+    {onAddPlugin}
+  />
+</div>
+
+<style>
+  .plugin-editor-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+    gap: 16px;
+
+    /*
+     * Override OscdPanel defaults to use flex-based width distribution.
+     * Panel max-height is controlled per-view via --oscd-panel-max-height
+     * (set on the parent .page / .edit-view so the user can easily adjust it).
+     */
+    --oscd-panel-width: auto;
+  }
+
+  /* Make OscdPanel roots flex items that fill available height */
+  .plugin-editor-row > :global(.panel-parent) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .arrows-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    min-width: 200px;
+  }
+
+  .arrows-col p {
+    color: #6B9197;
+    font-weight: 500;
+    margin: 0;
+    text-align: center;
+  }
+</style>

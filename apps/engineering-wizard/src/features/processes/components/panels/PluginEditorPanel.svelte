@@ -5,21 +5,18 @@
   import PluginBasePanel from './PluginBasePanel.svelte';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
-  import {
-    addGroupToProcess,
-    removeAllPluginsFromProcess,
-    removePluginFromProcess,
-    updateGroupsOfProcess
-  } from '../../mutations.svelte';
-  import { selectedEngineeringProcess } from '../../stores.svelte';
 
   interface Props {
     pluginGroups?: PluginGroup[];
+    onRemoveOne: (pluginId: string) => void;
+    onRemoveAll: () => void;
+    onAddGroup: (name: string, position: number) => void;
+    onUpdateGroups: (updatedGroups: PluginGroup[]) => void;
   }
 
-  let {
-    pluginGroups = [],
-  }: Props = $props();
+  let { pluginGroups = [], onRemoveOne, onRemoveAll, onAddGroup, onUpdateGroups }: Props = $props();
+
+  let showRemoveAll = $derived(pluginGroups.flatMap((g) => g.plugins ?? []).length > 0);
 
   async function handleRemoveAll() {
     const result = await openDialog(OscdConfirmDialog, {
@@ -27,37 +24,18 @@
       message: 'This action cannot be undone. You will need to manually search for and re-add each item, and rearrange them again.',
       confirmActionText: 'Remove All',
       cancelActionText: 'Cancel',
-      confirmActionColor: 'danger'
+      confirmActionColor: 'danger',
     });
-
-    if(result.type === 'confirm') {
-      removeAllPluginsFromProcess(selectedEngineeringProcess.process.id);
-    }
+    if (result.type === 'confirm') onRemoveAll();
   }
-
-  function handleRemoveOne(pluginId: string) {
-    removePluginFromProcess(selectedEngineeringProcess.process.id, pluginId);
-  }
-
-  function handleAddGroup(name: string, position: number) {
-    addGroupToProcess(selectedEngineeringProcess.process.id, name, position);
-  }
-
-  function handleUpdateGroups(updatedGroups: PluginGroup[]) {
-    updateGroupsOfProcess(selectedEngineeringProcess.process.id, updatedGroups)
-  }
-
-  let showRemoveAll = $derived(pluginGroups.flatMap(g => g.plugins).length > 0)
-
 </script>
 
 <PluginBasePanel
   {pluginGroups}
   {headerAction}
   {itemAction}
-
-  onAddGroup={(name, position) => handleAddGroup(name, position)}
-  onUpdateGroups={(updatedGroups) => handleUpdateGroups(updatedGroups)}
+  {onAddGroup}
+  onUpdateGroups={onUpdateGroups}
 />
 
 {#snippet headerAction()}
@@ -73,12 +51,12 @@
   {/if}
 {/snippet}
 
-{#snippet itemAction({ plugin, groupIndex, pluginIndex })}
+{#snippet itemAction({ plugin })}
   <button
     type="button"
     class="plugin-list__removeBtn"
     aria-label={`Remove ${plugin.name}`}
-    onclick={() => handleRemoveOne(plugin.id)}
+    onclick={() => onRemoveOne(plugin.id)}
   >
     <OscdRemoveIcon svgStyles="fill: #FF203A" />
   </button>
@@ -97,9 +75,7 @@
     border-radius: 0.375rem;
   }
 
-  .plugin-list__removeBtn:hover {
-    opacity: 0.9;
-  }
+  .plugin-list__removeBtn:hover { opacity: 0.9; }
 
   .plugin-list__removeBtn:focus-visible {
     outline: 2px solid var(--danger);

@@ -1,11 +1,9 @@
 <script lang="ts">
-  import Textfield from '@smui/textfield';
+  import SearchInput from '../components/shared/SearchInput.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
 
-  import { OscdBasicDataTable } from '../../../../libs/oscd-component/src';
-  import {
-    OscdInfoIcon
-  } from '../../../../libs/oscd-icons/src';
+  import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdInfoIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   import Button from '@smui/button';
   import {
@@ -108,7 +106,7 @@
   {/if}
 
   <div class="process-toolbar">
-    <Textfield bind:value={searchQuery} variant="outlined" label="Search Processes" />
+    <SearchInput bind:value={searchQuery} label="Search Processes" />
     <Button
       class="mdc-button--raised"
       style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
@@ -180,6 +178,7 @@
     margin-bottom: 16px;
     gap: 12px;
   }
+
 
   .process-banner {
     display: flex;
