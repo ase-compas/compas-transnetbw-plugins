@@ -17,7 +17,7 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
-  import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess } from '../../features/processes/mutations.svelte';
+  import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
@@ -192,56 +192,82 @@
   }
 
 </script>
-<div class="stepper">
-  <WorkflowTitle onClick={exitEditing} />
+<div class="edit-view">
+  <div class="stepper">
+    <WorkflowTitle onClick={exitEditing} />
 
-  <ProcessDetailStepper currentId={currentStepId} visited={visitedSteps} onSelect={handleStepSelect} />
+    <ProcessDetailStepper currentId={currentStepId} visited={visitedSteps} onSelect={handleStepSelect} />
 
-  <WorkflowActions
-    onGoToPreviousStep={goToPreviousStep}
-    onGoToNextStep={goToNextStep}
-    onDone={exitEditing}
+    <WorkflowActions
+      onGoToPreviousStep={goToPreviousStep}
+      onGoToNextStep={goToNextStep}
+      onDone={exitEditing}
 
-    isAtFirstStep={isAtFirstStep}
-    isAtLastStep={isAtLastStep}
-    doneDisabled={saving}
-  />
-</div>
-
-<div class="step-content">
-  {#if currentStepId === 'process-definition'}
-    <ProcessInfoBar />
-    <ProcessDefinitionView {pluginGroups} />
-  {:else if currentStepId === 'validator-configuration'}
-    <div class="header">
-      <PluginGroupsStepper
-        {pluginGroups}
-        selectPlugin={onSelectPlugin}
-        bind:selectedGroupIndex
-        bind:selectedPluginIndex
-      />
-      <Button
-        variant="raised"
-        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-        onclick={handleAddValidationClick}
-        disabled={!selectedEngineeringProcess.process || !selectedPlugin}
-        aria-label="Add validation"
-      >
-        ADD NEW VALIDATION
-      </Button>
-    </div>
-    <ProcessValidationView
-      {selectedPlugin}
-      onEditEntry={handleEditValidationClick}
-      onDeleteEntry={handleDeleteValidationClick}
+      isAtFirstStep={isAtFirstStep}
+      isAtLastStep={isAtLastStep}
+      doneDisabled={saving}
     />
-  {/if}
+  </div>
+
+  <div class="step-content">
+    {#if currentStepId === 'process-definition'}
+      {#if selectedEngineeringProcess.process}
+        {@const proc = selectedEngineeringProcess.process}
+        <ProcessInfoBar
+          name={proc.name ?? ''}
+          processId={proc.id}
+          version={proc.version}
+          description={proc.description ?? ''}
+          nameInvalid={proc.name?.trim().length === 0}
+          onNameChange={(v) => updateProcessMetadata(proc.id, { name: v })}
+          onDescriptionChange={(v) => updateProcessMetadata(proc.id, { description: v })}
+        />
+      {/if}
+      <ProcessDefinitionView {pluginGroups} />
+    {:else if currentStepId === 'validator-configuration'}
+      <div class="header">
+        <PluginGroupsStepper
+          {pluginGroups}
+          selectPlugin={onSelectPlugin}
+          bind:selectedGroupIndex
+          bind:selectedPluginIndex
+        />
+        <Button
+          variant="raised"
+          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+          onclick={handleAddValidationClick}
+          disabled={!selectedEngineeringProcess.process || !selectedPlugin}
+          aria-label="Add validation"
+        >
+          ADD NEW VALIDATION
+        </Button>
+      </div>
+      <ProcessValidationView
+        {selectedPlugin}
+        onEditEntry={handleEditValidationClick}
+        onDeleteEntry={handleDeleteValidationClick}
+      />
+    {/if}
+  </div>
 </div>
 
 <style>
   * { font-family: 'Roboto', sans-serif; }
 
-  .step-content { padding: 1rem; }
+  .edit-view {
+    /*
+     * Controls the max-height of the plugin panels.
+     * Increase this value if panels still overflow (accounts for stepper + info bar + OpenSCD chrome).
+     */
+    --oscd-panel-max-height: calc(100vh - 18rem);
+  }
+
+  .step-content {
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
   .stepper {
     height: 4rem;
@@ -250,13 +276,15 @@
     grid-template-columns: auto 1fr auto;
     align-items: center;
     background-color: var(--primary-base);
+    flex-shrink: 0;
   }
 
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    padding: 16px 24px;
+    flex-shrink: 0;
   }
 
   .header :global(button) {

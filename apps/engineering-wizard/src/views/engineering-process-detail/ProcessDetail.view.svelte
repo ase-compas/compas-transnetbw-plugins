@@ -63,13 +63,25 @@
     flex-direction: column;
   }
 
-  .step-content { padding: 1rem; }
+  .step-content {
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    /*
+     * Controls the max-height of the plugin panel in the view (read-only) mode.
+     * Adjust to fit your OpenSCD header height.
+     */
+    --oscd-panel-max-height: calc(100vh - 14rem);
+    --oscd-panel-width: auto;
+  }
 
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    flex-shrink: 0;
   }
 
   .header :global(button) {

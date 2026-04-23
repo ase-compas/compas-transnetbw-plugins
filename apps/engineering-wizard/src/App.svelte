@@ -155,19 +155,24 @@
 
 <DialogHost />
 
-{#if isCreatingProcess}
-  <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-{:else if selectedEngineeringProcess.process}
-  <ProcessDetailView handleStart={startProcess} />
-{:else}
-  <ProcessesListView
-    handleView={handleView}
-    handleEdit={handleEdit}
-    handleStart={startProcess}
-    handleAddNew={addNewProcess}
-    docName={docName}
-  />
-{/if}
+<div class="app-root">
+  {#if isCreatingProcess}
+    <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
+  {:else if selectedEngineeringProcess.process}
+    <ProcessDetailView handleStart={startProcess} />
+  {:else}
+    <ProcessesListView
+      handleView={handleView}
+      handleEdit={handleEdit}
+      handleStart={startProcess}
+      handleAddNew={addNewProcess}
+      docName={docName}
+    />
+  {/if}
+</div>
 <OscdToastHost />
 <style>
+  .app-root {
+    display: contents;
+  }
 </style>

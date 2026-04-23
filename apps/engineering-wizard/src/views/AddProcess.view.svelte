@@ -1,19 +1,15 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import Textfield from '@smui/textfield';
-  import HelperText from '@smui/textfield/helper-text';
   import Button from '@smui/button';
   import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
-  import { OscdCompareArrowsIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
-  import PluginEditorPanel from '../features/processes/components/panels/PluginEditorPanel.svelte';
-  import PluginExternalPanel from '../features/processes/components/panels/PluginExternalPanel.svelte';
+  import ProcessInfoBar from '../components/shared/ProcessInfoBar.svelte';
+  import ProcessPluginEditor from '../features/processes/components/ProcessPluginEditor.svelte';
   import { engineeringProcessEditing, engineeringProcesses } from '../features/processes/stores.svelte';
   import { addProcess } from '../features/processes/mutations.svelte';
   import { saveProcess } from '../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import { getFilteredCorePlugins } from '../features/plugins/filteredPlugins.svelte';
   import {
     addPluginToGroups,
     removePluginFromGroups,
@@ -33,12 +29,10 @@
   let description = $state('');
   let procId = $state('');
   let idTouched = $state(false);
-  let searchTerm = $state('');
   let pluginGroups = $state<PluginGroup[]>([{ title: 'Ungrouped', plugins: [] }]);
   let saving = $state(false);
 
   let canSave = $derived(Boolean(name.trim()));
-  let filteredPlugins = $derived(getFilteredCorePlugins(searchTerm));
 
   const slugify = (s: string) =>
     s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -118,43 +112,26 @@
     </div>
   </div>
 
-  <div class="form">
-    <div class="field">
-      <Textfield variant="outlined" label="Process name" bind:value={name} invalid={nameInvalid}>
-        {#snippet helper()}<HelperText validationMsg>Process name is required.</HelperText>{/snippet}
-      </Textfield>
-    </div>
-    <div class="field">
-      <Textfield variant="outlined" label="Process id" bind:value={procId} oninput={() => (idTouched = true)} />
-    </div>
-    <div class="field">
-      <Textfield variant="outlined" label="Version" value="1.0.0" disabled />
-    </div>
-    <div class="field">
-      <Textfield variant="outlined" label="Description" bind:value={description} />
-    </div>
-  </div>
+  <ProcessInfoBar
+    {name}
+    processId={procId}
+    version="1.0.0"
+    {description}
+    {nameInvalid}
+    processIdDisabled={false}
+    onNameChange={(v) => (name = v)}
+    onDescriptionChange={(v) => (description = v)}
+    onProcessIdChange={(v) => { procId = v; idTouched = true; }}
+  />
 
-  <div class="process-definition-view">
-    <PluginEditorPanel
-      {pluginGroups}
-      onRemoveOne={(id) => { pluginGroups = removePluginFromGroups(pluginGroups, id); }}
-      onRemoveAll={() => { pluginGroups = removeAllPluginsFromGroups(pluginGroups); }}
-      onAddGroup={(name, pos) => { pluginGroups = addGroupToGroups(pluginGroups, name, pos); }}
-      onUpdateGroups={(updated) => { pluginGroups = updated; }}
-    />
-
-    <div class="drag-and-drop-info">
-      <OscdCompareArrowsIcon svgStyles="fill: #6B9197" />
-      <p>SELECT OR DRAG &amp; DROP PLUGINS</p>
-    </div>
-
-    <PluginExternalPanel
-      plugins={filteredPlugins}
-      bind:searchTerm
-      onAddPlugin={(p) => { pluginGroups = addPluginToGroups(pluginGroups, p); }}
-    />
-  </div>
+  <ProcessPluginEditor
+    {pluginGroups}
+    onRemoveOne={(id) => { pluginGroups = removePluginFromGroups(pluginGroups, id); }}
+    onRemoveAll={() => { pluginGroups = removeAllPluginsFromGroups(pluginGroups); }}
+    onAddGroup={(name, pos) => { pluginGroups = addGroupToGroups(pluginGroups, name, pos); }}
+    onUpdateGroups={(updated) => { pluginGroups = updated; }}
+    onAddPlugin={(p) => { pluginGroups = addPluginToGroups(pluginGroups, p); }}
+  />
 </div>
 
 <style>
@@ -165,6 +142,12 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+
+    /*
+     * Controls the max-height of the plugin panels.
+     * Increase this value if panels still overflow (accounts for page chrome + OpenSCD header/tabs).
+     */
+    --oscd-panel-max-height: calc(100vh - 22rem);
   }
 
   .topbar {
@@ -172,6 +155,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    flex-shrink: 0;
   }
 
   .title {
@@ -186,40 +170,5 @@
     align-items: center;
     gap: 12px;
   }
-
-  .form {
-    display: grid;
-    grid-template-columns: 1fr 1fr 160px 1fr;
-    gap: 12px;
-    align-items: start;
-  }
-
-  .field { min-width: 0; }
-
-  .field :global(.mdc-text-field) { width: 100%; }
-
-  .process-definition-view {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .drag-and-drop-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 500px;
-    gap: 12px;
-    min-width: 240px;
-  }
-
-  .drag-and-drop-info p {
-    color: #6B9197;
-    font-weight: 500;
-    margin: 0;
-  }
 </style>
+
