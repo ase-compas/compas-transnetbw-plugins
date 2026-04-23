@@ -12,8 +12,8 @@
     padding: 0;
     margin: 0;
     color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: Arial, sans-serif;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: var(--ew-font-weight-heading, 600);
   }
 </style>

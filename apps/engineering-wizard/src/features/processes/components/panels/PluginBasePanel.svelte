@@ -195,9 +195,10 @@
 
   .plugin-list__title {
     margin: 0;
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: var(--ew-font-weight-heading, 600);
     color: var(--white);
-    font-size: 1.25rem;
     line-height: 1.2;
   }
 
@@ -246,7 +247,9 @@
   }
 
   .plugin-list__group-title {
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: #dae3e6;
   }
 
@@ -272,7 +275,9 @@
   }
 
   .plugin-list__item-name {
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
   }
 

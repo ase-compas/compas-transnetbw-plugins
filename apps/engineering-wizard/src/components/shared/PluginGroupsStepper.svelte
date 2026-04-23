@@ -142,19 +142,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: 500;
     padding: 0 8px;
     margin: 0;
 
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
     cursor: pointer;
     user-select: none;
 
     background: transparent;
     border: none;
-
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
 
     border-radius: 2px;
   }
@@ -168,8 +167,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
 
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
     padding: 6px 1rem;
     background-color: white;
@@ -181,8 +182,6 @@
 
     margin: 0;
     border: none;
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
     overflow: visible;
   }
 

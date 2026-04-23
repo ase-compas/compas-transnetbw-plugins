@@ -63,6 +63,9 @@
     align-items: center;
     color: white;
     gap: 0.8rem;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     text-transform: uppercase;
     cursor: pointer;
   }

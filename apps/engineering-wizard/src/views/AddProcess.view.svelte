@@ -161,8 +161,8 @@
   .title {
     margin: 0;
     color: var(--primary-base);
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: var(--ew-font-weight-heading, 600);
   }
 
   .topbar__actions {

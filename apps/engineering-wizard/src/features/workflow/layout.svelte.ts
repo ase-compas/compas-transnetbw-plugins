@@ -13,20 +13,36 @@ function setEditorTabsVisibility(visible: boolean) {
   );
 }
 
+function setTopAppBarVisibility(visible: boolean) {
+  getLayoutContainer()?.dispatchEvent(
+    new CustomEvent('toggle-top-app-bar', {
+      detail: { visible },
+      bubbles: true,
+      composed: true,
+    }),
+  );
+}
+
 export const editorTabs = $state<{ visible: boolean }>({
   visible: true,
 });
 
+export const topAppBar = $state<{ visible: boolean }>({
+  visible: true,
+});
+
 /**
- * Call in onMount to hide editor tabs for the duration of a full-screen view.
- * Returns a cleanup function that restores tab visibility on unmount.
+ * Call in onMount to hide editor tabs and top app bar for the duration of a full-screen view.
+ * Returns a cleanup function that restores visibility on unmount.
  *
  * Usage: `onMount(() => enterFullscreenView())`
  */
 export function enterFullscreenView(): () => void {
   editorTabs.visible = false;
+  topAppBar.visible = false;
   return () => {
     editorTabs.visible = true;
+    topAppBar.visible = true;
   };
 }
 
@@ -34,5 +50,8 @@ export function enterFullscreenView(): () => void {
 $effect.root(() => {
   $effect(() => {
     setEditorTabsVisibility(editorTabs.visible);
+  });
+  $effect(() => {
+    setTopAppBarVisibility(topAppBar.visible);
   });
 });

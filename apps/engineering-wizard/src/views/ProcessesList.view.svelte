@@ -3,9 +3,9 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdInfoIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
 
-  import Button from '@smui/button';
+  import Button, { Label, Icon } from '@smui/button';
   import {
     engineeringProcesses,
     engineeringProcessesStatus,
@@ -136,7 +136,8 @@
         class="mdc-button--raised"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
       >
-        Edit
+        <Icon><OscdEditIcon svgStyles="fill: var(--white)" /></Icon>
+        <Label>Edit</Label>
       </Button>
 
       {#if isRunningRow(item)}
@@ -148,7 +149,8 @@
           class="mdc-button--raised"
           style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         >
-         Continue
+          <Icon><OscdPlayCircleIcon svgStyles="fill: var(--white)" /></Icon>
+          <Label>Continue</Label>
         </Button>
       {:else}
         <Button
@@ -158,7 +160,8 @@
           class="mdc-button--raised"
           style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         >
-         Start
+          <Icon><OscdPlayCircleIcon svgStyles="fill: var(--white)" /></Icon>
+          <Label>Start</Label>
         </Button>
       {/if}
     {/snippet}
@@ -198,8 +201,9 @@
   }
 
   .process-banner span {
-    font-family: 'Roboto', sans-serif;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
     color: var(--white);
-    font-weight: 500;
+    font-weight: var(--ew-font-weight-medium, 500);
   }
 </style>

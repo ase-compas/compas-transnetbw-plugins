@@ -180,8 +180,9 @@
   }
 
   .panel-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: var(--ew-font-weight-heading, 600);
     color: var(--primary-base);
   }
 
@@ -190,7 +191,9 @@
     align-items: center;
     gap: 6px;
     padding: 6px 16px;
-    font-size: 12px;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-normal, 400);
   }
 
   .section-header--failed { color: var(--red); }

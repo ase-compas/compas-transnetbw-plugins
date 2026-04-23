@@ -69,7 +69,9 @@
   .summary::-webkit-details-marker { display: none; }
 
   .title {
-    font-size: 13px;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
   }
 
@@ -83,7 +85,9 @@
 
   .body p {
     margin: 0;
-    font-size: 12px;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-normal, 400);
     color: var(--primary-base);
     line-height: 1.5;
     text-align: left;
@@ -96,7 +100,9 @@
   }
 
   .label {
-    font-size: 10px;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-small, 0.75rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--base1);

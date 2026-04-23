@@ -82,8 +82,10 @@
   }
 
   .arrows-col p {
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: #6B9197;
-    font-weight: 500;
     margin: 0;
     text-align: center;
   }
