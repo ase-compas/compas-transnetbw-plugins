@@ -1,4 +1,5 @@
 import type { Process } from '@oscd-transnet-plugins/shared';
+import { isVersionGreater } from '@oscd-transnet-plugins/shared';
 import type { CustomResourceService } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import {
   UploadDataContentTypeEnum,
@@ -90,21 +91,3 @@ export class ProcessService {
     return { resourceId: result.id, version: result.version };
   }
 }
-
-// ---------------------------------------------------------------------------
-// helpers
-// ---------------------------------------------------------------------------
-
-function parseVersion(v: string): [number, number, number] {
-  const parts = (v ?? '0.0.0').split('.').map(Number);
-  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
-}
-
-function isVersionGreater(a: string, b: string): boolean {
-  const [ma, mi, pa] = parseVersion(a);
-  const [mb, mi2, pb] = parseVersion(b);
-  if (ma !== mb) return ma > mb;
-  if (mi !== mi2) return mi > mi2;
-  return pa > pb;
-}
-
