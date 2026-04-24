@@ -279,6 +279,7 @@ export class DataTypeDetailsState {
     }
 
     public clearMarkedMember() {
+        if (!this.markedMemberId) return;
         this.markedMemberId = null;
         this.refreshData();
     }
