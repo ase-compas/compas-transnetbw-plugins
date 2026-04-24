@@ -72,7 +72,7 @@
 
 <OscdBaseDialog
   title="Apply Default Preview"
-  confirmActionText='Apply'
+  confirmActionText={applicableRows.length === 0 ? 'Close' : 'Apply'}
   maxWidth="1000px"
   height="auto"
   maxHeight="80vh"
@@ -88,18 +88,20 @@
           <div class="summary-label">DataType</div>
           <div class="summary-value">{applyDefaultPreview?.dataTypeId ?? '-'}</div>
         </article>
-        <article class="summary-card">
-          <div class="summary-label">Will Be Assigned</div>
-          <div class="summary-value success-text">{applicableRows.length}</div>
-        </article>
-        <article class="summary-card">
-          <div class="summary-label">No Default Available</div>
-          <div class="summary-value muted-text">{unavailableRows.length}</div>
-        </article>
-        <article class="summary-card">
-          <div class="summary-label">Members Considered</div>
-          <div class="summary-value">{totalMembers}</div>
-        </article>
+        {#if totalMembers > 1}
+          <article class="summary-card">
+            <div class="summary-label">Will Be Assigned</div>
+            <div class="summary-value success-text">{applicableRows.length}</div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-label">No Default Available</div>
+            <div class="summary-value muted-text">{unavailableRows.length}</div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-label">Members Considered</div>
+            <div class="summary-value">{totalMembers}</div>
+          </article>
+        {/if}
       </div>
 
       {#if memberRows.length === 0}
@@ -120,19 +122,19 @@
                     </span>
                   </header>
                   <div class="row-grid">
-                    <div>
-                      <div class="field-label">Reference ID</div>
-                      <div class="field-value mono">{row.referenceId}</div>
+                      <div>
+                        <div class="field-label">Reference ID</div>
+                        <div class="field-value mono">{row.referenceId}</div>
+                      </div>
+                      <div>
+                        <div class="field-label">Reference Type</div>
+                        <div class="field-value">{row.refTypeLabel}</div>
+                      </div>
+                      <div>
+                        <div class="field-label">Version <span class="version-note">(latest)</span></div>
+                        <div class="field-value">{row.versionTo ?? '-'}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div class="field-label">Reference Type</div>
-                      <div class="field-value">{row.refTypeLabel}</div>
-                    </div>
-                    <div>
-                      <div class="field-label">Version <span class="version-note">(latest)</span></div>
-                      <div class="field-value">{row.versionTo ?? '-'}</div>
-                    </div>
-                  </div>
                 </article>
               {/each}
             </div>
@@ -150,15 +152,15 @@
                     <span class="chip chip-danger">No default</span>
                   </header>
                   <div class="row-grid">
-                    <div>
-                      <div class="field-label">Reference Type</div>
-                      <div class="field-value muted-text">{row.refTypeLabel}</div>
+                      <div>
+                        <div class="field-label">Reference Type</div>
+                        <div class="field-value muted-text">{row.refTypeLabel}</div>
+                      </div>
+                      <div>
+                        <div class="field-label">Reason</div>
+                        <div class="field-value muted-text">No default exists for this reference type.</div>
+                      </div>
                     </div>
-                    <div>
-                      <div class="field-label">Reason</div>
-                      <div class="field-value muted-text">No default exists for this reference type.</div>
-                    </div>
-                  </div>
                 </article>
               {/each}
             </div>
@@ -171,12 +173,10 @@
 
 <style>
   .preview-dialog-content {
-    padding: 1rem;
+    padding-top: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    max-height: min(70vh, 900px);
-    overflow: auto;
   }
 
   .summary-grid {
@@ -186,7 +186,7 @@
   }
 
   .summary-card {
-    background: #f7fafc;
+    background: var(--white);
     border: 1px solid #d7dde5;
     border-radius: 8px;
     padding: 0.6rem 0.75rem;
@@ -266,7 +266,7 @@
     border: 1px solid #d7dde5;
     border-radius: 10px;
     padding: 0.75rem;
-    background: #ffffff;
+    background: var(--white);
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
@@ -274,7 +274,6 @@
 
   .row-card.unavailable {
     background: #f6f8fa;
-    border-color: #dce3eb;
   }
 
   .row-header {
@@ -321,7 +320,7 @@
   }
 
   .success-text {
-    color: #276749;
+    color: var(--primary);
   }
 
   .muted-text {
@@ -334,7 +333,7 @@
 
   .empty-state {
     padding: 0.9rem;
-    border: 1px dashed #c9d3df;
+    border: 1px solid #d7dde5;
     border-radius: 8px;
     color: #5f6b7a;
     background: #f9fbfd;
