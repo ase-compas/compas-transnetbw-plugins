@@ -3,6 +3,7 @@
   import Checkbox from '@smui/checkbox';
   import Button, {Icon, Label} from '@smui/button';
   import { OscdLockIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { TypeKind } from '../../../../shared/model';
 
   interface Props {
     title: string;
@@ -15,7 +16,6 @@
     canClick?: boolean;
     canUnlink?: boolean;
     canClickReference?: boolean;
-    canSetDefault: boolean;
     selectionEnabled?: boolean;
     selected?: boolean;
     isMandatory?: boolean;
@@ -26,6 +26,11 @@
     isOver?: boolean;
     canDrag?: boolean;
     referencable?: boolean;
+    isDefaultType?: boolean;
+    defaultTypeVersion?: string;
+    defaultTypeRootId?: string;
+    defaultTypeInstance?: string;
+    defaultTypeKind?: TypeKind;
 
     // Callbacks
     onClick?: () => void;
@@ -35,8 +40,8 @@
     onUnlink?: () => void;
     onReferenceClick?: () => void;
     onAddReferenceClick?: () => void;
-    onSetDefault?: () => void;
     onSelectChange?: () => void;
+    onDefaultTypeClick?: () => void;
   }
 
   let {
@@ -50,7 +55,6 @@
     canClick = false,
     canUnlink = true,
     canClickReference = true,
-    canSetDefault = false,
     selectionEnabled = false,
     selected = false,
     isMandatory = false,
@@ -61,6 +65,11 @@
     isOver = false,
     canDrag = false,
     referencable = false,
+    isDefaultType = false,
+    defaultTypeVersion = '',
+    defaultTypeRootId = '',
+    defaultTypeInstance = '',
+    defaultTypeKind,
     onClick = () => {},
     onMarked = (_: boolean) => {},
     onEdit = () => {},
@@ -68,8 +77,8 @@
     onUnlink = () => {},
     onReferenceClick = () => {},
     onAddReferenceClick = () => {},
-    onSetDefault = () => {},
     onSelectChange = () => {},
+    onDefaultTypeClick = () => {},
   }: Props = $props();
 
 
@@ -89,7 +98,6 @@
   function handleOnApplyDefaults() { if (canApplyDefaults) onApplyDefaults(); }
   function handleOnUnlink() { if (canUnlink) onUnlink(); }
   function handleOnReferenceClick(e: Event) { e.stopPropagation(); if (canClickReference) onReferenceClick(); }
-  function handleOnSetDefault() { if (canSetDefault) onSetDefault(); }
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
   let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
@@ -102,6 +110,13 @@
     }
     return 'not-referencable';
 
+  });
+
+  let defaultTypeTooltipContent = $derived.by(() => {
+    if (!isDefaultType || !defaultTypeVersion || !defaultTypeRootId) {
+      return '';
+    }
+    return `Version: v${defaultTypeVersion}\nRoot Type: ${defaultTypeRootId}\nDefault Key: ${TypeKind.abbreviation(defaultTypeKind)}/${defaultTypeInstance}`;
   });
 </script>
 
@@ -142,19 +157,16 @@
       <!-- Actions: Start -->
       <div class="actions">
         <span class="oscd-references" class:invisible={!references}>{references}</span>
+        {#if isDefaultType && defaultTypeVersion}
+          <OscdTooltip content={defaultTypeTooltipContent} side="left">
+            <span class="default-type-star">★</span>
+          </OscdTooltip>
+        {/if}
         {#if canUnlink}
           <OscdIconActionButton
             type="link-off"
             tooltip="Remove Reference"
             onClick={handleOnUnlink}
-            fillColor={onPrimaryColor}
-          />
-        {/if}
-        {#if canSetDefault}
-          <OscdIconActionButton
-            type="star"
-            tooltip="Set as Default"
-            onClick={handleOnSetDefault}
             fillColor={onPrimaryColor}
           />
         {/if}
@@ -460,6 +472,26 @@
     background: none !important;
     outline: 2px dashed #9dcaf5;
     color: var(--mdc-theme-primary, #004552);
+  }
+
+  .default-type-star-button {
+    all: unset;
+    font-size: 1.2rem;
+    color: #FFD700;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .default-type-star {
+    font-size: 1.2rem;
+    color: var(--mdc-theme-primary, #004552);
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    line-height: 1;
   }
 
   :global(.oscd-card-item .reference-button.has-reference:hover .mdc-button__label) {

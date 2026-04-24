@@ -24,7 +24,6 @@
     onItemSelectChange?: (event: EventDetails) => void;
     onItemReferenceClick?: (event: { columnId: string, itemId: string; item: TItem; reference: string }) => void;
     onItemAddReferenceClick?: (event: { columnId: string, itemId: string; item: TItem }) => void;
-    onItemSetDefault?: (event: EventDetails) => void;
     onItemUnlink?: (event: EventDetails) => void;
     onItemEdit?: (event: EventDetails) => void;
     onItemClick?: (event: EventDetails) => void;
@@ -43,7 +42,6 @@
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
     onItemAddReferenceClick = () => {},
-    onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
     onItemClick = () => {},
@@ -153,7 +151,6 @@
       onItemDrop={e => handleItemDrop(column.id, e)}
       onItemReferenceClick={e => onItemReferenceClick({columnId: column.id, ...e})}
       onItemAddReferenceClick={e => onItemAddReferenceClick({columnId: column.id, ...e})}
-      onItemSetDefault={e => onItemSetDefault({columnId: column.id, ...e})}
     />
 
     {#if index < columns.length - 1}

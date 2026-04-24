@@ -74,6 +74,8 @@
   title="Apply Default Preview"
   confirmActionText='Apply'
   maxWidth="1000px"
+  height="auto"
+  maxHeight="80vh"
   bind:open
   onConfirm={() => {closeDialog('confirm')}}
   onCancel={() => closeDialog('cancel')}
@@ -154,7 +156,7 @@
                     </div>
                     <div>
                       <div class="field-label">Reason</div>
-                      <div class="field-value muted-text">No default exists in DB/local for this reference type.</div>
+                      <div class="field-value muted-text">No default exists for this reference type.</div>
                     </div>
                   </div>
                 </article>

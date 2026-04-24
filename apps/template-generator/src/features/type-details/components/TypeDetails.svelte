@@ -187,6 +187,23 @@
     }
   }
 
+  async function updateDefaultTypeToLatest() {
+    try {
+      const newRootId = await typeDetailsState.updateDefaultTypeToLatest();
+      if (!newRootId) {
+        toastService.info('Already latest', 'This default type already uses the latest available version.');
+        return;
+      }
+
+      typeId = newRootId;
+      typeDetailsState.loadById(newRootId);
+      toastService.success('Default updated', 'Updated default type to latest and refreshed references.');
+    } catch (e) {
+      console.error('Failed to update default type to latest', e);
+      toastService.error('Update failed', 'Failed to update default type to latest. Please try again.');
+    }
+  }
+
 </script>
 
 <TypeDetailsLayout
@@ -195,6 +212,8 @@
   typeKind={typeDetailsState.loadedType?.typeKind ?? TypeKind.LNodeType}
   typeId={typeDetailsState.loadedType?.id || ''}
   instanceType={typeDetailsState.loadedType?.instanceType}
+  defaultTypeInfo={typeDetailsState.loadedType?.defaultTypeInfo}
+  defaultTypeVersionStatus={typeDetailsState.loadedType?.defaultTypeVersionStatus}
   isEditMode={typeDetailsState.isEditMode}
   onModeChange={(nextMode) => typeDetailsState.setViewMode(nextMode)}
   onRename={renameType}
@@ -203,6 +222,8 @@
     typeDetailsState.deleteType();
   }}
   onInstanceTypeChange={(instanceType) => typeDetailsState.updateInstanceType(instanceType)}
+  onOpenDefaultRootType={(rootTypeId, rootTypeKind) => openTypeById(rootTypeId, rootTypeKind, typeDetailsState.viewMode)}
+  onUpdateDefaultTypeToLatest={updateDefaultTypeToLatest}
   service={service}
   config={typeDetailsState.config}
 >

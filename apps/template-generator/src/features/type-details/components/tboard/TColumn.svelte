@@ -30,7 +30,6 @@
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
     onItemAddReferenceClick?: (evetn: { itemId: string; item: TItem}) => void;
-    onItemSetDefault?: ({itemId: string, item: TItem}) => void;
     onItemUnlink?: ({itemId: string, item: TItem}) => void;
     onItemEdit?: ({itemId: string, item: TItem}) => void;
     onItemClick?: ({itemId: string, item: TItem}) => void;
@@ -64,7 +63,6 @@
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
     onItemAddReferenceClick = () => {},
-    onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
     onItemClick = () => {},
@@ -139,7 +137,6 @@
     onItemDrop={(e) => onItemDrop(e)}
     onItemReferenceClick={(e) => onItemReferenceClick(e)}
     onItemAddReferenceClick={(e) => onItemAddReferenceClick(e)}
-    onItemSetDefault={(e) => onItemSetDefault(e)}
   />
   </div>
 </div>

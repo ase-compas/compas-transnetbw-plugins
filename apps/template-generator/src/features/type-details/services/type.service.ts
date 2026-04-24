@@ -67,7 +67,8 @@ export class DataTypeService {
                 typeKind,
                 instanceType: '',
                 members: this.mapMembersFromElementWithoutNsd(element),
-                defaultTypeInfo: defaultTypeInfo
+                defaultTypeInfo: defaultTypeInfo,
+                defaultTypeVersionStatus: undefined,
             };
         }
 
@@ -115,8 +116,27 @@ export class DataTypeService {
             typeKind,
             instanceType,
             members,
-            defaultTypeInfo: defaultTypeInfo
+            defaultTypeInfo: defaultTypeInfo,
+            defaultTypeVersionStatus: undefined,
         };
+    }
+
+    async getDefaultTypeVersionStatusByTypeId(typeId: string) {
+        return this.defaultTypeManagerService.getVersionStatusByTypeId(typeId);
+    }
+
+    async updateDefaultTypeToLatestByTypeId(typeId: string): Promise<string | null> {
+        const { edits, newRootId } = await this.defaultTypeManagerService.buildUpdateToLatestEditsByTypeId(typeId);
+        if (edits.length === 0) {
+            return null;
+        }
+
+        createAndDispatchEditEvent(this.hostElement, edits, {
+            title: `Update default type to latest for ${typeId}`,
+            createHistoryEntry: true,
+        });
+
+        return newRootId;
     }
 
     /**
@@ -166,6 +186,7 @@ export class DataTypeService {
 
     /**
      * Gets all data types that can be assigned to a specific member of a data type.
+     * Filters out non-root default types and adds default type version information.
      * @param id The ID of the data type to check.
      * @param focusMemberName Optional name of the member to focus on.
      * @returns An array of SimpleDataType objects that can be assigned to the specified member.
@@ -196,11 +217,53 @@ export class DataTypeService {
 
         const assignableTypes: SimpleDataType[] = [];
         for (const dt of allTypes) {
-            if (requiredReferences.some(ref => isTypeAssignable(ref.typeKind, ref.instanceType, dt))) {
+            if (!requiredReferences.some(ref => isTypeAssignable(ref.typeKind, ref.instanceType, dt))) {
+                continue;
+            }
+
+            if (this.enrichTypeWithDefaultInfo(dt)) {
                 assignableTypes.push(dt);
             }
         }
         return assignableTypes;
+    }
+
+    /**
+     * Enriches a SimpleDataType with default type information.
+     * If the type is a default type root ID, adds isDefaultType and defaultTypeVersion.
+     * Filters out non-root default type IDs.
+     * @param dt The SimpleDataType to enrich
+     * @returns true if the type should be included, false if it should be filtered out (non-root default)
+     */
+    private enrichTypeWithDefaultInfo(dt: SimpleDataType): boolean {
+        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
+        if (defaultInfo) {
+            // Only include if it's the root ID of the default type
+            if (dt.id !== defaultInfo.rootId) {
+                return false; // Filter out non-root default type IDs
+            }
+            // Add version info for the root ID
+            dt.isDefaultType = true;
+            dt.defaultTypeVersion = defaultInfo.version;
+            dt.defaultTypeRootId = defaultInfo.rootId;
+            dt.defaultTypeInstance = defaultInfo.instance;
+        }
+        return true;
+    }
+
+    /**
+     * Enriches a SimpleDataType with default type information without filtering.
+     * Adds metadata for both root and non-root default type IDs.
+     * @param dt The SimpleDataType to enrich
+     */
+    private enrichTypeWithDefaultInfoNoFilter(dt: SimpleDataType): void {
+        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
+        if (defaultInfo) {
+            dt.isDefaultType = true;
+            dt.defaultTypeVersion = defaultInfo.version;
+            dt.defaultTypeRootId = defaultInfo.rootId;
+            dt.defaultTypeInstance = defaultInfo.instance;
+        }
     }
 
     /**
@@ -251,10 +314,14 @@ export class DataTypeService {
 
         traverse(startElement, true);
 
-        // Remove duplicates by id
+        // Remove duplicates by id and enrich with default info
         const unique = new Map<string, SimpleDataType>();
         for (const dt of result) {
-            if (!unique.has(dt.id)) unique.set(dt.id, dt);
+            if (!unique.has(dt.id)) {
+                // Enrich with default type info but don't filter
+                this.enrichTypeWithDefaultInfoNoFilter(dt);
+                unique.set(dt.id, dt);
+            }
         }
         return Array.from(unique.values());
     }
@@ -327,6 +394,8 @@ export class DataTypeService {
             };
             editEvents.push(edit);
         });
+
+        editEvents.push(...this.defaultTypeManagerService.buildRenameTypeIdEdits(id, newId));
 
         createAndDispatchEditEvent(this.hostElement, editEvents, {
             title: `Rename DataType ${id} to ${newId}`,

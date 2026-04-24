@@ -4,7 +4,8 @@ import type { DefaultTypeKey } from "../../default-types/types";
 import { SCL_PRIVATE_DEFAULT_TYPEINFO } from "../../../shared/constants";
 import type { DefaultTypeDetails } from "../../default-types/types";
 import { listDataTypeElements, insertTypeElements, createElementInDefaultNS, createElementInNS } from "../../../shared/utils/scl.utils";
-import type { EditV2, RemoveV2 } from "@oscd-transnet-plugins/oscd-event-api";
+import type { EditV2, RemoveV2, SetAttributesV2 } from "@oscd-transnet-plugins/oscd-event-api";
+import { compareVersions } from "../../default-types/utils/version.utils";
 
 const COMPAS_EXTENSION_NS = "https://www.lfenergy.org/compas/extension/v1";
 const IMPORTED_DEFAULT_SUFFIX = "imported-default";
@@ -48,6 +49,19 @@ export interface ResolveDefaultPlan {
     typeElementsToImport: Element[];
 }
 
+export interface DefaultTypeVersionStatus {
+    key: DefaultTypeKey;
+    currentVersion: string;
+    currentRootId: string;
+    latestVersion: string;
+    latestRootId: string;
+    latestSource: 'local' | 'db';
+    localLatestVersion: string | null;
+    dbLatestVersion: string | null;
+    hasUpdate: boolean;
+    isDeprecated: boolean;
+}
+
 export class DefaultTypeManagerService {
 
     constructor(
@@ -66,7 +80,8 @@ export class DefaultTypeManagerService {
 
         // Both exist: compare versions
         if (localDefault && dbDefault) {
-            if (localDefault.version === dbDefault.version) {
+            const compareResult = compareVersions(localDefault.version, dbDefault.version);
+            if (compareResult >= 0) {
                 return {
                     key,
                     scenario: "USE_LOCAL_DEFAULT",
@@ -100,7 +115,19 @@ export class DefaultTypeManagerService {
             };
         }
 
-        // Only local default exists or neither exists
+        // Only local default exists
+        if (localDefault) {
+            return {
+                key,
+                scenario: "USE_LOCAL_DEFAULT",
+                effectiveRootId: localDefault.rootId,
+                localBefore: localDefault,
+                dbBefore: null,
+                typeElementsToImport: [],
+            };
+        }
+
+        // Neither local nor DB default exists
         return {
             key,
             scenario: "REMOVE_LOCAL_DEFAULT",
@@ -184,19 +211,17 @@ export class DefaultTypeManagerService {
             switch (plan.scenario) {
                 case "ADD_DB_DEFAULT":
                     if (plan.dbBefore && defaultTypeInfo) {
-                        edits.push(...this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds));
+                        if (!this.getDefaultTypeElement(plan.key, plan.dbBefore.version)) {
+                            edits.push(...this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds));
+                        }
                     }
                     break;
 
                 case "UPGRADE_TO_DB_DEFAULT":
-                    // Remove old Private element
-                    const oldPrivate = this.getDefaultTypeElement(plan.key);
-                    if (oldPrivate) {
-                        edits.push({ node: oldPrivate } as RemoveV2);
-                    }
-                    // Add new Private element
                     if (plan.dbBefore && defaultTypeInfo) {
-                        edits.push(...this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds));
+                        if (!this.getDefaultTypeElement(plan.key, plan.dbBefore.version)) {
+                            edits.push(...this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds));
+                        }
                     }
                     break;
 
@@ -211,22 +236,114 @@ export class DefaultTypeManagerService {
 
         return { edits, effectiveRootIds };
     }
+
+    public async getVersionStatusByTypeId(typeId: string): Promise<DefaultTypeVersionStatus | null> {
+        const current = this.getDefaultInfoByTypeId(typeId);
+        if (!current) {
+            return null;
+        }
+
+        const key: DefaultTypeKey = { kind: current.kind, instance: current.instance };
+        const localDefaults = this.getLocalDefaults(key);
+        const latestLocal = localDefaults[0] ?? null;
+        const latestDb = await this.getNewestDefaultMeta(key);
+
+        const localLatestVersion = latestLocal?.version ?? null;
+        const dbLatestVersion = latestDb?.version ?? null;
+
+        let latestVersion = current.version;
+        let latestRootId = current.rootId;
+        let latestSource: 'local' | 'db' = 'local';
+
+        if (latestLocal && compareVersions(latestLocal.version, latestVersion) >= 0) {
+            latestVersion = latestLocal.version;
+            latestRootId = latestLocal.rootId;
+            latestSource = 'local';
+        }
+
+        if (latestDb && compareVersions(latestDb.version, latestVersion) > 0) {
+            latestVersion = latestDb.version;
+            latestRootId = latestDb.rootId;
+            latestSource = 'db';
+        }
+
+        const hasUpdate = compareVersions(current.version, latestVersion) < 0;
+
+        return {
+            key,
+            currentVersion: current.version,
+            currentRootId: current.rootId,
+            latestVersion,
+            latestRootId,
+            latestSource,
+            localLatestVersion,
+            dbLatestVersion,
+            hasUpdate,
+            isDeprecated: hasUpdate,
+        };
+    }
+
+    public async buildUpdateToLatestEditsByTypeId(typeId: string): Promise<{ edits: EditV2[], newRootId: string | null }> {
+        const current = this.getDefaultInfoByTypeId(typeId);
+        if (!current) {
+            return { edits: [], newRootId: null };
+        }
+
+        const status = await this.getVersionStatusByTypeId(typeId);
+        if (!status || !status.hasUpdate) {
+            return { edits: [], newRootId: null };
+        }
+
+        const edits: EditV2[] = [];
+        let targetRootId = status.latestRootId;
+
+        if (status.latestSource === 'db') {
+            const plan = await this.resolve(status.key);
+            const { edits: planEdits, effectiveRootIds } = this.applyPlans([plan]);
+            edits.push(...planEdits);
+            const key = `${status.key.kind}:${status.key.instance}`;
+            targetRootId = effectiveRootIds.get(key) ?? targetRootId;
+        }
+
+        if (targetRootId && targetRootId !== current.rootId) {
+            edits.push(...this.buildReplaceTypeReferenceEdits(current.rootId, targetRootId));
+        }
+
+        // Clean up old version: remove old Private entry and old type elements
+        const oldPrivateEntry = this.getDefaultTypeElement(current, current.version);
+        if (oldPrivateEntry) {
+            edits.push({ node: oldPrivateEntry } as RemoveV2);
+        }
+
+        for (const oldTypeElementId of current.typeElementIds) {
+            const escapedId = oldTypeElementId.replace(/"/g, '\\"');
+            const oldElements = Array.from(this.doc.querySelectorAll(`[id="${escapedId}"]`));
+            for (const oldElement of oldElements) {
+                edits.push({ node: oldElement } as RemoveV2);
+            }
+        }
+
+        return { edits, newRootId: targetRootId };
+    }
     /**
      * Gets the local default info for a given type reference key by searching the Private section of the document.
      * @param key default type key
      * @returns local default info if found, otherwise null
      */
     public getLocalDefault(key: DefaultTypeKey): LocalDefaultInfo | null {
+        return this.getLocalDefaults(key)[0] ?? null;
+    }
+
+    public getLocalDefaults(key: DefaultTypeKey): LocalDefaultInfo[] {
         if (!this.doc) {
             throw new Error("Document not set");
         }
 
-        const matchingDefaultType = this.getDefaultTypeElement(key)
-        if (!matchingDefaultType) {
-            return null;
-        }
-
-        return this.parseDefaultTypeElement(matchingDefaultType);
+        const matchingDefaultTypes = this.getDefaultTypeElements(key);
+        return matchingDefaultTypes
+            .map((element) => this.parseDefaultTypeElement(element))
+            .filter((defaultInfo): defaultInfo is LocalDefaultInfo => !!defaultInfo)
+            .sort((a, b) => compareVersions(b.version, a.version));
     }
 
     /**
@@ -255,15 +372,19 @@ export class DefaultTypeManagerService {
         });
 
         // for each defaultType element look inside their children (type-elemnt) and check if the id matchs this is the if it matches. use the parent element to get the default info
-        const matchingDefaultType = defaultTypeElements.find((defaultTypeElement) => {
+        const matchingDefaultTypes = defaultTypeElements.filter((defaultTypeElement) => {
             return Array.from(defaultTypeElement.children).some((child) => {
                 const localName = (child.localName || child.tagName).toLowerCase();
                 return localName === "type-element" && child.getAttribute("id") === typeId;
             });
         });
 
+        const parsed = matchingDefaultTypes
+            .map((element) => this.parseDefaultTypeElement(element))
+            .filter((defaultInfo): defaultInfo is LocalDefaultInfo => !!defaultInfo)
+            .sort((a, b) => compareVersions(b.version, a.version));
 
-        return matchingDefaultType ? this.parseDefaultTypeElement(matchingDefaultType) : null;
+        return parsed[0] ?? null;
     }
 
     /**
@@ -361,20 +482,25 @@ export class DefaultTypeManagerService {
             .filter((id): id is string => !!id);
     }
 
-    private getDefaultTypeElement(key: DefaultTypeKey): Element | null {
+    private getDefaultTypeElement(key: DefaultTypeKey, version?: string): Element | null {
+        return this.getDefaultTypeElements(key, version)[0] ?? null;
+    }
+
+    private getDefaultTypeElements(key: DefaultTypeKey, version?: string): Element[] {
         const defaultTypeInfo = this.getDefaultTypeSectionPrivateElement();
         if (!defaultTypeInfo) {
-            return null;
+            return [];
         }
 
-        return Array.from(defaultTypeInfo.children).find((child) => {
+        return Array.from(defaultTypeInfo.children).filter((child) => {
             const localName = (child.localName || child.tagName).toLowerCase();
             return (
                 localName === "default-type" &&
                 child.getAttribute("kind") === key.kind &&
-                child.getAttribute("instance") === key.instance
+                child.getAttribute("instance") === key.instance &&
+                (!version || child.getAttribute("version") === version)
             );
-        }) ?? null;
+        });
     }
 
 
@@ -411,4 +537,65 @@ export class DefaultTypeManagerService {
             typeElementIds,
         };
     }
+
+    private buildReplaceTypeReferenceEdits(oldTypeId: string, newTypeId: string): SetAttributesV2[] {
+        return Array.from(this.doc.querySelectorAll(`[type="${oldTypeId}"]`)).map((element) => ({
+            element,
+            attributes: { type: newTypeId },
+            attributesNS: {},
+        } as SetAttributesV2));
+    }
+
+    /**
+     * Builds edit events to rename a type ID within the default type metadata Private section.
+     *
+     * If the given `oldId` appears as a `type-element` id inside any `compas:default-type` entry,
+     * the corresponding `compas:type-element` id attribute is updated to `newId`.
+     * If `oldId` is also the `rootId` of that `compas:default-type` entry, the `rootId` attribute
+     * is updated to `newId` as well.
+     *
+     * Returns an empty array when `oldId` is not tracked in the metadata.
+     */
+    public buildRenameTypeIdEdits(oldId: string, newId: string): SetAttributesV2[] {
+        const edits: SetAttributesV2[] = [];
+        const defaultTypeInfo = this.getDefaultTypeSectionPrivateElement();
+        if (!defaultTypeInfo) {
+            return edits;
+        }
+
+        const defaultTypeElements = Array.from(defaultTypeInfo.children).filter((child) => {
+            const localName = (child.localName || child.tagName).toLowerCase();
+            return localName === 'default-type';
+        });
+
+        for (const defaultTypeEl of defaultTypeElements) {
+            const typeElementChild = Array.from(defaultTypeEl.children).find((child) => {
+                const localName = (child.localName || child.tagName).toLowerCase();
+                return localName === 'type-element' && child.getAttribute('id') === oldId;
+            });
+
+            if (!typeElementChild) {
+                continue;
+            }
+
+            // Update the type-element id
+            edits.push({
+                element: typeElementChild,
+                attributes: { id: newId },
+                attributesNS: {},
+            } as SetAttributesV2);
+
+            // If oldId is also the rootId of the parent default-type, update rootId too
+            if (defaultTypeEl.getAttribute('rootId') === oldId) {
+                edits.push({
+                    element: defaultTypeEl,
+                    attributes: { rootId: newId },
+                    attributesNS: {},
+                } as SetAttributesV2);
+            }
+        }
+
+        return edits;
+    }
+
 }

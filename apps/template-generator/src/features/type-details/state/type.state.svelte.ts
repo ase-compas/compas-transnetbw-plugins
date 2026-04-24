@@ -63,6 +63,7 @@ export class DataTypeDetailsState {
         try {
             const typeDetails = this.dataTypeService.getById(id);
             this.loadedType = typeDetails;
+            this.refreshDefaultTypeVersionStatus(id);
 
             if (!typeDetails.instanceType && this.viewMode !== 'view') {
                 this.viewMode = 'view';
@@ -101,6 +102,23 @@ export class DataTypeDetailsState {
             this.data = this.emptyData();
         } finally {
             this.loading = false;
+        }
+    }
+
+    public async updateDefaultTypeToLatest(): Promise<string | null> {
+        if (!this.loadedType?.defaultTypeInfo) {
+            return null;
+        }
+
+        try {
+            const newRootId = await this.dataTypeService.updateDefaultTypeToLatestByTypeId(this.loadedType.id);
+            return newRootId;
+        } catch (err) {
+            console.error(
+                `Error updating default type to latest for type ${this.loadedType.id}:`,
+                err instanceof Error ? err.message : String(err)
+            );
+            return null;
         }
     }
 
@@ -291,6 +309,25 @@ export class DataTypeDetailsState {
         this.loadById(this.loadedType.id);
     }
 
+    private async refreshDefaultTypeVersionStatus(typeId: string) {
+        try {
+            const status = await this.dataTypeService.getDefaultTypeVersionStatusByTypeId(typeId);
+            if (!this.loadedType || this.loadedType.id !== typeId) {
+                return;
+            }
+
+            this.loadedType = {
+                ...this.loadedType,
+                defaultTypeVersionStatus: status ?? undefined,
+            };
+        } catch (err) {
+            console.error(
+                `Error loading default type version status for type ${typeId}:`,
+                err instanceof Error ? err.message : String(err)
+            );
+        }
+    }
+
     private getOtherTypesByKind(id: string): Record<TypeKind, SimpleDataType[]> {
         const otherTyps = this.viewMode === 'edit'
             ? this.dataTypeService.getAssignableTypes(id, this.markedMemberId ?? undefined)
@@ -374,7 +411,11 @@ export class DataTypeDetailsState {
             canClick: this.isEditMode,
             canUnlink: false,
             canEdit: true,
-            canSetDefault: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
+            isDefaultType: type.isDefaultType,
+            defaultTypeVersion: type.defaultTypeVersion,
+            defaultTypeRootId: type.defaultTypeRootId,
+            defaultTypeInstance: type.defaultTypeInstance,
+            defaultTypeKind: type.typeKind,
         };
     }
 }
