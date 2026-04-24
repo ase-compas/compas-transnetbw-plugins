@@ -98,7 +98,7 @@
             <div class="summary-value muted-text">{unavailableRows.length}</div>
           </article>
           <article class="summary-card">
-            <div class="summary-label">Members Considered</div>
+            <div class="summary-label">Data Objects Considered</div>
             <div class="summary-value">{totalMembers}</div>
           </article>
         {/if}
@@ -110,7 +110,7 @@
         <section>
           <div class="section-title">Will Be Applied</div>
           {#if applicableRows.length === 0}
-            <div class="empty-state">No members.</div>
+            <div class="empty-state">No data objects.</div>
           {:else}
             <div class="rows-list">
               {#each applicableRows as row}
