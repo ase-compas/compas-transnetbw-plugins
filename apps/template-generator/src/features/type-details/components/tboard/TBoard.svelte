@@ -129,6 +129,7 @@
       highlighted={column.highlighted}
       dragAndDropBorder={column.dragAndDropBorder}
       actionLabel={column.actionLabel}
+      actionIcon={column.actionIcon}
       hasSearch={column.hasSearch}
       searchPlaceHolder={column.searchPlaceholder}
       hasAction={column.hasAction}
@@ -139,8 +140,8 @@
       items={data[column.id]}
       dragAndDropType={boardId}
       dropCandidate={dropCandidate}
-      onColumnActionClick={_ => onColumnActionClick({columnId: column.id})}
-      onApplyDefaults={_ => onApplyDefaults({columnId: column.id})}
+      onColumnActionClick={() => onColumnActionClick({columnId: column.id})}
+      onApplyDefaults={() => onApplyDefaults({columnId: column.id})}
       onItemClick={e => onItemClick({columnId: column.id, ...e})}
       onItemEdit={e => onItemEdit({columnId: column.id, ...e})}
       onItemApplyDefaults={e => onItemApplyDefaults({columnId: column.id, ...e})}
@@ -155,7 +156,7 @@
 
     {#if index < columns.length - 1}
       <div class="seperator">
-        <IconButton class="material-icons" disabled={true}>chevron_right</IconButton>
+        <IconButton class="material-icons">chevron_right</IconButton>
       </div>
     {/if}
   {/each}

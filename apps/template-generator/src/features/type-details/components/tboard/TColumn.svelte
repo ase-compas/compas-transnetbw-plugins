@@ -9,6 +9,7 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionIcon?: string | null;
     actionDisabled?: boolean;
     hasSearch?: boolean;
     searchPlaceHolder?: string;
@@ -30,10 +31,10 @@
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
     onItemAddReferenceClick?: (evetn: { itemId: string; item: TItem}) => void;
-    onItemUnlink?: ({itemId: string, item: TItem}) => void;
-    onItemEdit?: ({itemId: string, item: TItem}) => void;
-    onItemClick?: ({itemId: string, item: TItem}) => void;
-    onItemApplyDefaults?: ({itemId: string, item: TItem}) => void;
+    onItemUnlink?: (event: { itemId: string; item: TItem }) => void;
+    onItemEdit?: (event: { itemId: string; item: TItem }) => void;
+    onItemClick?: (event: { itemId: string; item: TItem }) => void;
+    onItemApplyDefaults?: (event: { itemId: string; item: TItem }) => void;
     onColumnActionClick?: () => void;
     onApplyDefaults?: () => void;
   }
@@ -42,6 +43,7 @@
     title,
     subtitle = null,
     actionLabel = 'Action',
+    actionIcon = null,
     hasSearch = false,
     searchPlaceHolder = 'Search...',
     hasAction = false,
@@ -102,8 +104,10 @@
     hasAction={hasAction}
     actionDisabled={actionDisabled}
     actionLabel={actionLabel}
+    actionIcon={actionIcon}
     bind:search={searchQuery}
     onAction={onColumnActionClick}
+    onSearch={() => {}}
   />
   {:else}
     <TColumnActionHeader
@@ -111,6 +115,7 @@
       subtitle={subtitle}
       hasAction={hasAction}
       actionLabel={actionLabel}
+      actionIcon={actionIcon}
       secondaryActionLabel="Apply Defaults"
       onAction={onColumnActionClick}
       onSecondaryAction={onApplyDefaults}
