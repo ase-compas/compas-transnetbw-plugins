@@ -139,6 +139,18 @@ export class DataTypeService {
         return newRootId;
     }
 
+    detachDefault(typeId: string): void {
+        const edits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(typeId);
+        if (edits.length === 0) {
+            throw new Error(`No local default metadata found for type ${typeId}`);
+        }
+
+        createAndDispatchEditEvent(this.hostElement, edits, {
+            title: `Detach default type ${typeId}`,
+            createHistoryEntry: true,
+        });
+    }
+
     /**
      * Lists all simple data types, optionally filtered by type kind and instance type.
      * @param filter Optional filter criteria to narrow down the list of data types.

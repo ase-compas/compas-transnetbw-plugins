@@ -204,6 +204,16 @@
     }
   }
 
+  function detachDefaultType() {
+    try {
+      typeDetailsState.detachDefaultType();
+      toastService.success('Default customized', 'This type is now a local editable type and will no longer receive default updates.');
+    } catch (e) {
+      console.error('Failed to detach default type', e);
+      toastService.error('Customize failed', 'Could not customize this default type. Please try again.');
+    }
+  }
+
 </script>
 
 <TypeDetailsLayout
@@ -224,6 +234,7 @@
   onInstanceTypeChange={(instanceType) => typeDetailsState.updateInstanceType(instanceType)}
   onOpenDefaultRootType={(rootTypeId, rootTypeKind) => openTypeById(rootTypeId, rootTypeKind, typeDetailsState.viewMode)}
   onUpdateDefaultTypeToLatest={updateDefaultTypeToLatest}
+  onDetachDefault={detachDefaultType}
   service={service}
   config={typeDetailsState.config}
 >

@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { TypeKind } from '../../../../shared/model';
   import ChooseInstanceTypeDialog from '../dialogs/ChooseInstanceTypeDialog.svelte';
+  import ConfirmDetachDefaultTypeDialog from '../dialogs/ConfirmDetachDefaultTypeDialog.svelte';
   import SetDefaultButton from './SetDefaultButton.svelte';
   import TypeActionMenu from './TypeActionMenu.svelte';
   import type { DataTypeService } from '../../services/type.service';
@@ -43,6 +44,7 @@
     onInstanceTypeChange?: (instanceType: string) => void;
     onOpenDefaultRootType?: (typeId: string, typeKind: TypeKind) => void;
     onUpdateDefaultTypeToLatest?: () => void;
+    onDetachDefault?: () => void;
     onClickDefault?: () => void;
     onDelete?: () => void;
     onRename?: () => void;
@@ -66,6 +68,7 @@
     onInstanceTypeChange = (_: string) => {},
     onOpenDefaultRootType = (_: string, __: TypeKind) => {},
     onUpdateDefaultTypeToLatest = () => {},
+    onDetachDefault = () => {},
     onClickDefault = () => {},
     onDelete = () => {},
     onRename = () => {},
@@ -86,6 +89,24 @@
     }
     onInstanceTypeChange(result.data.instance);
   }
+
+  async function handleDetachDefault() {
+    if (!defaultTypeInfo) {
+      return;
+    }
+
+    const result = await openDialog(ConfirmDetachDefaultTypeDialog, {
+      typeId,
+      defaultRootId: defaultTypeInfo.rootId,
+      defaultVersion: defaultTypeInfo.version,
+    });
+
+    if (result.type !== 'confirm') {
+      return;
+    }
+
+    onDetachDefault();
+  }
 </script>
 
 <div class="header-bar">
@@ -98,6 +119,13 @@
       onOpenDefaultRootType={onOpenDefaultRootType}
       onUpdateDefaultTypeToLatest={onUpdateDefaultTypeToLatest}
     />
+    {#if defaultTypeInfo}
+      <OscdTooltip content="Convert this default type into a normal editable type. It will no longer be managed as a default." side="bottom" hoverDelay={250}>
+        <Button variant="outlined" onclick={handleDetachDefault}>
+          Customize Default
+        </Button>
+      </OscdTooltip>
+    {/if}
   </div>
 
   <div class="actions-section">
@@ -125,11 +153,7 @@
     {:else}
       <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose Instance Type to Edit</Button>
     {/if}
-    <TypeActionMenu
-      onDelete={onDelete}
-      onRename={onRename}
-      actionsDisabled={actionsDisabled}
-    />
+    <TypeActionMenu onDelete={onDelete} onRename={onRename} actionsDisabled={actionsDisabled} />
   </div>
 </div>
 

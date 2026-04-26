@@ -598,4 +598,29 @@ export class DefaultTypeManagerService {
         return edits;
     }
 
+    /**
+     * Builds edit events that delete local default metadata for the tracked
+     * default group of a type.
+     *
+     * A type is considered tracked when it appears as a root type or nested
+     * type-element in local compas:default-type metadata.
+     */
+    public buildDeleteLocalDefaultEditsByTypeId(typeId: string): RemoveV2[] {
+        const defaultInfo = this.getDefaultInfoByTypeId(typeId);
+        if (!defaultInfo) {
+            throw new Error(`Type ${typeId} is not part of a local default type`);
+        }
+
+        const defaultTypeElements = this.getDefaultTypeElements({
+            kind: defaultInfo.kind,
+            instance: defaultInfo.instance,
+        });
+
+        if (defaultTypeElements.length === 0) {
+            throw new Error(`No local default metadata found for type ${typeId}`);
+        }
+
+        return defaultTypeElements.map((element) => ({ node: element } as RemoveV2));
+    }
+
 }

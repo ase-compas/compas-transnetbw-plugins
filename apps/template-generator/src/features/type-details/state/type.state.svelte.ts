@@ -71,7 +71,6 @@ export class DataTypeDetailsState {
 
             if(typeDetails.defaultTypeInfo) {
                 this.viewMode = 'view';
-                this.config.toggleEditModeSwitchDisabled = true;
             }
 
             const otherTypesByKind = this.getOtherTypesByKind(id);
@@ -120,6 +119,17 @@ export class DataTypeDetailsState {
             );
             return null;
         }
+    }
+
+    public detachDefaultType(): void {
+        if (!this.loadedType?.defaultTypeInfo) {
+            throw new Error('No local default metadata found for the current type');
+        }
+
+        const typeId = this.loadedType.id;
+        this.dataTypeService.detachDefault(typeId);
+        this.viewMode = 'edit';
+        this.config.toggleEditModeSwitchDisabled = false;
     }
 
     public async applyDefaultType(memberName: string) {

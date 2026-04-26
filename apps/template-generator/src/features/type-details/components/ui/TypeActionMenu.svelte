@@ -10,7 +10,11 @@ interface Props {
   actionsDisabled?: boolean;
 }
 
-const { onRename = () => {}, onDelete = () => {}, actionsDisabled = false }: Props  = $props();
+const {
+  onRename = () => {},
+  onDelete = () => {},
+  actionsDisabled = false,
+}: Props  = $props();
 
 </script>
 

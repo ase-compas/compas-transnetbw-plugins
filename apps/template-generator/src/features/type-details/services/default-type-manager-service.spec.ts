@@ -499,4 +499,83 @@ describe('DefaultTypeManagerService', () => {
 			expect(lln0El?.getAttribute('rootId')).toBe('root-b');
 		});
 	});
+
+	describe('buildDeleteLocalDefaultEditsByTypeId', () => {
+		test('removes matching local default metadata block when detaching by root type id', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-a" version="1.0.0" id="db-1">
+							<compas:type-element id="root-a"/>
+							<compas:type-element id="member-a"/>
+						</compas:default-type>
+						<compas:default-type kind="LNodeType" instance="LLN0" rootId="root-b" version="1.0.0" id="db-2">
+							<compas:type-element id="root-b"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-a" cdc="SPS"/>
+						<DAType id="member-a" bType="INT32"/>
+						<LNodeType id="root-b" lnClass="LLN0"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const edits = service.buildDeleteLocalDefaultEditsByTypeId('root-a');
+
+			expect(edits).toHaveLength(1);
+			applyEdits(edits);
+
+			const privateEl = doc.querySelector('SCL > Private[type="compas:default-type-info"]');
+			const remainingDefaultTypeEls = Array.from(privateEl?.children ?? []).filter((child) => {
+				const localName = (child.localName || child.tagName).toLowerCase();
+				return localName === 'default-type';
+			});
+
+			expect(remainingDefaultTypeEls).toHaveLength(1);
+			expect(remainingDefaultTypeEls[0].getAttribute('rootId')).toBe('root-b');
+			expect(doc.getElementById('root-a')).not.toBeNull();
+			expect(doc.getElementById('member-a')).not.toBeNull();
+		});
+
+		test('removes matching local default metadata block when detaching by nested type id', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-a" version="1.0.0" id="db-1">
+							<compas:type-element id="root-a"/>
+							<compas:type-element id="member-a"/>
+						</compas:default-type>
+					</Private>
+				</SCL>
+			`);
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const edits = service.buildDeleteLocalDefaultEditsByTypeId('member-a');
+
+			expect(edits).toHaveLength(1);
+			applyEdits(edits);
+
+			const privateEl = doc.querySelector('SCL > Private[type="compas:default-type-info"]');
+			const remainingDefaultTypeEls = Array.from(privateEl?.children ?? []).filter((child) => {
+				const localName = (child.localName || child.tagName).toLowerCase();
+				return localName === 'default-type';
+			});
+
+			expect(remainingDefaultTypeEls).toHaveLength(0);
+		});
+
+		test('throws when type is not part of any local default metadata', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B"/>
+			`);
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+
+			expect(() => service.buildDeleteLocalDefaultEditsByTypeId('unknown-id')).toThrow(
+				'Type unknown-id is not part of a local default type',
+			);
+		});
+	});
 });
