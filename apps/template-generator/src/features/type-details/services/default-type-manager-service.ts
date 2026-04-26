@@ -611,9 +611,9 @@ export class DefaultTypeManagerService {
             return [];
         }
 
-        // If the rootTypeId is the rootId, it's the root type - return all sub-type IDs
+        // If the rootTypeId is the rootId, return tracked IDs except the root itself.
         if (defaultInfo.rootId === rootTypeId) {
-            return defaultInfo.typeElementIds;
+            return defaultInfo.typeElementIds.filter((typeElementId) => typeElementId !== rootTypeId);
         }
 
         // If the rootTypeId is a nested type-element, it's not a root, so no sub-types
