@@ -1,7 +1,6 @@
 <script lang="ts">
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdWarningIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdBaseDialog, OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     open?: boolean;
@@ -37,12 +36,7 @@
           <li>{subTypeId}</li>
         {/each}
       </ul>
-      <div class="warning-container">
-        <div class="warning-text">
-          <OscdWarningIcon fill="#B45309;" />
-          <p>This action cannot be undone.</p>
-        </div>
-      </div>
+      <OscdWarningBox message="This action cannot be undone." />
     </div>
   {/snippet}
 </OscdBaseDialog>
@@ -70,22 +64,5 @@
     margin: 0.25rem 0;
     font-family: monospace;
     font-size: 0.9em;
-  }
-
-  .warning-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    background-color: #fffbeb;
-    border: 1px solid #fcd34d;
-    padding: 1rem;
-    border-radius: 4px;
-  }
-
-  .warning-text {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
   }
 </style>
