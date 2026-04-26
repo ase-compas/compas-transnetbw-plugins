@@ -23,69 +23,51 @@
     validationStatuses = {},
   }: Props = $props();
 
-  let lastSelectedPluginId: string | null = null;
-
-  $effect(() => {
-    if (!pluginGroups?.length) {
-      selectedGroupIndex = null;
-      selectedPluginIndex = null;
-      lastSelectedPluginId = null;
-      return;
-    }
+  // Normalize the incoming indices into valid, clamped values without mutating state.
+  let resolvedGroupIndex = $derived.by(() => {
+    if (!pluginGroups?.length) return null;
 
     let groupIdx = selectedGroupIndex ?? 0;
     if (groupIdx < 0 || groupIdx >= pluginGroups.length) groupIdx = 0;
 
-    let group = pluginGroups[groupIdx];
+    const group = pluginGroups[groupIdx];
     if (!group?.plugins?.length) {
-      const withPluginsIndex = pluginGroups.findIndex((g) => g?.plugins?.length);
-      if (withPluginsIndex === -1) {
-        selectedGroupIndex = groupIdx;
-        selectedPluginIndex = null;
-        lastSelectedPluginId = null;
-        return;
-      }
-      groupIdx = withPluginsIndex;
-      group = pluginGroups[groupIdx];
-      selectedGroupIndex = groupIdx;
-      selectedPluginIndex = 0;
+      const withPlugins = pluginGroups.findIndex((g) => g?.plugins?.length);
+      return withPlugins === -1 ? groupIdx : withPlugins;
     }
 
-    let pluginIdx = selectedPluginIndex ?? 0;
-    if (pluginIdx < 0 || pluginIdx >= (group.plugins?.length ?? 0)) pluginIdx = 0;
-    selectedGroupIndex = groupIdx;
-    selectedPluginIndex = pluginIdx;
+    return groupIdx;
+  });
 
-    const plugin = group.plugins?.[pluginIdx];
-    if (plugin && plugin.id !== lastSelectedPluginId) {
-      lastSelectedPluginId = plugin.id;
-      selectPlugin?.(plugin);
-    }
+  let resolvedPluginIndex = $derived.by(() => {
+    if (resolvedGroupIndex === null) return null;
+    const group = pluginGroups[resolvedGroupIndex];
+    if (!group?.plugins?.length) return null;
+    const pluginIdx = selectedPluginIndex ?? 0;
+    return pluginIdx < 0 || pluginIdx >= group.plugins.length ? 0 : pluginIdx;
+  });
+
+  let resolvedPlugin = $derived(
+    resolvedGroupIndex !== null && resolvedPluginIndex !== null
+      ? pluginGroups[resolvedGroupIndex]?.plugins?.[resolvedPluginIndex] ?? null
+      : null,
+  );
+
+  // Notify the parent whenever the resolved selection changes.
+  $effect(() => {
+    const plugin = resolvedPlugin;
+    if (plugin) selectPlugin?.(plugin);
   });
 
   function onSelectGroup(groupIndex: number) {
     const group = pluginGroups[groupIndex];
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = group?.plugins?.length ? 0 : null;
-
-    const plugin = group?.plugins?.[0];
-    if (plugin) {
-      lastSelectedPluginId = plugin.id;
-      selectPlugin?.(plugin);
-    } else {
-      lastSelectedPluginId = null;
-    }
   }
 
   function onSelectPlugin(groupIndex: number, pluginIndex: number) {
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
-
-    const plugin = pluginGroups[groupIndex]?.plugins?.[pluginIndex];
-    if (plugin) {
-      lastSelectedPluginId = plugin.id;
-      selectPlugin?.(plugin);
-    }
   }
 
   function failureCount(pluginId: string): number {
@@ -98,7 +80,7 @@
   style={`--expanded-group-bg:${expandedGroupBackground}; --expanded-group-border:${expandedGroupBorderColor};`}
 >
   {#each pluginGroups as group, groupIndex}
-    <div class="validation-groups__group" class:expanded={groupIndex === selectedGroupIndex}>
+    <div class="validation-groups__group" class:expanded={groupIndex === resolvedGroupIndex}>
       <button
         type="button"
         class="validation-groups__group-title"
@@ -107,12 +89,12 @@
         {group.title}
       </button>
 
-      {#if groupIndex === selectedGroupIndex}
+      {#if groupIndex === resolvedGroupIndex}
         {#each group.plugins as plugin, pluginIndex}
           <button
             type="button"
             class="validation-groups__plugin"
-            class:active={pluginIndex === selectedPluginIndex}
+            class:active={pluginIndex === resolvedPluginIndex}
             onclick={() => onSelectPlugin(groupIndex, pluginIndex)}
           >
             <span>{plugin.name}</span>

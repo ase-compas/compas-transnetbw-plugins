@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { OscdBreadcrumbs } from '../../../../../libs/oscd-component/src';
+  import { OscdBreadcrumbs } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import PluginViewPanel from '../../features/processes/components/panels/PluginViewPanel.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
@@ -16,10 +16,9 @@
     handleStart,
   }: Props = $props();
 
-  let currentStepIndex = $state(0);
 
   let breadcrumbs = $derived(buildProcessBreadcrumbs(selectedEngineeringProcess.process, { edit: engineeringProcessEditing.isEditing }));
-  let pluginGroups = $derived(selectedEngineeringProcess.process.pluginGroups);
+  let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
 
   function handleBreadcrumbClick(index: number) {
     if (index !== 0) return;
@@ -29,8 +28,6 @@
 
   function startEditing() {
     engineeringProcessEditing.isEditing = true;
-    editorTabs.visible = false;
-    currentStepIndex = 0;
   }
 </script>
 
@@ -66,16 +63,28 @@
     flex-direction: column;
   }
 
-  .step-content { padding: 1rem; }
+  .step-content {
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    /*
+     * Controls the max-height of the plugin panel in the view (read-only) mode.
+     * Adjust to fit your OpenSCD header height.
+     */
+    --oscd-panel-max-height: calc(100vh - 14rem);
+    --oscd-panel-width: auto;
+  }
 
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    flex-shrink: 0;
   }
 
-  .header Button {
+  .header :global(button) {
     margin-left: auto;
   }
 </style>

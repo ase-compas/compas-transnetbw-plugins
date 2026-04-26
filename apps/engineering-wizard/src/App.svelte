@@ -24,15 +24,11 @@
   import "../public/smui.css"
   import "../public/global.css"
 
-  interface Plugin {
-    src: string;
-  }
-
   interface Props {
     doc?: XMLDocument;
     editCount?: number;
     host?: HTMLElement;
-    plugins?: Plugin[];
+    plugins?: { src: string }[];
     docId?: string;
     pluginId?: string;
     docName?: string;
@@ -57,28 +53,44 @@
 
   let isCreatingProcess = $state(false);
 
-  onMount(async () => {
-    await loadEngineeringProcesses();
-
+  function restoreWorkflowState(document: XMLDocument | undefined) {
+    if (!document) return;
     try {
-      if (doc) {
-        const { processId, lastPluginId } = readEngineeringWorkflowState(doc);
-        if (processId) {
-          const match = (engineeringProcesses.processes ?? []).find(p => p.id === processId);
-          if (match) {
-            setRunningProcess(match, lastPluginId ?? null);
-          }
+      const { processId, lastPluginId } = readEngineeringWorkflowState(document);
+      if (processId) {
+        const match = engineeringProcesses.processes.find(p => p.id === processId);
+        if (match) {
+          setRunningProcess(match, lastPluginId ?? null);
         }
       }
     } catch (e) {
+      console.warn('[EngineeringWizard] Failed to restore workflow state:', e);
+    }
+  }
 
+  onMount(async () => {
+    try {
+      await loadEngineeringProcesses();
+    } catch {
+      // Status is already tracked in engineeringProcessesStatus.error
+    }
+    restoreWorkflowState(doc);
+  });
+
+  // Re-read persisted workflow state when the host swaps the document
+  let previousDocRef: XMLDocument | undefined;
+  $effect(() => {
+    if (doc && doc !== previousDocRef) {
+      previousDocRef = doc;
+      restoreWorkflowState(doc);
     }
   });
 
   async function startProcess(process: Process) {
     const running = runningEngineeringProcess.process;
+    const isNewProcess = !running || running.id !== process.id;
 
-    if (running && running.id !== process.id) {
+    if (running && isNewProcess) {
       const result = await openDialog(OscdConfirmDialog as any, {
         title: 'Do you want to start a new process?',
         message: 'Starting a new process will stop the current running process. Any unsaved progress will be lost.',
@@ -86,23 +98,24 @@
         cancelActionText: 'Cancel',
       });
 
-      if(result.type === 'cancel') {
-        return;
-      }
+      if (result.type === 'cancel') return;
+    }
 
+    if (isNewProcess) {
       setRunningProcess(process, null);
-      if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id, lastPluginId: null });
-    } else if (!running) {
-      setRunningProcess(process, null);
-      if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id, lastPluginId: null });
-    } else {
-      if (doc && host) writeEngineeringWorkflowState(doc, host, { processId: process.id });
+    }
+
+    if (doc && host) {
+      writeEngineeringWorkflowState(doc, host, {
+        processId: process.id,
+        ...(isNewProcess && { lastPluginId: null }),
+      });
     }
 
     selectedEngineeringProcess.process = process;
 
-    const plugins = getPluginsForProcess(selectedEngineeringProcess.process);
-    openDialog(WorkflowDialog as any, { doc, editCount, host, plugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    const viewPlugins = getPluginsForProcess(selectedEngineeringProcess.process);
+    openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
   }
 
   $effect(() => {
@@ -142,19 +155,24 @@
 
 <DialogHost />
 
-{#if isCreatingProcess}
-  <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-{:else if selectedEngineeringProcess.process}
-  <ProcessDetailView handleBack={goBack} handleStart={startProcess} />
-{:else}
-  <ProcessesListView
-    handleView={handleView}
-    handleEdit={handleEdit}
-    handleStart={startProcess}
-    handleAddNew={addNewProcess}
-    docName={docName}
-  />
-{/if}
+<div class="app-root">
+  {#if isCreatingProcess}
+    <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
+  {:else if selectedEngineeringProcess.process}
+    <ProcessDetailView handleStart={startProcess} />
+  {:else}
+    <ProcessesListView
+      handleView={handleView}
+      handleEdit={handleEdit}
+      handleStart={startProcess}
+      handleAddNew={addNewProcess}
+      docName={docName}
+    />
+  {/if}
+</div>
 <OscdToastHost />
 <style>
+  .app-root {
+    display: contents;
+  }
 </style>

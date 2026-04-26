@@ -6,6 +6,14 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 export default (defineConfig as any)(async () => {
   const { svelte } = await import('@sveltejs/vite-plugin-svelte');
 
+  const backendProxy = {
+    '/compas-scl-data-service': {
+      target: 'http://localhost:8080',
+      changeOrigin: true,
+      // No rewrite: backend expects the full /compas-scl-data-service/... path
+    },
+  };
+
   return {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/engineering-wizard',
@@ -16,11 +24,13 @@ export default (defineConfig as any)(async () => {
       fs: {
         allow: ['..'],
       },
+      proxy: backendProxy,
     },
 
     preview: {
       port: 4301,
       host: 'localhost',
+      proxy: backendProxy,
     },
 
     plugins: [svelte(), nxViteTsPaths()],

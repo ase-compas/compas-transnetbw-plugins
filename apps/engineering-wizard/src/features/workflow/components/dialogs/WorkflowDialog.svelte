@@ -2,8 +2,6 @@
   import EngineeringWorkflowView from '../../../../views/EngineeringWorkflow.view.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import type { ViewPlugin } from '../../viewPlugin';
-  import { selectedEngineeringProcess } from '../../../processes/stores.svelte.js';
-  import { editorTabs } from '../../layout.svelte.js';
 
   interface Props {
     open: boolean;
@@ -40,9 +38,6 @@
   const exit = (reason: 'cancel' | 'exit') => {
     if (hasExited) return;
     hasExited = true;
-    // when closing
-    selectedEngineeringProcess.process = null;
-    editorTabs.visible = true;
     closeDialog(reason);
   };
 

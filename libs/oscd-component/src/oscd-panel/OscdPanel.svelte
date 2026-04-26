@@ -41,11 +41,11 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
-    width: 30vw;
+    width: var(--oscd-panel-width, 30vw);
     border-radius: 4px;
     padding: 24px;
     background-color: var(--bg-color);
-    max-height: calc(100vh - 14rem);
+    max-height: var(--oscd-panel-max-height, calc(100vh - 14rem));
   }
 
   .panel-parent__header,
