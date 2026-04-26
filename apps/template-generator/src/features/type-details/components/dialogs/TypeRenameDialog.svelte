@@ -37,6 +37,7 @@
   title="Rename Type"
   confirmActionText='Rename'
   maxWidth="800px"
+  height="auto"
   bind:open
   onConfirm={() => {closeDialog('confirm', {value: value})}}
   onCancel={() => closeDialog('cancel')}
