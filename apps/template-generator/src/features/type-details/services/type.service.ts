@@ -380,7 +380,7 @@ export class DataTypeService {
         const plan = this.getDeletePlan(id);
         
         // If this is a root of a default group, also add edits to delete sub-types and metadata
-        if (plan.hasDefaultMetadata && plan.trackedSubTypeIds.length > 0) {
+        if (plan.hasDefaultMetadata) {
             // Delete all tracked sub-types and their references
             for (const subTypeId of plan.trackedSubTypeIds) {
                 const subTypeElement = this.doc.querySelector(`DataTypeTemplates > [id="${subTypeId}"]`);
@@ -398,7 +398,7 @@ export class DataTypeService {
                     editEvents.push({ node: subTypeElement } as RemoveV2);
                 }
             }
-            
+
             // Delete metadata for the default group
             const metadataEdits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(id);
             editEvents.push(...metadataEdits);

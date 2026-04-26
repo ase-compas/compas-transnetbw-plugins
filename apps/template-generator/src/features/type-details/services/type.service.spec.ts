@@ -256,6 +256,29 @@ describe('DataTypeService', () => {
 			const refs = Array.from(doc.querySelectorAll('[type="root-a"],[type="sub-a"]'));
 			expect(refs.every(ref => ref.getAttribute('type') === '')).toBe(true);
 		});
+
+		test('deletes metadata for root type of a default group even when there are no sub-types', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-only" version="1.0.0" id="db-1">
+							<compas:type-element id="root-only"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-only" cdc="SPS"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			service.delete('root-only');
+
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			expect(doc.getElementById('root-only')).toBeNull();
+			expect(doc.querySelector('[instance="Measurement"]')).toBeNull();
+		});
 	});
 
 	describe('getDeletePlan', () => {

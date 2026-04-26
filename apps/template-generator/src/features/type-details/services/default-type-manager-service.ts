@@ -636,7 +636,7 @@ export class DefaultTypeManagerService {
         const defaultTypeElements = this.getDefaultTypeElements({
             kind: defaultInfo.kind,
             instance: defaultInfo.instance,
-        });
+        }, defaultInfo.version);
 
         if (defaultTypeElements.length === 0) {
             throw new Error(`No local default metadata found for type ${typeId}`);
