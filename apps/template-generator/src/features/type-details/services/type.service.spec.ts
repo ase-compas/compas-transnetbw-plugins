@@ -213,6 +213,116 @@ describe('DataTypeService', () => {
 			const refs = Array.from(doc.querySelectorAll('[type="to-delete"]'));
 			expect(refs.every(ref => ref.getAttribute('type') === '')).toBe(true);
 		});
+
+		test('cascades deletion for root type of a default group, deleting sub-types and metadata', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-a" version="1.0.0" id="db-1">
+							<compas:type-element id="root-a"/>
+							<compas:type-element id="sub-a"/>
+							<compas:type-element id="sub-b"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-a" cdc="SPS"/>
+						<DOType id="sub-a" cdc="DPS"/>
+						<DOType id="sub-b" cdc="ACD"/>
+						<LNodeType id="consumer" lnClass="LLN0">
+							<DO name="do1" type="root-a"/>
+							<DO name="do2" type="sub-a"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			service.delete('root-a');
+
+			// Apply edits
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			// Verify root type was removed
+			expect(doc.getElementById('root-a')).toBeNull();
+
+			// Verify sub-types were removed
+			expect(doc.getElementById('sub-a')).toBeNull();
+			expect(doc.getElementById('sub-b')).toBeNull();
+
+			// Verify metadata was removed
+			expect(doc.querySelector('[instance="Measurement"]')).toBeNull();
+
+			// Verify all references were cleared
+			const refs = Array.from(doc.querySelectorAll('[type="root-a"],[type="sub-a"]'));
+			expect(refs.every(ref => ref.getAttribute('type') === '')).toBe(true);
+		});
+	});
+
+	describe('getDeletePlan', () => {
+		test('returns hasDefaultMetadata=true and sub-type IDs for root type of a default group', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-a" version="1.0.0" id="db-1">
+							<compas:type-element id="root-a"/>
+							<compas:type-element id="sub-a"/>
+							<compas:type-element id="sub-b"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-a" cdc="SPS"/>
+						<DOType id="sub-a" cdc="DPS"/>
+						<DOType id="sub-b" cdc="ACD"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			const plan = service.getDeletePlan('root-a');
+
+			expect(plan.hasDefaultMetadata).toBe(true);
+			expect(plan.trackedSubTypeIds).toEqual(['sub-a', 'sub-b']);
+		});
+
+		test('returns hasDefaultMetadata=false for non-default types', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="regular-type" cdc="SPS"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			const plan = service.getDeletePlan('regular-type');
+
+			expect(plan.hasDefaultMetadata).toBe(false);
+			expect(plan.trackedSubTypeIds).toEqual([]);
+		});
+
+		test('returns hasDefaultMetadata=false for tracked sub-types (non-root)', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-a" version="1.0.0" id="db-1">
+							<compas:type-element id="root-a"/>
+							<compas:type-element id="sub-a"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-a" cdc="SPS"/>
+						<DOType id="sub-a" cdc="DPS"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			const plan = service.getDeletePlan('sub-a');
+
+			// sub-a is tracked but not a root, so no cascade
+			expect(plan.hasDefaultMetadata).toBe(false);
+			expect(plan.trackedSubTypeIds).toEqual([]);
+		});
 	});
 
 	describe('duplicate', () => {

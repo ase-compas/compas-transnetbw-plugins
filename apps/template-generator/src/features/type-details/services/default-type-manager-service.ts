@@ -599,6 +599,28 @@ export class DefaultTypeManagerService {
     }
 
     /**
+     * Gets all tracked sub-type IDs for a given root type ID in a local default group.
+     * If the type is a root type of a default, returns the nested type-element IDs.
+     * If the type is a nested type-element, returns empty array (no sub-types).
+     * @param rootTypeId The root type ID to get sub-types for
+     * @returns Array of tracked sub-type IDs, or empty array if none
+     */
+    public getTrackedSubTypeIdsByRootId(rootTypeId: string): string[] {
+        const defaultInfo = this.getDefaultInfoByTypeId(rootTypeId);
+        if (!defaultInfo) {
+            return [];
+        }
+
+        // If the rootTypeId is the rootId, it's the root type - return all sub-type IDs
+        if (defaultInfo.rootId === rootTypeId) {
+            return defaultInfo.typeElementIds;
+        }
+
+        // If the rootTypeId is a nested type-element, it's not a root, so no sub-types
+        return [];
+    }
+
+    /**
      * Builds edit events that delete local default metadata for the tracked
      * default group of a type.
      *

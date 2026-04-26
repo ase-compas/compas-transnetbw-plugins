@@ -15,6 +15,7 @@
   import type { DocState } from 'apps/template-generator/src/shared/states/doc.state.svelte';
   import type { DetailsConfig } from '../types';
   import ApplyDefaultPreviewConfirmDialog from './dialogs/ApplyDefaultPreviewConfirmDialog.svelte';
+  import ConfirmCascadeDeleteDefaultTypeDialog from './dialogs/ConfirmCascadeDeleteDefaultTypeDialog.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   interface Props {
@@ -214,6 +215,39 @@
     }
   }
 
+  async function handleDelete() {
+    const typeIdToDelete = typeDetailsState.loadedType?.id;
+    if (!typeIdToDelete) {
+      return;
+    }
+
+    try {
+      // Get the delete plan to check for cascade deletions
+      const deletePlan = service.getDeletePlan(typeIdToDelete);
+
+      // If this is a root of a default group, show confirmation dialog
+      if (deletePlan.hasDefaultMetadata && deletePlan.trackedSubTypeIds.length > 0) {
+        const result = await openDialog(ConfirmCascadeDeleteDefaultTypeDialog, {
+          rootTypeId: typeIdToDelete,
+          subTypeIds: deletePlan.trackedSubTypeIds,
+        });
+
+        if (result.type !== 'confirm') {
+          return;
+        }
+
+        toastService.info('Deleting...', `Removing ${typeIdToDelete} and ${deletePlan.trackedSubTypeIds.length} sub-type(s).`);
+      }
+
+      closeDrawer();
+      typeDetailsState.deleteType();
+      toastService.success('Type deleted', `${typeIdToDelete} has been successfully deleted.`);
+    } catch (e) {
+      console.error(`Failed to delete type ${typeDetailsState.loadedType?.id}:`, e);
+      toastService.error('Delete failed', 'Failed to delete type. Please try again.');
+    }
+  }
+
 </script>
 
 <TypeDetailsLayout
@@ -227,10 +261,7 @@
   isEditMode={typeDetailsState.isEditMode}
   onModeChange={(nextMode) => typeDetailsState.setViewMode(nextMode)}
   onRename={renameType}
-  onDelete={() => {
-    closeDrawer();
-    typeDetailsState.deleteType();
-  }}
+  onDelete={handleDelete}
   onInstanceTypeChange={(instanceType) => typeDetailsState.updateInstanceType(instanceType)}
   onOpenDefaultRootType={(rootTypeId, rootTypeKind) => openTypeById(rootTypeId, rootTypeKind, typeDetailsState.viewMode)}
   onUpdateDefaultTypeToLatest={updateDefaultTypeToLatest}

@@ -152,6 +152,30 @@ export class DataTypeService {
     }
 
     /**
+     * Gets a delete plan for a type, including info about cascade deletions
+     * if the type is a root of a local default group.
+     * @param typeId The ID of the type to analyze for deletion
+     * @returns Object with hasDefaultMetadata (true if type is root of a default),
+     *          and trackedSubTypeIds (array of sub-type IDs that will also be deleted)
+     */
+    getDeletePlan(typeId: string): { hasDefaultMetadata: boolean; trackedSubTypeIds: string[] } {
+        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(typeId);
+        
+        // Check if this type is a root of a default group
+        const isRootOfDefault = defaultInfo?.rootId === typeId;
+        
+        // If it is a root, get the sub-type IDs that will be deleted
+        const trackedSubTypeIds = isRootOfDefault
+            ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(typeId)
+            : [];
+
+        return {
+            hasDefaultMetadata: isRootOfDefault,
+            trackedSubTypeIds,
+        };
+    }
+
+    /**
      * Lists all simple data types, optionally filtered by type kind and instance type.
      * @param filter Optional filter criteria to narrow down the list of data types.
      * @returns An array of SimpleDataType objects that match the filter criteria.
@@ -340,6 +364,8 @@ export class DataTypeService {
 
     /**
      * Deletes a data type and updates all references to it.
+     * If the type is a root of a local default group, also deletes the metadata
+     * and all tracked sub-types.
      * @param id The ID of the data type to delete.
      */
     delete(id: string): void {
@@ -349,9 +375,37 @@ export class DataTypeService {
         }
 
         const editEvents: EditV2[] = []
+        
+        // Get delete plan to check for cascading deletions
+        const plan = this.getDeletePlan(id);
+        
+        // If this is a root of a default group, also add edits to delete sub-types and metadata
+        if (plan.hasDefaultMetadata && plan.trackedSubTypeIds.length > 0) {
+            // Delete all tracked sub-types and their references
+            for (const subTypeId of plan.trackedSubTypeIds) {
+                const subTypeElement = this.doc.querySelector(`DataTypeTemplates > [id="${subTypeId}"]`);
+                if (subTypeElement) {
+                    // Clear references to sub-type
+                    const subTypeRefEls = this.doc.querySelectorAll(`[type="${subTypeId}"]`);
+                    subTypeRefEls.forEach(refEl => {
+                        editEvents.push({
+                            element: refEl,
+                            attributes: { type: '' },
+                            attributesNS: {},
+                        } as SetAttributesV2);
+                    });
+                    // Remove sub-type element
+                    editEvents.push({ node: subTypeElement } as RemoveV2);
+                }
+            }
+            
+            // Delete metadata for the default group
+            const metadataEdits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(id);
+            editEvents.push(...metadataEdits);
+        }
+        
+        // Clear references to the root type
         const refEls = this.doc.querySelectorAll(`[type="${id}"]`);
-
-        // set their type attribute to empty
         refEls.forEach(refEl => {
             const edit: SetAttributesV2 = {
                 element: refEl,
@@ -361,8 +415,7 @@ export class DataTypeService {
             editEvents.push(edit);
         });
 
-
-        // remove the element itself
+        // Remove the root type element itself
         const removeEvent: RemoveV2 = { node: element };
         editEvents.push(removeEvent);
 
