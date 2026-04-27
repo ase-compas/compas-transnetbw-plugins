@@ -1,4 +1,4 @@
-import type { Process } from '@oscd-transnet-plugins/shared';
+import type { Process, VersionBump } from '@oscd-transnet-plugins/shared';
 import { isVersionGreater } from '@oscd-transnet-plugins/shared';
 import type { CustomResourceService } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import {
@@ -8,8 +8,7 @@ import {
 
 export type { UploadDataNextVersionTypeEnum };
 
-/** Semantic version bump direction — maps 1:1 to the API enum values. */
-export type VersionBump = 'major' | 'minor' | 'patch';
+export type { VersionBump } from '@oscd-transnet-plugins/shared';
 
 export interface RemoteProcessEntry {
   /** Backend resource UUID */

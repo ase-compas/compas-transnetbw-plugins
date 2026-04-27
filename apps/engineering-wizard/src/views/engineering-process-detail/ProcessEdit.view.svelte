@@ -21,10 +21,9 @@
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdConfirmDialog, OscdVersionBumpDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
-  import VersionBumpDialog from '../../features/processes/components/dialogs/VersionBumpDialog.svelte';
-  import type { VersionBump } from '../../features/processes/process.service';
+  import type { VersionBump } from '@oscd-transnet-plugins/shared';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -108,7 +107,7 @@
 
       if (confirmResult?.type === 'confirm') {
         // User wants to save — show version bump dialog
-        const versionResult = await openDialog(VersionBumpDialog, {
+        const versionResult = await openDialog(OscdVersionBumpDialog, {
           currentVersion: proc.version || '1.0.0',
         });
         if (versionResult?.type !== 'confirm') return; // user cancelled — stay in edit mode
@@ -127,6 +126,30 @@
       } else {
         // User chose to discard — restore original state
         restoreSnapshot();
+      }
+    }
+    leaveEditMode();
+  }
+
+  /** Called by the Done button — skips the "save or discard?" prompt, goes straight to version bump. */
+  async function handleDone() {
+    const proc = selectedEngineeringProcess.process;
+    if (proc && hasChanges()) {
+      const versionResult = await openDialog(OscdVersionBumpDialog, {
+        currentVersion: proc.version || '1.0.0',
+      });
+      if (versionResult?.type !== 'confirm') return;
+
+      const bump = versionResult.data as VersionBump;
+      saving = true;
+      try {
+        await saveProcess(proc, bump);
+        toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
+      } catch {
+        toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
+        return;
+      } finally {
+        saving = false;
       }
     }
     leaveEditMode();
@@ -201,7 +224,7 @@
     <WorkflowActions
       onGoToPreviousStep={goToPreviousStep}
       onGoToNextStep={goToNextStep}
-      onDone={exitEditing}
+      onDone={handleDone}
 
       isAtFirstStep={isAtFirstStep}
       isAtLastStep={isAtLastStep}

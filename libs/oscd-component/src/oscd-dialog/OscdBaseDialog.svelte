@@ -153,7 +153,20 @@
 {/if}
 
 <style>
+  /* Shared horizontal padding token — keeps title, content and footer buttons in one column */
+  :global(.mdc-dialog__surface) {
+    --dialog-h-padding: 1.5rem;
+  }
+
   :global(.mdc-dialog) { z-index: 5000 !important; }
+
+  /* Align SMUI action buttons (default footer) with content */
+  :global(.mdc-dialog__actions) {
+    padding-top: 0.6rem !important;
+    padding-bottom: 0.6rem !important;
+    padding-left: var(--dialog-h-padding, 1.5rem) !important;
+    padding-right: var(--dialog-h-padding, 1.5rem) !important;
+  }
 
   :global(.oscd-dialog__actions) {
     display: flex;
@@ -170,7 +183,7 @@
     border-bottom: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     color: white;
-    padding: 1.2rem 1rem;
+    padding: 1.2rem var(--dialog-h-padding, 1.5rem);
     display: flex;
     justify-content: space-between;
     align-items: center;
