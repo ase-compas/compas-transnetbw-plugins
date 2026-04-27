@@ -452,6 +452,7 @@
     line-height: 16px !important;
     letter-spacing: 0.02em !important;
     border-radius: 6px !important;
+    text-transform: none !important;
   }
 
   :global(.oscd-card-item .reference-button.has-reference) {
