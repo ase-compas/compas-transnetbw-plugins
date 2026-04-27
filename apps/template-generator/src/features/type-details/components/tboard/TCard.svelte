@@ -192,7 +192,7 @@
   {#if referencable}
     <OscdTooltip content={subtitle ? subtitle : 'Add reference'} hoverDelay={500} side="right">
       <Button
-        variant={subtitle ? "outlined" : "raised"}
+        variant={subtitle ? "outlined" : "unelevated"}
         class="reference-button {referenceButtonState ? referenceButtonState : ''}"
         onclick={(e) => {
           e.stopPropagation();
