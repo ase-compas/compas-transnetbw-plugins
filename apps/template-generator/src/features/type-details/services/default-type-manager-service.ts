@@ -389,8 +389,8 @@ export class DefaultTypeManagerService {
 
     /**
      * Resolves ID conflicts in imported type elements.
-     * Renames elements if their IDs already exist in the document,
-     * but preserves the rootId as-is.
+     * Renames elements if their IDs already exist in the document and
+     * updates internal type references based on the ID mapping.
      *
      * Returns a mapping of old IDs to new IDs and the effective root ID to use.
      */
@@ -424,7 +424,23 @@ export class DefaultTypeManagerService {
             }
         }
 
+        if (idMapping.size > 0) {
+            this.rewriteImportedTypeReferences(typeElements, idMapping);
+        }
+
         return { idMapping, effectiveRootId };
+    }
+
+    private rewriteImportedTypeReferences(
+        typeElements: Element[],
+        idMapping: Map<string, string>,
+    ): void {
+        // for id all id mappings
+        for (const [oldId, newId] of idMapping.entries()) {
+            // find all elements that reference the oldId and add them to the scan list
+            const referencingElements = typeElements.flatMap(el => Array.from(el.children)).filter(el => el.getAttribute('type') === oldId);
+            referencingElements.forEach(el => el.setAttribute('type', newId));
+        }
     }
 
     private generateConflictId(baseId: string, conflictScope: string, reservedIds: Set<string>): string {
