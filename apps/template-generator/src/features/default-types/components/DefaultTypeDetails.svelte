@@ -172,6 +172,7 @@
 
     detailsState.docIsReady = true;
   });
+
 </script>
 
 <div class="default-type-back-button">
@@ -183,10 +184,14 @@
 
 {#if detailsState.error}
   <p>{detailsState.error}</p>
-{:else if detailsState.loading}
-  <LinearProgress indeterminate />
 {:else if detailsState.info}
   <div class="default-type">
+    {#if detailsState.isReloading}
+      <div class="default-type__reload-progress">
+        <LinearProgress indeterminate />
+      </div>
+    {/if}
+
     <div class="default-type__header">
       <div class="default-type__header-left">
         <TypeInfo
@@ -273,9 +278,24 @@
       {/if}
     </div>
   </div>
+{:else if detailsState.isInitialLoading}
+  <LinearProgress indeterminate />
 {/if}
 
 <style>
+  .default-type {
+    position: relative;
+  }
+
+  .default-type__reload-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+
   .default-type__header {
     display: flex;
     align-items: center;
