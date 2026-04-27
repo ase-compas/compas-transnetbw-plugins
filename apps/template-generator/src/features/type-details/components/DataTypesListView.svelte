@@ -91,7 +91,7 @@
 
   async function createLNodeType() {
     await idSettingsState.load();
-    const createResult = await createDataTypeWorkflow(TypeKind.LNodeType, service, docState);
+    const createResult = await createDataTypeWorkflow(TypeKind.LNodeType, service, docState, undefined, true);
     if (!createResult) {
       return;
     }

@@ -30,6 +30,7 @@
   const typeDetailsState = new DataTypeDetailsState(service);
   let suspendedReloadDepth = 0;
   let hasPendingReload = false;
+  let mounted: boolean = false;
 
   function getPropagatedConfig(): DetailsConfig | undefined {
     const propagated = config?.propagateToChildren;
@@ -110,11 +111,26 @@
       return;
     }
 
+    let targetTypeId = result.data.id;
+
     if (result.data.mode === 'create') {
-      service.create(member.refKind, result.data.instanceType, result.data.id)
-      await openTypeById(result.data.id, member.refKind, 'edit');
+      if (result.data.createFromDefault) {
+        const effectiveRootId = await service.applySingleDefaultType(member.refKind, result.data.instanceType);
+        if (!effectiveRootId) {
+          toastService.error('No default available', 'Could not resolve a default type for this reference.');
+          return;
+        }
+
+        targetTypeId = effectiveRootId;
+        await openTypeById(targetTypeId, member.refKind, 'view');
+      } else {
+        service.create(member.refKind, result.data.instanceType, result.data.id)
+        targetTypeId = result.data.id;
+        await openTypeById(targetTypeId, member.refKind, 'edit');
+      }
     }
-    typeDetailsState.setRefernence(memberId, result.data.id);
+
+    typeDetailsState.setRefernence(memberId, targetTypeId);
   }
 
 
@@ -150,7 +166,7 @@
   }
 
   $effect(() => {
-    if(docState && docState.editCount >= -1) {
+    if(docState && docState.editCount >= -1 && mounted) {
       if (suspendedReloadDepth > 0) {
         hasPendingReload = true;
         return;
@@ -164,9 +180,10 @@
 
   onMount(() => {
     document.addEventListener('click', handleUnMakenWhenClickedOutside);
-    typeDetailsState.setConfig(config);
     typeDetailsState.setViewMode(mode);
+    typeDetailsState.setConfig(config);
     typeDetailsState.loadById(typeId);
+    mounted = true;
     return () => {
       document.removeEventListener('click', handleUnMakenWhenClickedOutside);
     };

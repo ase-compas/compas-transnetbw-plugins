@@ -59,7 +59,6 @@ export class DataTypeDetailsState {
      * @param id The ID of the type to load.
      */
     public loadById(id: string) {
-        this.loading = true;
         try {
             const typeDetails = this.dataTypeService.getById(id);
             this.loadedType = typeDetails;
@@ -311,7 +310,6 @@ export class DataTypeDetailsState {
 
     public setConfig(config: DetailsConfig) {
         this.config = config;
-        console.log("setting config from set", config);
     }
 
     // ==================

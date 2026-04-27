@@ -49,6 +49,13 @@
   const confirmDisabled = $derived(
     mode === 'select' ? !selectedReferenceType : !isCreateValid,
   );
+  const confirmActionText = $derived(
+    mode === 'select'
+      ? 'ok'
+      : createFormDetails?.createFromDefault && createFormDetails?.valid
+        ? 'Load default'
+        : 'Create',
+  );
 
   const getOptionLabel = (option: SimpleDataType) => option?.id ?? '';
 
@@ -136,7 +143,7 @@
 
 <OscdBaseDialog
   title="Add Reference"
-  confirmActionText="ok"
+  {confirmActionText}
   maxWidth="800px"
   bind:open
   onCancel={() => closeDialog('cancel')}

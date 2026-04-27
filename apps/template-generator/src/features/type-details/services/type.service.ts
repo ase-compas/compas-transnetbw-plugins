@@ -21,6 +21,13 @@ export interface ApplyDefaultTypesPreview {
     entries: ApplyDefaultTypesPreviewEntry[];
 }
 
+export interface ApplySingleDefaultTypePreview {
+    refTypeKey: string;
+    refTypeKind: TypeKind;
+    objectType: string;
+    plan: ResolveDefaultPlan;
+}
+
 
 
 export class DataTypeService {
@@ -725,6 +732,47 @@ export class DataTypeService {
     async applyDefaultTypes(id: string, memberNames: string[]): Promise<void> {
         const preview = await this.getApplyDefaultTypesPreview(id, memberNames);
         this.applyDefaultTypesFromPreview(preview);
+    }
+
+    /**
+     * Builds a default apply preview for a single target type (kind + instance)
+     * without binding it to member names.
+     */
+    async getApplySingleDefaultTypePreview(refTypeKind: TypeKind, objectType: string): Promise<ApplySingleDefaultTypePreview> {
+        const refTypeKey = `${refTypeKind}:${objectType}`;
+        const plan = await this.defaultTypeManagerService.resolve({ kind: refTypeKind, instance: objectType });
+
+        return {
+            refTypeKey,
+            refTypeKind,
+            objectType,
+            plan,
+        };
+    }
+
+    /**
+     * Applies a single-target default preview and returns the effective root ID.
+     */
+    applySingleDefaultTypeFromPreview(preview: ApplySingleDefaultTypePreview): string | null {
+        const { edits, effectiveRootIds } = this.defaultTypeManagerService.applyPlans([preview.plan]);
+        const effectiveRootId = effectiveRootIds.get(preview.refTypeKey) ?? null;
+
+        if (edits.length > 0) {
+            createAndDispatchEditEvent(this.hostElement, edits, {
+                title: `Apply default type for ${preview.refTypeKind}/${preview.objectType}`,
+                createHistoryEntry: true,
+            });
+        }
+
+        return effectiveRootId;
+    }
+
+    /**
+     * Resolves and applies a default for a single target type (kind + instance).
+     */
+    async applySingleDefaultType(refTypeKind: TypeKind, objectType: string): Promise<string | null> {
+        const preview = await this.getApplySingleDefaultTypePreview(refTypeKind, objectType);
+        return this.applySingleDefaultTypeFromPreview(preview);
     }
 
     /**
