@@ -13965,8 +13965,124 @@ function ap(t, e) {
 const op = tn([]);
 op.subscribe;
 ce({ freeze: !1 });
-var sp = /* @__PURE__ */ de("<div><!></div>");
-function lp(t, e) {
+var sp = /* @__PURE__ */ de('<span class="oscd-icon"><!></span>');
+function Gn(t, e) {
+  var n = sp(), r = se(n);
+  Se(r, () => e.children ?? pe), L(t, n);
+}
+var lp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
+function up(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = lp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var cp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
+function id(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = cp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var dp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
+function fp(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = dp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var hp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
+function vp(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = hp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var mp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
+function gp(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = mp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var pp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
+function bp(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = pp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var _p = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
+function yp(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = _p();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var Ip = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
+function Ep(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = Ip();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+sf();
+var Sp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"></path></svg>');
+function Ap(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = Sp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var Cp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" cursor="pointer"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
+function xp(t, e) {
+  let n = p(e, "svgStyles", 8, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = Cp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var Tp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
+function wp(t, e) {
+  let n = p(e, "svgStyles", 8, "");
+  Gn(t, {
+    children: (r, i) => {
+      var a = Tp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var Lp = /* @__PURE__ */ de("<div><!></div>");
+function Op(t, e) {
   Ce(e, !0);
   let n = p(e, "use", 19, () => []), r = p(e, "class", 3, ""), i = p(e, "variant", 3, "raised"), a = p(e, "square", 3, !1), o = p(e, "color", 3, "default"), u = p(e, "elevation", 3, 1), l = p(e, "transition", 3, !1), c = /* @__PURE__ */ qe(e, [
     "$$slots",
@@ -13984,7 +14100,7 @@ function lp(t, e) {
   function v() {
     return d;
   }
-  var f = { getElement: v }, m = sp();
+  var f = { getElement: v }, m = Lp();
   Ue(m, (g) => ({ class: g, ...c }), [
     () => De({
       "smui-paper": !0,
@@ -14004,26 +14120,26 @@ function lp(t, e) {
 const Ft = [];
 for (let t = 0; t < 256; ++t)
   Ft.push((t + 256).toString(16).slice(1));
-function up(t, e = 0) {
+function Rp(t, e = 0) {
   return (Ft[t[e + 0]] + Ft[t[e + 1]] + Ft[t[e + 2]] + Ft[t[e + 3]] + "-" + Ft[t[e + 4]] + Ft[t[e + 5]] + "-" + Ft[t[e + 6]] + Ft[t[e + 7]] + "-" + Ft[t[e + 8]] + Ft[t[e + 9]] + "-" + Ft[t[e + 10]] + Ft[t[e + 11]] + Ft[t[e + 12]] + Ft[t[e + 13]] + Ft[t[e + 14]] + Ft[t[e + 15]]).toLowerCase();
 }
 let os;
-const cp = new Uint8Array(16);
-function dp() {
+const Mp = new Uint8Array(16);
+function Dp() {
   if (!os) {
     if (typeof crypto > "u" || !crypto.getRandomValues)
       throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
     os = crypto.getRandomValues.bind(crypto);
   }
-  return os(cp);
+  return os(Mp);
 }
-const fp = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), au = { randomUUID: fp };
+const Pp = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), au = { randomUUID: Pp };
 function Zr(t, e, n) {
   var i;
   if (au.randomUUID && !e && !t)
     return au.randomUUID();
   t = t || {};
-  const r = t.random ?? ((i = t.rng) == null ? void 0 : i.call(t)) ?? dp();
+  const r = t.random ?? ((i = t.rng) == null ? void 0 : i.call(t)) ?? Dp();
   if (r.length < 16)
     throw new Error("Random bytes length must be >= 16");
   if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, e) {
@@ -14033,123 +14149,7 @@ function Zr(t, e, n) {
       e[n + a] = r[a];
     return e;
   }
-  return up(r);
-}
-var hp = /* @__PURE__ */ de('<span class="oscd-icon"><!></span>');
-function Gn(t, e) {
-  var n = hp(), r = se(n);
-  Se(r, () => e.children ?? pe), L(t, n);
-}
-var vp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
-function mp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = vp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var gp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
-function id(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = gp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var pp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
-function bp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = pp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var _p = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
-function yp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = _p();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Ip = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
-function Ep(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Ip();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Sp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
-function Ap(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Sp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Cp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
-function xp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Cp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Tp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
-function wp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Tp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-sf();
-var Lp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"></path></svg>');
-function Op(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Lp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Rp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" cursor="pointer"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
-function Mp(t, e) {
-  let n = p(e, "svgStyles", 8, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Rp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Dp = /* @__PURE__ */ on('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
-function Pp(t, e) {
-  let n = p(e, "svgStyles", 8, "");
-  Gn(t, {
-    children: (r, i) => {
-      var a = Dp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
+  return Rp(r);
 }
 function Np(t, e) {
   e(t.target.value);
@@ -14181,7 +14181,7 @@ var Vp = /* @__PURE__ */ de('<details class="svelte-1sq8fnx"><summary class="sve
 function ad(t, e) {
   Ce(e, !0);
   let n = p(e, "title", 3, ""), r = p(e, "open", 11, !1);
-  lp(t, {
+  Op(t, {
     children: (i, a) => {
       var o = Vp(), u = se(o), l = se(u), c = Ie(u, 2), d = se(c);
       Se(d, () => e.content ?? pe), Oe(() => {
@@ -15911,7 +15911,7 @@ function Rb(t, e) {
         hoverDelay: 501,
         side: "top",
         children: (m, h) => {
-          Mp(m, {
+          xp(m, {
             svgStyles: "fill: grey; height: filt-content; width: fit-content;"
           });
         },
@@ -15926,7 +15926,7 @@ function Rb(t, e) {
   {
     var v = (f) => {
       var m = Lb(), h = Ie(Z(m), 2), g = se(h), b = Ie(h, 2), y = se(b);
-      Op(y, { svgStyles: "fill: gray;" }), Oe(() => at(g, e.value)), L(f, m);
+      Ap(y, { svgStyles: "fill: gray;" }), Oe(() => at(g, e.value)), L(f, m);
     };
     ae(d, (f) => {
       s(n) && f(v);
@@ -18487,7 +18487,7 @@ function S_(t, e) {
                                               var te = ne(), Ne = Z(te);
                                               {
                                                 var dt = (mt) => {
-                                                  mp(mt, { svgStyles: "margin: unset" });
+                                                  up(mt, { svgStyles: "margin: unset" });
                                                 }, bt = (mt) => {
                                                   var kt = ne(), _r = Z(kt);
                                                   {
@@ -18497,34 +18497,34 @@ function S_(t, e) {
                                                       var Pn = ne(), Ii = Z(Pn);
                                                       {
                                                         var jn = (Qe) => {
-                                                          bp(Qe, { svgStyles: "margin: unset" });
+                                                          fp(Qe, { svgStyles: "margin: unset" });
                                                         }, ze = (Qe) => {
                                                           var $e = ne(), Dt = Z($e);
                                                           {
                                                             var gn = (ut) => {
-                                                              yp(ut, { svgStyles: "margin: unset" });
+                                                              vp(ut, { svgStyles: "margin: unset" });
                                                             }, ot = (ut) => {
                                                               var At = ne(), et = Z(At);
                                                               {
                                                                 var wt = (Lt) => {
-                                                                  Ap(Lt, { svgStyles: "margin: unset" });
+                                                                  bp(Lt, { svgStyles: "margin: unset" });
                                                                 }, Nn = (Lt) => {
                                                                   var _t = ne(), Pt = Z(_t);
                                                                   {
                                                                     var un = (cn) => {
-                                                                      xp(cn, { svgStyles: "margin: unset" });
+                                                                      yp(cn, { svgStyles: "margin: unset" });
                                                                     }, Bt = (cn) => {
                                                                       var Yt = ne(), Wn = Z(Yt);
                                                                       {
                                                                         var Gr = (jt) => {
-                                                                          wp(jt, { svgStyles: "margin: unset" });
+                                                                          Ep(jt, { svgStyles: "margin: unset" });
                                                                         }, dn = (jt) => {
                                                                           var pn = ne(), rr = Z(pn);
                                                                           {
                                                                             var oa = (yr) => {
-                                                                              Pp(yr, { svgStyles: "margin: unset" });
+                                                                              wp(yr, { svgStyles: "margin: unset" });
                                                                             }, jo = (yr) => {
-                                                                              Ep(yr, { svgStyles: "margin: unset" });
+                                                                              gp(yr, { svgStyles: "margin: unset" });
                                                                             };
                                                                             ae(
                                                                               rr,

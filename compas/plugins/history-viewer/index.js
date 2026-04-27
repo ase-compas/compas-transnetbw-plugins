@@ -15094,66 +15094,52 @@ function tb(t, e) {
   }
   x(t, J), we();
 }
-const qt = [];
-for (let t = 0; t < 256; ++t)
-  qt.push((t + 256).toString(16).slice(1));
-function nb(t, e = 0) {
-  return (qt[t[e + 0]] + qt[t[e + 1]] + qt[t[e + 2]] + qt[t[e + 3]] + "-" + qt[t[e + 4]] + qt[t[e + 5]] + "-" + qt[t[e + 6]] + qt[t[e + 7]] + "-" + qt[t[e + 8]] + qt[t[e + 9]] + "-" + qt[t[e + 10]] + qt[t[e + 11]] + qt[t[e + 12]] + qt[t[e + 13]] + qt[t[e + 14]] + qt[t[e + 15]]).toLowerCase();
-}
-let ps;
-const rb = new Uint8Array(16);
-function ib() {
-  if (!ps) {
-    if (typeof crypto > "u" || !crypto.getRandomValues)
-      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-    ps = crypto.getRandomValues.bind(crypto);
-  }
-  return ps(rb);
-}
-const ab = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), Iu = { randomUUID: ab };
-function ni(t, e, n) {
-  var i;
-  if (Iu.randomUUID && !e && !t)
-    return Iu.randomUUID();
-  t = t || {};
-  const r = t.random ?? ((i = t.rng) == null ? void 0 : i.call(t)) ?? ib();
-  if (r.length < 16)
-    throw new Error("Random bytes length must be >= 16");
-  if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, e) {
-    if (n = n || 0, n < 0 || n + 16 > e.length)
-      throw new RangeError(`UUID byte range ${n}:${n + 15} is out of buffer bounds`);
-    for (let a = 0; a < 16; ++a)
-      e[n + a] = r[a];
-    return e;
-  }
-  return nb(r);
-}
-var ob = /* @__PURE__ */ ce('<span class="oscd-icon"><!></span>');
+var nb = /* @__PURE__ */ ce('<span class="oscd-icon"><!></span>');
 function Kt(t, e) {
-  var n = ob(), r = de(n);
+  var n = nb(), r = de(n);
   Ee(r, () => e.children ?? ve), x(t, n);
 }
-var sb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
-function lb(t, e) {
+var rb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
+function ib(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
     children: (r, i) => {
-      var a = sb();
+      var a = rb();
       Oe(() => mt(a, n())), x(r, a);
     }
   });
 }
-var ub = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
+var ab = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
 function gl(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
     children: (r, i) => {
-      var a = ub();
+      var a = ab();
       Oe(() => mt(a, n())), x(r, a);
     }
   });
 }
-var cb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
+var ob = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
+function sb(t, e) {
+  let n = v(e, "svgStyles", 3, "");
+  Kt(t, {
+    children: (r, i) => {
+      var a = ob();
+      Oe(() => mt(a, n())), x(r, a);
+    }
+  });
+}
+var lb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
+function ub(t, e) {
+  let n = v(e, "svgStyles", 3, "");
+  Kt(t, {
+    children: (r, i) => {
+      var a = lb();
+      Oe(() => mt(a, n())), x(r, a);
+    }
+  });
+}
+var cb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
 function db(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15163,7 +15149,7 @@ function db(t, e) {
     }
   });
 }
-var fb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
+var fb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
 function hb(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15173,8 +15159,8 @@ function hb(t, e) {
     }
   });
 }
-var vb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
-function mb(t, e) {
+var vb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
+function _d(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
     children: (r, i) => {
@@ -15183,7 +15169,17 @@ function mb(t, e) {
     }
   });
 }
-var gb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
+var mb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
+function yd(t, e) {
+  let n = v(e, "svgStyles", 3, "");
+  Kt(t, {
+    children: (r, i) => {
+      var a = mb();
+      Oe(() => mt(a, n())), x(r, a);
+    }
+  });
+}
+var gb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"></path></svg>');
 function pb(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15193,8 +15189,8 @@ function pb(t, e) {
     }
   });
 }
-var bb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
-function _d(t, e) {
+var bb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"></path><path d="M16 8h-2v3h-3v2h3v3h2v-3h3v-2h-3zM2 12c0-2.79 1.64-5.2 4.01-6.32V3.52C2.52 4.76 0 8.09 0 12s2.52 7.24 6.01 8.48v-2.16C3.64 17.2 2 14.79 2 12zm13-9c-4.96 0-9 4.04-9 9s4.04 9 9 9 9-4.04 9-9-4.04-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7z"></path></svg>');
+function _b(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
     children: (r, i) => {
@@ -15203,17 +15199,8 @@ function _d(t, e) {
     }
   });
 }
-var _b = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
-function yd(t, e) {
-  let n = v(e, "svgStyles", 3, "");
-  Kt(t, {
-    children: (r, i) => {
-      var a = _b();
-      Oe(() => mt(a, n())), x(r, a);
-    }
-  });
-}
-var yb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"></path></svg>');
+Af();
+var yb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"></path></svg>');
 function Ib(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15223,7 +15210,7 @@ function Ib(t, e) {
     }
   });
 }
-var Sb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"></path><path d="M16 8h-2v3h-3v2h3v3h2v-3h3v-2h-3zM2 12c0-2.79 1.64-5.2 4.01-6.32V3.52C2.52 4.76 0 8.09 0 12s2.52 7.24 6.01 8.48v-2.16C3.64 17.2 2 14.79 2 12zm13-9c-4.96 0-9 4.04-9 9s4.04 9 9 9 9-4.04 9-9-4.04-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7z"></path></svg>');
+var Sb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"><path d="m176-120-56-56 301-302-181-45 198-123-17-234 179 151 216-88-87 217 151 178-234-16-124 198-45-181-301 301Zm24-520-80-80 80-80 80 80-80 80Zm355 197 48-79 93 7-60-71 35-86-86 35-71-59 7 92-79 49 90 22 23 90Zm165 323-80-80 80-80 80 80-80 80ZM569-570Z"></path></svg>');
 function Eb(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15233,8 +15220,7 @@ function Eb(t, e) {
     }
   });
 }
-Af();
-var Ab = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"></path></svg>');
+var Ab = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m770-302-60-62q40-11 65-42.5t25-73.5q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 57-29.5 105T770-302ZM634-440l-80-80h86v80h-6ZM792-56 56-792l56-56 736 736-56 56ZM440-280H280q-83 0-141.5-58.5T80-480q0-69 42-123t108-71l74 74h-24q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h65l79 80H320Z"></path></svg>');
 function Cb(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15244,7 +15230,7 @@ function Cb(t, e) {
     }
   });
 }
-var Tb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"><path d="m176-120-56-56 301-302-181-45 198-123-17-234 179 151 216-88-87 217 151 178-234-16-124 198-45-181-301 301Zm24-520-80-80 80-80 80 80-80 80Zm355 197 48-79 93 7-60-71 35-86-86 35-71-59 7 92-79 49 90 22 23 90Zm165 323-80-80 80-80 80 80-80 80ZM569-570Z"></path></svg>');
+var Tb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"></path></svg>');
 function xb(t, e) {
   let n = v(e, "svgStyles", 3, "");
   Kt(t, {
@@ -15254,9 +15240,9 @@ function xb(t, e) {
     }
   });
 }
-var wb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m770-302-60-62q40-11 65-42.5t25-73.5q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 57-29.5 105T770-302ZM634-440l-80-80h86v80h-6ZM792-56 56-792l56-56 736 736-56 56ZM440-280H280q-83 0-141.5-58.5T80-480q0-69 42-123t108-71l74 74h-24q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h65l79 80H320Z"></path></svg>');
+var wb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="24px"><path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"></path></svg>');
 function Lb(t, e) {
-  let n = v(e, "svgStyles", 3, "");
+  let n = v(e, "svgStyles", 8, "");
   Kt(t, {
     children: (r, i) => {
       var a = wb();
@@ -15264,9 +15250,9 @@ function Lb(t, e) {
     }
   });
 }
-var Ob = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"></path></svg>');
+var Ob = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" cursor="pointer"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
 function Rb(t, e) {
-  let n = v(e, "svgStyles", 3, "");
+  let n = v(e, "svgStyles", 8, "");
   Kt(t, {
     children: (r, i) => {
       var a = Ob();
@@ -15274,7 +15260,7 @@ function Rb(t, e) {
     }
   });
 }
-var Db = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="24px"><path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"></path></svg>');
+var Db = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
 function Mb(t, e) {
   let n = v(e, "svgStyles", 8, "");
   Kt(t, {
@@ -15284,25 +15270,39 @@ function Mb(t, e) {
     }
   });
 }
-var Pb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" cursor="pointer"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
-function Hb(t, e) {
-  let n = v(e, "svgStyles", 8, "");
-  Kt(t, {
-    children: (r, i) => {
-      var a = Pb();
-      Oe(() => mt(a, n())), x(r, a);
-    }
-  });
+const qt = [];
+for (let t = 0; t < 256; ++t)
+  qt.push((t + 256).toString(16).slice(1));
+function Pb(t, e = 0) {
+  return (qt[t[e + 0]] + qt[t[e + 1]] + qt[t[e + 2]] + qt[t[e + 3]] + "-" + qt[t[e + 4]] + qt[t[e + 5]] + "-" + qt[t[e + 6]] + qt[t[e + 7]] + "-" + qt[t[e + 8]] + qt[t[e + 9]] + "-" + qt[t[e + 10]] + qt[t[e + 11]] + qt[t[e + 12]] + qt[t[e + 13]] + qt[t[e + 14]] + qt[t[e + 15]]).toLowerCase();
 }
-var Nb = /* @__PURE__ */ xt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
-function Ub(t, e) {
-  let n = v(e, "svgStyles", 8, "");
-  Kt(t, {
-    children: (r, i) => {
-      var a = Nb();
-      Oe(() => mt(a, n())), x(r, a);
-    }
-  });
+let ps;
+const Hb = new Uint8Array(16);
+function Nb() {
+  if (!ps) {
+    if (typeof crypto > "u" || !crypto.getRandomValues)
+      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+    ps = crypto.getRandomValues.bind(crypto);
+  }
+  return ps(Hb);
+}
+const Ub = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), Iu = { randomUUID: Ub };
+function ni(t, e, n) {
+  var i;
+  if (Iu.randomUUID && !e && !t)
+    return Iu.randomUUID();
+  t = t || {};
+  const r = t.random ?? ((i = t.rng) == null ? void 0 : i.call(t)) ?? Nb();
+  if (r.length < 16)
+    throw new Error("Random bytes length must be >= 16");
+  if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, e) {
+    if (n = n || 0, n < 0 || n + 16 > e.length)
+      throw new RangeError(`UUID byte range ${n}:${n + 15} is out of buffer bounds`);
+    for (let a = 0; a < 16; ++a)
+      e[n + a] = r[a];
+    return e;
+  }
+  return Pb(r);
 }
 function Fb(t, e) {
   e(t.target.value);
@@ -16865,7 +16865,7 @@ function g_(t, e) {
           var h = re(), p = Y(h);
           {
             var b = (E) => {
-              Eb(E, {
+              _b(E, {
                 get svgStyles() {
                   return s(o);
                 }
@@ -16883,7 +16883,7 @@ function g_(t, e) {
                   var T = re(), w = Y(T);
                   {
                     var k = (G) => {
-                      Ib(G, {
+                      pb(G, {
                         get svgStyles() {
                           return s(o);
                         }
@@ -16892,7 +16892,7 @@ function g_(t, e) {
                       var z = re(), R = Y(z);
                       {
                         var C = (N) => {
-                          xb(N, {
+                          Eb(N, {
                             get svgStyles() {
                               return s(o);
                             }
@@ -16901,7 +16901,7 @@ function g_(t, e) {
                           var K = re(), ne = Y(K);
                           {
                             var U = (W) => {
-                              Lb(W, {
+                              Cb(W, {
                                 get svgStyles() {
                                   return s(o);
                                 }
@@ -16910,7 +16910,7 @@ function g_(t, e) {
                               var Ie = re(), B = Y(Ie);
                               {
                                 var P = (O) => {
-                                  Rb(O, {
+                                  xb(O, {
                                     get svgStyles() {
                                       return s(o);
                                     }
@@ -16919,7 +16919,7 @@ function g_(t, e) {
                                   var ee = re(), Z = Y(ee);
                                   {
                                     var ie = (te) => {
-                                      Mb(te, {
+                                      Lb(te, {
                                         get svgStyles() {
                                           return s(o);
                                         }
@@ -17224,7 +17224,7 @@ function N_(t, e) {
         hoverDelay: 501,
         side: "top",
         children: (g, h) => {
-          Hb(g, {
+          Rb(g, {
             svgStyles: "fill: grey; height: filt-content; width: fit-content;"
           });
         },
@@ -17239,7 +17239,7 @@ function N_(t, e) {
   {
     var m = (f) => {
       var g = P_(), h = be(Y(g), 2), p = de(h), b = be(h, 2), y = de(b);
-      Cb(y, { svgStyles: "fill: gray;" }), Oe(() => $e(p, e.value)), x(f, g);
+      Ib(y, { svgStyles: "fill: gray;" }), Oe(() => $e(p, e.value)), x(f, g);
     };
     se(d, (f) => {
       s(n) && f(m);
@@ -19800,7 +19800,7 @@ function xu(t, e) {
                                               var ae = re(), ke = Y(ae);
                                               {
                                                 var ft = (_t) => {
-                                                  lb(_t, { svgStyles: "margin: unset" });
+                                                  ib(_t, { svgStyles: "margin: unset" });
                                                 }, It = (_t) => {
                                                   var Gt = re(), Er = Y(Gt);
                                                   {
@@ -19810,17 +19810,17 @@ function xu(t, e) {
                                                       var Dn = re(), Ai = Y(Dn);
                                                       {
                                                         var qn = (et) => {
-                                                          db(et, { svgStyles: "margin: unset" });
+                                                          sb(et, { svgStyles: "margin: unset" });
                                                         }, Xe = (et) => {
                                                           var tt = re(), Ut = Y(tt);
                                                           {
                                                             var gn = (dt) => {
-                                                              hb(dt, { svgStyles: "margin: unset" });
+                                                              ub(dt, { svgStyles: "margin: unset" });
                                                             }, ot = (dt) => {
                                                               var Lt = re(), nt = Y(Lt);
                                                               {
                                                                 var Dt = (Mt) => {
-                                                                  pb(Mt, { svgStyles: "margin: unset" });
+                                                                  hb(Mt, { svgStyles: "margin: unset" });
                                                                 }, Mn = (Mt) => {
                                                                   var St = re(), Ft = Y(St);
                                                                   {
@@ -19835,9 +19835,9 @@ function xu(t, e) {
                                                                           var pn = re(), ar = Y(pn);
                                                                           {
                                                                             var fa = (Ar) => {
-                                                                              Ub(Ar, { svgStyles: "margin: unset" });
+                                                                              Mb(Ar, { svgStyles: "margin: unset" });
                                                                             }, Yo = (Ar) => {
-                                                                              mb(Ar, { svgStyles: "margin: unset" });
+                                                                              db(Ar, { svgStyles: "margin: unset" });
                                                                             };
                                                                             se(
                                                                               ar,

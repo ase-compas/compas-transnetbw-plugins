@@ -10927,29 +10927,135 @@ function Ts(e, t) {
 const og = Ut([]);
 og.subscribe;
 pe({ freeze: !1 });
+var sg = /* @__PURE__ */ J('<span class="oscd-icon"><!></span>');
+function An(e, t) {
+  var n = sg(), r = de(n);
+  le(r, () => t.children ?? ee), x(e, n);
+}
+var lg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
+function hu(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = lg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var ug = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
+function co(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = ug();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var cg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
+function dg(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = cg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var fg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
+function hg(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = fg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var vg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
+function vu(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = vg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var gg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"></path></svg>');
+function Os(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = gg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var pg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
+function mg(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = pg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var bg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
+function _g(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = bg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+var yg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
+function Eg(e, t) {
+  let n = m(t, "svgStyles", 3, "");
+  An(e, {
+    children: (r, i) => {
+      var a = yg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
+lc();
+var Sg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
+function Cg(e, t) {
+  let n = m(t, "svgStyles", 8, "");
+  An(e, {
+    children: (r, i) => {
+      var a = Sg();
+      be(() => Tt(a, n())), x(r, a);
+    }
+  });
+}
 const pt = [];
 for (let e = 0; e < 256; ++e)
   pt.push((e + 256).toString(16).slice(1));
-function sg(e, t = 0) {
+function Ag(e, t = 0) {
   return (pt[e[t + 0]] + pt[e[t + 1]] + pt[e[t + 2]] + pt[e[t + 3]] + "-" + pt[e[t + 4]] + pt[e[t + 5]] + "-" + pt[e[t + 6]] + pt[e[t + 7]] + "-" + pt[e[t + 8]] + pt[e[t + 9]] + "-" + pt[e[t + 10]] + pt[e[t + 11]] + pt[e[t + 12]] + pt[e[t + 13]] + pt[e[t + 14]] + pt[e[t + 15]]).toLowerCase();
 }
 let Na;
-const lg = new Uint8Array(16);
-function ug() {
+const xg = new Uint8Array(16);
+function Ig() {
   if (!Na) {
     if (typeof crypto > "u" || !crypto.getRandomValues)
       throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
     Na = crypto.getRandomValues.bind(crypto);
   }
-  return Na(lg);
+  return Na(xg);
 }
-const cg = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), Os = { randomUUID: cg };
-function dg(e, t, n) {
+const wg = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), Rs = { randomUUID: wg };
+function Lg(e, t, n) {
   var i;
-  if (Os.randomUUID && !t && !e)
-    return Os.randomUUID();
+  if (Rs.randomUUID && !t && !e)
+    return Rs.randomUUID();
   e = e || {};
-  const r = e.random ?? ((i = e.rng) == null ? void 0 : i.call(e)) ?? ug();
+  const r = e.random ?? ((i = e.rng) == null ? void 0 : i.call(e)) ?? Ig();
   if (r.length < 16)
     throw new Error("Random bytes length must be >= 16");
   if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, t) {
@@ -10959,113 +11065,7 @@ function dg(e, t, n) {
       t[n + a] = r[a];
     return t;
   }
-  return sg(r);
-}
-var fg = /* @__PURE__ */ J('<span class="oscd-icon"><!></span>');
-function An(e, t) {
-  var n = fg(), r = de(n);
-  le(r, () => t.children ?? ee), x(e, n);
-}
-var hg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
-function hu(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = hg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var vg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
-function co(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = vg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var gg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
-function pg(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = gg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var mg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
-function bg(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = mg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var _g = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
-function vu(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = _g();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var yg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"></path></svg>');
-function Rs(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = yg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var Eg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
-function Sg(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = Eg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var Cg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
-function Ag(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = Cg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-var xg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
-function Ig(e, t) {
-  let n = m(t, "svgStyles", 3, "");
-  An(e, {
-    children: (r, i) => {
-      var a = xg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
-}
-lc();
-var wg = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
-function Lg(e, t) {
-  let n = m(t, "svgStyles", 8, "");
-  An(e, {
-    children: (r, i) => {
-      var a = wg();
-      be(() => Tt(a, n())), x(r, a);
-    }
-  });
+  return Ag(r);
 }
 Zt(["change"]);
 var Tg = /* @__PURE__ */ J('<div class="overlay svelte-14uvd2z"><div class="loading-spinner-container svelte-14uvd2z"><div class="loading-spinner svelte-14uvd2z"></div> <span class="loading-message svelte-14uvd2z"> </span></div></div>'), Og = /* @__PURE__ */ J('<div class="svelte-14uvd2z"><!></div>');
@@ -12444,7 +12444,7 @@ var $g = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
 function cp(e, t) {
   Ae(t, !0);
   const n = () => Hn(y, "$sortColumn", a), r = () => Hn(_, "$sortDirection", a), i = () => Hn(p, "$filteredData", a), [a, o] = $n();
-  let l = m(t, "loadingDone", 15, !0), s = m(t, "label", 19, dg), u = m(t, "columnDefs", 19, () => []), d = m(t, "rowData", 31, () => pe([])), f = m(t, "rowActions", 19, () => []), g = m(t, "searchInputLabel", 3, "Search"), v = m(t, "emptyText", 3, "No data available"), h = pe({ name: "", color: "", number: "" }), p = Ut([]), y = Ut(null), _ = Ut(null), L = /* @__PURE__ */ ge(() => u().some((b) => b.filter));
+  let l = m(t, "loadingDone", 15, !0), s = m(t, "label", 19, Lg), u = m(t, "columnDefs", 19, () => []), d = m(t, "rowData", 31, () => pe([])), f = m(t, "rowActions", 19, () => []), g = m(t, "searchInputLabel", 3, "Search"), v = m(t, "emptyText", 3, "No data available"), h = pe({ name: "", color: "", number: "" }), p = Ut([]), y = Ut(null), _ = Ut(null), L = /* @__PURE__ */ ge(() => u().some((b) => b.filter));
   t.store.store.subscribe((b) => {
     d([...b]), I();
   });
@@ -12708,32 +12708,32 @@ function cp(e, t) {
                                                       var xn = Y(), Ea = V(xn);
                                                       {
                                                         var Sa = (Ne) => {
-                                                          pg(Ne, { svgStyles: "margin: unset" });
+                                                          dg(Ne, { svgStyles: "margin: unset" });
                                                         }, Te = (Ne) => {
                                                           var Je = Y(), Rt = V(Je);
                                                           {
                                                             var tn = (Ke) => {
-                                                              bg(Ke, { svgStyles: "margin: unset" });
+                                                              hg(Ke, { svgStyles: "margin: unset" });
                                                             }, nt = (Ke) => {
                                                               var dt = Y(), ke = V(dt);
                                                               {
                                                                 var vt = (gt) => {
-                                                                  Sg(gt, { svgStyles: "margin: unset" });
+                                                                  mg(gt, { svgStyles: "margin: unset" });
                                                                 }, Mn = (gt) => {
                                                                   var st = Y(), At = V(st);
                                                                   {
                                                                     var nn = (rn) => {
-                                                                      Ag(rn, { svgStyles: "margin: unset" });
+                                                                      _g(rn, { svgStyles: "margin: unset" });
                                                                     }, Ht = (rn) => {
                                                                       var hn = Y(), wr = V(hn);
                                                                       {
                                                                         var ai = (kt) => {
-                                                                          Ig(kt, { svgStyles: "margin: unset" });
+                                                                          Eg(kt, { svgStyles: "margin: unset" });
                                                                         }, vn = (kt) => {
                                                                           var an = Y(), tr = V(an);
                                                                           {
                                                                             var Ca = (Lr) => {
-                                                                              Lg(Lr, { svgStyles: "margin: unset" });
+                                                                              Cg(Lr, { svgStyles: "margin: unset" });
                                                                             }, Bu = (Lr) => {
                                                                               vu(Lr, { svgStyles: "margin: unset" });
                                                                             };
@@ -14308,7 +14308,7 @@ function Pm(e, t) {
             variant: "raised",
             children: (ie, Ie) => {
               var Pe = ym(), ye = V(Pe);
-              Rs(ye, {});
+              Os(ye, {});
               var Re = oe(ye, 2);
               nr(Re, {
                 children: (He, De) => {
@@ -14439,7 +14439,7 @@ function Pm(e, t) {
             variant: "raised",
             children: (Ie, Pe) => {
               var ye = Im(), Re = V(ye);
-              Rs(Re, {});
+              Os(Re, {});
               var He = oe(Re, 2);
               nr(He, {
                 children: (De, ze) => {

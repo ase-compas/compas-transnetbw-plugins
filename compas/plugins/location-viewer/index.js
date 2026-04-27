@@ -14004,46 +14004,42 @@ function fp(t, e) {
 const hp = en([]);
 hp.subscribe;
 ue({ freeze: !1 });
-const Ft = [];
-for (let t = 0; t < 256; ++t)
-  Ft.push((t + 256).toString(16).slice(1));
-function vp(t, e = 0) {
-  return (Ft[t[e + 0]] + Ft[t[e + 1]] + Ft[t[e + 2]] + Ft[t[e + 3]] + "-" + Ft[t[e + 4]] + Ft[t[e + 5]] + "-" + Ft[t[e + 6]] + Ft[t[e + 7]] + "-" + Ft[t[e + 8]] + Ft[t[e + 9]] + "-" + Ft[t[e + 10]] + Ft[t[e + 11]] + Ft[t[e + 12]] + Ft[t[e + 13]] + Ft[t[e + 14]] + Ft[t[e + 15]]).toLowerCase();
-}
-let ts;
-const mp = new Uint8Array(16);
-function gp() {
-  if (!ts) {
-    if (typeof crypto > "u" || !crypto.getRandomValues)
-      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-    ts = crypto.getRandomValues.bind(crypto);
-  }
-  return ts(mp);
-}
-const pp = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), $l = { randomUUID: pp };
-function bp(t, e, n) {
-  var i;
-  if ($l.randomUUID && !e && !t)
-    return $l.randomUUID();
-  t = t || {};
-  const r = t.random ?? ((i = t.rng) == null ? void 0 : i.call(t)) ?? gp();
-  if (r.length < 16)
-    throw new Error("Random bytes length must be >= 16");
-  if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, e) {
-    if (n = n || 0, n < 0 || n + 16 > e.length)
-      throw new RangeError(`UUID byte range ${n}:${n + 15} is out of buffer bounds`);
-    for (let a = 0; a < 16; ++a)
-      e[n + a] = r[a];
-    return e;
-  }
-  return vp(r);
-}
-var _p = /* @__PURE__ */ be('<span class="oscd-icon"><!></span>');
+var vp = /* @__PURE__ */ be('<span class="oscd-icon"><!></span>');
 function Bn(t, e) {
-  var n = _p(), r = me(n);
+  var n = vp(), r = me(n);
   Se(r, () => e.children ?? pe), L(t, n);
 }
-var yp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
+var mp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"></path></svg>');
+function gp(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Bn(t, {
+    children: (r, i) => {
+      var a = mp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var pp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
+function zc(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Bn(t, {
+    children: (r, i) => {
+      var a = pp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var bp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
+function _p(t, e) {
+  let n = p(e, "svgStyles", 3, "");
+  Bn(t, {
+    children: (r, i) => {
+      var a = bp();
+      Oe(() => Ut(a, n())), L(r, a);
+    }
+  });
+}
+var yp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
 function Ip(t, e) {
   let n = p(e, "svgStyles", 3, "");
   Bn(t, {
@@ -14053,8 +14049,8 @@ function Ip(t, e) {
     }
   });
 }
-var Ep = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
-function zc(t, e) {
+var Ep = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
+function Sp(t, e) {
   let n = p(e, "svgStyles", 3, "");
   Bn(t, {
     children: (r, i) => {
@@ -14063,96 +14059,100 @@ function zc(t, e) {
     }
   });
 }
-var Sp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"></path></svg>');
-function Ap(t, e) {
+var Ap = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
+function Cp(t, e) {
   let n = p(e, "svgStyles", 3, "");
   Bn(t, {
     children: (r, i) => {
-      var a = Sp();
+      var a = Ap();
       Oe(() => Ut(a, n())), L(r, a);
     }
   });
 }
-var Cp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m590-160 80 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h360l200 240v480q0 20-8.5 36.5T768-96L560-302q-17 11-37 16.5t-43 5.5q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 43T618-360l102 104v-356L562-800H240v640h350ZM480-360q33 0 56.5-23.5T560-440q0-33-23.5-56.5T480-520q-33 0-56.5 23.5T400-440q0 33 23.5 56.5T480-360Zm0-80Zm0 0Z"></path></svg>');
-function xp(t, e) {
+var xp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
+function Tp(t, e) {
   let n = p(e, "svgStyles", 3, "");
   Bn(t, {
     children: (r, i) => {
-      var a = Cp();
+      var a = xp();
       Oe(() => Ut(a, n())), L(r, a);
     }
   });
 }
-var Tp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"></path></svg>');
-function wp(t, e) {
+var wp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
+function Lp(t, e) {
   let n = p(e, "svgStyles", 3, "");
   Bn(t, {
     children: (r, i) => {
-      var a = Tp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Lp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-440v-80h560v80H200Z"></path></svg>');
-function Op(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Bn(t, {
-    children: (r, i) => {
-      var a = Lp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Rp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"></path></svg>');
-function Mp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Bn(t, {
-    children: (r, i) => {
-      var a = Rp();
-      Oe(() => Ut(a, n())), L(r, a);
-    }
-  });
-}
-var Dp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path></svg>');
-function Pp(t, e) {
-  let n = p(e, "svgStyles", 3, "");
-  Bn(t, {
-    children: (r, i) => {
-      var a = Dp();
+      var a = wp();
       Oe(() => Ut(a, n())), L(r, a);
     }
   });
 }
 Zd();
-var Np = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"></path></svg>');
-function Hp(t, e) {
+var Op = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"></path></svg>');
+function Rp(t, e) {
   let n = p(e, "svgStyles", 3, "");
   Bn(t, {
     children: (r, i) => {
-      var a = Np();
+      var a = Op();
       Oe(() => Ut(a, n())), L(r, a);
     }
   });
 }
-var Up = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" cursor="pointer"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
-function kp(t, e) {
+var Mp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" cursor="pointer"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path></svg>');
+function Dp(t, e) {
   let n = p(e, "svgStyles", 8, "");
   Bn(t, {
     children: (r, i) => {
-      var a = Up();
+      var a = Mp();
       Oe(() => Ut(a, n())), L(r, a);
     }
   });
 }
-var Bp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
-function Fp(t, e) {
+var Pp = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m480-240 160-160-56-56-64 64v-168h-80v168l-64-64-56 56 160 160ZM200-640v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"></path></svg>');
+function Np(t, e) {
   let n = p(e, "svgStyles", 8, "");
   Bn(t, {
     children: (r, i) => {
-      var a = Bp();
+      var a = Pp();
       Oe(() => Ut(a, n())), L(r, a);
     }
   });
+}
+const Ft = [];
+for (let t = 0; t < 256; ++t)
+  Ft.push((t + 256).toString(16).slice(1));
+function Hp(t, e = 0) {
+  return (Ft[t[e + 0]] + Ft[t[e + 1]] + Ft[t[e + 2]] + Ft[t[e + 3]] + "-" + Ft[t[e + 4]] + Ft[t[e + 5]] + "-" + Ft[t[e + 6]] + Ft[t[e + 7]] + "-" + Ft[t[e + 8]] + Ft[t[e + 9]] + "-" + Ft[t[e + 10]] + Ft[t[e + 11]] + Ft[t[e + 12]] + Ft[t[e + 13]] + Ft[t[e + 14]] + Ft[t[e + 15]]).toLowerCase();
+}
+let ts;
+const Up = new Uint8Array(16);
+function kp() {
+  if (!ts) {
+    if (typeof crypto > "u" || !crypto.getRandomValues)
+      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+    ts = crypto.getRandomValues.bind(crypto);
+  }
+  return ts(Up);
+}
+const Bp = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), $l = { randomUUID: Bp };
+function Fp(t, e, n) {
+  var i;
+  if ($l.randomUUID && !e && !t)
+    return $l.randomUUID();
+  t = t || {};
+  const r = t.random ?? ((i = t.rng) == null ? void 0 : i.call(t)) ?? kp();
+  if (r.length < 16)
+    throw new Error("Random bytes length must be >= 16");
+  if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, e) {
+    if (n = n || 0, n < 0 || n + 16 > e.length)
+      throw new RangeError(`UUID byte range ${n}:${n + 15} is out of buffer bounds`);
+    for (let a = 0; a < 16; ++a)
+      e[n + a] = r[a];
+    return e;
+  }
+  return Hp(r);
 }
 function Vp(t, e) {
   e(t.target.value);
@@ -15900,7 +15900,7 @@ function Hb(t, e) {
         hoverDelay: 501,
         side: "top",
         children: (m, h) => {
-          kp(m, {
+          Dp(m, {
             svgStyles: "fill: grey; height: filt-content; width: fit-content;"
           });
         },
@@ -15915,7 +15915,7 @@ function Hb(t, e) {
   {
     var v = (f) => {
       var m = Pb(), h = Ie(Q(m), 2), g = me(h), b = Ie(h, 2), y = me(b);
-      Hp(y, { svgStyles: "fill: gray;" }), Oe(() => st(g, e.value)), L(f, m);
+      Rp(y, { svgStyles: "fill: gray;" }), Oe(() => st(g, e.value)), L(f, m);
     };
     oe(d, (f) => {
       s(n) && f(v);
@@ -18222,7 +18222,7 @@ var b_ = /* @__PURE__ */ rn('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
 function L_(t, e) {
   xe(e, !0);
   const n = () => Kn(b, "$sortColumn", a), r = () => Kn(y, "$sortDirection", a), i = () => Kn(g, "$filteredData", a), [a, o] = _r();
-  let u = p(e, "loadingDone", 15, !0), l = p(e, "label", 19, bp), c = p(e, "columnDefs", 19, () => []), d = p(e, "rowData", 31, () => ue([])), v = p(e, "rowActions", 19, () => []), f = p(e, "searchInputLabel", 3, "Search"), m = p(e, "emptyText", 3, "No data available"), h = ue({ name: "", color: "", number: "" }), g = en([]), b = en(null), y = en(null), S = /* @__PURE__ */ fe(() => c().some((x) => x.filter));
+  let u = p(e, "loadingDone", 15, !0), l = p(e, "label", 19, Fp), c = p(e, "columnDefs", 19, () => []), d = p(e, "rowData", 31, () => ue([])), v = p(e, "rowActions", 19, () => []), f = p(e, "searchInputLabel", 3, "Search"), m = p(e, "emptyText", 3, "No data available"), h = ue({ name: "", color: "", number: "" }), g = en([]), b = en(null), y = en(null), S = /* @__PURE__ */ fe(() => c().some((x) => x.filter));
   e.store.store.subscribe((x) => {
     d([...x]), I();
   });
@@ -18476,7 +18476,7 @@ function L_(t, e) {
                                               var te = re(), Ne = Q(te);
                                               {
                                                 var dt = (mt) => {
-                                                  Ip(mt, { svgStyles: "margin: unset" });
+                                                  gp(mt, { svgStyles: "margin: unset" });
                                                 }, bt = (mt) => {
                                                   var kt = re(), yr = Q(kt);
                                                   {
@@ -18486,34 +18486,34 @@ function L_(t, e) {
                                                       var Ln = re(), bi = Q(Ln);
                                                       {
                                                         var Fn = (Qe) => {
-                                                          Ap(Qe, { svgStyles: "margin: unset" });
+                                                          _p(Qe, { svgStyles: "margin: unset" });
                                                         }, qe = (Qe) => {
                                                           var $e = re(), Dt = Q($e);
                                                           {
                                                             var vn = (ut) => {
-                                                              xp(ut, { svgStyles: "margin: unset" });
+                                                              Ip(ut, { svgStyles: "margin: unset" });
                                                             }, at = (ut) => {
                                                               var At = re(), et = Q(At);
                                                               {
                                                                 var wt = (Lt) => {
-                                                                  Op(Lt, { svgStyles: "margin: unset" });
+                                                                  Cp(Lt, { svgStyles: "margin: unset" });
                                                                 }, On = (Lt) => {
                                                                   var _t = re(), Pt = Q(_t);
                                                                   {
                                                                     var sn = (ln) => {
-                                                                      Mp(ln, { svgStyles: "margin: unset" });
+                                                                      Tp(ln, { svgStyles: "margin: unset" });
                                                                     }, Bt = (ln) => {
                                                                       var Kt = re(), Vn = Q(Kt);
                                                                       {
                                                                         var Wr = (jt) => {
-                                                                          Pp(jt, { svgStyles: "margin: unset" });
+                                                                          Lp(jt, { svgStyles: "margin: unset" });
                                                                         }, un = (jt) => {
                                                                           var mn = re(), er = Q(mn);
                                                                           {
                                                                             var ra = (Ir) => {
-                                                                              Fp(Ir, { svgStyles: "margin: unset" });
+                                                                              Np(Ir, { svgStyles: "margin: unset" });
                                                                             }, ko = (Ir) => {
-                                                                              wp(Ir, { svgStyles: "margin: unset" });
+                                                                              Sp(Ir, { svgStyles: "margin: unset" });
                                                                             };
                                                                             oe(
                                                                               er,
