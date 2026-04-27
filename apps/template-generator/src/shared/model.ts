@@ -1,3 +1,5 @@
+import type { DefaultTypeVersionStatus, LocalDefaultInfo } from "../features/type-details/services/default-type-manager-service";
+
 export enum TypeKind {
     LNodeType = 'LNodeType',
     DOType = 'DOType',
@@ -50,6 +52,10 @@ export interface SimpleDataType {
     typeKind: TypeKind;
     instanceType?: string;
     references: number;
+    isDefaultType?: boolean;
+    defaultTypeVersion?: string;
+    defaultTypeRootId?: string;
+    defaultTypeInstance?: string;
 }
 
 export interface DataTypeDetails {
@@ -58,6 +64,8 @@ export interface DataTypeDetails {
     typeKind: TypeKind;
     members: DataTypeMember[];
     private?: Record<string, string>;
+    defaultTypeInfo?: LocalDefaultInfo;
+    defaultTypeVersionStatus?: DefaultTypeVersionStatus;
 }
 
 export interface DataTypeMember {

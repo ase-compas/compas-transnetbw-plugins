@@ -13,12 +13,14 @@ export async function createDataTypeWorkflow(
     typeKind: TypeKind,
     service: DataTypeService,
     docState: DocState,
-    instanceType?: string
+    instanceType?: string,
+    enableCreateFromDefault: boolean = false,
 ): Promise<{ id: string, instanceType: string, createFromDefault: boolean } | null> {
     const result = await openDialog(CreateTypeDialog, {
         typeKind,
         instanceType,
-        service
+        service,
+        enableCreateFromDefault,
     });
 
     if (result.type !== 'confirm') {
@@ -26,12 +28,29 @@ export async function createDataTypeWorkflow(
     }
 
 
+    let createdTypeId = result.data.id;
+
     try {
-        service.create(
-            typeKind,
-            result.data.instanceType,
-            result.data.id
-        );
+        if (result.data.createFromDefault) {
+            const effectiveRootId = await service.applySingleDefaultType(typeKind, result.data.instanceType);
+            if (!effectiveRootId) {
+                toastService.error(
+                    'Create Failed',
+                    `No default exists for ${TypeKind.toTypeKindLabel(typeKind)} "${result.data.instanceType}".`,
+                    8000,
+                );
+                return null;
+            }
+
+            createdTypeId = effectiveRootId;
+        } else {
+            service.create(
+                typeKind,
+                result.data.instanceType,
+                result.data.id
+            );
+            createdTypeId = result.data.id;
+        }
     } catch (err) {
         console.error(err);
         toastService.error(
@@ -39,11 +58,20 @@ export async function createDataTypeWorkflow(
             `Failed to create ${TypeKind.toTypeKindLabel(typeKind)} "${result.data.id}".`,
             8000,
         );
+        return null;
     }
 
-    openTypeDetailsDrawer(result.data.id, typeKind, service, docState, 'edit');
+    openTypeDetailsDrawer(createdTypeId, typeKind, service, docState, result.data.createFromDefault ? 'view' : 'edit', {
+        defaultTypeFeatureEnabled: true,
+        propagateToChildren: {
+            defaultTypeFeatureEnabled: true
+        }
+    });
 
-    return result.data;
+    return {
+        ...result.data,
+        id: createdTypeId,
+    };
 }
 
 export async function renameDataTypeWorkflow(

@@ -7,13 +7,18 @@ import { OscdDeleteIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons'
 interface Props {
   onRename?: () => void;
   onDelete?: () => void;
+  actionsDisabled?: boolean;
 }
 
-const { onRename = () => {}, onDelete = () => {} }: Props  = $props();
+const {
+  onRename = () => {},
+  onDelete = () => {},
+  actionsDisabled = false,
+}: Props  = $props();
 
 </script>
 
-<OscdActionMenu buttonVariant="default">
+<OscdActionMenu buttonVariant="default" disabled={actionsDisabled}>
   <List>
     <Item onSMUIAction={onRename}>
       <Graphic><OscdEditIcon svgStyles="fill: var(--primary-base)"/></Graphic>

@@ -1,5 +1,5 @@
 import { TypeKind, type DataTypeDetails, type DataTypeMember, type SimpleDataType, type ViewMode } from "../../../shared/model";
-import { type DataTypeService } from "../services/type.service";
+import { type ApplyDefaultTypesPreview, type DataTypeService } from "../services/type.service";
 import { buildColumns } from "../type.columns";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import type {
@@ -59,13 +59,20 @@ export class DataTypeDetailsState {
      * @param id The ID of the type to load.
      */
     public loadById(id: string) {
-        this.loading = true;
         try {
             const typeDetails = this.dataTypeService.getById(id);
             this.loadedType = typeDetails;
+            this.refreshDefaultTypeVersionStatus(id);
 
             if (!typeDetails.instanceType && this.viewMode !== 'view') {
                 this.viewMode = 'view';
+            }
+
+            if(typeDetails.defaultTypeInfo) {
+                this.viewMode = 'view';
+                this.config.toggleEditModeSwitchDisabled = true;
+            } else {
+                this.config.toggleEditModeSwitchDisabled = false;
             }
 
             const otherTypesByKind = this.getOtherTypesByKind(id);
@@ -97,6 +104,74 @@ export class DataTypeDetailsState {
         } finally {
             this.loading = false;
         }
+    }
+
+    public async updateDefaultTypeToLatest(): Promise<string | null> {
+        if (!this.loadedType?.defaultTypeInfo) {
+            return null;
+        }
+
+        try {
+            const newRootId = await this.dataTypeService.updateDefaultTypeToLatestByTypeId(this.loadedType.id);
+            return newRootId;
+        } catch (err) {
+            console.error(
+                `Error updating default type to latest for type ${this.loadedType.id}:`,
+                err instanceof Error ? err.message : String(err)
+            );
+            return null;
+        }
+    }
+
+    public detachDefaultType(): void {
+        if (!this.loadedType?.defaultTypeInfo) {
+            throw new Error('No local default metadata found for the current type');
+        }
+
+        const typeId = this.loadedType.id;
+        this.dataTypeService.detachDefault(typeId);
+        this.viewMode = 'edit';
+        this.config.toggleEditModeSwitchDisabled = false;
+    }
+
+    public async applyDefaultType(memberName: string) {
+        try {
+            const preview = await this.getApplyDefaultTypesPreview([memberName]);
+            if (!preview) return;
+            this.applyDefaultTypesFromPreview(preview);
+        } catch (err) {
+            console.error(`Error applying default type for member ${memberName} in type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
+        }
+    }
+
+    public async applyAllDefaultTypes() {
+        try {
+            const preview = await this.getApplyDefaultTypesPreview();
+            if (!preview) return;
+            this.applyDefaultTypesFromPreview(preview);
+        } catch (err) {
+            console.error(`Error applying default types for type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
+        }
+    }
+
+    /**
+     * Build preview for applying default types.
+     * If memberNames is omitted, preview includes all members of the loaded type.
+     */
+    public async getApplyDefaultTypesPreview(memberNames?: string[]): Promise<ApplyDefaultTypesPreview | null> {
+        if (!this.loadedType) {
+            return null;
+        }
+
+        const targetMemberNames = memberNames ?? this.loadedType.members.map(member => member.name);
+        return this.dataTypeService.getApplyDefaultTypesPreview(this.loadedType.id, targetMemberNames);
+    }
+
+    /**
+     * Apply a previously built preview.
+     */
+    public applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
+        this.dataTypeService.applyDefaultTypesFromPreview(preview);
     }
 
     public setReferenceToMarkedMember(typeId: string) {
@@ -216,6 +291,7 @@ export class DataTypeDetailsState {
     }
 
     public clearMarkedMember() {
+        if (!this.markedMemberId) return;
         this.markedMemberId = null;
         this.refreshData();
     }
@@ -243,6 +319,25 @@ export class DataTypeDetailsState {
     private refreshData() {
         if (!this.loadedType) return;
         this.loadById(this.loadedType.id);
+    }
+
+    private async refreshDefaultTypeVersionStatus(typeId: string) {
+        try {
+            const status = await this.dataTypeService.getDefaultTypeVersionStatusByTypeId(typeId);
+            if (!this.loadedType || this.loadedType.id !== typeId) {
+                return;
+            }
+
+            this.loadedType = {
+                ...this.loadedType,
+                defaultTypeVersionStatus: status ?? undefined,
+            };
+        } catch (err) {
+            console.error(
+                `Error loading default type version status for type ${typeId}:`,
+                err instanceof Error ? err.message : String(err)
+            );
+        }
     }
 
     private getOtherTypesByKind(id: string): Record<TypeKind, SimpleDataType[]> {
@@ -310,7 +405,7 @@ export class DataTypeDetailsState {
             canSelect: this.isEditMode,
             canUnlink: this.isEditMode && ref.requiresReference && ref.isConfigured && !!ref.reference, // can only unlink if there is a reference to clear
             referencable: ref.requiresReference,
-            canApplyDefaults: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
+            canApplyDefaults: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true) && ref.requiresReference,
             acceptDrop: (target: TBoardItemContext) => {
                 const targetType = this.simpleTypesMap.get(target.itemId);
                 if (!targetType) return false;
@@ -328,7 +423,11 @@ export class DataTypeDetailsState {
             canClick: this.isEditMode,
             canUnlink: false,
             canEdit: true,
-            canSetDefault: this.isEditMode && (this.config?.defaultTypeFeatureEnabled ?? true),
+            isDefaultType: type.isDefaultType,
+            defaultTypeVersion: type.defaultTypeVersion,
+            defaultTypeRootId: type.defaultTypeRootId,
+            defaultTypeInstance: type.defaultTypeInstance,
+            defaultTypeKind: type.typeKind,
         };
     }
 }

@@ -1,13 +1,147 @@
+import type { EditV2 } from "@oscd-transnet-plugins/oscd-event-api";
 import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../constants";
 import { TypeKind, type SimpleDataType } from "../model";
 import { get as getPrivate } from "./private-scl.utils";
 
+export const DATA_TYPE_TEMPLATES_TAG = 'DataTypeTemplates';
+
+export const DATA_TYPE_KIND_ORDER: TypeKind[] = [
+    TypeKind.LNodeType,
+    TypeKind.DOType,
+    TypeKind.DAType,
+    TypeKind.EnumType,
+];
+
+/**
+ * Builds ordered `EditV2` insert edits for the given data type elements.
+ *
+ * Elements are sorted by kind order (`LNodeType → DOType → DAType → EnumType`) and
+ * inserted before the first existing element of the next kind, preserving document order
+ * when the edits are dispatched in sequence.
+ *
+ * Elements whose `id` already exists in the document are skipped.
+ * If `DataTypeTemplates` is missing, a create-edit for it is prepended.
+ *
+ * @param doc      Target SCL document.
+ * @param elements Data type elements to insert.
+ * @returns        Ordered `EditV2` array ready for a single dispatch.
+ */
+export function insertTypeElements(doc: XMLDocument, elements: Element[]): EditV2[] {
+    if (elements.length === 0) {
+        return [];
+    }
+
+    const knownKinds = new Set(DATA_TYPE_KIND_ORDER);
+    const sortedElements = [...elements].sort((a, b) => {
+        const aIndex = DATA_TYPE_KIND_ORDER.indexOf(a.tagName as TypeKind);
+        const bIndex = DATA_TYPE_KIND_ORDER.indexOf(b.tagName as TypeKind);
+
+        if (aIndex < 0 && bIndex < 0) {
+            return 0;
+        }
+        if (aIndex < 0) {
+            return 1;
+        }
+        if (bIndex < 0) {
+            return -1;
+        }
+        return aIndex - bIndex;
+    });
+
+    const edits: EditV2[] = [];
+
+    let dataTypeTemplates = findDataTypeTemplatesElement(doc);
+    if (!dataTypeTemplates) {
+        const root = doc.documentElement;
+        if (!root) {
+            throw new Error('SCL root element not found in document');
+        }
+
+        dataTypeTemplates = createElementInDefaultNS(doc, DATA_TYPE_TEMPLATES_TAG);
+        edits.push({
+            parent: root,
+            node: dataTypeTemplates,
+            reference: null,
+        });
+    }
+
+    const alreadyKnownIds = new Set(
+        listDataTypeElements(doc)
+            .map(element => element.getAttribute('id'))
+            .filter((id): id is string => !!id),
+    );
+
+    for (const sourceElement of sortedElements) {
+        const id = sourceElement.getAttribute('id');
+        if (id && alreadyKnownIds.has(id)) {
+            continue;
+        }
+
+        const typeKind = sourceElement.tagName as TypeKind;
+        const reference = knownKinds.has(typeKind)
+            ? findDataTypeInsertReferenceElement(doc, typeKind)
+            : null;
+
+        const node = sourceElement.ownerDocument === doc
+            ? sourceElement.cloneNode(true) as Element
+            : doc.importNode(sourceElement, true) as Element;
+
+        edits.push({
+            parent: dataTypeTemplates,
+            node,
+            reference,
+        });
+
+        if (id) {
+            alreadyKnownIds.add(id);
+        }
+    }
+
+    return edits;
+}
+
+
+/**
+ * Finds the insertion reference element for a given data type kind.
+ *
+ * The method keeps `DataTypeTemplates` ordered by kind using this fixed order:
+ * `LNodeType -> DOType -> DAType -> EnumType`.
+ * It returns the first element of the next existing kind, so callers can insert
+ * the new element before it.
+ *
+ * Example: inserting a `DOType` returns the first `DAType` (or `EnumType`
+ * if no `DAType` exists). If no later kind exists, it returns `null`
+ * (append at the end).
+ *
+ * @param typeKind The kind of data type that will be inserted.
+* @returns The reference element for `InsertV2.reference`, or `null` to append.
+ */
+export function findDataTypeInsertReferenceElement(doc: XMLDocument, typeKind: TypeKind): Element | null {
+    const currentKindIndex = DATA_TYPE_KIND_ORDER.indexOf(typeKind);
+    if (currentKindIndex < 0) {
+        return null;
+    }
+
+    for (let index = currentKindIndex + 1; index < DATA_TYPE_KIND_ORDER.length; index++) {
+        const nextKind = DATA_TYPE_KIND_ORDER[index];
+        const firstElementOfNextKind = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > ${nextKind}`);
+        if (firstElementOfNextKind) {
+            return firstElementOfNextKind;
+        }
+    }
+
+    return null;
+}
+
+export function findDataTypeTemplatesElement(doc: XMLDocument): Element | null {
+    return doc.querySelector(DATA_TYPE_TEMPLATES_TAG);
+}
 
 /**
  * Find a DataType element by id.
  */
 export function findDataTypeElement(doc: XMLDocument, id: string): Element {
-    const element = doc.querySelector(`DataTypeTemplates > [id="${id}"]`);
+    const element = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${id}"]`);
     if (!element) {
         throw new Error(`DataType with id ${id} not found`);
     }
@@ -18,7 +152,7 @@ export function findDataTypeElement(doc: XMLDocument, id: string): Element {
  * Get all DataType elements in the document.
  */
 export function listDataTypeElements(doc: XMLDocument): Element[] {
-    return Array.from(doc.querySelectorAll('DataTypeTemplates > [id]'));
+    return Array.from(doc.querySelectorAll(`${DATA_TYPE_TEMPLATES_TAG} > [id]`));
 }
 
 /**
@@ -37,7 +171,7 @@ export function getDataTypeBaseInfo(element: Element): {
         instanceType = element.getAttribute('lnClass') || undefined;
     } else if (typeKind === TypeKind.DOType) {
         instanceType = element.getAttribute('cdc') || undefined;
-    } else if (typeKind === TypeKind.DAType || typeKind === TypeKind.EnumType ) {
+    } else if (typeKind === TypeKind.DAType || typeKind === TypeKind.EnumType) {
         instanceType = getPrivate(element, namespace, SCL_PRIVATE_TYPE_INSTANCE_TYPE) || undefined;
     }
     return { id: id!, typeKind, instanceType };
@@ -65,7 +199,7 @@ export function createElementInDefaultNS(doc: XMLDocument, tagName: string): Ele
 }
 
 export function createElementInNS(doc: XMLDocument, namespace: string, tagName: string): Element {
-	return doc.createElementNS(namespace, tagName);
+    return doc.createElementNS(namespace, tagName);
 }
 
 export function getDocumentDefaultNamespace(doc: XMLDocument): string {
@@ -90,7 +224,7 @@ export function collectReachableTypeIds(doc: XMLDocument, rootId: string): Set<s
 
     while (queue.length > 0) {
         const currentId = queue.shift()!;
-        const typeElement = doc.querySelector(`DataTypeTemplates > [id="${currentId}"]`);
+        const typeElement = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${currentId}"]`);
         if (!typeElement) {
             continue;
         }

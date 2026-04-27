@@ -2,6 +2,11 @@ import type {
   UploadDataNextVersionTypeEnum
 } from '@oscd-transnet-plugins/api-compas-custom-resource'
 
+export interface DefaultTypeKey {
+    kind: TypeKind;
+    instance: string;
+}
+
 export interface CreateDefaultTypeInfo {
     kind: TypeKind;
     instance: string;
@@ -63,6 +68,7 @@ export interface DefaultTypeUploadResponse {
 
 
 export interface DefaultTypeDetails extends DefaultType {
+  rootId: string;
   doc: XMLDocument
 }
 

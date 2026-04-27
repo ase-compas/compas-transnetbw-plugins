@@ -7,11 +7,11 @@
    */
   import Select, { Option } from '@smui/select';
   import OscdBaseDialog from '../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
+  import { OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
   import { TypeKind, type InstanceDetails } from '../../../shared/model';
   import InstanceAutocomplete from '../../type-details/components/ui/InstanceAutocomplete.svelte';
   import { DataTypeService } from '../../type-details/services/type.service';
   import Button from '@smui/button';
-  import OscdWarningIcon from 'libs/oscd-icons/src/oscd-warning-icon/OscdWarningIcon.svelte';
   import Textfield from '@smui/textfield';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import HelperText from '@smui/textfield/helper-text';
@@ -80,7 +80,7 @@
     }
 
     try {
-      const result = await defaultTypeService.getLatestVersionByKindAndInstance(
+      const result = await defaultTypeService.getLatestByKindAndInstance(
         snapshotKind,
         snapshotInstance,
       );
@@ -168,24 +168,20 @@
       {/if}
 
       {#if error}
-        <div class="warning-container">
-          <div class="warning-text">
-            <OscdWarningIcon fill="#B45309;" />
-            <p>{error}</p>
-          </div>
-        </div>
+        <OscdWarningBox message={error} />
       {/if}
 
       {#if !!existingDefaultType}
-        <div class="warning-container">
-          <div class="warning-text">
-            <OscdWarningIcon fill="#B45309;" />
-            <p>A defafult type with this kind and instance already exists.</p>
-          </div>
-          <Button variant="unelevated" onclick={handleConfirm}
-            >Open existing default type</Button
-          >
-        </div>
+        <OscdWarningBox>
+          {#snippet children()}
+            <div class="warning-content">
+              <p>A default type with this kind and instance already exists.</p>
+              <Button variant="unelevated" onclick={handleConfirm}
+                >Open existing default type</Button
+              >
+            </div>
+          {/snippet}
+        </OscdWarningBox>
       {/if}
     </div>
   {/snippet}
@@ -206,20 +202,13 @@
     gap: 0.5rem;
   }
 
-  .warning-container {
+  .warning-content {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.5rem;
-    background-color: #fffbeb;
-    border: 1px solid #fcd34d;
-    padding: 1rem;
-    border-radius: 4px;
   }
 
-  .warning-text {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .warning-content p {
+    margin: 0;
   }
 </style>

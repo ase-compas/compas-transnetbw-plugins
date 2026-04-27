@@ -5,15 +5,37 @@
   import type { DataTypeService } from '../services/type.service';
   import type { DetailsConfig } from '../types';
 
+  type HeaderDefaultTypeInfo = {
+    kind: TypeKind;
+    instance: string;
+    version: string;
+    rootId: string;
+  };
+
+  type HeaderDefaultTypeVersionStatus = {
+    currentVersion: string;
+    latestVersion: string;
+    latestSource: 'local' | 'db';
+    localLatestVersion: string | null;
+    dbLatestVersion: string | null;
+    hasUpdate: boolean;
+    isDeprecated: boolean;
+  };
+
   interface Props {
     loading: boolean;
     error: string | null;
     typeKind: TypeKind;
     typeId: string;
     instanceType?: string;
+    defaultTypeInfo?: HeaderDefaultTypeInfo;
+    defaultTypeVersionStatus?: HeaderDefaultTypeVersionStatus;
     isEditMode: boolean;
     onModeChange: (mode: ViewMode) => void;
     onInstanceTypeChange?: (instanceType: string) => void;
+    onOpenDefaultRootType?: (typeId: string, typeKind: TypeKind) => void;
+    onUpdateDefaultTypeToLatest?: () => void;
+    onDetachDefault?: () => void;
     onRename: () => void;
     onDelete: () => void;
     children?: Snippet;
@@ -28,9 +50,14 @@
     typeKind,
     typeId,
     instanceType,
+    defaultTypeInfo,
+    defaultTypeVersionStatus,
     isEditMode,
     onModeChange,
     onInstanceTypeChange = (_: string) => {},
+    onOpenDefaultRootType = (_: string, __: TypeKind) => {},
+    onUpdateDefaultTypeToLatest = () => {},
+    onDetachDefault = () => {},
     onRename,
     onDelete,
     children,
@@ -49,9 +76,15 @@
     type={typeKind}
     {typeId}
     {instanceType}
+    {defaultTypeInfo}
+    {defaultTypeVersionStatus}
     {isEditMode}
     onModeChange={(mode) => onModeChange(mode)}
+    actionsDisabled={config?.actionsDisabled ?? false}
     onInstanceTypeChange={(value) => onInstanceTypeChange(value)}
+    onOpenDefaultRootType={(rootTypeId, rootTypeKind) => onOpenDefaultRootType(rootTypeId, rootTypeKind)}
+    onUpdateDefaultTypeToLatest={onUpdateDefaultTypeToLatest}
+    onDetachDefault={onDetachDefault}
     toggleEditModeSwitchDisabled={config?.toggleEditModeSwitchDisabled ?? false}
     showSetAsDefault={config?.defaultTypeFeatureEnabled ?? true}
     onRename={onRename}

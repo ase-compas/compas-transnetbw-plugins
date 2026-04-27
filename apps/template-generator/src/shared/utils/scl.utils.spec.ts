@@ -5,9 +5,12 @@ import {
   createElementInDefaultNS,
   createEmptySCLDocument,
   elementToSimpleDataType,
+  findDataTypeInsertReferenceElement,
   findDataTypeElement,
+  findDataTypeTemplatesElement,
   getDataTypeBaseInfo,
   getDocumentDefaultNamespace,
+  insertTypeElements,
   listDataTypeElements,
 } from './scl.utils';
 
@@ -23,6 +26,12 @@ function parseScl(xml: string): XMLDocument {
   }
 
   return doc;
+}
+
+function applyInsertEdits(edits: { parent: Node; node: Node; reference: Node | null }[]): void {
+  edits.forEach((edit) => {
+    edit.parent.insertBefore(edit.node, edit.reference);
+  });
 }
 
 describe('scl.utils', () => {
@@ -154,6 +163,149 @@ describe('scl.utils', () => {
 
     expect(el.tagName).toBe('DOType');
     expect(el.namespaceURI).toBe('http://www.iec.ch/61850/2003/SCL');
+  });
+
+  test('findDataTypeTemplatesElement returns DataTypeTemplates when present', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <DataTypeTemplates>
+          <DOType id="DO_1" cdc="SPS" />
+        </DataTypeTemplates>
+      </SCL>
+    `);
+
+    const dataTypeTemplates = findDataTypeTemplatesElement(doc);
+
+    expect(dataTypeTemplates).not.toBeNull();
+    expect(dataTypeTemplates?.tagName).toBe('DataTypeTemplates');
+  });
+
+  test('findDataTypeTemplatesElement returns null when missing', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <Header id="H1" />
+      </SCL>
+    `);
+
+    expect(findDataTypeTemplatesElement(doc)).toBeNull();
+  });
+
+  test('findDataTypeInsertReferenceElement returns first element of next kind in order', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <DataTypeTemplates>
+          <LNodeType id="LN_1" lnClass="LLN0" />
+          <DOType id="DO_1" cdc="SPS" />
+          <DAType id="DA_1">
+            <Private type="${SCL_PRIVATE_TYPE_INSTANCE_TYPE}">Quality</Private>
+          </DAType>
+          <EnumType id="EN_1">
+            <Private type="${SCL_PRIVATE_TYPE_INSTANCE_TYPE}">CtlModelKind</Private>
+          </EnumType>
+        </DataTypeTemplates>
+      </SCL>
+    `);
+
+    const referenceForDoType = findDataTypeInsertReferenceElement(doc, TypeKind.DOType);
+    const referenceForDaType = findDataTypeInsertReferenceElement(doc, TypeKind.DAType);
+    const referenceForEnumType = findDataTypeInsertReferenceElement(doc, TypeKind.EnumType);
+
+    expect(referenceForDoType?.getAttribute('id')).toBe('DA_1');
+    expect(referenceForDaType?.getAttribute('id')).toBe('EN_1');
+    expect(referenceForEnumType).toBeNull();
+  });
+
+  test('findDataTypeInsertReferenceElement skips missing intermediate kinds', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <DataTypeTemplates>
+          <LNodeType id="LN_1" lnClass="LLN0" />
+          <EnumType id="EN_1">
+            <Private type="${SCL_PRIVATE_TYPE_INSTANCE_TYPE}">CtlModelKind</Private>
+          </EnumType>
+        </DataTypeTemplates>
+      </SCL>
+    `);
+
+    const referenceForDoType = findDataTypeInsertReferenceElement(doc, TypeKind.DOType);
+
+    expect(referenceForDoType?.getAttribute('id')).toBe('EN_1');
+  });
+
+  test('insertTypeElements creates DataTypeTemplates when missing and preserves kind order', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <Header id="H1" />
+      </SCL>
+    `);
+
+    const doType = createElementInDefaultNS(doc, 'DOType');
+    doType.setAttribute('id', 'DO_1');
+    doType.setAttribute('cdc', 'SPS');
+
+    const enumType = createElementInDefaultNS(doc, 'EnumType');
+    enumType.setAttribute('id', 'EN_1');
+
+    const lNodeType = createElementInDefaultNS(doc, 'LNodeType');
+    lNodeType.setAttribute('id', 'LN_1');
+    lNodeType.setAttribute('lnClass', 'LLN0');
+
+    const edits = insertTypeElements(doc, [enumType, doType, lNodeType]);
+
+    applyInsertEdits(edits as { parent: Node; node: Node; reference: Node | null }[]);
+
+    const inserted = listDataTypeElements(doc).map((el) => el.tagName);
+    expect(inserted).toEqual(['LNodeType', 'DOType', 'EnumType']);
+  });
+
+  test('insertTypeElements respects order when only later-kind reference exists', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <DataTypeTemplates>
+          <EnumType id="EN_EXISTING">
+            <Private type="${SCL_PRIVATE_TYPE_INSTANCE_TYPE}">CtlModelKind</Private>
+          </EnumType>
+        </DataTypeTemplates>
+      </SCL>
+    `);
+
+    const daType = createElementInDefaultNS(doc, 'DAType');
+    daType.setAttribute('id', 'DA_1');
+    const doType = createElementInDefaultNS(doc, 'DOType');
+    doType.setAttribute('id', 'DO_1');
+    doType.setAttribute('cdc', 'SPS');
+
+    const edits = insertTypeElements(doc, [daType, doType]);
+
+    applyInsertEdits(edits as { parent: Node; node: Node; reference: Node | null }[]);
+
+    const idsInOrder = listDataTypeElements(doc).map((el) => el.getAttribute('id'));
+    expect(idsInOrder).toEqual(['DO_1', 'DA_1', 'EN_EXISTING']);
+  });
+
+  test('insertTypeElements skips elements whose id already exists in target document', () => {
+    const doc = parseScl(`
+      <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <DataTypeTemplates>
+          <DOType id="DO_1" cdc="SPS" />
+        </DataTypeTemplates>
+      </SCL>
+    `);
+
+    const duplicateDoType = createElementInDefaultNS(doc, 'DOType');
+    duplicateDoType.setAttribute('id', 'DO_1');
+    duplicateDoType.setAttribute('cdc', 'DPC');
+
+    const enumType = createElementInDefaultNS(doc, 'EnumType');
+    enumType.setAttribute('id', 'EN_1');
+
+    const edits = insertTypeElements(doc, [duplicateDoType, enumType]);
+
+    applyInsertEdits(edits as { parent: Node; node: Node; reference: Node | null }[]);
+
+    const ids = listDataTypeElements(doc).map((el) => el.getAttribute('id'));
+    expect(ids).toEqual(['DO_1', 'EN_1']);
+    expect(doc.querySelectorAll(`${'DataTypeTemplates'} > [id="DO_1"]`).length).toBe(1);
   });
 
   test('collectReachableTypeIds traverses type graph from root and handles cycles', () => {

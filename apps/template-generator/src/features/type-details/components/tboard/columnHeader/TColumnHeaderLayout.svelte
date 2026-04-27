@@ -1,5 +1,7 @@
 <script lang="ts">
   import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
+  import { Label } from '@smui/button';
+  import { OscdWandStarsIcon } from '@oscd-transnet-plugins/oscd-icons';
   import type { Snippet } from 'svelte';
 
 
@@ -7,6 +9,7 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionIcon?: string | null;
     actionDisabled?: boolean;
     hasAction?: boolean;
     botAction?: Snippet;
@@ -18,12 +21,19 @@
     title,
     subtitle = null,
     actionLabel = null,
+    actionIcon = null,
     actionDisabled = false,
     hasAction = false,
     botAction,
 
     onAction = () => {},
   }: Props = $props();
+
+  const isWandStarsIcon = $derived(
+    actionIcon === 'wand-stars' ||
+      actionIcon === 'wand_stars' ||
+      actionLabel === 'Apply All Default Types'
+  );
 </script>
 
 <div class="header-container">
@@ -41,7 +51,14 @@
         backgroundColor="white"
         disabled={actionDisabled}
       >
-        {actionLabel}
+        {#if isWandStarsIcon}
+          <span class="action-icon" aria-hidden="true">
+            <OscdWandStarsIcon svgStyles="width: 20px; height: 20px; fill: currentColor;" />
+          </span>
+          <Label>{actionLabel}</Label>
+        {:else}
+          {actionLabel}
+        {/if}
       </OscdButton>
     </div>
   </div>
@@ -89,5 +106,11 @@
 
   .invisible {
     visibility: hidden;
+  }
+
+  .action-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.25rem;
   }
 </style>

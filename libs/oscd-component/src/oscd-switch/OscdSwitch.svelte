@@ -18,7 +18,7 @@
 
   let {
     checked = $bindable(false),
-    label = 'Toggle',
+    label: labelText = 'Toggle',
     id = 'toggle-switch',
     labelStyle = '',
     switchClass = '',
@@ -31,6 +31,9 @@
   }: Props = $props();
 
   function handleChange(newChecked: boolean) {
+    if(disabled) {
+      return;
+    }
 
     if(preventToggleOnClick) {
       checked = !newChecked;
@@ -47,17 +50,23 @@
     class={switchClass}
     bind:checked
     {icons}
-    onSMUISwitchChange={e => handleChange(e.detail.selected)}
-  />
-  {#if label}
-  <label for={id} style={labelStyle} class="oscd-switch-label">
-    {label}
-  </label>
-  {/if}
+    onSMUISwitchChange={e => handleChange(e.detail.selected)}/>
+    {#snippet label()}
+      {#if labelText}
+        <label
+          for={id}
+          style={labelStyle}
+          class="oscd-switch-label"
+          class:oscd-switch-label-disabled={disabled}
+        >
+          {labelText}
+        </label>
+      {/if}
+    {/snippet}
 </FormField>
 
 <style>
-  .oscd-switch-label {
-    cursor: pointer
+  .oscd-switch-label-disabled {
+    color: #8a8f98 !important;
   }
 </style>

@@ -14,15 +14,24 @@
   interface Props {
     open?: boolean;
     typeKind: TypeKind;
-    service: DataTypeService; 
+    service: DataTypeService;
+    enableCreateFromDefault?: boolean;
   }
 
-  let { open = $bindable(false), typeKind, service }: Props = $props();
+  let {
+    open = $bindable(false),
+    typeKind,
+    service,
+    enableCreateFromDefault = false,
+  }: Props = $props();
 
   let valid = $state<boolean>(false);
   let formDetails = $state<CreateTypeFormSubmitDetails | null>(null);
 
   const title = $derived(`Create ${TypeKind.toTypeKindLabel(typeKind)}`);
+  const confirmActionText = $derived(
+    formDetails?.createFromDefault && formDetails?.valid ? 'Load default' : 'Create',
+  );
 
   function handleFormChange(details: CreateTypeFormSubmitDetails): void {
     formDetails = details;
@@ -55,7 +64,7 @@
 
 <OscdBaseDialog
   {title}
-  confirmActionText="Create"
+  {confirmActionText}
   maxWidth="800px"
   bind:open
   onConfirm={handleCreate}
@@ -67,7 +76,7 @@
     <div style="padding: 1rem;">
       <CreateTypeForm
         {typeKind}
-        showCreateFromDefaultOption={typeKind === TypeKind.LNodeType}
+        showCreateFromDefaultOption={enableCreateFromDefault}
         onChange={handleFormChange}
         onSubmit={handleFormSubmit}
         generateId={generateTypeId}

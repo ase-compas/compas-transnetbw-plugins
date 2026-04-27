@@ -22,11 +22,11 @@
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
     onItemAddReferenceClick?: (event: { itemId: string; item: TItem }) => void;
-    onItemSetDefault?: (event: {itemId: string, item: TItem}) => void;
     onItemUnlink?: (event: {itemId: string, item: TItem}) => void;
     onItemEdit?: (event: {itemId: string, item: TItem}) => void;
     onItemClick?: (event: {itemId: string, item: TItem}) => void;
     onItemApplyDefaults?: (event: {itemId: string, item: TItem}) => void;
+    onItemDefaultTypeClick?: (event: {itemId: string, item: TItem}) => void;
   }
 
   let {
@@ -44,11 +44,11 @@
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
     onItemAddReferenceClick = () => {},
-    onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
     onItemClick = () => {},
-    onItemApplyDefaults = () => {}
+    onItemApplyDefaults = () => {},
+    onItemDefaultTypeClick = () => {}
   }: Props = $props();
 
   let workItems = $state([...items]);
@@ -138,7 +138,11 @@
       badgeText={item.badgeText}
       canEdit={item.canEdit}
       canMark={item.canMark}
-      canSetDefault={item.canSetDefault}
+      isDefaultType={item.isDefaultType}
+      defaultTypeVersion={item.defaultTypeVersion}
+      defaultTypeRootId={item.defaultTypeRootId}
+      defaultTypeInstance={item.defaultTypeInstance}
+      defaultTypeKind={item.defaultTypeKind}
       selectionEnabled={selectable}
       showSelectionIndicator={showSelectionIndicator}
       canApplyDefaults={item.canApplyDefaults}
@@ -162,7 +166,7 @@
       onUnlink={() => onItemUnlink({itemId: item.id, item})}
       onReferenceClick={(e) => onItemReferenceClick({item, itemId: item.id, reference: e})}
       onAddReferenceClick={() => onItemAddReferenceClick({itemId: item.id, item})}
-      onSetDefault={() => onItemSetDefault({itemId: item.id, item})}
+      onDefaultTypeClick={() => onItemDefaultTypeClick({itemId: item.id, item})}
     />
     </div>
   {/each}
