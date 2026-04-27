@@ -51,7 +51,7 @@
   }
 
   .content.text-only {
-    font-size: 1.18rem;
+    font-size: 1.10rem;
     line-height: 1.10;
     font-weight: 400;
     color: var(--primary,);
