@@ -142,6 +142,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 36px;
     padding: 0 8px;
     margin: 0;
 
@@ -172,7 +173,8 @@
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
-    padding: 6px 1rem;
+    padding: 6px 0.5rem;
+    min-height: 36px;
     background-color: white;
     border-radius: 2px;
 

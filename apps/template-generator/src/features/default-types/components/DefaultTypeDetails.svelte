@@ -297,8 +297,6 @@
   .default-type__version-info-label {
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-heading);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: #555;
   }
 

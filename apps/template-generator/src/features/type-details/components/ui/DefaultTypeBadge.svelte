@@ -278,8 +278,6 @@
 
   .default-row-label {
     font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.045em;
     color: #677383;
     font-weight: 600;
     padding-top: 0.1rem;
@@ -341,8 +339,6 @@
 
   .default-upgrade-title {
     font-size: 0.66rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
     font-weight: 700;
     opacity: 0.84;
     margin-right: 0.24rem;

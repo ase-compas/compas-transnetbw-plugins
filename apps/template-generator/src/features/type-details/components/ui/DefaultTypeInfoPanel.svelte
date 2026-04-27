@@ -64,8 +64,6 @@
 
   .default-row-label {
     font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.045em;
     color: #677383;
     font-weight: 600;
     padding-top: 0.1rem;

@@ -121,8 +121,6 @@
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-heading);
     color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
   }
 
   .value {

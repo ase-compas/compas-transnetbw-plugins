@@ -33,7 +33,7 @@
     type,
     showDelay = 1000,
     fillColor = 'var(--mdc-theme-primary)',
-    size = '25px',
+    size = '20px',
     onClick
   }: Props = $props();
 

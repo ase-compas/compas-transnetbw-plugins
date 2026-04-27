@@ -115,7 +115,7 @@
     background-color: var(--red);
     color: var(--white);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1;
     box-sizing: border-box;
     cursor: default;

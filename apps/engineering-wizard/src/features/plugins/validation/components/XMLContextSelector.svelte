@@ -136,7 +136,7 @@
         <span class="ellipsis">…</span>
       </OscdTooltip>
 
-      <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 30px; height: 30px;" />
+      <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 20px; height: 20px;" />
     {:else if isSelectVisible(index)}
       <OscdSmartSelect
         placeholder="Select next node"
@@ -146,7 +146,7 @@
       />
 
       {#if hasChevronAfter(index)}
-        <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 30px; height: 30px;" />
+        <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 20px; height: 20px;" />
       {/if}
     {/if}
   {/each}

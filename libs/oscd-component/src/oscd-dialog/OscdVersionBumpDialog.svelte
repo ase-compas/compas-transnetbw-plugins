@@ -130,6 +130,6 @@
     justify-content: flex-end;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem var(--dialog-h-padding, 1.5rem);
+    padding: 0.6rem 0.75rem 0.6rem var(--dialog-h-padding, 1.5rem);
   }
 </style>

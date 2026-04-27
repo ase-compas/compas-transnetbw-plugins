@@ -209,8 +209,6 @@
     margin: 0;
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-bold);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: #555;
   }
 
@@ -231,8 +229,6 @@
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-heading);
     color: #666;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
   }
 
   .summary__value {

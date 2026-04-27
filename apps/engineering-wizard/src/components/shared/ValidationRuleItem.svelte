@@ -103,8 +103,6 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-small, 0.75rem);
     font-weight: var(--ew-font-weight-medium, 500);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--base1);
     white-space: nowrap;
     flex-shrink: 0;

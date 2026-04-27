@@ -14,9 +14,12 @@
  */
 :root {
   --ew-font-family: 'Roboto', sans-serif;
-  --ew-font-size-heading: 1.125rem; /* 18px – all headings / panel titles */
-  --ew-font-size-body:    0.875rem; /* 14px – regular body / labels        */
-  --ew-font-size-small:   0.75rem;  /* 12px – secondary labels / badges    */
+  --ew-font-size-h1:   1.25rem;  /* 20px – page/dialog titles        */
+  --ew-font-size-h2:   1rem;     /* 16px – section titles            */
+  --ew-font-size-body: 0.875rem; /* 14px – regular body / labels     */
+  --ew-font-size-small: 0.75rem; /* 12px – tags, captions, badges    */
+  /* kept for back-compat */
+  --ew-font-size-heading: 1.25rem;
 
   --ew-font-weight-heading: 600;
   --ew-font-weight-medium:  500;
@@ -44,9 +47,11 @@ body {
 
 :host {
   --ew-font-family: 'Roboto', sans-serif;
-  --ew-font-size-heading: 1.125rem;
-  --ew-font-size-body:    0.875rem;
-  --ew-font-size-small:   0.75rem;
+  --ew-font-size-h1:   1.25rem;
+  --ew-font-size-h2:   1rem;
+  --ew-font-size-body: 0.875rem;
+  --ew-font-size-small: 0.75rem;
+  --ew-font-size-heading: 1.25rem;
 
   --ew-font-weight-heading: 600;
   --ew-font-weight-medium:  500;
@@ -129,12 +134,19 @@ button:focus {
  *   action buttons look visually heavier/larger than navigation buttons.
  */
 :root {
-  --mdc-typography-button-font-weight: 400;
+  --mdc-typography-button-font-weight: 500;
   --mdc-typography-button-text-transform: none;
   --mdc-typography-button-letter-spacing: 0.03em;
-}
+  }
 :host {
-  --mdc-typography-button-font-weight: 400;
+  --mdc-typography-button-font-weight: 500;
   --mdc-typography-button-text-transform: none;
   --mdc-typography-button-letter-spacing: 0.03em;
+  }
+
+/* Ensure icon wrappers inside SMUI buttons vertically centre the SVG */
+.mdc-button .mdc-button__icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }

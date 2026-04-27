@@ -137,6 +137,23 @@ button:focus {
   margin: 0;
 }
 
+/*
+ * Normalize MDC/SMUI button typography: sentence case, semi-bold, no wide
+ * letter-spacing (which is designed for uppercase labels only).
+ */
+:root {
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+    --mdc-typography-button-font-size: 0.875rem;
+}
+:host {
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+    --mdc-typography-button-font-size: 0.875rem;
+}
+
 
 .oscd-tooltip {
   background: #616159;
@@ -164,4 +181,11 @@ button:focus {
   max-width: 900px;
   margin: auto;
   padding: 20px;
+}
+
+/* Ensure icon wrappers inside SMUI buttons vertically centre the SVG */
+.mdc-button .mdc-button__icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }

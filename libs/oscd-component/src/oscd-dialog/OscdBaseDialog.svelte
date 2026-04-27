@@ -165,7 +165,7 @@
     padding-top: 0.6rem !important;
     padding-bottom: 0.6rem !important;
     padding-left: var(--dialog-h-padding, 1.5rem) !important;
-    padding-right: var(--dialog-h-padding, 1.5rem) !important;
+    padding-right: 0.75rem !important;
   }
 
   :global(.oscd-dialog__actions) {

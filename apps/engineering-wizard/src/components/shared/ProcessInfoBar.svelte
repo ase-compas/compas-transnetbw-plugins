@@ -121,11 +121,9 @@
     background: var(--success, #2e7d32);
     color: #fff;
     font-size: 0.575rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-weight: 500;
     padding: 2px 5px;
     border-radius: 3px;
-    text-transform: uppercase;
     pointer-events: none;
     white-space: nowrap;
   }

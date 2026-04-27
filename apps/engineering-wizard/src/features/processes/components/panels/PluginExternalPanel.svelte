@@ -152,7 +152,7 @@
   .header-info {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
-    font-weight: var(--ew-font-weight-heading, 600);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
     margin: 0;
   }

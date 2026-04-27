@@ -220,7 +220,7 @@
     margin: 0;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
-    font-weight: var(--ew-font-weight-heading, 600);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--white);
     line-height: 1.2;
   }
@@ -258,7 +258,6 @@
   .plugin-list__group-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
     background: transparent;
     border: none;
     padding: 0;
@@ -353,12 +352,10 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    height: 28px;
-    padding: 0 10px;
-    text-transform: uppercase;
-    font-size: 0.7rem;
+    height: 36px;
+    padding: 0 16px;
+    font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: 500;
-    letter-spacing: 0.04em;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     border: 1px solid transparent;
     border-radius: 4px;

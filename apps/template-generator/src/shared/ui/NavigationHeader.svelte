@@ -46,7 +46,5 @@
     font-size: var(--tg-font-size-small);
     color: var(--mdc-theme-text-secondary-on-background, #666);
     font-weight: var(--tg-font-weight-heading);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 </style>

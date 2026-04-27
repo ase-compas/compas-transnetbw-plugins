@@ -131,7 +131,7 @@
   .box[data-has-value="true"] .select {
     white-space: nowrap;
     color: var(--primary-base);
-    font-weight: 600;
+    font-weight: 400;
 
     padding-right: 2.2rem;
   }
@@ -167,6 +167,6 @@
 
     font-family: "Roboto", sans-serif;
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 400;
   }
 </style>
