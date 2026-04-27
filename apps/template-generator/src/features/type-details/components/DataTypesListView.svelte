@@ -148,7 +148,7 @@
     { key: 'id', header: 'Name' },
     { key: 'typeKind', header: 'Type Kind' },
     { key: 'instanceType', header: 'Instance Type' },
-    { key: 'references', header: 'References' },
+    { key: 'references', header: 'Number of Data Objects' },
   ]}
 >
   {#snippet actions({ item })}
