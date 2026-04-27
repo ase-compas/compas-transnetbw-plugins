@@ -80,6 +80,7 @@ export async function renameDataTypeWorkflow(
 ): Promise<string | null> {
     const result = await openDialog(TypeRenameDialog, {
         typeId: dataType.id,
+        service
     });
 
     if (result.type !== 'confirm') {
