@@ -91,7 +91,7 @@
           {#if canEditId}
             <OscdIconActionButton
               type="edit"
-              tooltip="Edit"
+              tooltip="Rename"
               tooltipSide="bottom"
               size="20px"
               onClick={enterIdEditMode}
