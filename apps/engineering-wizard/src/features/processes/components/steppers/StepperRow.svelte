@@ -83,6 +83,7 @@
 
   .step-button {
     padding: 0;
+    margin: 0;
     border: none;
     background: transparent;
     cursor: pointer;

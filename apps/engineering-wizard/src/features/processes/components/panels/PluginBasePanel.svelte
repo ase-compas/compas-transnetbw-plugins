@@ -357,7 +357,7 @@
     padding: 0 10px;
     text-transform: uppercase;
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.04em;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     border: 1px solid transparent;

@@ -48,17 +48,14 @@ export class DataTypeService {
         this.defaultTypeManagerService.setDocument(doc);
     }
 
-    // Queries
 
     /**
      * Gets detailed information about a data type, including its members and their reference details.
      * @param id The ID of the data type to retrieve.
      * @returns DataTypeDetails object with enriched member information.
      * @throws Error if the data type is not found or if its instance type is invalid according to the NSD schema registry.
-     * @returns DataTypeDetails object with enriched member information.
      */
     getById(id: string): DataTypeDetails {
-        // Get DataType from SCL Element
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
 
@@ -79,11 +76,8 @@ export class DataTypeService {
             };
         }
 
-        // Get all NSD definitions for this typeKind and instanceType
         const nsdDefs = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
 
-        // Enrich DataType members with info from NSD definitions
-        // Build children array by iterating over all NSD definitions (records)
         const members = Object.values(nsdDefs).map(def => {
             const childElement = this.findConfiguredMemberElement(element, def);
             const isConfigured = !!childElement;
@@ -170,7 +164,6 @@ export class DataTypeService {
         
         const hasDefaultMetadata = !!defaultInfo;
         
-        // If it is a root, get the sub-type IDs that will be deleted
         const trackedSubTypeIds = hasDefaultMetadata
             ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(defaultInfo.rootId)
             : [];
@@ -235,13 +228,11 @@ export class DataTypeService {
      */
     getAssignableTypes(id: string, focusMemberName?: string): SimpleDataType[] {
 
-        console.debug(`getAssignableTypes ${id}`);
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
 
         const nsdTypeDefinitions = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
 
-        // Collect all required reference types from NSD definitions
         const requiredReferences = Object.values(nsdTypeDefinitions)
             .filter(def => !focusMemberName || def.name === focusMemberName)
             .filter(def => def.requiresReference && def.refTypeKind)
@@ -252,7 +243,6 @@ export class DataTypeService {
 
         if (requiredReferences.length === 0) return [];
 
-        // Find all types in the SCL document that match any required reference
         const allTypes = listDataTypeElements(this.doc)
             .map(el => elementToSimpleDataType(el))
             .filter(dt => dt.id && dt.typeKind);
@@ -280,11 +270,9 @@ export class DataTypeService {
     private enrichTypeWithDefaultInfo(dt: SimpleDataType): boolean {
         const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
         if (defaultInfo) {
-            // Only include if it's the root ID of the default type
             if (dt.id !== defaultInfo.rootId) {
-                return false; // Filter out non-root default type IDs
+                return false;
             }
-            // Add version info for the root ID
             dt.isDefaultType = true;
             dt.defaultTypeVersion = defaultInfo.version;
             dt.defaultTypeRootId = defaultInfo.rootId;
@@ -315,7 +303,6 @@ export class DataTypeService {
      * @returns An array of SimpleDataType objects that are referenced by the specified member.
      */
     getReferencedTypes(id: string, focusMemberName?: string): SimpleDataType[] {
-        console.debug(`getReferencedTypes ${id}`);
         const visited = new Set<string>();
         const result: SimpleDataType[] = [];
         const startElement = findDataTypeElement(this.doc, id);
@@ -682,8 +669,6 @@ export class DataTypeService {
             createHistoryEntry: true,
         });
 
-        console.log(`Set configured members of DataType ${id}. Added: ${addedCount}, Removed: ${removedCount}, Total changed: ${changedMemberCount}`);
-
         return changedMemberCount;
     }
 
@@ -943,7 +928,6 @@ export class DataTypeService {
         for (const memberName of memberNames) {
             const memberDefinition: NsdTypeDefinition = nsdDefinitions[memberName];
             if (!memberDefinition?.requiresReference) {
-                console.debug(`Skipping member ${memberName} of DataType ${id} because it does not require a reference`);
                 continue;
             }
 
@@ -968,9 +952,6 @@ export class DataTypeService {
         return map;
     }
 
-    // ==================
-    // Data retrieval and mapping for UI
-    // ==================
 
     private validateInstanceTypeForKind(typeKind: TypeKind, instanceType: string): void {
         const instanceTypeDefinition = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);

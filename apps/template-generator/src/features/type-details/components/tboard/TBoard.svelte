@@ -18,7 +18,6 @@
     columns?: TColumnConfig[];
     data?: TData;
 
-    // Callbacks
     onItemDragChange?: (event: EventDetails) => void;
     onItemMarkChange?: (event: { columnId: string, itemId: string; item: TItem; marked: boolean }) => void;
     onItemSelectChange?: (event: EventDetails) => void;
@@ -37,7 +36,6 @@
     columns = [],
     data = $bindable({} as TData),
 
-    // Callbacks
     onItemMarkChange = () => {},
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
@@ -51,7 +49,7 @@
     onItemDrop = () => {}
   }: Props = $props();
 
-  let dropCandidate: TBoardItemContext | null = $state(null); // This will hold the item being dragged. On The board only one item can be dragged at a time.
+  let dropCandidate: TBoardItemContext | null = $state(null);
   let boardId: string = $state();
 
   onMount(() => {
@@ -76,7 +74,7 @@
   }
 
   function handleOnItemDrag(columnId: string, detail: any) {
-    if(!detail.item || !detail.item) {
+    if(!detail.item) {
       dropCandidate = null
       return;
     }

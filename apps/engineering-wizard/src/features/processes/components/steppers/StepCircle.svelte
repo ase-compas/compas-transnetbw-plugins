@@ -39,6 +39,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    line-height: 1;
     font-weight: 600;
     flex-shrink: 0;
     transition: background-color 0.2s ease;

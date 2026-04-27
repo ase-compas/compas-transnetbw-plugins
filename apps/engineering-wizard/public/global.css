@@ -122,3 +122,19 @@ button:focus {
 .mdc-fab {
   margin: 0;
 }
+
+/*
+ * Normalize MDC button typography so all SMUI buttons look uniform:
+ * – drop the heavy uppercase + wide letter-spacing that makes dialog
+ *   action buttons look visually heavier/larger than navigation buttons.
+ */
+:root {
+  --mdc-typography-button-font-weight: 400;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+}
+:host {
+  --mdc-typography-button-font-weight: 400;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+}

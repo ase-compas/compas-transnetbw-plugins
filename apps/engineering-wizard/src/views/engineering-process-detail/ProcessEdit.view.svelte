@@ -283,7 +283,7 @@
      * Controls the max-height of the plugin panels.
      * Increase this value if panels still overflow (accounts for stepper + info bar + OpenSCD chrome).
      */
-    --oscd-panel-max-height: calc(100vh - 18rem);
+    --oscd-panel-max-height: calc(100vh - 24rem);
   }
 
   .step-content {

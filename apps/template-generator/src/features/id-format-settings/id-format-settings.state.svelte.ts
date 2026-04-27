@@ -59,7 +59,6 @@ class IdFormatSettingsState {
     public async save() {
         const saveToSettings = this.sanitizeSettings(this.settings);
 
-        // storage
         localStorage.setItem('idFormatSettings', JSON.stringify(saveToSettings));
         try {
             idFormatSettingsService.saveSettings(saveToSettings);
@@ -188,10 +187,8 @@ class IdFormatSettingsState {
     }
 
     /**
-    *  If not enabled, set refernceEnabled false, formats to null
-    * if referenceFormid reference not enable set reference format to null
-     * @param setting
-     * @returns
+     * Sanitizes a single setting: disables reference format if the setting
+     * itself is disabled, and clears reference format when not enabled.
      */
     private sanitizeSetting(setting: TypeIdFormatSetting): TypeIdFormatSetting {
         if (!setting.enabled) {
