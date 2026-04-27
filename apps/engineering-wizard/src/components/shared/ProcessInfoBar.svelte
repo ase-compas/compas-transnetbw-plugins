@@ -6,6 +6,8 @@
     name?: string;
     processId?: string;
     version?: string;
+    /** When true, shows a green "CURRENT" badge below the version field. */
+    current?: boolean;
     description?: string;
     nameInvalid?: boolean;
     processIdDisabled?: boolean;
@@ -18,6 +20,7 @@
     name = '',
     processId = '',
     version = '',
+    current = false,
     description = '',
     nameInvalid = false,
     processIdDisabled = true,
@@ -51,13 +54,18 @@
   </div>
 
   <div class="field field--narrow">
-    <Textfield
-      variant="outlined"
-      label="Version"
-      value={version}
-      disabled
-    />
-  </div>
+      <div class="version-wrapper">
+        <Textfield
+          variant="outlined"
+          label="Version"
+          value={version}
+          disabled
+        />
+        {#if current}
+          <span class="version-badge">CURRENT</span>
+        {/if}
+      </div>
+    </div>
 
   <div class="field field--grow">
     <Textfield
@@ -99,6 +107,27 @@
 
   .field--narrow {
     flex: 0 0 120px;
+  }
+
+  .version-wrapper {
+    position: relative;
+  }
+
+  .version-badge {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    background: var(--success, #2e7d32);
+    color: #fff;
+    font-size: 0.575rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    pointer-events: none;
+    white-space: nowrap;
   }
 </style>
 

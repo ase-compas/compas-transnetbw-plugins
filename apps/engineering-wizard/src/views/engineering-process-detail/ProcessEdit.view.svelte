@@ -240,6 +240,7 @@
           name={proc.name ?? ''}
           processId={proc.id}
           version={proc.version}
+          current={true}
           description={proc.description ?? ''}
           nameInvalid={proc.name?.trim().length === 0}
           onNameChange={(v) => updateProcessMetadata(proc.id, { name: v })}

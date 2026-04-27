@@ -8,13 +8,14 @@
 
   interface Props {
     pluginGroups?: PluginGroup[];
+    selectedGroupTitle?: string | null;
     onRemoveOne: (pluginId: string) => void;
     onRemoveAll: () => void;
     onAddGroup: (name: string, position: number) => void;
     onUpdateGroups: (updatedGroups: PluginGroup[]) => void;
   }
 
-  let { pluginGroups = [], onRemoveOne, onRemoveAll, onAddGroup, onUpdateGroups }: Props = $props();
+  let { pluginGroups = [], selectedGroupTitle = $bindable<string | null>(null), onRemoveOne, onRemoveAll, onAddGroup, onUpdateGroups }: Props = $props();
 
   let showRemoveAll = $derived(pluginGroups.flatMap((g) => g.plugins ?? []).length > 0);
 
@@ -32,6 +33,7 @@
 
 <PluginBasePanel
   {pluginGroups}
+  bind:selectedGroupTitle
   {headerAction}
   {itemAction}
   {onAddGroup}
@@ -82,3 +84,4 @@
     outline-offset: 2px;
   }
 </style>
+

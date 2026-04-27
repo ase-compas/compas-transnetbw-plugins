@@ -22,5 +22,5 @@
   onRemoveAll={() => removeAllPluginsFromProcess(procId())}
   onAddGroup={(name, pos) => addGroupToProcess(procId(), name, pos)}
   onUpdateGroups={(groups) => updateGroupsOfProcess(procId(), groups)}
-  onAddPlugin={(p) => addPluginToProcess(procId(), p)}
+  onAddPlugin={(p, groupTitle) => addPluginToProcess(procId(), p, groupTitle)}
 />

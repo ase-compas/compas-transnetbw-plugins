@@ -6,14 +6,17 @@
     number: number;
     active?: boolean;
     visited?: boolean;
+    selected?: boolean;
     status?: 'check' | 'warning' | 'error';
   }
 
-  const { number, active = false, visited = false, status }: Props = $props();
+  const { number, active = false, visited = false, selected = false, status }: Props = $props();
 </script>
 
-<div class="step-circle {active ? 'active' : ''} {visited ? 'visited' : ''}">
-  {#if visited && status}
+<div class="step-circle {active ? 'active' : ''} {visited ? 'visited' : ''} {selected ? 'selected' : ''}">
+  {#if selected}
+    <OscdCheckIcon svgStyles="fill: var(--primary-base); width: 0.875rem; height: 0.875rem;" />
+  {:else if visited && status}
     {#if status === 'check'}
       <OscdCheckIcon />
     {:else if status === 'error'}
@@ -28,15 +31,16 @@
 
 <style>
   .step-circle {
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.8rem;
+    width: 1.375rem;
+    height: 1.375rem;
+    font-size: 0.65rem;
     font-family: Arial, sans-serif;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    flex-shrink: 0;
     transition: background-color 0.2s ease;
     background-color: rgb(from var(--base0) r g b / 0.8);
     color: white;
@@ -48,6 +52,11 @@
   }
 
   .step-circle.visited {
+    background-color: var(--white);
+    color: var(--primary-base);
+  }
+
+  .step-circle.selected {
     background-color: var(--white);
     color: var(--primary-base);
   }

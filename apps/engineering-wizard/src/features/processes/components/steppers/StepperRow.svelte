@@ -70,6 +70,11 @@
     cursor: pointer;
   }
 
+  .step p {
+    margin: 0;
+    line-height: 1;
+  }
+
   .step-line {
     width: 56px;
     height: 1px;

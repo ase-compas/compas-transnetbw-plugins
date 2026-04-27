@@ -116,6 +116,7 @@
     {name}
     processId={procId}
     version="1.0.0"
+    current={true}
     {description}
     {nameInvalid}
     processIdDisabled={false}
@@ -130,7 +131,7 @@
     onRemoveAll={() => { pluginGroups = removeAllPluginsFromGroups(pluginGroups); }}
     onAddGroup={(name, pos) => { pluginGroups = addGroupToGroups(pluginGroups, name, pos); }}
     onUpdateGroups={(updated) => { pluginGroups = updated; }}
-    onAddPlugin={(p) => { pluginGroups = addPluginToGroups(pluginGroups, p); }}
+    onAddPlugin={(p, groupTitle) => { pluginGroups = addPluginToGroups(pluginGroups, p, groupTitle); }}
   />
 </div>
 

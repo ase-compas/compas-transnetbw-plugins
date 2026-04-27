@@ -11,7 +11,7 @@
     onRemoveAll: () => void;
     onAddGroup: (name: string, position: number) => void;
     onUpdateGroups: (updatedGroups: PluginGroup[]) => void;
-    onAddPlugin: (plugin: Plugin) => void;
+    onAddPlugin: (plugin: Plugin, groupTitle?: string) => void;
   }
 
   let {
@@ -25,11 +25,14 @@
 
   let searchTerm = $state('');
   let filteredPlugins = $derived(getFilteredCorePlugins(searchTerm));
+
+  let selectedGroupTitle = $state<string | null>(null);
 </script>
 
 <div class="plugin-editor-row">
   <PluginEditorPanel
     {pluginGroups}
+    bind:selectedGroupTitle
     {onRemoveOne}
     {onRemoveAll}
     {onAddGroup}
@@ -44,7 +47,8 @@
   <PluginExternalPanel
     plugins={filteredPlugins}
     bind:searchTerm
-    {onAddPlugin}
+    {selectedGroupTitle}
+    onAddPlugin={(plugin) => onAddPlugin(plugin, selectedGroupTitle ?? undefined)}
   />
 </div>
 
@@ -90,3 +94,4 @@
     text-align: center;
   }
 </style>
+
