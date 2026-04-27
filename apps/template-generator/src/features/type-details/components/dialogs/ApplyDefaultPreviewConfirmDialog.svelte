@@ -85,20 +85,20 @@
   {#snippet content()}
     <div class="preview-dialog-content">
       <div class="summary-grid">
-        <Card padded class="summary-card">
+        <Card padded variant="outlined" class="summary-card">
           <div class="summary-label">DataType</div>
           <div class="summary-value">{applyDefaultPreview?.dataTypeId ?? '-'}</div>
         </Card>
         {#if totalMembers > 1}
-          <Card padded class="summary-card">
+          <Card padded variant="outlined" class="summary-card">
             <div class="summary-label">Will Be Assigned</div>
             <div class="summary-value success-text">{applicableRows.length}</div>
           </Card>
-          <Card padded class="summary-card">
+          <Card padded variant="outlined" class="summary-card">
             <div class="summary-label">No Default Available</div>
             <div class="summary-value muted-text">{unavailableRows.length}</div>
           </Card>
-          <Card padded class="summary-card">
+          <Card padded variant="outlined" class="summary-card">
             <div class="summary-label">Data Objects Considered</div>
             <div class="summary-value">{totalMembers}</div>
           </Card>
@@ -106,16 +106,16 @@
       </div>
 
       {#if memberRows.length === 0}
-        <Card padded class="empty-state">No applicable default updates found for the selected members.</Card>
+        <Card padded variant="outlined" class="empty-state">No applicable default updates found for the selected members.</Card>
       {:else}
         <section>
           <div class="section-title">Will Be Applied</div>
           {#if applicableRows.length === 0}
-            <Card padded class="empty-state">No data objects.</Card>
+            <Card padded variant="outlined" class="empty-state">No data objects.</Card>
           {:else}
             <div class="rows-list">
               {#each applicableRows as row}
-                <Card padded class="row-card">
+                <Card padded variant="outlined" class="row-card">
                   <header class="row-header">
                     <div class="row-title">{row.memberName}</div>
                     <span class={`chip chip-${scenarioMeta[row.scenario].tone}`}>
@@ -147,7 +147,7 @@
             <div class="section-title muted-title">No Default Available</div>
             <div class="rows-list">
               {#each unavailableRows as row}
-                <Card padded class="row-card unavailable">
+                <Card padded variant="outlined" class="row-card unavailable">
                   <header class="row-header">
                     <div class="row-title muted-text">{row.memberName}</div>
                     <span class="chip chip-danger">No default</span>
