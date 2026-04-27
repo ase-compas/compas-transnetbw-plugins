@@ -162,22 +162,21 @@ export class DataTypeService {
      * Gets a delete plan for a type, including info about cascade deletions
      * if the type is a root of a local default group.
      * @param typeId The ID of the type to analyze for deletion
-     * @returns Object with hasDefaultMetadata (true if type is root of a default),
+     * @returns Object with hasDefaultMetadata if its part of a default type,
      *          and trackedSubTypeIds (array of sub-type IDs that will also be deleted)
      */
     getDeletePlan(typeId: string): { hasDefaultMetadata: boolean; trackedSubTypeIds: string[] } {
         const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(typeId);
         
-        // Check if this type is a root of a default group
-        const isRootOfDefault = defaultInfo?.rootId === typeId;
+        const hasDefaultMetadata = !!defaultInfo;
         
         // If it is a root, get the sub-type IDs that will be deleted
-        const trackedSubTypeIds = isRootOfDefault
-            ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(typeId)
+        const trackedSubTypeIds = hasDefaultMetadata
+            ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(defaultInfo.rootId)
             : [];
 
         return {
-            hasDefaultMetadata: isRootOfDefault,
+            hasDefaultMetadata: hasDefaultMetadata,
             trackedSubTypeIds,
         };
     }

@@ -323,7 +323,7 @@ describe('DataTypeService', () => {
 			expect(plan.trackedSubTypeIds).toEqual([]);
 		});
 
-		test('returns hasDefaultMetadata=false for tracked sub-types (non-root)', () => {
+		test('returns hasDefaultMetadata=true for tracked sub-types (non-root)', () => {
 			doc = parseScl(`
 				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
 					<Private type="compas:default-type-info">
@@ -343,8 +343,8 @@ describe('DataTypeService', () => {
 			const plan = service.getDeletePlan('sub-a');
 
 			// sub-a is tracked but not a root, so no cascade
-			expect(plan.hasDefaultMetadata).toBe(false);
-			expect(plan.trackedSubTypeIds).toEqual([]);
+			expect(plan.hasDefaultMetadata).toBe(true);
+			expect(plan.trackedSubTypeIds).toEqual(['sub-a']); 
 		});
 	});
 

@@ -29,7 +29,7 @@
   {#snippet content()}
     <div class="content">
       <p>
-        <strong>{rootTypeId}</strong> is part of a default type group. Deleting it will also remove the following related types:
+        <strong>{rootTypeId}</strong> is part of a default type group. Deleting it will also remove all types of that default type:
       </p>
       <ul class="sub-type-list">
         {#each subTypeIds as subTypeId}
