@@ -71,6 +71,9 @@ export class DataTypeDetailsState {
 
             if(typeDetails.defaultTypeInfo) {
                 this.viewMode = 'view';
+                this.config.toggleEditModeSwitchDisabled = true;
+            } else {
+                this.config.toggleEditModeSwitchDisabled = false;
             }
 
             const otherTypesByKind = this.getOtherTypesByKind(id);
