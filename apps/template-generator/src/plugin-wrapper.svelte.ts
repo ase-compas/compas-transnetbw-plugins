@@ -23,6 +23,7 @@ export default class NewOSCDPlugin extends HTMLElement {
     super();
 
     this._props = $state({
+      doc: undefined as XMLDocument | undefined,
       editCount: -1,
       host: this as NewOSCDPlugin,
       locale: navigator.language ?? 'en-US',

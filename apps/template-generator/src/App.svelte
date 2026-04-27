@@ -47,10 +47,13 @@
 
   $effect(() => {
     docState.doc = doc ?? null;
-    docState.editCount = editCount ?? -1;
     if (sclService && doc) {
       sclService.setDoc(doc);
     }
+  });
+
+  $effect(() => {
+    docState.editCount = editCount ?? -1;
   });
 </script>
 
