@@ -47431,7 +47431,7 @@ function lh(n, e) {
           side: "right",
           children: (ft, yt) => {
             {
-              let dn = /* @__PURE__ */ $(() => t() ? "outlined" : "raised"), at = /* @__PURE__ */ $(() => i(_e) ? i(_e) : "");
+              let dn = /* @__PURE__ */ $(() => t() ? "outlined" : "unelevated"), at = /* @__PURE__ */ $(() => i(_e) ? i(_e) : "");
               Kt(ft, {
                 get variant() {
                   return i(dn);
