@@ -1,4 +1,17 @@
 /* ─── Engineering Wizard – Typography tokens ─────────────────────────────── */
+
+/*
+ * Token values are defined twice:
+ *  • :root  – for normal (non-shadow-DOM) rendering
+ *  • :host  – for shadow DOM rendering (plugin mode)
+ *
+ * Why :host needs literal values: CSS custom properties defined in a shadow
+ * stylesheet's :root live on the ShadowRoot node. Shadow DOM children inherit
+ * from the shadow HOST, not the shadow root, so var() references in :root
+ * never reach the host or its descendants unless the tokens are also declared
+ * directly on :host. Using literal values on :host ensures all shadow DOM
+ * children can resolve the tokens through normal CSS inheritance.
+ */
 :root {
   --ew-font-family: 'Roboto', sans-serif;
   --ew-font-size-heading: 1.125rem; /* 18px – all headings / panel titles */
@@ -8,6 +21,8 @@
   --ew-font-weight-heading: 600;
   --ew-font-weight-medium:  500;
   --ew-font-weight-normal:  400;
+
+  --mdc-typography-font-family: 'Roboto', sans-serif;
 }
 
 html,
@@ -25,6 +40,23 @@ body {
   font-family: var(--ew-font-family);
   font-size: var(--ew-font-size-body);
   font-weight: var(--ew-font-weight-normal);
+}
+
+:host {
+  --ew-font-family: 'Roboto', sans-serif;
+  --ew-font-size-heading: 1.125rem;
+  --ew-font-size-body:    0.875rem;
+  --ew-font-size-small:   0.75rem;
+
+  --ew-font-weight-heading: 600;
+  --ew-font-weight-medium:  500;
+  --ew-font-weight-normal:  400;
+
+  --mdc-typography-font-family: 'Roboto', sans-serif;
+
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 a {
@@ -78,4 +110,15 @@ button:not(:disabled):active {
 
 button:focus {
   border-color: #666;
+}
+
+/*
+ * The generic form-element reset above adds margin-bottom to all <button>
+ * elements. SMUI/MDC renders <button class="mdc-button"> and manages its own
+ * spacing — zero out just the margin so it doesn't create extra whitespace.
+ */
+.mdc-button,
+.mdc-icon-button,
+.mdc-fab {
+  margin: 0;
 }

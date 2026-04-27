@@ -118,26 +118,26 @@
   }
 
   .label {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--tg-font-size-small);
+    font-weight: var(--tg-font-weight-heading);
     color: #555;
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
 
   .value {
-    font-size: 1.1rem;
+    font-size: var(--tg-font-size-value);
     color: var(--mdc-theme-primary, #ff3e00);
     align-self: end;
   }
 
   .value.strong {
-    font-weight: 700;
+    font-weight: var(--tg-font-weight-bold);
   }
 
   .value.mono {
     font-family: 'Courier New', monospace;
-    font-size: 1.1rem;
+    font-size: var(--tg-font-size-value);
   }
 
   .instance-badge {
@@ -148,9 +148,9 @@
     padding: 0 0.5rem;
     border-radius: 10px;
     color: white;
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
     white-space: nowrap;
-    font-size: 0.8rem;
+    font-size: var(--tg-font-size-small);
   }
 
   .instance-badge.static {

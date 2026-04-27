@@ -329,8 +329,8 @@
   }
 
   .oscd-card-title {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--tg-font-size-subheading);
+    font-weight: var(--tg-font-weight-medium);
     color: var(--mdc-theme-primary);
     line-height: 1.2;
   }
@@ -340,8 +340,8 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.8rem;
-    font-weight: 400;
+    font-size: var(--tg-font-size-small);
+    font-weight: var(--tg-font-weight-normal);
     color: var(--mdc-theme-primary);
     opacity: 0.8;
     line-height: 1.2;
@@ -396,12 +396,12 @@
     display: inline-flex;
     align-items: center;
     height: 1.5rem;
-    font-size: 0.8rem;
+    font-size: var(--tg-font-size-small);
     padding: 0 0.5rem;
     border-radius: 8px;
     background: #DAE3E6;
     color: var(--mdc-theme-primary);;
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
     white-space: nowrap;
   }
 

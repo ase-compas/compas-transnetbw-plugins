@@ -295,15 +295,15 @@
   }
 
   .default-type__version-info-label {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--tg-font-size-small);
+    font-weight: var(--tg-font-weight-heading);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #555;
   }
 
   .default-type__description-value {
-    font-size: 0.875rem;
+    font-size: var(--tg-font-size-body);
     color: #777;
     font-style: italic;
     min-width: 200px;

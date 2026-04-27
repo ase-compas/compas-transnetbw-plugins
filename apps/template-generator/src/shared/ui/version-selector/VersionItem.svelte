@@ -55,12 +55,12 @@
   }
 
   .version-item__version {
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
   }
 
   .version-item__secondary {
     white-space: nowrap;
-    font-size: 0.875em;
+    font-size: var(--tg-font-size-body);
     color: var(--smui-text-secondary-on-background);
   }
 
@@ -72,10 +72,9 @@
     padding: 0 0.5rem;
     border-radius: 10px;
     color: #fff;
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
     white-space: nowrap;
-    font-size: 0.8rem;
+    font-size: var(--tg-font-size-small);
     background: var(--mdc-theme-primary, #ff3e00);
-    color: #fff;
   }
 </style>

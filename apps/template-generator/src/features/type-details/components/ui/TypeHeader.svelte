@@ -76,7 +76,7 @@
         preventToggleOnClick={true}
         id={`edit-mode-switch-${typeId}`}
         label="Edit Mode"
-        labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
+        labelStyle="font-weight: var(--tg-font-weight-heading); text-transform: uppercase; color: var(--mdc-theme-primary);"
         disabled={toggleEditModeSwitchDisabled}
       />
       {#if showSetAsDefault}

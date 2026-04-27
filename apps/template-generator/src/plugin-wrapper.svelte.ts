@@ -1,51 +1,98 @@
-import Plugin from './plugin.svelte'; import * as pkg from '../package.json';
-import { mount, unmount } from 'svelte';
-import { docState } from './shared/states/doc.state.svelte';
+import Plugin from './plugin.svelte';
+import * as pkg from '../package.json';
+import { mount } from 'svelte';
+
+interface PluginProps {
+  doc?: XMLDocument;
+  editCount: number;
+  host: NewOSCDPlugin;
+  plugins?: unknown[];
+  docId?: string;
+  pluginId?: string;
+  docName?: string;
+  nsdoc?: unknown;
+  docs?: Record<string, XMLDocument>;
+  locale?: string;
+  oscdApi?: unknown;
+}
 
 export default class NewOSCDPlugin extends HTMLElement {
+  private _props: PluginProps;
 
-  private app;
-  private _doc?: XMLDocument;
-  private _editCount?: number;
+  constructor() {
+    super();
+
+    this._props = $state({
+      editCount: -1,
+      host: this as NewOSCDPlugin,
+      locale: navigator.language ?? 'en-US',
+    });
+  }
 
   connectedCallback() {
+    if (this.shadowRoot) return;
+
     this.attachShadow({ mode: 'open' });
+    const shadowRoot = this.shadowRoot!;
+
     const linkElement = createStyleLinkElement();
-    this.shadowRoot?.appendChild(linkElement);
+    shadowRoot.appendChild(linkElement);
 
     const themeEl = document.createElement('style');
     themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
-    this.shadowRoot!.appendChild(themeEl);
+    shadowRoot.appendChild(themeEl);
 
     linkElement.addEventListener(
       'load',
-      () => {
-        this.app = mount(Plugin, { target: this.shadowRoot! });
-      },
+      () => mount(Plugin, { target: shadowRoot, props: this._props }),
       { once: true },
     );
 
     linkElement.addEventListener(
       'error',
-      () => {
-        this.app = mount(Plugin, { target: this.shadowRoot! });
-      },
+      () => mount(Plugin, { target: shadowRoot, props: this._props }),
       { once: true },
     );
   }
 
-  disconnectedCallback() {
-    if (this.app) unmount(this.app);
+  set doc(newDoc: XMLDocument) {
+    this._props.doc = newDoc;
   }
 
-  public set doc(newDoc: XMLDocument) {
-    docState.setDoc(newDoc);
-    this._doc = newDoc;
+  set editCount(newCount: number) {
+    this._props.editCount = newCount;
   }
 
-  public set editCount(newCount: number) {
-    docState.setEditCount(newCount);
-    this._editCount = newCount;
+  set plugins(newPlugins: unknown[]) {
+    this._props.plugins = newPlugins;
+  }
+
+  set docId(v: string) {
+    this._props.docId = v;
+  }
+
+  set pluginId(v: string) {
+    this._props.pluginId = v;
+  }
+
+  set docName(v: string) {
+    this._props.docName = v;
+  }
+
+  set nsdoc(v: unknown) {
+    this._props.nsdoc = v;
+  }
+
+  set docs(v: Record<string, XMLDocument>) {
+    this._props.docs = v;
+  }
+
+  set locale(v: string) {
+    this._props.locale = v;
+  }
+
+  set oscdApi(v: unknown) {
+    this._props.oscdApi = v;
   }
 }
 

@@ -11,7 +11,7 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import EditFormatDialog from '../id-format-editor/EditFormatDialog.svelte';
   import { getIdSettingsState } from './id-format-settings.state.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import CircularProgress from '@smui/circular-progress';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
@@ -161,7 +161,7 @@
 
   $effect(() => {
     if (state.error) {
-      toastService.error('ID Settings', state.error);
+      untrack(() => toastService.error('ID Settings', state.error!));
     }
   });
 

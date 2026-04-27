@@ -17,28 +17,44 @@
   import { DataTypeService } from './features/type-details/services/type.service';
   import { docState } from './shared/states/doc.state.svelte';
 
-  let host: HTMLElement;
+  interface Props {
+    doc?: XMLDocument;
+    editCount?: number;
+    plugins?: unknown[];
+    docId?: string;
+    pluginId?: string;
+    docName?: string;
+    nsdoc?: unknown;
+    docs?: Record<string, XMLDocument>;
+    locale?: string;
+    oscdApi?: unknown;
+    host?: HTMLElement;
+  }
+
+  let { doc, editCount = 0 }: Props = $props();
+
+  setIdSettingsState();
+
+  let containerEl: HTMLElement;
   let activeTab = $state('Data Types');
   let loaded = $state(false);
-  let sclService: DataTypeService | null = $state(null); 
+  let sclService: DataTypeService | null = $state(null);
 
   onMount(() => {
-    setIdSettingsState();
-    docState.registerDocChangeListener(docChangeHandler);
-    sclService = new DataTypeService(docState.doc, host);
+    sclService = new DataTypeService(doc ?? null, containerEl);
     loaded = true;
-
-    return () => {
-      docState.unregisterDocChangeListener(docChangeHandler);
-    };
   });
 
-  const docChangeHandler = (doc) => {
-    sclService.setDoc(doc);
-  };
+  $effect(() => {
+    docState.doc = doc ?? null;
+    docState.editCount = editCount ?? -1;
+    if (sclService && doc) {
+      sclService.setDoc(doc);
+    }
+  });
 </script>
 
-<div class="oscd-app" bind:this={host}>
+<div class="oscd-app" bind:this={containerEl}>
   {#if loaded}
     <div class="template-generator-container">
       <NavigationHeader bind:activeTab title="Template Generator" />

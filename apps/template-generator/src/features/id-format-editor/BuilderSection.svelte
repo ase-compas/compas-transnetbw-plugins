@@ -69,7 +69,7 @@
     border: 1px solid #cfd8dc;
     border-radius: 6px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
     cursor: default;
     display: flex;
     align-items: center;

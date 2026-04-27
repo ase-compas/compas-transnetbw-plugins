@@ -191,7 +191,7 @@
   }
 
   .required-indicator {
-    font-weight: 700;
+    font-weight: var(--tg-font-weight-bold);
     margin-left: 0.15rem;
   }
 
@@ -207,8 +207,8 @@
 
   .summary__title {
     margin: 0;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: var(--tg-font-size-small);
+    font-weight: var(--tg-font-weight-bold);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #555;
@@ -228,15 +228,15 @@
   }
 
   .summary__label {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--tg-font-size-small);
+    font-weight: var(--tg-font-weight-heading);
     color: #666;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
   .summary__value {
-    font-size: 0.92rem;
+    font-size: var(--tg-font-size-body);
     color: #222;
     line-height: 1.3;
     overflow-wrap: anywhere;
@@ -248,12 +248,12 @@
 
   .summary__value--warn {
     color: #b45309;
-    font-weight: 600;
+    font-weight: var(--tg-font-weight-heading);
   }
 
   .summary__note {
     margin: 0;
-    font-size: 0.82rem;
+    font-size: var(--tg-font-size-body);
     color: #555;
     line-height: 1.35;
   }
@@ -262,8 +262,8 @@
     border: none;
     background: transparent;
     color: var(--primary);
-    font-size: 0.82rem;
-    font-weight: 600;
+    font-size: var(--tg-font-size-body);
+    font-weight: var(--tg-font-weight-heading);
     text-align: left;
     padding: 0;
     cursor: pointer;
@@ -279,7 +279,7 @@
     max-height: 140px;
     overflow: auto;
     color: #374151;
-    font-size: 0.82rem;
+    font-size: var(--tg-font-size-body);
     line-height: 1.35;
   }
 </style>

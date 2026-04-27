@@ -38,7 +38,6 @@ class IdFormatSettingsState {
     error: string | null = $state(null);
 
     settings: TypeIdFormatSettings = $state(createDefaultSettings());
-    draftSettings: TypeIdFormatSettings = $state(createDefaultSettings());
 
     private hasLoadedSettings = false;
     private settingsLoadedAt = 0;
@@ -46,6 +45,7 @@ class IdFormatSettingsState {
 
     public async load(forceReload: boolean = false) {
         this.loading = true;
+        this.error = null;
         try {
             await this.refreshSettingsIfStale(forceReload);
         } catch (error) {

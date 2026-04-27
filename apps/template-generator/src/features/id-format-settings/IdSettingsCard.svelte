@@ -161,13 +161,13 @@
 
   .col-content.header h5 {
     margin: 0;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: var(--tg-font-weight-heading);
+    font-size: var(--tg-font-size-subheading);
   }
 
   .description {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: var(--tg-font-size-body);
     color: var(--mdc-theme-on-surface-variant, #666);
   }
 
@@ -193,14 +193,14 @@
     background: rgba(0, 0, 0, 0.08);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--tg-font-size-small);
+    font-weight: var(--tg-font-weight-heading);
     color: rgba(0, 0, 0, 0.7);
   }
 
   .mono {
     font-family: 'Roboto Mono', monospace;
-    font-size: 0.85rem;
+    font-size: var(--tg-font-size-body);
     color: rgba(0, 0, 0, 0.85);
   }
 </style>
