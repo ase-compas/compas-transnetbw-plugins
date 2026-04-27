@@ -7,11 +7,11 @@
     title?: string;
   }
 
-  const tabs = ['Data Types', 'Default Types', 'ID Builder'];
+  const tabs = ['Data Types', 'Default Types', 'Settings'];
   const iconByTab: Record<string, string> = {
     'Data Types': 'table_view',
     'Default Types': 'fact_check',
-    'ID Builder': 'fingerprint',
+    'Settings': 'settings',
   };
 
   let {

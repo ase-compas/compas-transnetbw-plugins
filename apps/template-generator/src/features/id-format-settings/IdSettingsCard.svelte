@@ -1,6 +1,6 @@
 <script lang="ts">
   import Switch from '@smui/switch';
-  import Button from '@smui/button';
+  import Button, { Icon } from '@smui/button';
 
   interface Props {
     enabled: boolean;
@@ -40,7 +40,7 @@
         <p class="description">{description}</p>
       </div>
       {#if enabled}<Button variant="outlined" onclick={onEditFormat}
-          >Edit Format</Button
+          ><Icon class="material-icons">edit</Icon>Edit Format</Button
         >{/if}
     </div>
   </div>
@@ -90,7 +90,7 @@
         </div>
         {#if referenceFormatEnabled}<Button
             variant="outlined"
-            onclick={onEditReferenceFormat}>Edit Format</Button
+            onclick={onEditReferenceFormat}><Icon class="material-icons">edit</Icon>Edit Format</Button
           >{/if}
       </div>
     </div>

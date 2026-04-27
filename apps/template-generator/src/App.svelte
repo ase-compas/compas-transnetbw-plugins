@@ -47,7 +47,7 @@
         <DataTypesListView service={sclService} docState={docState}/>
       {:else if activeTab === 'Default Types'}
         <DefaultTypeView />
-      {:else if activeTab === 'ID Builder'}
+      {:else if activeTab === 'Settings'}
         <IdFormatSettings />
       {/if}
     </div>
