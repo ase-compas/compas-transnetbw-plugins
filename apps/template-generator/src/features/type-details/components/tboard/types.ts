@@ -1,3 +1,5 @@
+import type { TypeKind } from "apps/template-generator/src/shared/model";
+
 export type TItem = {
   id: string;
   title: string;
@@ -20,7 +22,7 @@ export type TItem = {
   defaultTypeVersion?: string;
   defaultTypeRootId?: string;
   defaultTypeInstance?: string;
-  defaultTypeKind?: any;
+  defaultTypeKind?: TypeKind;
 
   acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
 
