@@ -63,7 +63,7 @@
     {/snippet}
   </HeaderElement>
 
-  <HeaderElement label={TypeKind.toTypeKindLabel(type)} textOnly>
+  <HeaderElement label="Instance" textOnly>
     {#snippet children()}
       {#if instanceType}
         <span class="value">{instanceType}</span>
