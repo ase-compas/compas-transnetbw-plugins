@@ -2,11 +2,11 @@
   import { onMount } from 'svelte';
   import Radio from '@smui/radio';
   import FormField from '@smui/form-field';
-  import CircularProgress from '@smui/circular-progress';
   import { OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
   import InstanceAutocomplete from './InstanceAutocomplete.svelte';
   import type { InstanceDetails, TypeKind } from '../../../../shared/model';
   import TypeIdInput from './TypeIdInput.svelte';
+  import DefaultTypePreview from './DefaultTypePreview.svelte';
   import type {
     ApplySingleDefaultTypePreview,
     DataTypeService,
@@ -178,66 +178,38 @@
     }
   }
 
+  function handleInstanceChange(details: InstanceDetails | null | undefined) {
+    selectedInstance = details ?? undefined;
+
+    if(!!selectedInstance && showCreateFromDefaultOption && mode === 'load-default') {
+      fetchDefaultPreviewData(details.instance);
+    } else {
+      loadDefaultPreview = null;
+      loadDefaultError = '';
+      loadingDefaultPreview = false;
+    }
+  }
+
+  async function fetchDefaultPreviewData(instance: string) {
+    loadDefaultError = '';
+    loadDefaultPreview = null;
+    loadingDefaultPreview = true;
+
+    try {
+      const preview = await service.getApplySingleDefaultTypePreview(typeKind, instance);
+      loadDefaultPreview = preview;
+    } catch (error) {
+      loadDefaultError = error instanceof Error ? error.message : String(error);
+    } finally {
+      loadingDefaultPreview = false;
+    }
+  }
+
   $effect(() => {
     if (selectedInstance && (!showCreateFromDefaultOption || mode === 'create')) {
       autoGenerateId(selectedInstance.instance);
     }
   });
-
-  $effect(() => {
-    if (!showCreateFromDefaultOption || mode !== 'load-default') {
-      loadDefaultPreview = null;
-      loadDefaultError = '';
-      loadingDefaultPreview = false;
-      return;
-    }
-
-    const selected = selectedInstance?.instance;
-    if (!selected) {
-      loadDefaultPreview = null;
-      loadDefaultError = '';
-      loadingDefaultPreview = false;
-      return;
-    }
-
-    const currentRequestId = ++loadDefaultRequestId;
-    loadDefaultError = '';
-    loadDefaultPreview = null;
-    loadingDefaultPreview = true;
-
-    service
-      .getApplySingleDefaultTypePreview(typeKind, selected)
-      .then((preview) => {
-        if (currentRequestId !== loadDefaultRequestId) {
-          return;
-        }
-        loadDefaultPreview = preview;
-      })
-      .catch((error) => {
-        if (currentRequestId !== loadDefaultRequestId) {
-          return;
-        }
-        loadDefaultError = error instanceof Error ? error.message : String(error);
-      })
-      .finally(() => {
-        if (currentRequestId !== loadDefaultRequestId) {
-          return;
-        }
-        loadingDefaultPreview = false;
-      });
-  });
-
-  function getLatestVersion(preview: ApplySingleDefaultTypePreview): string {
-    let version = '-';
-
-    if (preview.plan.scenario === 'ADD_DB_DEFAULT' || preview.plan.scenario === 'UPGRADE_TO_DB_DEFAULT') {
-      version = preview.plan.dbBefore?.version ?? '-';
-    } else if (preview.plan.scenario === 'USE_LOCAL_DEFAULT') {
-      version = preview.plan.localBefore?.version ?? '-';
-    }
-
-    return version;
-  }
 </script>
 
 {#if !loading}
@@ -247,6 +219,7 @@
       {typeKind}
       initialInstanceType={instanceType}
       bind:value={selectedInstance}
+      onChange={(value) => handleInstanceChange(value)}
       required
       disabled={!canChooseInstaceType && !!instanceType}
       {service}
@@ -289,29 +262,12 @@
         {service}
       />
     {:else}
-      {#if loadingDefaultPreview}
-        <div class="loading-default-container">
-          <CircularProgress style="height: 18px; width: 18px;" indeterminate />
-          <span>Loading latest default...</span>
-        </div>
-      {/if}
-
-      {#if loadDefaultError}
-        <OscdWarningBox message={loadDefaultError} />
-      {/if}
-
-      {#if loadDefaultPreview && !loadDefaultError}
-        <p class="latest-version-line">
-          <span class="latest-version-label">Latest Version:</span>
-          <span class="latest-version-value">{getLatestVersion(loadDefaultPreview)}</span>
-        </p>
-
-        {#if loadDefaultPreview.plan.scenario === 'REMOVE_LOCAL_DEFAULT'}
-          <OscdWarningBox message="No default exists for this type." />
-        {:else if loadDefaultPreview.plan.scenario === 'USE_LOCAL_DEFAULT' && !allowUseExistingDefault}
-          <OscdWarningBox message="Latest default is already loaded. A default type can only be added once." />
-        {/if}
-      {/if}
+      <DefaultTypePreview
+        preview={loadDefaultPreview}
+        loading={loadingDefaultPreview}
+        error={loadDefaultError}
+        {allowUseExistingDefault}
+      />
     {/if}
 
     <button type="submit" style="display: none" aria-label="submit button"
@@ -331,30 +287,5 @@
     gap: 1rem;
     align-items: center;
     margin-top: 0.5rem;
-  }
-
-  .loading-default-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #475569;
-    font-size: 0.9rem;
-  }
-
-  .latest-version-line {
-    margin: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-  }
-
-  .latest-version-label {
-    color: #475569;
-    font-weight: 500;
-  }
-
-  .latest-version-value {
-    color: #1e293b;
-    font-weight: 600;
   }
 </style>
