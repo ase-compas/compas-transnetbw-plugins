@@ -102,6 +102,10 @@ export function buildColumns(typeKind: TypeKind, isEditMode: boolean, config: De
         canSelectItems: true,
         showSelectionIndicator: isEditMode,
         itemsDraggable: false,
+        hasAction: config?.defaultTypeFeatureEnabled ?? false,
+        actionDisabled: !isEditMode,
+        actionLabel: 'Apply All Default Types',
+        actionIcon: 'wand-stars',
     };
 
     const typeColumns: TColumnConfig[] = layout.columns.map((column) => ({

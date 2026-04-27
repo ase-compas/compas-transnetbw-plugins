@@ -2,30 +2,50 @@ import type { EditV2, RemoveV2, SetAttributesV2 } from "@oscd-transnet-plugins/o
 import { createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
 import { TypeKind, type DataTypeDetails, type DataTypeFilter, type DataTypeMember, type InstanceDetails, type SimpleDataType } from "../../../shared/model";
 import { NsdSchemaRegistry, type NsdTypeDefinition } from "./nsd-schema-registry";
-import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, elementToSimpleDataType, createElementInDefaultNS } from "../../../shared/utils/scl.utils";
+import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, elementToSimpleDataType, createElementInDefaultNS, DATA_TYPE_KIND_ORDER, DATA_TYPE_TEMPLATES_TAG, findDataTypeTemplatesElement, findDataTypeInsertReferenceElement, insertTypeElements } from "../../../shared/utils/scl.utils";
 import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../../../shared/constants";
 import { INSTANCE_DESCRIPTIONS } from "../../../assets/instance-descriptions";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
+import { DefaultTypeManagerService, type ResolveDefaultPlan } from "./default-type-manager-service";
 
-const DATA_TYPE_KIND_ORDER: TypeKind[] = [
-    TypeKind.LNodeType,
-    TypeKind.DOType,
-    TypeKind.DAType,
-    TypeKind.EnumType,
-];
+export interface ApplyDefaultTypesPreviewEntry {
+    refTypeKey: string;
+    refTypeKind: TypeKind;
+    objectType: string;
+    memberNames: string[];
+    plan: ResolveDefaultPlan;
+}
 
-const DATA_TYPE_TEMPLATES_TAG = 'DataTypeTemplates';
+export interface ApplyDefaultTypesPreview {
+    dataTypeId: string;
+    entries: ApplyDefaultTypesPreviewEntry[];
+}
+
+export interface ApplySingleDefaultTypePreview {
+    refTypeKey: string;
+    refTypeKind: TypeKind;
+    objectType: string;
+    plan: ResolveDefaultPlan;
+}
+
+
 
 export class DataTypeService {
 
     private readonly nsdSchemaRegistry: NsdSchemaRegistry;
+    private readonly defaultTypeManagerService: DefaultTypeManagerService;
 
-    constructor(private doc: XMLDocument, private readonly hostElement: HTMLElement) {
+    constructor(
+        private doc: XMLDocument,
+        private readonly hostElement: HTMLElement,
+    ) {
         this.nsdSchemaRegistry = new NsdSchemaRegistry();
+        this.defaultTypeManagerService = new DefaultTypeManagerService(doc);
     }
 
     setDoc(doc: XMLDocument): void {
         this.doc = doc;
+        this.defaultTypeManagerService.setDocument(doc);
     }
 
     // Queries
@@ -46,12 +66,16 @@ export class DataTypeService {
             throw new Error(`DataType element is missing required attributes: ${element.outerHTML}`);
         }
 
+        const defaultTypeInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(id) || undefined;
+
         if (!instanceType) {
             return {
                 id,
                 typeKind,
                 instanceType: '',
                 members: this.mapMembersFromElementWithoutNsd(element),
+                defaultTypeInfo: defaultTypeInfo,
+                defaultTypeVersionStatus: undefined,
             };
         }
 
@@ -98,7 +122,62 @@ export class DataTypeService {
             id,
             typeKind,
             instanceType,
-            members
+            members,
+            defaultTypeInfo: defaultTypeInfo,
+            defaultTypeVersionStatus: undefined,
+        };
+    }
+
+    async getDefaultTypeVersionStatusByTypeId(typeId: string) {
+        return this.defaultTypeManagerService.getVersionStatusByTypeId(typeId);
+    }
+
+    async updateDefaultTypeToLatestByTypeId(typeId: string): Promise<string | null> {
+        const { edits, newRootId } = await this.defaultTypeManagerService.buildUpdateToLatestEditsByTypeId(typeId);
+        if (edits.length === 0) {
+            return null;
+        }
+
+        createAndDispatchEditEvent(this.hostElement, edits, {
+            title: `Update default type to latest for ${typeId}`,
+            createHistoryEntry: true,
+        });
+
+        return newRootId;
+    }
+
+    detachDefault(typeId: string): void {
+        const edits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(typeId);
+        if (edits.length === 0) {
+            throw new Error(`No local default metadata found for type ${typeId}`);
+        }
+
+        createAndDispatchEditEvent(this.hostElement, edits, {
+            title: `Detach default type ${typeId}`,
+            createHistoryEntry: true,
+        });
+    }
+
+    /**
+     * Gets a delete plan for a type, including info about cascade deletions
+     * if the type is a root of a local default group.
+     * @param typeId The ID of the type to analyze for deletion
+     * @returns Object with hasDefaultMetadata if its part of a default type,
+     *          and trackedSubTypeIds (array of sub-type IDs that will also be deleted)
+     */
+    getDeletePlan(typeId: string): { hasDefaultMetadata: boolean; trackedSubTypeIds: string[] } {
+        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(typeId);
+        
+        const hasDefaultMetadata = !!defaultInfo;
+        
+        // If it is a root, get the sub-type IDs that will be deleted
+        const trackedSubTypeIds = hasDefaultMetadata
+            ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(defaultInfo.rootId)
+            : [];
+
+        return {
+            hasDefaultMetadata: hasDefaultMetadata,
+            trackedSubTypeIds,
         };
     }
 
@@ -149,6 +228,7 @@ export class DataTypeService {
 
     /**
      * Gets all data types that can be assigned to a specific member of a data type.
+     * Filters out non-root default types and adds default type version information.
      * @param id The ID of the data type to check.
      * @param focusMemberName Optional name of the member to focus on.
      * @returns An array of SimpleDataType objects that can be assigned to the specified member.
@@ -179,11 +259,53 @@ export class DataTypeService {
 
         const assignableTypes: SimpleDataType[] = [];
         for (const dt of allTypes) {
-            if (requiredReferences.some(ref => isTypeAssignable(ref.typeKind, ref.instanceType, dt))) {
+            if (!requiredReferences.some(ref => isTypeAssignable(ref.typeKind, ref.instanceType, dt))) {
+                continue;
+            }
+
+            if (this.enrichTypeWithDefaultInfo(dt)) {
                 assignableTypes.push(dt);
             }
         }
         return assignableTypes;
+    }
+
+    /**
+     * Enriches a SimpleDataType with default type information.
+     * If the type is a default type root ID, adds isDefaultType and defaultTypeVersion.
+     * Filters out non-root default type IDs.
+     * @param dt The SimpleDataType to enrich
+     * @returns true if the type should be included, false if it should be filtered out (non-root default)
+     */
+    private enrichTypeWithDefaultInfo(dt: SimpleDataType): boolean {
+        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
+        if (defaultInfo) {
+            // Only include if it's the root ID of the default type
+            if (dt.id !== defaultInfo.rootId) {
+                return false; // Filter out non-root default type IDs
+            }
+            // Add version info for the root ID
+            dt.isDefaultType = true;
+            dt.defaultTypeVersion = defaultInfo.version;
+            dt.defaultTypeRootId = defaultInfo.rootId;
+            dt.defaultTypeInstance = defaultInfo.instance;
+        }
+        return true;
+    }
+
+    /**
+     * Enriches a SimpleDataType with default type information without filtering.
+     * Adds metadata for both root and non-root default type IDs.
+     * @param dt The SimpleDataType to enrich
+     */
+    private enrichTypeWithDefaultInfoNoFilter(dt: SimpleDataType): void {
+        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
+        if (defaultInfo) {
+            dt.isDefaultType = true;
+            dt.defaultTypeVersion = defaultInfo.version;
+            dt.defaultTypeRootId = defaultInfo.rootId;
+            dt.defaultTypeInstance = defaultInfo.instance;
+        }
     }
 
     /**
@@ -234,16 +356,22 @@ export class DataTypeService {
 
         traverse(startElement, true);
 
-        // Remove duplicates by id
+        // Remove duplicates by id and enrich with default info
         const unique = new Map<string, SimpleDataType>();
         for (const dt of result) {
-            if (!unique.has(dt.id)) unique.set(dt.id, dt);
+            if (!unique.has(dt.id)) {
+                // Enrich with default type info but don't filter
+                this.enrichTypeWithDefaultInfoNoFilter(dt);
+                unique.set(dt.id, dt);
+            }
         }
         return Array.from(unique.values());
     }
 
     /**
      * Deletes a data type and updates all references to it.
+     * If the type is a root of a local default group, also deletes the metadata
+     * and all tracked sub-types.
      * @param id The ID of the data type to delete.
      */
     delete(id: string): void {
@@ -253,9 +381,37 @@ export class DataTypeService {
         }
 
         const editEvents: EditV2[] = []
-        const refEls = this.doc.querySelectorAll(`[type="${id}"]`);
+        
+        // Get delete plan to check for cascading deletions
+        const plan = this.getDeletePlan(id);
+        
+        // If this is a root of a default group, also add edits to delete sub-types and metadata
+        if (plan.hasDefaultMetadata) {
+            // Delete all tracked sub-types and their references
+            for (const subTypeId of plan.trackedSubTypeIds) {
+                const subTypeElement = this.doc.querySelector(`DataTypeTemplates > [id="${subTypeId}"]`);
+                if (subTypeElement) {
+                    // Clear references to sub-type
+                    const subTypeRefEls = this.doc.querySelectorAll(`[type="${subTypeId}"]`);
+                    subTypeRefEls.forEach(refEl => {
+                        editEvents.push({
+                            element: refEl,
+                            attributes: { type: '' },
+                            attributesNS: {},
+                        } as SetAttributesV2);
+                    });
+                    // Remove sub-type element
+                    editEvents.push({ node: subTypeElement } as RemoveV2);
+                }
+            }
 
-        // set their type attribute to empty
+            // Delete metadata for the default group
+            const metadataEdits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(id);
+            editEvents.push(...metadataEdits);
+        }
+        
+        // Clear references to the root type
+        const refEls = this.doc.querySelectorAll(`[type="${id}"]`);
         refEls.forEach(refEl => {
             const edit: SetAttributesV2 = {
                 element: refEl,
@@ -265,8 +421,7 @@ export class DataTypeService {
             editEvents.push(edit);
         });
 
-
-        // remove the element itself
+        // Remove the root type element itself
         const removeEvent: RemoveV2 = { node: element };
         editEvents.push(removeEvent);
 
@@ -310,6 +465,8 @@ export class DataTypeService {
             };
             editEvents.push(edit);
         });
+
+        editEvents.push(...this.defaultTypeManagerService.buildRenameTypeIdEdits(id, newId));
 
         createAndDispatchEditEvent(this.hostElement, editEvents, {
             title: `Rename DataType ${id} to ${newId}`,
@@ -371,7 +528,7 @@ export class DataTypeService {
         const newTypeElement = this.createDataTypeElement(typeKind, instanceType, id);
         const title = `Create DataType ${id}`;
 
-        const dataTypeTemplates = this.findDataTypeTemplatesElement();
+        const dataTypeTemplates = findDataTypeTemplatesElement(this.doc);
         if (!dataTypeTemplates) {
             this.createDataTypeTemplatesWithFirstType(newTypeElement, title);
             return;
@@ -380,7 +537,7 @@ export class DataTypeService {
         const insertTypeEdit: EditV2 = {
             parent: dataTypeTemplates,
             node: newTypeElement,
-            reference: this.findDataTypeInsertReferenceElement(typeKind),
+            reference: findDataTypeInsertReferenceElement(this.doc, typeKind),
         };
 
         createAndDispatchEditEvent(this.hostElement, [insertTypeEdit], {
@@ -439,25 +596,7 @@ export class DataTypeService {
             id,
         );
 
-        const existingMemberElement = element.querySelector(`[name="${memberName}"]`);
-
-        const edits: EditV2[] = [];
-        if (existingMemberElement) {
-            edits.push({
-                element: existingMemberElement,
-                attributes: { type: referenceId },
-                attributesNS: {},
-            } as SetAttributesV2);
-        } else {
-            const newMemberElement = this.createMemberElement(memberName, memberDefinition, referenceId);
-
-            edits.push({
-                parent: element,
-                node: newMemberElement,
-                reference: null,
-            });
-        }
-
+        const edits = this.buildSetMemberTypeEdits(element, memberName, memberDefinition, referenceId);
         createAndDispatchEditEvent(this.hostElement, edits, {
             title: `Set reference of member ${memberName} in DataType ${id} to ${referenceId}`,
             createHistoryEntry: true,
@@ -578,7 +717,256 @@ export class DataTypeService {
         return availableInstanceTpes.map(instanceType => INSTANCE_DESCRIPTIONS[typeKind][instanceType] ?? { instance: instanceType });
     }
 
+    /**
+     * This applies the default types to the given member names of the given data type.
+     * Collect members with the same (typeKind, instanceType) and applies the default type for this combination.
+     * Look up if an existing default type exists in the document (specified in private field)
+     * fetch the current default type from the service
+     * validate if the local default type version is valid
+     * if latest use existing, if not use the new one
+     * set reference of the member to the default type
+     * @param id The ID of the DataType to apply default types to.
+     * @param memberNames The names of the members to apply default types to.
+     */
+    async applyDefaultTypes(id: string, memberNames: string[]): Promise<void> {
+        const preview = await this.getApplyDefaultTypesPreview(id, memberNames);
+        this.applyDefaultTypesFromPreview(preview);
+    }
 
+    /**
+     * Builds a default apply preview for a single target type (kind + instance)
+     * without binding it to member names.
+     */
+    async getApplySingleDefaultTypePreview(refTypeKind: TypeKind, objectType: string): Promise<ApplySingleDefaultTypePreview> {
+        const refTypeKey = `${refTypeKind}:${objectType}`;
+        const plan = await this.defaultTypeManagerService.resolve({ kind: refTypeKind, instance: objectType });
+
+        return {
+            refTypeKey,
+            refTypeKind,
+            objectType,
+            plan,
+        };
+    }
+
+    /**
+     * Applies a single-target default preview and returns the effective root ID.
+     */
+    applySingleDefaultTypeFromPreview(preview: ApplySingleDefaultTypePreview): string | null {
+        const { edits, effectiveRootIds } = this.defaultTypeManagerService.applyPlans([preview.plan]);
+        const effectiveRootId = effectiveRootIds.get(preview.refTypeKey) ?? null;
+
+        if (edits.length > 0) {
+            createAndDispatchEditEvent(this.hostElement, edits, {
+                title: `Apply default type for ${preview.refTypeKind}/${preview.objectType}`,
+                createHistoryEntry: true,
+            });
+        }
+
+        return effectiveRootId;
+    }
+
+    /**
+     * Resolves and applies a default for a single target type (kind + instance).
+     */
+    async applySingleDefaultType(refTypeKind: TypeKind, objectType: string): Promise<string | null> {
+        const preview = await this.getApplySingleDefaultTypePreview(refTypeKind, objectType);
+        return this.applySingleDefaultTypeFromPreview(preview);
+    }
+
+    /**
+     * Step 1 of default application workflow.
+     * Builds preview entries that can be shown to the user for confirmation.
+     */
+    async getApplyDefaultTypesPreview(id: string, memberNames: string[]): Promise<ApplyDefaultTypesPreview> {
+        const memberByRefType = this.getMembersByRefType(id, memberNames);
+        if (memberByRefType.size === 0) {
+            return { dataTypeId: id, entries: [] };
+        }
+
+        const plansByRefType = await this.resolveDefaultTypePlans(memberByRefType);
+        const entries: ApplyDefaultTypesPreviewEntry[] = Array.from(memberByRefType.entries())
+            .map(([refTypeKey, memberInfo]) => {
+                const plan = plansByRefType.get(refTypeKey);
+                if (!plan) {
+                    return null;
+                }
+
+                return {
+                    refTypeKey,
+                    refTypeKind: memberInfo.refTypeKind,
+                    objectType: memberInfo.objectType,
+                    memberNames: [...memberInfo.memberNames],
+                    plan,
+                };
+            })
+            .filter((entry): entry is ApplyDefaultTypesPreviewEntry => !!entry);
+
+        return { dataTypeId: id, entries };
+    }
+
+    /**
+     * Step 2 of default application workflow.
+     * Applies a previously built preview.
+     */
+    applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
+        if (preview.entries.length === 0) {
+            console.warn(`No members with reference types found for DataType ${preview.dataTypeId}`);
+            return;
+        }
+
+        const members = new Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>();
+        const plans = new Map<string, ResolveDefaultPlan>();
+
+        preview.entries.forEach(entry => {
+            members.set(entry.refTypeKey, {
+                refTypeKind: entry.refTypeKind,
+                objectType: entry.objectType,
+                memberNames: [...entry.memberNames],
+            });
+            plans.set(entry.refTypeKey, entry.plan);
+        });
+
+        const edits = this.buildApplyDefaultEditsFromPlans(preview.dataTypeId, members, plans);
+        if (edits.length === 0) {
+            console.warn(`No edits to apply default types for DataType ${preview.dataTypeId}`);
+            return;
+        }
+
+        createAndDispatchEditEvent(this.hostElement, edits, {
+            title: `Apply default types to members of DataType ${preview.dataTypeId}`,
+            createHistoryEntry: true,
+        });
+    }
+
+    /**
+     * Resolves default type plans for each reference type key.
+     * Returns a map keyed by reference type key (e.g., "DOType:Measurement").
+     */
+    private async resolveDefaultTypePlans(
+        memberByRefType: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
+    ): Promise<Map<string, ResolveDefaultPlan>> {
+        const plans = new Map<string, ResolveDefaultPlan>();
+
+        await Promise.all(
+            Array.from(memberByRefType.entries()).map(async ([refTypeKey, { refTypeKind, objectType }]) => {
+                const plan = await this.defaultTypeManagerService.resolve({ kind: refTypeKind, instance: objectType });
+                plans.set(refTypeKey, plan);
+            })
+        );
+
+        return plans;
+    }
+
+    private buildApplyDefaultEditsFromPlans(
+        id: string,
+        members: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
+        plans: Map<string, ResolveDefaultPlan>,
+    ): EditV2[] {
+        const allEdits: EditV2[] = [];
+
+        // 1: Apply all plans in batch (type elements inserted once, respecting order)
+        const plansArray = Array.from(plans.values());
+        const { edits: planEdits, effectiveRootIds } = this.defaultTypeManagerService.applyPlans(plansArray);
+        allEdits.push(...planEdits);
+
+        // 2: Build and add member reference edits
+        const parentElement = findDataTypeElement(this.doc, id);
+        const { typeKind, instanceType } = getDataTypeBaseInfo(parentElement);
+        const nsdDefinitions = instanceType ? this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType) : null;
+
+        for (const [refTypeKey, { memberNames }] of members) {
+            const effectiveRootId = effectiveRootIds.get(refTypeKey);
+            if (!effectiveRootId) {
+                console.warn(`No effective root ID for ${refTypeKey}, skipping members: ${memberNames.join(', ')}`);
+                continue;
+            }
+
+            for (const memberName of memberNames) {
+                const memberDefinition = nsdDefinitions?.[memberName];
+                if (!memberDefinition) {
+                    console.warn(`No NSD definition found for member ${memberName} in DataType ${id}, skipping`);
+                    continue;
+                }
+                allEdits.push(...this.buildSetMemberTypeEdits(parentElement, memberName, memberDefinition, effectiveRootId));
+            }
+        }
+
+        return allEdits;
+    }
+
+    private buildSetMemberTypeEdits(
+        parentElement: Element,
+        memberName: string,
+        memberDefinition: NsdTypeDefinition,
+        referenceId: string,
+    ): EditV2[] {
+        const existingMemberElement = parentElement.querySelector(`[name="${memberName}"]`);
+        if (existingMemberElement) {
+            return [{
+                element: existingMemberElement,
+                attributes: { type: referenceId },
+                attributesNS: {},
+            } as SetAttributesV2];
+        }
+        const newMemberElement = this.createMemberElement(memberName, memberDefinition, referenceId);
+        return [{
+            parent: parentElement,
+            node: newMemberElement,
+            reference: null,
+        }];
+    }
+
+    /**
+     * For the given member names, groups them by their required reference type key (refTypeKind, objectType).
+     * Members that don't require a reference or are missing type info are skipped.
+     * The map key is "${refTypeKind}:${objectType}" for reliable equality lookups.
+     */
+    private getMembersByRefType(
+        id: string,
+        memberNames: string[],
+    ): Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }> {
+        const map = new Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>();
+
+        const element = findDataTypeElement(this.doc, id);
+        const { typeKind, instanceType } = getDataTypeBaseInfo(element);
+        if (!instanceType) {
+            return map;
+        }
+
+        const nsdDefinitions = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
+        if (!nsdDefinitions) {
+            console.warn(`No NSD definitions found for type kind ${typeKind} and instance type ${instanceType}`);
+            return map;
+        }
+
+        for (const memberName of memberNames) {
+            const memberDefinition: NsdTypeDefinition = nsdDefinitions[memberName];
+            if (!memberDefinition?.requiresReference) {
+                console.debug(`Skipping member ${memberName} of DataType ${id} because it does not require a reference`);
+                continue;
+            }
+
+            if (!memberDefinition.refTypeKind || !memberDefinition.objectType) {
+                console.warn(`Member definition for ${memberName} of DataType ${id} is missing required reference type information`);
+                continue;
+            }
+
+            const key = `${memberDefinition.refTypeKind}:${memberDefinition.objectType}`;
+            const existing = map.get(key);
+            if (existing) {
+                existing.memberNames.push(memberName);
+            } else {
+                map.set(key, {
+                    refTypeKind: memberDefinition.refTypeKind,
+                    objectType: memberDefinition.objectType,
+                    memberNames: [memberName],
+                });
+            }
+        }
+
+        return map;
+    }
 
     // ==================
     // Data retrieval and mapping for UI
@@ -882,38 +1270,6 @@ export class DataTypeService {
         return candidate;
     }
 
-    /**
-     * Finds the insertion reference element for a given data type kind.
-     *
-     * The method keeps `DataTypeTemplates` ordered by kind using this fixed order:
-     * `LNodeType -> DOType -> DAType -> EnumType`.
-     * It returns the first element of the next existing kind, so callers can insert
-     * the new element before it.
-     *
-     * Example: inserting a `DOType` returns the first `DAType` (or `EnumType`
-     * if no `DAType` exists). If no later kind exists, it returns `null`
-     * (append at the end).
-     *
-     * @param typeKind The kind of data type that will be inserted.
-    * @returns The reference element for `InsertV2.reference`, or `null` to append.
-     */
-    private findDataTypeInsertReferenceElement(typeKind: TypeKind): Element | null {
-        const currentKindIndex = DATA_TYPE_KIND_ORDER.indexOf(typeKind);
-        if (currentKindIndex < 0) {
-            return null;
-        }
-
-        for (let index = currentKindIndex + 1; index < DATA_TYPE_KIND_ORDER.length; index++) {
-            const nextKind = DATA_TYPE_KIND_ORDER[index];
-            const firstElementOfNextKind = this.doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > ${nextKind}`);
-            if (firstElementOfNextKind) {
-                return firstElementOfNextKind;
-            }
-        }
-
-        return null;
-    }
-
 
     /**
      * Creates a new data type element.
@@ -943,10 +1299,6 @@ export class DataTypeService {
         }
 
         return typeElement;
-    }
-
-    private findDataTypeTemplatesElement(): Element | null {
-        return this.doc.querySelector(DATA_TYPE_TEMPLATES_TAG);
     }
 }
 

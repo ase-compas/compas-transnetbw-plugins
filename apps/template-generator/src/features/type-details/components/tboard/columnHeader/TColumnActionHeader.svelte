@@ -7,9 +7,11 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionIcon?: string | null;
     hasAction?: boolean;
     secondaryActionLabel?: string | null;
 
+    onAction?: () => void;
     onSecondaryAction: () => void;
   }
 
@@ -17,9 +19,11 @@
     title,
     subtitle = null,
     actionLabel = null,
+    actionIcon = null,
     hasAction = false,
     secondaryActionLabel = null,
 
+    onAction = () => {},
     onSecondaryAction = () => {},
   }: Props = $props();
 
@@ -29,7 +33,9 @@
   {title}
   {subtitle}
   {actionLabel}
+  {actionIcon}
   {hasAction}
+  {onAction}
 >
   {#snippet botAction()}
     <OscdButton variant="raised" callback={onSecondaryAction} >

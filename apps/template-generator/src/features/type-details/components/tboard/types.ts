@@ -1,3 +1,5 @@
+import type { TypeKind } from "apps/template-generator/src/shared/model";
+
 export type TItem = {
   id: string;
   title: string;
@@ -15,7 +17,12 @@ export type TItem = {
   canSelect?: boolean;
   canApplyDefaults?: boolean;
   canUnlink?: boolean
-  canSetDefault?: boolean;
+  
+  isDefaultType?: boolean;
+  defaultTypeVersion?: string;
+  defaultTypeRootId?: string;
+  defaultTypeInstance?: string;
+  defaultTypeKind?: TypeKind;
 
   acceptDrop?: (target: TBoardItemContext) => boolean; // Function to determine if the item can accept a drop
 
@@ -27,6 +34,7 @@ export type TColumnConfig = {
   title: string;
   subtitle?: string;
   actionLabel?: string,
+  actionIcon?: string,
   actionDisabled?: boolean;
   searchPlaceholder?: string;
 

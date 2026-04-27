@@ -24,7 +24,6 @@
     onItemSelectChange?: (event: EventDetails) => void;
     onItemReferenceClick?: (event: { columnId: string, itemId: string; item: TItem; reference: string }) => void;
     onItemAddReferenceClick?: (event: { columnId: string, itemId: string; item: TItem }) => void;
-    onItemSetDefault?: (event: EventDetails) => void;
     onItemUnlink?: (event: EventDetails) => void;
     onItemEdit?: (event: EventDetails) => void;
     onItemClick?: (event: EventDetails) => void;
@@ -43,7 +42,6 @@
     onItemSelectChange = () => {},
     onItemReferenceClick = () => {},
     onItemAddReferenceClick = () => {},
-    onItemSetDefault = () => {},
     onItemUnlink = () => {},
     onItemEdit = () => {},
     onItemClick = () => {},
@@ -131,6 +129,7 @@
       highlighted={column.highlighted}
       dragAndDropBorder={column.dragAndDropBorder}
       actionLabel={column.actionLabel}
+      actionIcon={column.actionIcon}
       hasSearch={column.hasSearch}
       searchPlaceHolder={column.searchPlaceholder}
       hasAction={column.hasAction}
@@ -141,8 +140,8 @@
       items={data[column.id]}
       dragAndDropType={boardId}
       dropCandidate={dropCandidate}
-      onColumnActionClick={_ => onColumnActionClick({columnId: column.id})}
-      onApplyDefaults={_ => onApplyDefaults({columnId: column.id})}
+      onColumnActionClick={() => onColumnActionClick({columnId: column.id})}
+      onApplyDefaults={() => onApplyDefaults({columnId: column.id})}
       onItemClick={e => onItemClick({columnId: column.id, ...e})}
       onItemEdit={e => onItemEdit({columnId: column.id, ...e})}
       onItemApplyDefaults={e => onItemApplyDefaults({columnId: column.id, ...e})}
@@ -153,12 +152,11 @@
       onItemDrop={e => handleItemDrop(column.id, e)}
       onItemReferenceClick={e => onItemReferenceClick({columnId: column.id, ...e})}
       onItemAddReferenceClick={e => onItemAddReferenceClick({columnId: column.id, ...e})}
-      onItemSetDefault={e => onItemSetDefault({columnId: column.id, ...e})}
     />
 
     {#if index < columns.length - 1}
       <div class="seperator">
-        <IconButton class="material-icons" disabled={true}>chevron_right</IconButton>
+        <IconButton class="material-icons">chevron_right</IconButton>
       </div>
     {/if}
   {/each}

@@ -6,6 +6,7 @@
     title: string;
     subtitle?: string | null;
     actionLabel?: string | null;
+    actionIcon?: string | null;
     actionDisabled?: boolean;
     search?: string;
     hasSearch?: boolean;
@@ -20,6 +21,7 @@
     title,
     subtitle = null,
     actionLabel = null,
+    actionIcon = null,
     actionDisabled = false,
     search = $bindable(''),
     hasSearch = false,

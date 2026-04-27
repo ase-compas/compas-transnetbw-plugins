@@ -22,7 +22,7 @@
   interface Props {
     service: DataTypeService;
     docState: DocState;
-  } 
+  }
 
   let { service, docState }: Props = $props();
 
@@ -74,7 +74,12 @@
     suspendedReloadDepth += 1;
     try {
       await idSettingsState.load();
-      await openTypeDetailsDrawer(type.id, type.typeKind, service, docState, 'edit');
+      await openTypeDetailsDrawer(type.id, type.typeKind, service, docState, 'edit', {
+        defaultTypeFeatureEnabled: true,
+        propagateToChildren: {
+          defaultTypeFeatureEnabled: true
+        }
+      });
     } finally {
       suspendedReloadDepth = Math.max(0, suspendedReloadDepth - 1);
       if (hasPendingReload || suspendedReloadDepth === 0) {
@@ -86,7 +91,7 @@
 
   async function createLNodeType() {
     await idSettingsState.load();
-    const createResult = await createDataTypeWorkflow(TypeKind.LNodeType, service, docState);
+    const createResult = await createDataTypeWorkflow(TypeKind.LNodeType, service, docState, undefined, true);
     if (!createResult) {
       return;
     }
