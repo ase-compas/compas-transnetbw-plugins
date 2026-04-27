@@ -1,6 +1,7 @@
 <script lang="ts">
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
+  import Card from '@smui/card';
   import type { ApplyScenario } from '../../services/default-type-manager-service';
   import type { ApplyDefaultTypesPreview, ApplyDefaultTypesPreviewEntry } from "../../services/type.service";
 
@@ -84,37 +85,37 @@
   {#snippet content()}
     <div class="preview-dialog-content">
       <div class="summary-grid">
-        <article class="summary-card">
+        <Card padded class="summary-card">
           <div class="summary-label">DataType</div>
           <div class="summary-value">{applyDefaultPreview?.dataTypeId ?? '-'}</div>
-        </article>
+        </Card>
         {#if totalMembers > 1}
-          <article class="summary-card">
+          <Card padded class="summary-card">
             <div class="summary-label">Will Be Assigned</div>
             <div class="summary-value success-text">{applicableRows.length}</div>
-          </article>
-          <article class="summary-card">
+          </Card>
+          <Card padded class="summary-card">
             <div class="summary-label">No Default Available</div>
             <div class="summary-value muted-text">{unavailableRows.length}</div>
-          </article>
-          <article class="summary-card">
+          </Card>
+          <Card padded class="summary-card">
             <div class="summary-label">Data Objects Considered</div>
             <div class="summary-value">{totalMembers}</div>
-          </article>
+          </Card>
         {/if}
       </div>
 
       {#if memberRows.length === 0}
-        <div class="empty-state">No applicable default updates found for the selected members.</div>
+        <Card padded class="empty-state">No applicable default updates found for the selected members.</Card>
       {:else}
         <section>
           <div class="section-title">Will Be Applied</div>
           {#if applicableRows.length === 0}
-            <div class="empty-state">No data objects.</div>
+            <Card padded class="empty-state">No data objects.</Card>
           {:else}
             <div class="rows-list">
               {#each applicableRows as row}
-                <article class="row-card">
+                <Card padded class="row-card">
                   <header class="row-header">
                     <div class="row-title">{row.memberName}</div>
                     <span class={`chip chip-${scenarioMeta[row.scenario].tone}`}>
@@ -135,7 +136,7 @@
                         <div class="field-value">{row.versionTo ?? '-'}</div>
                       </div>
                     </div>
-                </article>
+                </Card>
               {/each}
             </div>
           {/if}
@@ -146,7 +147,7 @@
             <div class="section-title muted-title">No Default Available</div>
             <div class="rows-list">
               {#each unavailableRows as row}
-                <article class="row-card unavailable">
+                <Card padded class="row-card unavailable">
                   <header class="row-header">
                     <div class="row-title muted-text">{row.memberName}</div>
                     <span class="chip chip-danger">No default</span>
@@ -161,7 +162,7 @@
                         <div class="field-value muted-text">No default exists for this reference type.</div>
                       </div>
                     </div>
-                </article>
+                </Card>
               {/each}
             </div>
           </section>
@@ -186,10 +187,7 @@
   }
 
   .summary-card {
-    background: var(--white);
-    border: 1px solid #d7dde5;
-    border-radius: 8px;
-    padding: 0.6rem 0.75rem;
+    height: 100%;
   }
 
   .summary-label {
@@ -263,10 +261,6 @@
   }
 
   .row-card {
-    border: 1px solid #d7dde5;
-    border-radius: 10px;
-    padding: 0.75rem;
-    background: var(--white);
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
@@ -332,9 +326,6 @@
   }
 
   .empty-state {
-    padding: 0.9rem;
-    border: 1px solid #d7dde5;
-    border-radius: 8px;
     color: #5f6b7a;
     background: #f9fbfd;
   }
