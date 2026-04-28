@@ -492,7 +492,6 @@ export class DataTypeService {
     duplicate(id: string, newId?: string): void {
         const element = findDataTypeElement(this.doc, id);
         const duplicateId = newId ?? this.generateDuplicateId(id);
-        console.log(duplicateId)
 
         const parent = element.parentNode;
         if (!parent) {
