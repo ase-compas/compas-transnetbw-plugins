@@ -1,5 +1,6 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
+  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { TypeKind } from '../model';
   import OscdIconActionButton from 'libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte';
   import HeaderElement from './HeaderElement.svelte';
@@ -92,7 +93,9 @@
         />
       {:else}
         <div class="type-id-row">
-          <span class="value">{typeId}</span>
+          <OscdTooltip content={typeId} side="bottom" hoverDelay={250}>
+            <span class="value type-id-value">{typeId}</span>
+          </OscdTooltip>
           {#if canEditId}
             <OscdIconActionButton
               type="edit"
@@ -129,6 +132,14 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .type-id-value {
+    display: inline-block;
+    max-width: 40ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
 </style>
