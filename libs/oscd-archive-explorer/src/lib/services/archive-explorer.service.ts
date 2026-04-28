@@ -7,48 +7,16 @@ import {
   ArchivingApi,
   Configuration,
 } from '@oscd-transnet-plugins/oscd-archiving-api-client';
-import { catchError, delay, from, map, Observable, of, take } from 'rxjs';
+import { from, map, Observable, take } from 'rxjs';
 import { ArchiveSearchResult } from '../domain';
-import { v4 as uuidv4 } from 'uuid';
+
 export class ArchiveExplorerService {
   private static instance: ArchiveExplorerService;
-  private baseUrl = '/compas-scl-data-service';
-
-  private dummySearchResults = [
-    new ArchiveSearchResult(
-      uuidv4(),
-      'Dummy name',
-      'z1b2c3d4-e5f6-7890-1234-56789abcdef1',
-      'My Note',
-      'Jane Doe',
-      'John Doe',
-      'SCD',
-      '220',
-      this.formatDate(new Date().toISOString()),
-      this.formatDate(new Date().toISOString()),
-      'application/xml',
-      '1.0.0',
-      [{key: 'SOURCE_RESOURCE_ID', value: 'GUID_FROM_FIELD :)'}]
-    ),
-    new ArchiveSearchResult(
-      uuidv4(),
-      'Dummy name 2',
-      'e1b2c3d4-e5f6-7890-1234-56789abcdef1',
-      'My Note 2',
-      'Jane Doe',
-      'John Doe',
-      'SCD',
-      '220',
-      this.formatDate(new Date().toISOString()),
-      this.formatDate(new Date().toISOString()),
-      'application/xml',
-      '4.1.0',
-      [{key: 'SOURCE_RESOURCE_ID', value: 'GUID2_FROM_FIELD :)'}]
-    ),
-  ];
+  private readonly baseUrl = '/compas-scl-data-service';
+  private readonly apiClient: ArchivingApi;
 
   private constructor() {
-    //
+    this.apiClient = this.generateApiClient();
   }
 
   public static getInstance(): ArchiveExplorerService {
@@ -61,67 +29,24 @@ export class ArchiveExplorerService {
   searchArchive(
     archivedResourcesSearch: ArchivedResourcesSearch
   ): Observable<ArchiveSearchResult[]> {
-    return this.generateApiClient()
+    return this.apiClient
       .searchArchivedResources({ archivedResourcesSearch })
       .pipe(
         take(1),
         map((result: ArchivedResources) => result.resources),
-        map((resources) =>
-          resources.map((resource) => this.mapToArchiveSearchResult(resource))
-        ),
-        catchError(() => {
-          // Dummy data until the service is implemented
-          return of(this.dummySearchResults);
-        }),
-        delay(500)
+        map((resources) => this.mapResourcesToArchiveSearchResults(resources))
       );
   }
 
   retrieveArchivedResourceHistory(
     uuid: string
   ): Observable<ArchiveSearchResult[]> {
-    return this.generateApiClient()
+    return this.apiClient
       .retrieveArchivedResourceHistory({ id: uuid })
       .pipe(
         take(1),
         map((res) => res.versions),
-        map((resources) =>
-          resources.map((resource) => this.mapToArchiveSearchResult(resource))
-        ),
-        catchError(() => {
-          return of([
-            new ArchiveSearchResult(
-              uuidv4(),
-              'Dummy name',
-              'e1b2c3d4-e5f6-7890-1234-56789abcdef1',
-              'My Note',
-              'Jane Doe',
-              'John Doe',
-              'SCD',
-              '220',
-              new Date().toDateString(),
-              new Date().toDateString(),
-              'application/xml',
-              '2.0.0',
-              [{key: 'SOURCE_RESOURCE_ID', value: uuidv4()}]
-            ),
-            new ArchiveSearchResult(
-              uuidv4(),
-              'Dummy name',
-              '3c4b2a7e-4c8b-49da-9627-5b783d85745f',
-              'My Note 2',
-              'Jane Doe',
-              'John Doe',
-              'SCD',
-              '220',
-              new Date().toDateString(),
-              new Date().toDateString(),
-              'application/xml',
-              '5.1.0',
-              [{key: 'SOURCE_RESOURCE_ID', value: uuidv4()}]
-            ),
-          ]);
-        })
+        map((resources) => this.mapResourcesToArchiveSearchResults(resources))
       );
   }
 
@@ -147,7 +72,17 @@ export class ArchiveExplorerService {
     uuid: string,
     version: string
   ): Observable<ArchivedResource> {
-    return this.generateApiClient().archiveSclResource({id: uuid, version: version})
+    return this.apiClient.archiveSclResource({ id: uuid, version });
+  }
+
+  private mapResourcesToArchiveSearchResults(
+    resources: ArchivedResource[] | undefined
+  ): ArchiveSearchResult[] {
+    if (!resources?.length) {
+      return [];
+    }
+
+    return resources.map((resource) => this.mapToArchiveSearchResult(resource));
   }
 
   private mapToArchiveSearchResult(
@@ -170,27 +105,7 @@ export class ArchiveExplorerService {
     );
   }
 
-  private formatDate(dateString: string) {
-    if (!dateString) {
-      return '';
-    }
-
-    const date = new Date(dateString);
-
-    if (isNaN(date.getTime())) {
-      return '';
-    }
-
-    return Intl.DateTimeFormat('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  }
-
-  private generateApiClient() {
+  private generateApiClient(): ArchivingApi {
     const config = new Configuration({
       basePath: this.baseUrl,
       // accessToken: authInfo.token,
