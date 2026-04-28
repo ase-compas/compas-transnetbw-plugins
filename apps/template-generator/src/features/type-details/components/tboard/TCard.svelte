@@ -188,8 +188,8 @@
         {/if}
         {#if canEdit}
           <OscdIconActionButton
-            type="edit"
-            tooltip="Edit"
+            type="open_in_new"
+            tooltip="Open"
             onClick={handleOnEdit}
             fillColor={onPrimaryColor}
           />
