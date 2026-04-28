@@ -75,7 +75,11 @@
   </script>
 
     <div class="default-info-wrapper" bind:this={defaultInfoWrapper}>
-      <span>v{defaultTypeInfo.version}</span>
+      {#if defaultTypeInfo}
+        <span>v{defaultTypeInfo.version}</span>
+      {:else}
+        <span>—</span>
+      {/if}
 
       {#if hasVersionStatus}
         {#if isCurrent}
