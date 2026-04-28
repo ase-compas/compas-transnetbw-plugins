@@ -1,6 +1,7 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
-  import SegmentedButton, { Label, Segment } from '@smui/segmented-button';
+  import Radio from '@smui/radio';
+  import FormField from '@smui/form-field';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
   import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import PreviewBox from '../../PreviewBox.svelte';
@@ -27,18 +28,23 @@
       What kind of check does this rule perform?
     </p>
 
-    <div class="mode-switcher">
-    <SegmentedButton
-      segments={modes}
-      singleSelect
-      bind:selected={validationEditor.ruleUi.mode}
-    >
-      {#snippet segment(seg)}
-        <Segment segment={seg}>
-          <Label>{seg === 'attribute' ? 'Attribute check' : 'Element check'}</Label>
-        </Segment>
-      {/snippet}
-    </SegmentedButton>
+    <div class="mode-radio-group">
+      <FormField>
+        <Radio
+          bind:group={validationEditor.ruleUi.mode}
+          value="attribute"
+          touch
+        />
+        {#snippet label()}Attribute check{/snippet}
+      </FormField>
+      <FormField>
+        <Radio
+          bind:group={validationEditor.ruleUi.mode}
+          value="element"
+          touch
+        />
+        {#snippet label()}Element check{/snippet}
+      </FormField>
     </div>
 
     {#if validationEditor.ruleUi.mode === 'attribute'}
@@ -73,9 +79,11 @@
     margin: 0;
   }
 
-  .mode-switcher {
-    --mdc-segmented-button-selected-container-fill-color: var(--primary-base);
-    --mdc-segmented-button-selected-ink-color: var(--white);
+  .mode-radio-group {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    --mdc-theme-secondary: var(--primary-base);
   }
-
 </style>

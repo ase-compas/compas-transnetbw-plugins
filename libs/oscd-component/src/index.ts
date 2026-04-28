@@ -4,6 +4,7 @@ export { default as OscdInput } from './oscd-input/OscdInput.svelte';
 export { default as OscdSelect } from './oscd-select/OscdSelect.svelte';
 export { default as OscdDialog } from './oscd-dialog/OscdDialog.svelte';
 export { default as OscdConfirmDialog } from './oscd-dialog/OscdConfirmDialog.svelte';
+export { default as OscdDiscardChangesDialog } from './oscd-dialog/OscdDiscardChangesDialog.svelte';
 export { default as OscdVersionBumpDialog } from './oscd-dialog/OscdVersionBumpDialog.svelte';
 export { default as OscdBaseDialog } from './oscd-dialog/OscdBaseDialog.svelte';
 export { default as OscdWarningBox } from './oscd-warning-box/OscdWarningBox.svelte';

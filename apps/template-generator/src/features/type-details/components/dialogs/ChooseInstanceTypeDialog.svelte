@@ -34,7 +34,7 @@
     confirmDisabled={!valid}
   >
     {#snippet content()}
-        <div style="padding: 1rem;" >
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
             <p>This type has no instance information. Please select an instance type. Existing references will stay, but configured members will be lost.</p>
             <InstanceAutocomplete
                 {typeKind}

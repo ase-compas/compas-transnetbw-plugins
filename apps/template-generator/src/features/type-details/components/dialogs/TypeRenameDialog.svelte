@@ -45,15 +45,13 @@
   confirmDisabled={!valid}
 >
   {#snippet content()}
-    <div style="padding: 1rem;" >
-      <TypeIdInput
-        bind:this={inputEl}
-        bind:typeId={value}
-        bind:valid
-        idLabel="Rename Type ID"
-        showErrorsOnInput
-        {service}
-      />
-    </div>
+    <TypeIdInput
+      bind:this={inputEl}
+      bind:typeId={value}
+      bind:valid
+      idLabel="Rename Type ID"
+      showErrorsOnInput
+      {service}
+    />
   {/snippet}
 </OscdBaseDialog>

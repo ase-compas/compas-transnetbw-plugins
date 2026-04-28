@@ -21,7 +21,7 @@
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdConfirmDialog, OscdVersionBumpDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
   import type { VersionBump } from '@oscd-transnet-plugins/shared';
 
@@ -97,36 +97,11 @@
   async function exitEditing() {
     const proc = selectedEngineeringProcess.process;
     if (proc && hasChanges()) {
-      // First ask: save or discard?
-      const confirmResult = await openDialog(OscdConfirmDialog, {
-        title: 'Unsaved changes',
-        message: 'You have unsaved changes. Would you like to save them before leaving?',
-        confirmActionText: 'Save',
-        cancelActionText: 'Discard Changes',
+      const result = await openDialog(OscdDiscardChangesDialog, {
+        message: 'You have unsaved changes. If you go back now, they will be lost.',
       });
-
-      if (confirmResult?.type === 'confirm') {
-        // User wants to save — show version bump dialog
-        const versionResult = await openDialog(OscdVersionBumpDialog, {
-          currentVersion: proc.version || '1.0.0',
-        });
-        if (versionResult?.type !== 'confirm') return; // user cancelled — stay in edit mode
-
-        const bump = versionResult.data as VersionBump;
-        saving = true;
-        try {
-          await saveProcess(proc, bump);
-          toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
-        } catch {
-          toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
-          return; // stay in edit mode on failure
-        } finally {
-          saving = false;
-        }
-      } else {
-        // User chose to discard — restore original state
-        restoreSnapshot();
-      }
+      if (result?.type !== 'confirm') return;
+      restoreSnapshot();
     }
     leaveEditMode();
   }

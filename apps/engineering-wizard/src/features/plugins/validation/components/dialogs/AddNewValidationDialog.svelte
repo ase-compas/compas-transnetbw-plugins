@@ -85,6 +85,7 @@
   confirmActionText={initialValidation ? 'Save' : 'Add'}
   maxWidth="800px"
   maxHeight="800px"
+  contentPadding="0 var(--dialog-h-padding, 1.5rem)"
   bind:open
   onConfirm={saveValidation}
   onCancel={cancel}
@@ -114,12 +115,12 @@
         isAtLastStep={isAtLastStep}
         nextDisabled={isNextDisabled}
         showDone={false}
-        backBg="rgb(from var(--base0) r g b / 0.5)"
+        backBg="var(--primary-base)"
         backColor="var(--white)"
         backIconFill="var(--white)"
-        nextBg="var(--white)"
-        nextColor="var(--primary-base)"
-        nextIconFill="var(--primary-base)"
+        nextBg="var(--primary-base)"
+        nextColor="var(--white)"
+        nextIconFill="var(--white)"
         nextLabelWhenLastStep={initialValidation ? 'Save' : 'Create'}
         showCheckOnLastStep={true}
       />
@@ -132,7 +133,7 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem var(--dialog-h-padding, 1.5rem);
   }
 
   .dialog-actions :global(.mdc-button) {

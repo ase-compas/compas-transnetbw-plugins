@@ -43,8 +43,6 @@
   onClose={() => closeDialog('exit')}
 >
   {#snippet content()}
-    <div style="padding: 1rem 0;">
-      <IdFormatEditor />
-    </div>
+    <IdFormatEditor />
   {/snippet}
 </OscdBaseDialog>

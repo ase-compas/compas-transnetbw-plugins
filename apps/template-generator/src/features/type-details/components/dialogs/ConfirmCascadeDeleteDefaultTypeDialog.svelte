@@ -43,7 +43,7 @@
 
 <style>
   .content {
-    padding: 1rem;
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;

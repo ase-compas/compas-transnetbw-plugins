@@ -128,6 +128,14 @@
     margin: 0;
   }
 
+  .select:hover {
+    border-color: var(--primary-base);
+  }
+
+  .select:focus {
+    border-color: var(--primary-base);
+  }
+
   .box[data-has-value="true"] .select {
     white-space: nowrap;
     color: var(--primary-base);

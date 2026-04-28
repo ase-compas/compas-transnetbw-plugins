@@ -1,6 +1,5 @@
 <script lang="ts">
 import {OscdBaseDialog} from "@oscd-transnet-plugins/oscd-component";
-import {Content} from "@smui/dialog";
 import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
 
 
@@ -49,11 +48,9 @@ function handleCancel() {
   maxHeight="auto"
 >
   {#snippet content()}
-    <Content >
-      <div class="oscd-confirm-dialog__content">
-        {message}
-      </div>
-    </Content>
+    <div class="oscd-confirm-dialog__content">
+      {message}
+    </div>
   {/snippet}
 </OscdBaseDialog>
 

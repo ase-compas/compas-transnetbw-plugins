@@ -152,9 +152,7 @@
   {confirmDisabled}
 >
   {#snippet content()}
-    <div
-      style="padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;"
-    >
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
       {#if loading}
         <p>Loading references…</p>
       {:else if error}

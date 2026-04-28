@@ -16,6 +16,7 @@
     maxHeight?: string;
     confirmDisabled?: boolean;
     color?: string;
+    contentPadding?: string;
     showCloseButton?: boolean;
     confirmClose?: boolean;
     content?: import('svelte').Snippet;
@@ -37,6 +38,7 @@
     maxHeight = '85vh',
     confirmDisabled = false,
     color = 'var(--mdc-theme-primary, #ff3e00)',
+    contentPadding = 'var(--dialog-h-padding, 1.5rem)',
     showCloseButton = true,
     confirmClose = false,
     content,
@@ -104,7 +106,8 @@
   escapeKeyAction={confirmClose ? '' : 'close'}
   scrimClickAction={confirmClose ? '' : 'close'}
   onclick={handleDialogClick}
-  surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight};`}
+  surface$class="oscd-base-dialog__surface"
+  surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight}; --dialog-content-padding: ${contentPadding};`}
 >
   <Header>
     <div class="dialog__title" style={`background-color: ${color};`}>
@@ -156,6 +159,11 @@
   /* Shared horizontal padding token — keeps title, content and footer buttons in one column */
   :global(.mdc-dialog__surface) {
     --dialog-h-padding: 1.5rem;
+  }
+
+  /* Uniform content area padding — scoped to OscdBaseDialog surfaces only */
+  :global(.oscd-base-dialog__surface .mdc-dialog__content) {
+    padding: var(--dialog-content-padding, var(--dialog-h-padding, 1.5rem)) !important;
   }
 
   :global(.mdc-dialog) { z-index: 5000 !important; }

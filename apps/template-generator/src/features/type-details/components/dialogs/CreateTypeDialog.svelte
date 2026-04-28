@@ -73,15 +73,13 @@
   confirmDisabled={!valid}
 >
   {#snippet content()}
-    <div style="padding: 1rem;">
-      <CreateTypeForm
+    <CreateTypeForm
         {typeKind}
         showCreateFromDefaultOption={enableCreateFromDefault}
         onChange={handleFormChange}
         onSubmit={handleFormSubmit}
         generateId={generateTypeId}
         {service}
-      />
-    </div>
+    />
   {/snippet}
 </OscdBaseDialog>

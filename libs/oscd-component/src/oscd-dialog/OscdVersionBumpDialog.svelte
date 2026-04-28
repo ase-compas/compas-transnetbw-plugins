@@ -69,10 +69,6 @@
 </OscdBaseDialog>
 
 <style>
-  .content {
-    padding-top: 1.25rem;
-  }
-
   .content p {
     margin: 0 0 1.25rem;
   }

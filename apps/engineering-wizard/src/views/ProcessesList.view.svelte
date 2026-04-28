@@ -20,7 +20,7 @@
     docName?: string;
   }
 
-  type ProcessRow = Process & { displayName: string };
+  type ProcessRow = Process & { displayName: string; validationCount: number };
 
   const { handleStart, handleView, handleEdit, handleAddNew, docName }: Props = $props();
 
@@ -32,6 +32,9 @@
     processes.map((p) => ({
       ...p,
       displayName: p.name || p.id,
+      validationCount: (p.pluginGroups ?? [])
+        .flatMap((g) => g.plugins ?? [])
+        .reduce((sum, plugin) => sum + (plugin.validations?.length ?? 0), 0),
     }))
   );
 
@@ -44,8 +47,10 @@
   );
 
   const columns = [
-    { key: 'displayName', header: 'Name', bold: true },
-    { key: 'description', header: 'Description' }
+    { key: 'displayName', header: 'Name', bold: true, width: '15%' },
+    { key: 'description', header: 'Description', width: '50%' },
+    { key: 'version', header: 'Version', width: '10%' },
+    { key: 'validationCount', header: 'Validations', width: '15%' },
   ] as const;
 
   const runningProc = $derived(runningEngineeringProcess.process);

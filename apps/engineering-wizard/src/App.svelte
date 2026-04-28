@@ -6,7 +6,7 @@
   import { type Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
-  import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdDiscardChangesDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import { loadEngineeringProcesses } from './features/processes/repository.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './features/workflow/document-state';
   import {
@@ -91,14 +91,14 @@
     const isNewProcess = !running || running.id !== process.id;
 
     if (running && isNewProcess) {
-      const result = await openDialog(OscdConfirmDialog as any, {
-        title: 'Do you want to start a new process?',
-        message: 'Starting a new process will stop the current running process. Any unsaved progress will be lost.',
-        confirmActionText: 'Start New Process',
+      const result = await openDialog(OscdDiscardChangesDialog as any, {
+        title: 'Start new process?',
+        message: 'Starting a new process will stop the current one. Any unsaved progress will be lost.',
+        discardActionText: 'Start new process',
         cancelActionText: 'Cancel',
       });
 
-      if (result.type === 'cancel') return;
+      if (result?.type !== 'confirm') return;
     }
 
     if (isNewProcess) {

@@ -174,7 +174,7 @@
 
 <style>
   .preview-dialog-content {
-    padding-top: 1rem;
+    padding-top: 0;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;

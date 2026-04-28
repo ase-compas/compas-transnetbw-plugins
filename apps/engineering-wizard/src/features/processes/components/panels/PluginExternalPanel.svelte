@@ -189,6 +189,9 @@
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
+    user-select: none;
+    cursor: default;
+    pointer-events: none;
   }
 
   .plugin-add-btn {
