@@ -36,6 +36,7 @@
   let suspendedReloadDepth = 0;
   let hasPendingReload = false;
   const idSettingsState = getIdSettingsState();
+  service.setIdSettingsState(idSettingsState);
 
   const sortedDataTypes = $derived.by(() => {
     return sortSimpleDataTypes(dataTypes);
