@@ -178,8 +178,16 @@
             rowBg ? `background-color:${rowBg}` : '',
             rowHoverBg ? `--oscd-basic-table-row-hover-bg:${rowHoverBg}` : ''
           ].filter(Boolean).join(';')}
+          role={isRowClickable ? 'button' : undefined}
           tabindex={isRowClickable ? 0 : undefined}
           onclick={() => handleRowClick(item)}
+          onkeydown={(event) => {
+            if (!isRowClickable) return;
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleRowClick(item);
+            }
+          }}
         >
           {#each columns as col}
             <Cell class={col.bold ? 'cell-bold' : ''}>
