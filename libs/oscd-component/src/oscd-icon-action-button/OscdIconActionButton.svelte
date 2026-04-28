@@ -7,12 +7,12 @@
     OscdWandStarsIcon,
     OscdLinkOffIcon,
     OscdCloseIcon,
-    OscdStarIcon
+    OscdStarIcon,
+    OscdInputCircleIcon,
+    OscdInfoIcon,
+    OscdOpenInNewIcon
   } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
-  import OscdOpenInNewIcon from 'libs/oscd-icons/src/oscd-open-in-new-icon/OscdOpenInNewIcon.svelte';
-  import OscdInfoIcon from 'libs/oscd-icons/src/oscd-info-icon/OscdInfoIcon.svelte';
-  import OscdInputCircle from 'libs/oscd-icons/src/oscd-input-circle-icon/OscdInputCircle.svelte';
 
   // ===== Parameters =====
   interface Props {
@@ -75,7 +75,7 @@
     {:else if type === 'info'}
       <OscdInfoIcon svgStyles={styles} />
     {:else if type === 'input-circle'}
-      <OscdInputCircle svgStyles={styles} />
+      <OscdInputCircleIcon svgStyles={styles} />
     {:else}
       Unsupported supported type: {type}
     {/if}

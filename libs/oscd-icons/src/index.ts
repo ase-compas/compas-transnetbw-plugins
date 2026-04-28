@@ -37,4 +37,4 @@ export { default as OscdHomeIcon } from './oscd-home-icon/OscdHomeIcon.svelte';
 export { default as OscdChevronRightIcon } from './oscd-chevron-right-icon/OscdChevronRightIcon.svelte';
 export { default as OscdArchiveIcon } from './oscd-archive-icon/OscdArchiveIcon.svelte';
 export { default as OscdOpenInNewIcon } from './oscd-open-in-new-icon/OscdOpenInNewIcon.svelte';
-export { default as OscdInputCircle } from './oscd-input-circle-icon/OscdInputCircle.svelte';
+export { default as OscdInputCircleIcon } from './oscd-input-circle-icon/OscdInputCircle.svelte';
