@@ -70,33 +70,35 @@
     }
   };
 
-  const colors = typeColorMap[type];
-  const sizes = sizeMap[size];
+  const colors = $derived(typeColorMap[type]);
+  const sizes = $derived(sizeMap[size]);
 
-  const baseStyle = `
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: ${sizes.padding};
-    font-size: ${sizes.fontSize};
-    border-radius: 16px;
-    font-weight: 500;
-    white-space: nowrap;
-  `;
+  const finalStyle = $derived.by(() => {
+    const baseStyle = `
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: ${sizes.padding};
+      font-size: ${sizes.fontSize};
+      border-radius: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+    `;
 
-  const filledStyle = `
-    background-color: ${colors.bg};
-    color: ${colors.text};
-    border: none;
-  `;
+    const filledStyle = `
+      background-color: ${colors.bg};
+      color: ${colors.text};
+      border: none;
+    `;
 
-  const outlinedStyle = `
-    background-color: transparent;
-    color: ${colors.bg};
-    border: 1px solid ${colors.border};
-  `;
+    const outlinedStyle = `
+      background-color: transparent;
+      color: ${colors.bg};
+      border: 1px solid ${colors.border};
+    `;
 
-  const finalStyle = baseStyle + (variant === 'filled' ? filledStyle : outlinedStyle);
+    return baseStyle + (variant === 'filled' ? filledStyle : outlinedStyle);
+  });
 </script>
 
 <div class="oscd-badge" style={finalStyle}>
