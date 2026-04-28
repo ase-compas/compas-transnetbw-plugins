@@ -16,8 +16,6 @@
     bold?: boolean;
   };
 
-  let hoveredRow: string | number | null = $state(null);
-
   interface Props {
     /** Rows to render in the table body. */
     items?: any[];
