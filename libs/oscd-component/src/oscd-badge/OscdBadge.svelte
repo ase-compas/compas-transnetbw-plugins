@@ -41,7 +41,7 @@
       border: '#e65100'
     },
     error: {
-      bg: '#d32f2f',
+      bg: 'var(--mdc-theme-error, #d32f2f)',
       text: '#ffffff',
       border: '#c62828'
     },

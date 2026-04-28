@@ -5,10 +5,11 @@
   interface Props {
     label?: string;
     textOnly?: boolean;
+    contentLayout?: 'top' | 'center' | 'bottom';
     children?: Snippet;
   }
 
-  let { label, textOnly = false, children }: Props = $props();
+  let { label, textOnly = false, contentLayout = 'bottom', children }: Props = $props();
 
   let hasLabel = $derived(!!label);
 </script>
@@ -17,7 +18,13 @@
   {#if hasLabel}
     <div class="label">{label}</div>
   {/if}
-  <div class="content" class:text-only={textOnly}>
+  <div
+    class="content"
+    class:text-only={textOnly}
+    class:align-top={contentLayout === 'top'}
+    class:align-center={contentLayout === 'center'}
+    class:align-bottom={contentLayout === 'bottom'}
+  >
     {#if children}
       {@render children()}
     {/if}
@@ -29,6 +36,7 @@
     display: flex;
     flex-direction: column;
     row-gap: 0.3rem;
+    height: 100%;
   }
 
   .header-element.no-label {
@@ -46,8 +54,20 @@
 
   .content {
     display: flex;
-    align-items: flex-start;
+    flex: 1;
     line-height: 1.2;
+  }
+
+  .content.align-top {
+    align-items: flex-start;
+  }
+
+  .content.align-center {
+    align-items: center;
+  }
+
+  .content.align-bottom {
+    align-items: flex-end;
   }
 
   .content.text-only {

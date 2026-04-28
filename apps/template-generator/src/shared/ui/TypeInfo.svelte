@@ -3,6 +3,7 @@
   import { TypeKind } from '../model';
   import OscdIconActionButton from 'libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte';
   import HeaderElement from './HeaderElement.svelte';
+  import type { Snippet } from 'svelte';
   import { onMount, tick } from 'svelte';
 
   interface Props {
@@ -11,6 +12,7 @@
     instance?: string | null;
     canEditId?: boolean;
     onIdChange?: (newId: string) => void;
+    extraHeader?: Snippet;
   }
 
   let {
@@ -19,6 +21,7 @@
     instance: instanceType = null,
     canEditId = false,
     onIdChange,
+    extraHeader,
   }: Props = $props();
 
   let idTextFieldElement: Textfield | null = $state(null);
@@ -103,6 +106,10 @@
       {/if}
     {/snippet}
   </HeaderElement>
+
+  {#if extraHeader}
+    {@render extraHeader()}
+  {/if}
 </div>
 
 <style>
@@ -110,8 +117,7 @@
     display: grid;
     grid-auto-flow: column;
     gap: 2.8rem;
-    align-items: self-start;
-    min-height: 57px;
+    align-items: center;
   }
 
   .value--muted {
