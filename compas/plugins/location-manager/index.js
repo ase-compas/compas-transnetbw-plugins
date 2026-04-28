@@ -12257,67 +12257,8 @@ function hi(e, t) {
   var X = xe(fe);
   return a(), X;
 }
-Zt(["click"]);
-Zt(["click"]);
-function fo(e, t, n) {
-  return t in e ? Object.defineProperty(e, t, {
-    value: n,
-    enumerable: !0,
-    configurable: !0,
-    writable: !0
-  }) : e[t] = n, e;
-}
-var Zg = Object.freeze({
-  // This flag exists as a workaround for issue 454 (basically a browser bug) - seems like these rect values take time to update when in grid layout. Setting it to true can cause strange behaviour in the REPL for non-grid zones, see issue 470
-  USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT: "USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT"
-});
-fo({}, Zg.USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT, !1);
-var Vi, Ms = {
-  DND_ZONE_ACTIVE: "dnd-zone-active",
-  DND_ZONE_DRAG_DISABLED: "dnd-zone-drag-disabled"
-};
-Vi = {}, fo(Vi, Ms.DND_ZONE_ACTIVE, "Tab to one the items and press space-bar or enter to start dragging it"), fo(Vi, Ms.DND_ZONE_DRAG_DISABLED, "This is a disabled drag and drop list");
-Zt([
-  "click",
-  "keydown",
-  "pointerdown",
-  "pointerup",
-  "pointermove"
-]);
-Zt(["click"]);
-const Yg = 4e3;
-function Kg() {
-  let e = pe({ items: [] }), t = 0;
-  const n = (i) => {
-    e.items = e.items.filter((a) => a.id !== i);
-  }, r = (i, a, o, l = Yg) => {
-    const s = t++, u = { id: s, summary: a, detail: o, type: i };
-    return e.items = [...e.items, u], setTimeout(
-      () => {
-        n(s);
-      },
-      l
-    ), s;
-  };
-  return {
-    /** readonly state for UI host */
-    get toasts() {
-      return e;
-    },
-    success: (i, a, o) => r("success", i, a, o),
-    error: (i, a, o) => r("error", i, a, o),
-    info: (i, a, o) => r("info", i, a, o),
-    warn: (i, a, o) => r("warn", i, a, o),
-    remove: n
-  };
-}
-Kg();
-Zt(["click"]);
-Zt(["click"]);
-Zt(["click"]);
-Zt(["change", "click"]);
-var Qg = /* @__PURE__ */ J('<div><div class="mdc-linear-progress__buffer"><div class="mdc-linear-progress__buffer-bar"></div> <div class="mdc-linear-progress__buffer-dots"></div></div> <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar"><span class="mdc-linear-progress__bar-inner"></span></div> <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar"><span class="mdc-linear-progress__bar-inner"></span></div></div>');
-function Jg(e, t) {
+var Zg = /* @__PURE__ */ J('<div><div class="mdc-linear-progress__buffer"><div class="mdc-linear-progress__buffer-bar"></div> <div class="mdc-linear-progress__buffer-dots"></div></div> <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar"><span class="mdc-linear-progress__bar-inner"></span></div> <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar"><span class="mdc-linear-progress__bar-inner"></span></div></div>');
+function Yg(e, t) {
   Ae(t, !0);
   const [n, r] = $n();
   let i = m(t, "use", 19, () => []), a = m(t, "class", 3, ""), o = m(t, "style", 3, ""), l = m(t, "indeterminate", 3, !1), s = m(t, "closed", 3, !1), u = m(t, "progress", 3, 0), d = m(t, "buffer", 3, void 0), f = /* @__PURE__ */ qe(t, [
@@ -12398,7 +12339,7 @@ function Jg(e, t) {
   function K() {
     return g;
   }
-  var fe = { getElement: K }, O = Qg(), R = (C) => {
+  var fe = { getElement: K }, O = Zg(), R = (C) => {
     var F;
     c(v) && c(v).handleTransitionEnd(), (F = t.ontransitionend) == null || F.call(t, C);
   };
@@ -12440,6 +12381,65 @@ function Jg(e, t) {
   var k = xe(fe);
   return r(), k;
 }
+Zt(["click"]);
+Zt(["click"]);
+function fo(e, t, n) {
+  return t in e ? Object.defineProperty(e, t, {
+    value: n,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[t] = n, e;
+}
+var Kg = Object.freeze({
+  // This flag exists as a workaround for issue 454 (basically a browser bug) - seems like these rect values take time to update when in grid layout. Setting it to true can cause strange behaviour in the REPL for non-grid zones, see issue 470
+  USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT: "USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT"
+});
+fo({}, Kg.USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT, !1);
+var Vi, Ms = {
+  DND_ZONE_ACTIVE: "dnd-zone-active",
+  DND_ZONE_DRAG_DISABLED: "dnd-zone-drag-disabled"
+};
+Vi = {}, fo(Vi, Ms.DND_ZONE_ACTIVE, "Tab to one the items and press space-bar or enter to start dragging it"), fo(Vi, Ms.DND_ZONE_DRAG_DISABLED, "This is a disabled drag and drop list");
+Zt([
+  "click",
+  "keydown",
+  "pointerdown",
+  "pointerup",
+  "pointermove"
+]);
+Zt(["click"]);
+const Qg = 4e3;
+function Jg() {
+  let e = pe({ items: [] }), t = 0;
+  const n = (i) => {
+    e.items = e.items.filter((a) => a.id !== i);
+  }, r = (i, a, o, l = Qg) => {
+    const s = t++, u = { id: s, summary: a, detail: o, type: i };
+    return e.items = [...e.items, u], setTimeout(
+      () => {
+        n(s);
+      },
+      l
+    ), s;
+  };
+  return {
+    /** readonly state for UI host */
+    get toasts() {
+      return e;
+    },
+    success: (i, a, o) => r("success", i, a, o),
+    error: (i, a, o) => r("error", i, a, o),
+    info: (i, a, o) => r("info", i, a, o),
+    warn: (i, a, o) => r("warn", i, a, o),
+    remove: n
+  };
+}
+Jg();
+Zt(["click"]);
+Zt(["click"]);
+Zt(["click"]);
+Zt(["change", "click"]);
 var $g = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="svelte-1mj71p3"><path d="M12 4l-8 8h16l-8-8z"></path></svg>'), ep = /* @__PURE__ */ Vt('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="svelte-1mj71p3"><path d="M12 20l8-8H4l8 8z"></path></svg>'), tp = /* @__PURE__ */ J('<div class="custom-cell-container svelte-1mj71p3"><div class="cell-header svelte-1mj71p3"><span class="header-title svelte-1mj71p3"> </span> <!></div></div>'), np = (e, t) => t(), rp = /* @__PURE__ */ J('<input type="text" class="svelte-1mj71p3"/>'), ip = (e, t) => t(), ap = /* @__PURE__ */ J('<input type="number" class="svelte-1mj71p3"/>'), op = /* @__PURE__ */ J("<!> <!>", 1), sp = /* @__PURE__ */ J("<!> <!>", 1), lp = /* @__PURE__ */ J('<div class="cell-actions svelte-1mj71p3"></div>'), up = /* @__PURE__ */ J("<!> <!>", 1);
 function cp(e, t) {
   Ae(t, !0);
@@ -12477,7 +12477,7 @@ function cp(e, t) {
     },
     style: "max-width: 100%; width: 100%;",
     progress: (S) => {
-      Jg(S, {
+      Yg(S, {
         indeterminate: !0,
         "aria-label": "Data is being loaded...",
         get closed() {
