@@ -5,7 +5,12 @@
     OscdEditIcon,
     OscdVisibilityIcon,
     OscdWandStarsIcon,
-    OscdLinkOffIcon, OscdCloseIcon, OscdStarIcon
+    OscdLinkOffIcon,
+    OscdCloseIcon,
+    OscdStarIcon,
+    OscdInputCircleIcon,
+    OscdInfoIcon,
+    OscdOpenInNewIcon
   } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
 
@@ -16,7 +21,7 @@
     /** Side of the tooltip */
     tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
     /** Type of action button, e.g., 'delete' or 'duplicate' */
-    type: 'delete' | 'duplicate' | 'close' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'star';
+    type: 'delete' | 'duplicate' | 'close' | 'edit' | 'visibility' | 'wand-stars' | 'link-off' | 'star' | 'open_in_new' | 'info' | 'input-circle';
     /** Delay in ms before showing the tooltip */
     showDelay?: number;
     /** Fill color for the icon SVG */
@@ -33,7 +38,7 @@
     type,
     showDelay = 1000,
     fillColor = 'var(--mdc-theme-primary)',
-    size = '25px',
+    size = '20px',
     onClick
   }: Props = $props();
 
@@ -65,6 +70,12 @@
       <OscdCloseIcon svgStyles={styles} />
     {:else if type === 'star'}
       <OscdStarIcon svgStyles={styles} />
+    {:else if type === 'open_in_new'}
+      <OscdOpenInNewIcon svgStyles={styles} />
+    {:else if type === 'info'}
+      <OscdInfoIcon svgStyles={styles} />
+    {:else if type === 'input-circle'}
+      <OscdInputCircleIcon svgStyles={styles} />
     {:else}
       Unsupported supported type: {type}
     {/if}

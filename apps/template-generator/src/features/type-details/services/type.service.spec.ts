@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { DataTypeService } from './type.service';
 import { handleEditV2, type EditV2 } from '@oscd-transnet-plugins/oscd-event-api';
+import { TypeKind } from '../../../shared/model';
 
 function parseScl(xml: string): XMLDocument {
 	return new DOMParser().parseFromString(xml, 'application/xml');
@@ -376,7 +377,7 @@ describe('DataTypeService', () => {
 			expect(copies.length).toBeGreaterThan(0);
 		});
 
-		test('generates insert edit with specified copy ID', () => {
+		test('generates insert edit with specified copy ID with no id format configured', () => {
 			doc = parseScl(`
 				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
 					<DataTypeTemplates>
@@ -399,6 +400,231 @@ describe('DataTypeService', () => {
 			// Verify the copy exists with the specified ID
 			expect(doc.getElementById('custom-copy-id')).not.toBeNull();
 			expect(doc.getElementById('custom-copy-id')?.getAttribute('cdc')).toBe('SPS');
+		});
+	});
+
+	describe('list', () => {
+		test('filters by query across id, type kind, and instance type', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="do-meas" cdc="SPS"/>
+						<LNodeType id="ln-lln0" lnClass="LLN0"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+
+			expect(service.list({ query: 'meas' })).toHaveLength(1);
+			expect(service.list({ query: 'lnodetype' })).toHaveLength(1);
+			expect(service.list({ query: 'lln0' })).toHaveLength(1);
+		});
+
+		test('filters by type kind and instance type', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="do-sps" cdc="SPS"/>
+						<DOType id="do-dps" cdc="DPS"/>
+						<LNodeType id="ln-lln0" lnClass="LLN0"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+
+			const byKind = service.list({ typeKind: TypeKind.DOType });
+			expect(byKind).toHaveLength(2);
+
+			const byKindAndInstance = service.list({ typeKind: TypeKind.DOType, instanceType: 'DPS' });
+			expect(byKindAndInstance).toHaveLength(1);
+			expect(byKindAndInstance[0].id).toBe('do-dps');
+		});
+	});
+
+	describe('clearReference', () => {
+		test('generates edit to clear member type attribute', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<LNodeType id="consumer" lnClass="LLN0">
+							<DO name="do1" type="ref-type"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			service.clearReference('consumer', 'do1');
+
+			expect(capturedEdits).toHaveLength(1);
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			expect(doc.querySelector('[name="do1"]')?.getAttribute('type')).toBe('');
+		});
+
+		test('throws when member does not exist', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<LNodeType id="consumer" lnClass="LLN0"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+
+			expect(() => service.clearReference('consumer', 'missing')).toThrow(
+				'Member with name missing not found in DataType consumer'
+			);
+		});
+	});
+
+	describe('create', () => {
+		test('creates DataTypeTemplates when missing and inserts first type', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B"/>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			service.create(TypeKind.DOType, 'SPS', 'new-do');
+
+			expect(capturedEdits).toHaveLength(1);
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			expect(doc.querySelector('DataTypeTemplates > DOType[id="new-do"]')).not.toBeNull();
+			expect(doc.querySelector('DOType[id="new-do"]')?.getAttribute('cdc')).toBe('SPS');
+		});
+	});
+
+	describe('updateInstanceType', () => {
+		test('replaces element with updated instance type in-place', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="do-a" cdc="SPS"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			service.updateInstanceType('do-a', 'DPS');
+
+			expect(capturedEdits).toHaveLength(2);
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			expect(doc.querySelector('DOType[id="do-a"]')?.getAttribute('cdc')).toBe('DPS');
+		});
+
+		test('returns early when instance type is unchanged', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="do-a" cdc="SPS"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			service.updateInstanceType('do-a', 'SPS');
+
+			expect(capturedEdits).toHaveLength(0);
+		});
+	});
+
+	describe('applyDefaultTypes', () => {
+		test('applies resolved default and sets member references', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<LNodeType id="ln-consumer" lnClass="LLN0">
+							<DO name="stVal"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+
+			const resolveMock = vi.fn(async () => ({ refTypeKey: 'DOType:SPS' }));
+			const applyPlansMock = vi.fn(() => ({
+				edits: [],
+				effectiveRootIds: new Map([['DOType:SPS', 'default-root-id']]),
+			}));
+
+			(service as any).defaultTypeManagerService = {
+				resolve: resolveMock,
+				applyPlans: applyPlansMock,
+			};
+
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({
+					stVal: {
+						tagName: 'DO',
+						name: 'stVal',
+						requiresReference: true,
+						refTypeKind: TypeKind.DOType,
+						objectType: 'SPS',
+						isMandatory: true,
+						attributes: {},
+					},
+				})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			await service.applyDefaultTypes('ln-consumer', ['stVal']);
+
+			expect(resolveMock).toHaveBeenCalledTimes(1);
+			expect(applyPlansMock).toHaveBeenCalledTimes(1);
+			expect(capturedEdits.length).toBeGreaterThan(0);
+
+			capturedEdits.forEach(edit => handleEditV2(edit));
+			expect(doc.querySelector('LNodeType[id="ln-consumer"] > DO[name="stVal"]')?.getAttribute('type')).toBe('default-root-id');
+		});
+
+		test('does nothing when no referenced members are provided', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<LNodeType id="ln-consumer" lnClass="LLN0"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+
+			const resolveMock = vi.fn(async () => ({ refTypeKey: 'DOType:SPS' }));
+			const applyPlansMock = vi.fn(() => ({
+				edits: [],
+				effectiveRootIds: new Map(),
+			}));
+
+			(service as any).defaultTypeManagerService = {
+				resolve: resolveMock,
+				applyPlans: applyPlansMock,
+			};
+
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			await service.applyDefaultTypes('ln-consumer', ['missing']);
+
+			expect(resolveMock).not.toHaveBeenCalled();
+			expect(applyPlansMock).not.toHaveBeenCalled();
+			expect(capturedEdits).toHaveLength(0);
 		});
 	});
 });

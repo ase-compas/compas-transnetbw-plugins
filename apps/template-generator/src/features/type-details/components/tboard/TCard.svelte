@@ -188,8 +188,8 @@
         {/if}
         {#if canEdit}
           <OscdIconActionButton
-            type="edit"
-            tooltip="Edit"
+            type="open_in_new"
+            tooltip="Open"
             onClick={handleOnEdit}
             fillColor={onPrimaryColor}
           />
@@ -452,6 +452,7 @@
     line-height: 16px !important;
     letter-spacing: 0.02em !important;
     border-radius: 6px !important;
+    text-transform: none !important;
   }
 
   :global(.oscd-card-item .reference-button.has-reference) {

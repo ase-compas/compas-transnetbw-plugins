@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { OscdSwitch, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { TypeKind } from '../../../../shared/model';
   import ChooseInstanceTypeDialog from '../dialogs/ChooseInstanceTypeDialog.svelte';
   import ConfirmDetachDefaultTypeDialog from '../dialogs/ConfirmDetachDefaultTypeDialog.svelte';
-  import SetDefaultButton from './SetDefaultButton.svelte';
   import TypeActionMenu from './TypeActionMenu.svelte';
   import type { DataTypeService } from '../../services/type.service';
   import TypeInfo from 'apps/template-generator/src/shared/ui/TypeInfo.svelte';
   import DefaultTypeBadge from './DefaultTypeBadge.svelte';
+  import HeaderElement from 'apps/template-generator/src/shared/ui/HeaderElement.svelte';
 
   type HeaderDefaultTypeInfo = {
     kind: TypeKind;
@@ -111,21 +111,22 @@
 
 <div class="header-bar">
   <div class="info-section">
-    <TypeInfo kind={type} {typeId} instance={instanceType} />
-    <DefaultTypeBadge
-      {typeId}
-      {defaultTypeInfo}
-      {defaultTypeVersionStatus}
-      onOpenDefaultRootType={onOpenDefaultRootType}
-      onUpdateDefaultTypeToLatest={onUpdateDefaultTypeToLatest}
-    />
-    {#if defaultTypeInfo}
-      <OscdTooltip content="Convert this default type into a normal editable type. It will no longer be managed as a default." side="bottom" hoverDelay={250}>
-        <Button variant="outlined" onclick={handleDetachDefault}>
-          Customize Default
-        </Button>
-      </OscdTooltip>
-    {/if}
+    <TypeInfo kind={type} {typeId} instance={instanceType}>
+      {#snippet extraHeader()}
+        {#if defaultTypeInfo}
+          <HeaderElement label="Default" textOnly>
+            <DefaultTypeBadge
+              {typeId}
+              {defaultTypeInfo}
+              {defaultTypeVersionStatus}
+              onOpenDefaultRootType={onOpenDefaultRootType}
+              onUpdateDefaultTypeToLatest={onUpdateDefaultTypeToLatest}
+              onCustomizeDefault={handleDetachDefault}
+            />
+          </HeaderElement>
+        {/if}
+      {/snippet}
+    </TypeInfo>
   </div>
 
   <div class="actions-section">
@@ -137,19 +138,7 @@
         id={`edit-mode-switch-${typeId}`}
         label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
-        disabled={toggleEditModeSwitchDisabled}
-      />
-      <!--
-      {#if showSetAsDefault}
-        {#if setAsDefaultDisabled}
-          <OscdTooltip content="Save first to set as default" side="bottom" hoverDelay={300}>
-            <SetDefaultButton onClick={onClickDefault} disabled={setAsDefaultDisabled}/>
-          </OscdTooltip>
-        {:else}
-          <SetDefaultButton onClick={onClickDefault} />
-        {/if}
-      {/if}
-      -->
+        disabled={toggleEditModeSwitchDisabled}/>
     {:else}
       <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose Instance Type to Edit</Button>
     {/if}
@@ -170,18 +159,15 @@
   .info-section {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     flex-wrap: wrap;
-    row-gap: 0.45rem;
   }
 
   .actions-section {
     display: flex;
     gap: 0.8rem;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     flex-wrap: wrap;
-    min-height: 57px;
   }
 
   @media (max-width: 900px) {

@@ -60,6 +60,8 @@ export class DefaultTypeDetailsState {
     isCreateMode = $derived.by(() => this.mode === 'create');
     isEditMode = $derived.by(() => this.mode === 'edit');
     isViewMode = $derived.by(() => this.mode === 'view');
+    isInitialLoading = $derived.by(() => this.loading && !this.info);
+    isReloading = $derived.by(() => this.loading && !!this.info);
 
     typeVersions: DefaultTypeList | null = $state(null);
     versions: Version[] =  $state([]);

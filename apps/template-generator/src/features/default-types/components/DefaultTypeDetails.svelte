@@ -11,6 +11,7 @@
   } from '../state/default-type-details.state.svelte';
   import { handleEditV2 } from '@oscd-transnet-plugins/oscd-event-api';
   import TypeInfo from 'apps/template-generator/src/shared/ui/TypeInfo.svelte';
+   import HeaderElement from '../../../shared/ui/HeaderElement.svelte';
   import VersionSelector from '../../../shared/ui/version-selector/VersionSelector.svelte';
   import OscdTooltip from 'libs/oscd-component/src/oscd-tooltip/OscdTooltip.svelte';
   import type { CreateDefaultTypeInfo, DefaulteTypeSaveInfo } from '../types';
@@ -171,6 +172,7 @@
 
     detailsState.docIsReady = true;
   });
+
 </script>
 
 <div class="default-type-back-button">
@@ -182,10 +184,14 @@
 
 {#if detailsState.error}
   <p>{detailsState.error}</p>
-{:else if detailsState.loading}
-  <LinearProgress indeterminate />
 {:else if detailsState.info}
   <div class="default-type">
+    {#if detailsState.isReloading}
+      <div class="default-type__reload-progress">
+        <LinearProgress indeterminate />
+      </div>
+    {/if}
+
     <div class="default-type__header">
       <div class="default-type__header-left">
         <TypeInfo
@@ -196,33 +202,40 @@
           onIdChange={() => (detailsState.dirty = true)}
         />
 
-        <div class="default-type__version_info">
-          <span class="default-type__version-info-label">Version</span>
-          <div class="default-type__version-info-value">
-            {#if detailsState.currentVersion && !detailsState.loading && detailsState.currentVersion.locked}
-              <OscdTooltip
-                content="This version is locked and cannot be edited. Switch to latest version to make changes."
-                hoverDelay={250}
-              >
-                <Icon class="material-icons">lock</Icon>
-              </OscdTooltip>
-            {/if}
-            <VersionSelector
-              loadingCurrentVersion={detailsState.loading}
-              versions={detailsState.versions}
-              currentVersion={detailsState.currentVersion}
-              onVersionChange={async (version) => await loadVersion(version)}
-              disabled={detailsState.isCreateMode}
-            />
-          </div>
-        </div>
+          <HeaderElement label="Version">
+            {#snippet children()}
+                <div class="default-type__version-info-value">
+                  <VersionSelector
+                    loadingCurrentVersion={detailsState.loading}
+                    versions={detailsState.versions}
+                    currentVersion={detailsState.currentVersion}
+                    onVersionChange={async (version) => await loadVersion(version)}
+                    disabled={detailsState.isCreateMode}
+                  />
+                  <span
+                    class="default-type__readonly-lock"
+                    class:is-visible={detailsState.currentVersion && !detailsState.loading && detailsState.currentVersion.locked}
+                  >
+                    {#if detailsState.currentVersion && !detailsState.loading && detailsState.currentVersion.locked}
+                      <OscdTooltip
+                        content="This version is locked and cannot be edited. Switch to latest version to make changes."
+                        hoverDelay={250}
+                      >
+                        <Icon class="material-icons">lock</Icon>
+                      </OscdTooltip>
+                    {/if}
+                  </span>
+                </div>
+            {/snippet}
+          </HeaderElement>
 
-        <div class="default-type__version_info description">
-          <span class="default-type__version-info-label">Description</span>
-          <span class="default-type__description-value">
-            {detailsState.info.description ? detailsState.info.description : 'No description'}
-          </span>
-        </div>
+          <HeaderElement label="Description">
+            {#snippet children()}
+              <span class="default-type__description-value">
+                {detailsState.info.description ? detailsState.info.description : 'No description'}
+              </span>
+            {/snippet}
+          </HeaderElement>
       </div>
 
       <div class="default-type__header-actions">
@@ -265,9 +278,24 @@
       {/if}
     </div>
   </div>
+{:else if detailsState.isInitialLoading}
+  <LinearProgress indeterminate />
 {/if}
 
 <style>
+  .default-type {
+    position: relative;
+  }
+
+  .default-type__reload-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+
   .default-type__header {
     display: flex;
     align-items: center;
@@ -283,23 +311,35 @@
     min-width: 0;
   }
 
-  .default-type__version_info {
-    display: grid;
-    row-gap: 0.2rem;
-  }
-
   .default-type__version-info-value {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-height: 2.25rem;
+    overflow: visible;
   }
 
-  .default-type__version-info-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #555;
+  .default-type__readonly-lock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .default-type__readonly-lock.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  :global(.default-type__readonly-lock .material-icons) {
+    color: #6f8c95;
+    line-height: 1;
   }
 
   .default-type__description-value {

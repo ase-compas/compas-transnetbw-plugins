@@ -204,7 +204,16 @@ export function createElementInNS(doc: XMLDocument, namespace: string, tagName: 
 
 export function getDocumentDefaultNamespace(doc: XMLDocument): string {
     const root = doc.documentElement;
-    return root?.lookupNamespaceURI(null) ?? root?.namespaceURI ?? '';
+    if (!root) {
+        return '';
+    }
+
+    const lookupNamespace = (root as Element & { lookupNamespaceURI?: (prefix: string | null) => string | null }).lookupNamespaceURI;
+    if (typeof lookupNamespace === 'function') {
+        return lookupNamespace.call(root, null) ?? root.namespaceURI ?? '';
+    }
+
+    return root.namespaceURI ?? '';
 }
 
 

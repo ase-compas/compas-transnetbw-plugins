@@ -29,7 +29,7 @@
 </script>
 
 <Button
-  variant="unelevated"
+  variant="outlined"
   disabled={disabled}
   onclick={() => {
     onOpenMenu();
