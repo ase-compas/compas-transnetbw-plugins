@@ -376,7 +376,7 @@ describe('DataTypeService', () => {
 			expect(copies.length).toBeGreaterThan(0);
 		});
 
-		test('generates insert edit with specified copy ID', () => {
+		test('generates insert edit with specified copy ID with no id format configured', () => {
 			doc = parseScl(`
 				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
 					<DataTypeTemplates>
