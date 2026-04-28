@@ -22,7 +22,6 @@
     BehaviorSubject,
     catchError,
     of,
-    merge,
     startWith,
     distinctUntilChanged
   } from 'rxjs';
