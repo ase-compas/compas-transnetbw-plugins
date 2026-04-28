@@ -74,7 +74,7 @@
     font-size: 1.10rem;
     line-height: 1.10;
     font-weight: 400;
-    color: var(--primary,);
+    color: var(--primary);
     letter-spacing: 0.004em;
   }
 </style>
