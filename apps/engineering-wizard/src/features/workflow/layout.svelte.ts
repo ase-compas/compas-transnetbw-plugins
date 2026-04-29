@@ -13,21 +13,7 @@ function setEditorTabsVisibility(visible: boolean) {
   );
 }
 
-function setTopAppBarVisibility(visible: boolean) {
-  getLayoutContainer()?.dispatchEvent(
-    new CustomEvent('toggle-top-app-bar', {
-      detail: { visible },
-      bubbles: true,
-      composed: true,
-    }),
-  );
-}
-
 export const editorTabs = $state<{ visible: boolean }>({
-  visible: true,
-});
-
-export const topAppBar = $state<{ visible: boolean }>({
   visible: true,
 });
 
@@ -39,19 +25,9 @@ export const topAppBar = $state<{ visible: boolean }>({
  */
 export function enterFullscreenView(): () => void {
   editorTabs.visible = false;
-  topAppBar.visible = false;
+  setEditorTabsVisibility(false);
   return () => {
     editorTabs.visible = true;
-    topAppBar.visible = true;
+    setEditorTabsVisibility(true);
   };
 }
-
-// Side-effect: propagate changes to host layout
-$effect.root(() => {
-  $effect(() => {
-    setEditorTabsVisibility(editorTabs.visible);
-  });
-  $effect(() => {
-    setTopAppBarVisibility(topAppBar.visible);
-  });
-});
