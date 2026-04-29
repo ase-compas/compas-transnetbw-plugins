@@ -50829,7 +50829,7 @@ function Yy(a, e) {
   var m = U(C, 2);
   Se(
     lp(m, {
-      anchorCorner: "BOTTOM_RIGHT",
+      anchorCorner: "BOTTOM_LEFT",
       maxHeight: 300,
       children: (p, _) => {
         var I = Xy(), D = V(I);
