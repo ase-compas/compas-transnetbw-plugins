@@ -102,13 +102,13 @@
         variant="outlined"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={cancel}
-      >CANCEL</Button>
+      >Cancel</Button>
       <Button
         variant="raised"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={save}
         disabled={!canSave || saving}
-      >{saving ? 'SAVING…' : 'SAVE'}</Button>
+      >{saving ? 'Saving…' : 'Save'}</Button>
     </div>
   </div>
 

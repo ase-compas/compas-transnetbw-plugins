@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* ─── Template Generator – Typography tokens ──────────────────────────────── */
 
 /*
@@ -13,7 +15,7 @@
  * children can resolve the tokens through normal CSS inheritance.
  */
 :root {
-  --tg-font-family: 'Roboto', sans-serif;
+  --tg-font-family: 'Inter', sans-serif;
   --tg-font-size-heading:    1.25rem;  /* 20px – column headers, page-level headings */
   --tg-font-size-value:      1.1rem;   /* ~18px – primary display values             */
   --tg-font-size-subheading: 1rem;     /* 16px – card titles, section headings       */
@@ -25,7 +27,7 @@
   --tg-font-weight-medium:  500;
   --tg-font-weight-normal:  400;
 
-  --mdc-typography-font-family: 'Roboto', sans-serif;
+  --mdc-typography-font-family: 'Inter', sans-serif;
 }
 
 html,
@@ -46,7 +48,7 @@ body {
 }
 
 :host {
-  --tg-font-family: 'Roboto', sans-serif;
+  --tg-font-family: 'Inter', sans-serif;
   --tg-font-size-heading:    1.25rem;
   --tg-font-size-value:      1.1rem;
   --tg-font-size-subheading: 1rem;
@@ -58,9 +60,9 @@ body {
   --tg-font-weight-medium:  500;
   --tg-font-weight-normal:  400;
 
-  --mdc-typography-font-family: 'Roboto', sans-serif;
+  --mdc-typography-font-family: 'Inter', sans-serif;
 
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 400;
 }

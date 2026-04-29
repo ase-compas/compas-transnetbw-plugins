@@ -352,8 +352,8 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    height: 36px;
-    padding: 0 16px;
+    height: 30px;
+    padding: 0 10px;
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: 500;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);

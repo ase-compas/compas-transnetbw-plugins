@@ -105,7 +105,7 @@
         type="button"
         style="background: var(--white); color: var(--primary-base);"
         onclick={continueRunning}>
-        CONTINUE
+        Continue
       </Button>
     </div>
   {/if}
@@ -118,7 +118,7 @@
       onclick={handleAddNew}
       aria-label="Start process"
     >
-      ADD NEW PROCESS
+      Add new process
     </Button>
   </div>
 

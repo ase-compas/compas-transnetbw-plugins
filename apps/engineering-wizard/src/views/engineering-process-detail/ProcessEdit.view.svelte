@@ -238,7 +238,7 @@
           disabled={!selectedEngineeringProcess.process || !selectedPlugin}
           aria-label="Add validation"
         >
-          ADD NEW VALIDATION
+          Add new validation
         </Button>
       </div>
       <ProcessValidationView
@@ -251,7 +251,7 @@
 </div>
 
 <style>
-  * { font-family: 'Roboto', sans-serif; }
+  * { font-family: 'Inter', sans-serif; }
 
   .edit-view {
     /*

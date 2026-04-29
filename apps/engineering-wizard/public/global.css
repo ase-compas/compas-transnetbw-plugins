@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* ─── Engineering Wizard – Typography tokens ─────────────────────────────── */
 
 /*
@@ -13,7 +15,7 @@
  * children can resolve the tokens through normal CSS inheritance.
  */
 :root {
-  --ew-font-family: 'Roboto', sans-serif;
+  --ew-font-family: 'Inter', sans-serif;
   --ew-font-size-h1:   1.25rem;  /* 20px – page/dialog titles        */
   --ew-font-size-h2:   1rem;     /* 16px – section titles            */
   --ew-font-size-body: 0.875rem; /* 14px – regular body / labels     */
@@ -25,7 +27,7 @@
   --ew-font-weight-medium:  500;
   --ew-font-weight-normal:  400;
 
-  --mdc-typography-font-family: 'Roboto', sans-serif;
+  --mdc-typography-font-family: 'Inter', sans-serif;
 }
 
 html,
@@ -46,7 +48,7 @@ body {
 }
 
 :host {
-  --ew-font-family: 'Roboto', sans-serif;
+  --ew-font-family: 'Inter', sans-serif;
   --ew-font-size-h1:   1.25rem;
   --ew-font-size-h2:   1rem;
   --ew-font-size-body: 0.875rem;
@@ -57,9 +59,9 @@ body {
   --ew-font-weight-medium:  500;
   --ew-font-weight-normal:  400;
 
-  --mdc-typography-font-family: 'Roboto', sans-serif;
+  --mdc-typography-font-family: 'Inter', sans-serif;
 
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 400;
 }

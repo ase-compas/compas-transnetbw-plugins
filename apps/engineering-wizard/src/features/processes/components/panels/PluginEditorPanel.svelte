@@ -48,7 +48,7 @@
       aria-label="Remove all plugins"
       onclick={handleRemoveAll}
     >
-      REMOVE ALL
+      Remove all
     </Button>
   {/if}
 {/snippet}
