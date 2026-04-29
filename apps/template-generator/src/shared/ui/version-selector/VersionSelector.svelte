@@ -45,7 +45,7 @@
   </Label>
   <Icon class="material-icons">expand_more</Icon>
 </Button>
-<MenuSurface bind:this={surface} anchorCorner="BOTTOM_RIGHT" maxHeight={300}>
+<MenuSurface bind:this={surface} anchorCorner="BOTTOM_LEFT" maxHeight={300}>
   <div style="overflow-y: auto;">
     {#if loading}
       <div class="loading-container">
