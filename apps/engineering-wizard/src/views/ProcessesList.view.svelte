@@ -3,7 +3,7 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdInfoIcon, OscdEditIcon, OscdPlayCircleIcon, OscdArrowForwardIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   import Button, { Label, Icon } from '@smui/button';
   import {
@@ -95,32 +95,37 @@
 </script>
 
 <div class="processes">
+  <div class="process-toolbar">
+    <h1 class="processes__header">Processes</h1>
+    <div class="process-toolbar__right">
+      <SearchInput bind:value={searchQuery} label="Search Processes" />
+      <Button
+        variant="raised"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        onclick={handleAddNew}
+        aria-label="Start process"
+      >
+        Add new process
+      </Button>
+    </div>
+  </div>
+
   {#if runningProc}
     <div class="process-banner">
       <div class="process-banner__info">
-        <OscdInfoIcon />
+        <OscdInfoIcon svgStyles="fill: var(--primary-base); width: 20px; height: 20px;" />
         <span>{bannerText}</span>
       </div>
       <Button
         type="button"
-        style="background: var(--white); color: var(--primary-base);"
+        variant="unelevated"
+        style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
         onclick={continueRunning}>
-        Continue
+        <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
+        <Label>Continue</Label>
       </Button>
     </div>
   {/if}
-
-  <div class="process-toolbar">
-    <SearchInput bind:value={searchQuery} label="Search Processes" />
-    <Button
-      class="mdc-button--raised"
-      style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-      onclick={handleAddNew}
-      aria-label="Start process"
-    >
-      Add new process
-    </Button>
-  </div>
 
   <OscdBasicDataTable
     items={filteredRows}
@@ -136,36 +141,35 @@
     {#snippet actions({ item })}
       <Button
         type="button"
+        variant="unelevated"
         onclick={(e) => { e.stopPropagation(); handleEdit(item); }}
         aria-label="Edit process"
-        class="mdc-button--raised"
-        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
       >
-        <Icon><OscdEditIcon svgStyles="fill: var(--white)" /></Icon>
+        <Icon><OscdEditIcon svgStyles="fill: var(--primary-base)" /></Icon>
         <Label>Edit</Label>
       </Button>
 
       {#if isRunningRow(item)}
         <Button
-          variant="raised"
           type="button"
-          aria-label="Start process"
+          variant="unelevated"
+          aria-label="Continue process"
           onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-          class="mdc-button--raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+          style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
         >
-          <Icon><OscdPlayCircleIcon svgStyles="fill: var(--white)" /></Icon>
+          <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
           <Label>Continue</Label>
         </Button>
       {:else}
         <Button
           type="button"
+          variant="unelevated"
           aria-label="Start process"
           onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-          class="mdc-button--raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+          style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
         >
-          <Icon><OscdPlayCircleIcon svgStyles="fill: var(--white)" /></Icon>
+          <Icon><OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" /></Icon>
           <Label>Start</Label>
         </Button>
       {/if}
@@ -179,6 +183,15 @@
     padding: 0 24px;
   }
 
+  .processes__header {
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-base);
+    margin: 0;
+    white-space: nowrap;
+  }
+
   .process-toolbar {
     display: flex;
     align-items: center;
@@ -187,6 +200,12 @@
     gap: 12px;
   }
 
+  .process-toolbar__right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
 
   .process-banner {
     display: flex;
@@ -196,7 +215,7 @@
     padding: 0 24px;
     margin-bottom: 24px;
     border-radius: 4px;
-    background-color: var(--primary-base);
+    background-color: #d9d800;
   }
 
   .process-banner__info {
@@ -208,7 +227,7 @@
   .process-banner span {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
-    color: var(--white);
+    color: var(--primary-base);
     font-weight: var(--ew-font-weight-medium, 500);
   }
 </style>

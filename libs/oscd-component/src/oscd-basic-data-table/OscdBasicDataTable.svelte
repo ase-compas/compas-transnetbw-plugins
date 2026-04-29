@@ -99,7 +99,7 @@
   .error { color: #b00020; }
 
   :global(.mdc-data-table__row:hover > .mdc-data-table__cell:not(.oscd-basic-table__empty-row)) {
-    background-color: #D9D800 !important;
+    background-color: rgba(235, 238, 218, 0.1) !important;
   }
 
   :global(td.mdc-data-table__cell.cell-bold) {

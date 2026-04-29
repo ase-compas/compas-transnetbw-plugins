@@ -42,7 +42,9 @@
   }
 
   function normalizeContextPath(values: MaybeNode[]): MaybeNode[] {
-    const selected = removeNulls(values);
+    // Truncate at the first null: clearing a node removes all subsequent selections
+    const firstNull = values.findIndex((v) => v === null);
+    const selected = (firstNull === -1 ? values : values.slice(0, firstNull)) as NodeName[];
     return lastNodeHasChildren(selected) ? withTrailingNull(selected) : selected;
   }
 
@@ -58,7 +60,7 @@
   const selectedPathCount = $derived(selectedPath.length);
   const lastIndex = $derived(contextPath.length - 1);
 
-  const isCollapsed = $derived(selectedPathCount > 3);
+  const isCollapsed = $derived(selectedPathCount > 2);
 
   const hiddenNodes = $derived.by(() => {
     if (!isCollapsed) return [];
@@ -158,6 +160,8 @@
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
   .ellipsis {

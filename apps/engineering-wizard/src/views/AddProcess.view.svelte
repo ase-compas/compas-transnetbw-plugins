@@ -142,7 +142,7 @@
     padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
 
     /*
      * Controls the max-height of the plugin panels.
@@ -170,6 +170,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  :global(.plugin-editor-row) {
+    margin-top: 16px;
   }
 </style>
 
