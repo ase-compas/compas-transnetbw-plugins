@@ -258,14 +258,13 @@
      * Controls the max-height of the plugin panels.
      * Increase this value if panels still overflow (accounts for stepper + info bar + OpenSCD chrome).
      */
-    --oscd-panel-max-height: calc(100vh - 24rem);
+    --oscd-panel-max-height: calc(100vh - 23rem);
   }
 
   .step-content {
     padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
   }
 
   .stepper {
@@ -283,6 +282,7 @@
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    padding: 12px 0;
   }
 
   .header :global(button) {

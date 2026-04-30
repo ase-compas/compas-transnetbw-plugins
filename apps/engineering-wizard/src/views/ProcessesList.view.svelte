@@ -3,9 +3,10 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon, OscdEditIcon, OscdPlayCircleIcon, OscdArrowForwardIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   import Button, { Label, Icon } from '@smui/button';
+
   import {
     engineeringProcesses,
     engineeringProcessesStatus,
@@ -139,17 +140,6 @@
     onRowClick={handleView}
   >
     {#snippet actions({ item })}
-      <Button
-        type="button"
-        variant="unelevated"
-        onclick={(e) => { e.stopPropagation(); handleEdit(item); }}
-        aria-label="Edit process"
-        style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
-      >
-        <Icon><OscdEditIcon svgStyles="fill: var(--primary-base)" /></Icon>
-        <Label>Edit</Label>
-      </Button>
-
       {#if isRunningRow(item)}
         <Button
           type="button"

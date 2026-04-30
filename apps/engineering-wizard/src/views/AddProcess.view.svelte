@@ -148,7 +148,7 @@
      * Controls the max-height of the plugin panels.
      * Increase this value if panels still overflow (accounts for page chrome + OpenSCD header/tabs).
      */
-    --oscd-panel-max-height: calc(100vh - 23rem);
+    --oscd-panel-max-height: calc(100vh - 21rem);
   }
 
   .topbar {
@@ -170,10 +170,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-  }
-
-  :global(.plugin-editor-row) {
-    margin-top: 16px;
   }
 </style>
 

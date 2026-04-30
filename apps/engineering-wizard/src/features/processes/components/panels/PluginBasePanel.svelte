@@ -220,7 +220,7 @@
     margin: 0;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
-    font-weight: var(--ew-font-weight-medium, 500);
+    font-weight: 600;
     color: var(--white);
     line-height: 1.2;
   }
@@ -291,6 +291,7 @@
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
     color: #dae3e6;
+    user-select: none;
   }
 
   .plugin-list__item-row {
@@ -322,8 +323,9 @@
   .plugin-list__item-name {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
-    font-weight: var(--ew-font-weight-medium, 500);
+    font-weight: 600;
     color: var(--primary-base);
+    user-select: none;
   }
 
   .plugin-list__item-action {
@@ -358,7 +360,6 @@
     font-weight: 500;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     letter-spacing: 0.0892857143em;
-    text-transform: uppercase;
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
