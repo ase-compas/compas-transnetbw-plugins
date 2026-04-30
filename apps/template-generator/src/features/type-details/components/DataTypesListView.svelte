@@ -36,6 +36,7 @@
   let suspendedReloadDepth = 0;
   let hasPendingReload = false;
   const idSettingsState = getIdSettingsState();
+  service.setIdSettingsState(idSettingsState);
 
   const sortedDataTypes = $derived.by(() => {
     return sortSimpleDataTypes(dataTypes);
@@ -148,7 +149,7 @@
     { key: 'id', header: 'Name' },
     { key: 'typeKind', header: 'Type Kind' },
     { key: 'instanceType', header: 'Instance Type' },
-    { key: 'references', header: 'References' },
+    { key: 'references', header: 'Number of Data Objects' },
   ]}
 >
   {#snippet actions({ item })}

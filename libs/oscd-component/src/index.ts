@@ -29,6 +29,7 @@ export {default as OscdFilterBuilder } from './oscd-filter-builder/OscdFilterBui
 export {default as OscdMultiSelect } from './oscd-multi-select/OscdMultiSelect.svelte'
 export {default as OscdFilterTab } from './oscd-filter-tab/OscdFilterTab.svelte'
 export { default as OscdSmartSelect } from './oscd-smart-select/OscdSmartSelect.svelte';
+export { default as OscdBadge } from './oscd-badge/OscdBadge.svelte';
 
 export type { FilterType, ActiveFilter } from './oscd-filter-box/interfaces';
 

@@ -1,7 +1,10 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
+  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import { TypeKind } from '../model';
   import OscdIconActionButton from 'libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte';
+  import HeaderElement from './HeaderElement.svelte';
+  import type { Snippet } from 'svelte';
   import { onMount, tick } from 'svelte';
 
   interface Props {
@@ -10,6 +13,7 @@
     instance?: string | null;
     canEditId?: boolean;
     onIdChange?: (newId: string) => void;
+    extraHeader?: Snippet;
   }
 
   let {
@@ -18,6 +22,7 @@
     instance: instanceType = null,
     canEditId = false,
     onIdChange,
+    extraHeader,
   }: Props = $props();
 
   let idTextFieldElement: Textfield | null = $state(null);
@@ -54,44 +59,47 @@
     idEditMode = true;
   });
 </script>
-  
 
 <div class="info-section">
-    <div class="section">
-      <span class="label">Type</span>
-      <span class="value strong">{TypeKind.abbreviation(type)}</span>
-    </div>
+  <HeaderElement label="Type" textOnly>
+    {#snippet children()}
+      <span class="value">{TypeKind.abbreviation(type)}</span>
+    {/snippet}
+  </HeaderElement>
 
-    <div class="section">
-      <span class="label">{TypeKind.toTypeKindLabel(type)}</span>
+  <HeaderElement label="Instance" textOnly>
+    {#snippet children()}
       {#if instanceType}
-        <span class="instance-badge static">{instanceType}</span>
+        <span class="value">{instanceType}</span>
       {:else}
-        <span class="instance-badge unknown">Unknown</span>
+        <span class="value value--muted">Unknown</span>
       {/if}
-    </div>
+    {/snippet}
+  </HeaderElement>
 
-    <div class="section">
+  <HeaderElement label={showIdEditor ? undefined : 'Type ID'} textOnly>
+    {#snippet children()}
       {#if showIdEditor}
-      <Textfield
-        bind:this={idTextFieldElement}
-        variant="outlined"
-        bind:value={typeId}
-        required
-        initialInvalid
-        label="Type ID"
-        style="min-width: 250px;"
-        onblur={submitTypeId}
-        onkeydown={onTypeIdKeydown}
-      />
+        <Textfield
+          bind:this={idTextFieldElement}
+          variant="outlined"
+          bind:value={typeId}
+          required
+          initialInvalid
+          label="Type ID"
+          style="min-width: 250px;"
+          onblur={submitTypeId}
+          onkeydown={onTypeIdKeydown}
+        />
       {:else}
-        <span class="label">Type ID</span>
         <div class="type-id-row">
-          <span class="value mono">{typeId}</span>
+          <OscdTooltip content={typeId} side="bottom" hoverDelay={250}>
+            <span class="value type-id-value">{typeId}</span>
+          </OscdTooltip>
           {#if canEditId}
             <OscdIconActionButton
               type="edit"
-              tooltip="Edit"
+              tooltip="Rename"
               tooltipSide="bottom"
               size="20px"
               onClick={enterIdEditMode}
@@ -99,74 +107,39 @@
           {/if}
         </div>
       {/if}
-    </div>
+    {/snippet}
+  </HeaderElement>
+
+  {#if extraHeader}
+    {@render extraHeader()}
+  {/if}
 </div>
 
 <style>
-
   .info-section {
     display: grid;
     grid-auto-flow: column;
     gap: 2.8rem;
-    align-items: self-start;
-    min-height: 57px;
-  }
-
-  .section {
-    display: grid;
-    row-gap: 0.2rem;
-  }
-
-  .label {
-    font-size: var(--tg-font-size-small);
-    font-weight: var(--tg-font-weight-heading);
-    color: #555;
-  }
-
-  .value {
-    font-size: var(--tg-font-size-value);
-    color: var(--mdc-theme-primary, #ff3e00);
-    align-self: end;
-  }
-
-  .value.strong {
-    font-weight: var(--tg-font-weight-bold);
-  }
-
-  .value.mono {
-    font-family: 'Courier New', monospace;
-    font-size: var(--tg-font-size-value);
-  }
-
-  .instance-badge {
-    display: inline-flex;
     align-items: center;
-    width: fit-content;
-    height: 1.8rem;
-    padding: 0 0.5rem;
-    border-radius: 10px;
-    color: white;
-    font-weight: var(--tg-font-weight-medium);
-    white-space: nowrap;
-    font-size: var(--tg-font-size-small);
   }
 
-  .instance-badge.static {
-    background: var(--mdc-theme-primary, #ff3e00);
-    color: white;
-  }
-
-  .instance-badge.unknown {
-    white-space: nowrap;
-    color: var(--mdc-theme-primary, #ff3e00);
-    border: 1px dashed var(--mdc-theme-primary, #ff3e00);
-    transition: background 0.2s, border-color 0.2s;
+  .value--muted {
+    color: #54727d;
+    opacity: 0.9;
   }
 
   .type-id-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .type-id-value {
+    display: inline-block;
+    max-width: 40ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
 </style>

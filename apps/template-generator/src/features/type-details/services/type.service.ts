@@ -8,6 +8,10 @@ import { INSTANCE_DESCRIPTIONS } from "../../../assets/instance-descriptions";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import { DefaultTypeManagerService, type ResolveDefaultPlan } from "./default-type-manager-service";
 
+interface IdSettingsStateLike {
+    generateIdWithResult(typeKind: TypeKind, ctx: { instance: string }): { id?: string; message?: string };
+}
+
 export interface ApplyDefaultTypesPreviewEntry {
     refTypeKey: string;
     refTypeKind: TypeKind;
@@ -34,6 +38,7 @@ export class DataTypeService {
 
     private readonly nsdSchemaRegistry: NsdSchemaRegistry;
     private readonly defaultTypeManagerService: DefaultTypeManagerService;
+    private idSettingsState?: IdSettingsStateLike;
 
     constructor(
         private doc: XMLDocument,
@@ -48,14 +53,21 @@ export class DataTypeService {
         this.defaultTypeManagerService.setDocument(doc);
     }
 
+    setIdSettingsState(state: IdSettingsStateLike): void {
+        this.idSettingsState = state;
+    }
+
+    // Queries
 
     /**
      * Gets detailed information about a data type, including its members and their reference details.
      * @param id The ID of the data type to retrieve.
      * @returns DataTypeDetails object with enriched member information.
      * @throws Error if the data type is not found or if its instance type is invalid according to the NSD schema registry.
+     * @returns DataTypeDetails object with enriched member information.
      */
     getById(id: string): DataTypeDetails {
+        // Get DataType from SCL Element
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
 
@@ -76,8 +88,11 @@ export class DataTypeService {
             };
         }
 
+        // Get all NSD definitions for this typeKind and instanceType
         const nsdDefs = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
 
+        // Enrich DataType members with info from NSD definitions
+        // Build children array by iterating over all NSD definitions (records)
         const members = Object.values(nsdDefs).map(def => {
             const childElement = this.findConfiguredMemberElement(element, def);
             const isConfigured = !!childElement;
@@ -161,9 +176,10 @@ export class DataTypeService {
      */
     getDeletePlan(typeId: string): { hasDefaultMetadata: boolean; trackedSubTypeIds: string[] } {
         const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(typeId);
-        
+
         const hasDefaultMetadata = !!defaultInfo;
-        
+
+        // If it is a root, get the sub-type IDs that will be deleted
         const trackedSubTypeIds = hasDefaultMetadata
             ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(defaultInfo.rootId)
             : [];
@@ -228,11 +244,13 @@ export class DataTypeService {
      */
     getAssignableTypes(id: string, focusMemberName?: string): SimpleDataType[] {
 
+        console.debug(`getAssignableTypes ${id}`);
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
 
         const nsdTypeDefinitions = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
 
+        // Collect all required reference types from NSD definitions
         const requiredReferences = Object.values(nsdTypeDefinitions)
             .filter(def => !focusMemberName || def.name === focusMemberName)
             .filter(def => def.requiresReference && def.refTypeKind)
@@ -243,6 +261,7 @@ export class DataTypeService {
 
         if (requiredReferences.length === 0) return [];
 
+        // Find all types in the SCL document that match any required reference
         const allTypes = listDataTypeElements(this.doc)
             .map(el => elementToSimpleDataType(el))
             .filter(dt => dt.id && dt.typeKind);
@@ -270,9 +289,11 @@ export class DataTypeService {
     private enrichTypeWithDefaultInfo(dt: SimpleDataType): boolean {
         const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
         if (defaultInfo) {
+            // Only include if it's the root ID of the default type
             if (dt.id !== defaultInfo.rootId) {
-                return false;
+                return false; // Filter out non-root default type IDs
             }
+            // Add version info for the root ID
             dt.isDefaultType = true;
             dt.defaultTypeVersion = defaultInfo.version;
             dt.defaultTypeRootId = defaultInfo.rootId;
@@ -303,6 +324,7 @@ export class DataTypeService {
      * @returns An array of SimpleDataType objects that are referenced by the specified member.
      */
     getReferencedTypes(id: string, focusMemberName?: string): SimpleDataType[] {
+        console.debug(`getReferencedTypes ${id}`);
         const visited = new Set<string>();
         const result: SimpleDataType[] = [];
         const startElement = findDataTypeElement(this.doc, id);
@@ -368,10 +390,10 @@ export class DataTypeService {
         }
 
         const editEvents: EditV2[] = []
-        
+
         // Get delete plan to check for cascading deletions
         const plan = this.getDeletePlan(id);
-        
+
         // If this is a root of a default group, also add edits to delete sub-types and metadata
         if (plan.hasDefaultMetadata) {
             // Delete all tracked sub-types and their references
@@ -396,7 +418,7 @@ export class DataTypeService {
             const metadataEdits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(id);
             editEvents.push(...metadataEdits);
         }
-        
+
         // Clear references to the root type
         const refEls = this.doc.querySelectorAll(`[type="${id}"]`);
         refEls.forEach(refEl => {
@@ -463,7 +485,7 @@ export class DataTypeService {
 
     /**
      * Duplicates a data type with a new ID.
-     * The new ID can be provided or auto-generated by appending "_copy" and a counter to the original ID.
+     * The new ID can be provided or auto-generated by first checking if it can be auto-generated by the ID Builder and as a fallback, appending "_copy" and a counter to the original ID.
      * @param id The ID of the data type to duplicate.
      * @param newId Optional new ID for the duplicated data type. If not provided, a new ID is generated.
      */
@@ -668,6 +690,8 @@ export class DataTypeService {
             title: `Set configured members in DataType ${id}`,
             createHistoryEntry: true,
         });
+
+        console.log(`Set configured members of DataType ${id}. Added: ${addedCount}, Removed: ${removedCount}, Total changed: ${changedMemberCount}`);
 
         return changedMemberCount;
     }
@@ -928,6 +952,7 @@ export class DataTypeService {
         for (const memberName of memberNames) {
             const memberDefinition: NsdTypeDefinition = nsdDefinitions[memberName];
             if (!memberDefinition?.requiresReference) {
+                console.debug(`Skipping member ${memberName} of DataType ${id} because it does not require a reference`);
                 continue;
             }
 
@@ -952,6 +977,9 @@ export class DataTypeService {
         return map;
     }
 
+    // ==================
+    // Data retrieval and mapping for UI
+    // ==================
 
     private validateInstanceTypeForKind(typeKind: TypeKind, instanceType: string): void {
         const instanceTypeDefinition = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
@@ -1236,6 +1264,28 @@ export class DataTypeService {
     }
 
     private generateDuplicateId(baseId: string): string {
+        const element = findDataTypeElement(this.doc, baseId);
+        const { typeKind, instanceType } = getDataTypeBaseInfo(element);
+
+        // use id format duplicate
+        if (typeKind && instanceType && this.idSettingsState) {
+            const generatedIdResult = this.idSettingsState.generateIdWithResult(typeKind, { instance: instanceType });
+            console.log('Generated ID result from ID Builder:', generatedIdResult);
+            if (generatedIdResult.id) {
+                return generatedIdResult.id;
+            }
+        }
+
+        // fallback copy append id
+        return this.generateCopyDuplicateId(baseId);
+    }
+
+    /**
+     * Generates a new ID for a duplicated data type by appending "_copy" and a counter to the original ID.
+     * @param baseId The original ID to base the duplicate ID on.
+     * @returns The generated duplicate ID.
+     */
+    private generateCopyDuplicateId(baseId: string): string {
         const copySuffixPattern = /^(.*)_copy_(\d+)$/;
         const match = baseId.match(copySuffixPattern);
 

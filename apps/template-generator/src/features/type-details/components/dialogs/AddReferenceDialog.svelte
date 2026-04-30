@@ -105,7 +105,7 @@
 
   function handleConfirm(): void {
     if (mode === 'select') {
-      if (!selectedReferenceType?.id || !refInstanceType) {
+      if (!selectedReferenceType?.id) {
         return;
       }
 

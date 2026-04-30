@@ -52,6 +52,7 @@
 
     const result = await openDialog(TypeRenameDialog, {
       typeId: typeDetailsState.loadedType?.id || '',
+      service,
     });
     if (result.type !== 'confirm') {
       return null;

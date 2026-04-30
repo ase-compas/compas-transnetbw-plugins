@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Icon } from '@smui/button';
+  import { OscdBadge } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     version: Version;
@@ -24,7 +25,7 @@
   </div>
   {#if version.latest}
     <div class="version-item__latest">
-      <span class="badge">latest</span>
+      <OscdBadge label="latest" type="primary" size="small" />
     </div>
   {/if}
 </div>

@@ -177,7 +177,7 @@
     <div
       style="display: flex; justify-content: space-between; align-items: center;"
     >
-      <h1>Auto Type ID Generation Settings</h1>
+      <h2>ID Generation</h2>
       <Button variant="raised" onclick={saveSettings}>Save</Button>
     </div>
 
