@@ -282,7 +282,7 @@
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-    padding: 12px 0;
+    padding-bottom: 12px;
   }
 
   .header :global(button) {
