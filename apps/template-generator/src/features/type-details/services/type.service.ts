@@ -2,7 +2,7 @@ import type { EditV2, RemoveV2, SetAttributesV2 } from "@oscd-transnet-plugins/o
 import { createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
 import { TypeKind, type DataTypeDetails, type DataTypeFilter, type DataTypeMember, type InstanceDetails, type SimpleDataType } from "../../../shared/model";
 import { NsdSchemaRegistry, type NsdTypeDefinition } from "./nsd-schema-registry";
-import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, elementToSimpleDataType, createElementInDefaultNS, DATA_TYPE_KIND_ORDER, DATA_TYPE_TEMPLATES_TAG, findDataTypeTemplatesElement, findDataTypeInsertReferenceElement, insertTypeElements } from "../../../shared/utils/scl.utils";
+import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, elementToSimpleDataType, createElementInDefaultNS, DATA_TYPE_KIND_ORDER, DATA_TYPE_TEMPLATES_TAG, findDataTypeTemplatesElement, findDataTypeInsertReferenceElement, insertTypeElements, collectReachableTypeIds, createEmptySCLDocument } from "../../../shared/utils/scl.utils";
 import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../../../shared/constants";
 import { INSTANCE_DESCRIPTIONS } from "../../../assets/instance-descriptions";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
@@ -199,6 +199,28 @@ export class DataTypeService {
             hasDefaultMetadata: hasDefaultMetadata,
             trackedSubTypeIds,
         };
+    }
+
+    /**
+     * Builds a standalone SCL document containing the given type and all types
+     * reachable from it, ready for upload as a default type.
+     * The document root element id is set to the given typeId so that
+     * DefaultTypeService.getById can resolve the root after upload.
+     * @param typeId The root type ID to extract.
+     */
+    extractDocForDefaultType(typeId: string): XMLDocument {
+        const reachableIds = collectReachableTypeIds(this.doc, typeId);
+        const newDoc = createEmptySCLDocument(typeId);
+        newDoc.documentElement.setAttribute('id', typeId);
+
+        const dtt = createElementInDefaultNS(newDoc, DATA_TYPE_TEMPLATES_TAG);
+        newDoc.documentElement.appendChild(dtt);
+
+        listDataTypeElements(this.doc)
+            .filter(el => reachableIds.has(el.getAttribute('id') ?? ''))
+            .forEach(el => dtt.appendChild(newDoc.importNode(el, true)));
+
+        return newDoc;
     }
 
     /**

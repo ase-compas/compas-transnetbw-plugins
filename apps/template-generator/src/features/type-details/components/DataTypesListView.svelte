@@ -122,7 +122,7 @@
   <DataTypeFilter bind:query bind:dataTypeKind bind:instance {service} />
 
   <OscdButton variant="unelevated" callback={createLNodeType}>
-    ADD NEW LNODE TYPE
+    Add new LNode type
   </OscdButton>
 </div>
 
@@ -131,6 +131,7 @@
   errorMsg={error}
   emptyText="No data types found."
   items={sortedDataTypes}
+  hasActions
   onRowClick={(dataType) => openTypeDetails(dataType)}
   columns={[
     { key: 'id', header: 'Name' },
@@ -140,22 +141,24 @@
   ]}
 >
   {#snippet actions({ item })}
-    <OscdIconActionButton
-      tooltip="Rename"
-      type="edit"
-      onClick={() => renameType(item)}
-    />
-    <OscdIconActionButton
-      tooltip="Duplicate"
-      type="duplicate"
-      onClick={() => duplicateType(item)}
-    />
-    <OscdIconActionButton
-      tooltip="Delete"
-      type="delete"
-      fillColor="red"
-      onClick={() => deleteType(item)}
-    />
+    <div class="actions-cell">
+      <OscdIconActionButton
+        tooltip="Rename"
+        type="edit"
+        onClick={() => renameType(item)}
+      />
+      <OscdIconActionButton
+        tooltip="Duplicate"
+        type="duplicate"
+        onClick={() => duplicateType(item)}
+      />
+      <OscdIconActionButton
+        tooltip="Delete"
+        type="delete"
+        fillColor="red"
+        onClick={() => deleteType(item)}
+      />
+    </div>
   {/snippet}
 </OscdBasicDataTable>
 
@@ -165,5 +168,10 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+  }
+
+  .actions-cell {
+    display: flex;
+    justify-content: flex-end;
   }
 </style>

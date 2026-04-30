@@ -36,6 +36,7 @@
     onOpenDefaultRootType?: (typeId: string, typeKind: TypeKind) => void;
     onUpdateDefaultTypeToLatest?: () => void;
     onDetachDefault?: () => void;
+    onClickDefault?: () => void;
     onRename: () => void;
     onDelete: () => void;
     children?: Snippet;
@@ -58,6 +59,7 @@
     onOpenDefaultRootType = (_: string, __: TypeKind) => {},
     onUpdateDefaultTypeToLatest = () => {},
     onDetachDefault = () => {},
+    onClickDefault = () => {},
     onRename,
     onDelete,
     children,
@@ -85,6 +87,7 @@
     onOpenDefaultRootType={(rootTypeId, rootTypeKind) => onOpenDefaultRootType(rootTypeId, rootTypeKind)}
     onUpdateDefaultTypeToLatest={onUpdateDefaultTypeToLatest}
     onDetachDefault={onDetachDefault}
+    onClickDefault={onClickDefault}
     toggleEditModeSwitchDisabled={config?.toggleEditModeSwitchDisabled ?? false}
     showSetAsDefault={config?.defaultTypeFeatureEnabled ?? true}
     onRename={onRename}

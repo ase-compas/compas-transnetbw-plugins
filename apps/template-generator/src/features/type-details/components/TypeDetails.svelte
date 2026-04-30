@@ -16,7 +16,10 @@
   import type { DetailsConfig } from '../types';
   import ApplyDefaultPreviewConfirmDialog from './dialogs/ApplyDefaultPreviewConfirmDialog.svelte';
   import ConfirmCascadeDeleteDefaultTypeDialog from './dialogs/ConfirmCascadeDeleteDefaultTypeDialog.svelte';
+  import SaveDefaultTypeDialog from '../../default-types/components/SaveDefaultTypeDialog.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { defaultTypeService } from '../../../bootstrap';
+  import { collectReachableTypeIds, listDataTypeElements } from '../../../shared/utils/scl.utils';
 
   interface Props {
     typeId: string;
@@ -235,6 +238,56 @@
     }
   }
 
+  async function handleSaveAsDefault() {
+    const loaded = typeDetailsState.loadedType;
+    if (!loaded?.instanceType || loaded.defaultTypeInfo) return;
+
+    let existingDefault = null;
+    try {
+      existingDefault = await defaultTypeService.getLatestByKindAndInstance(loaded.typeKind, loaded.instanceType);
+    } catch {
+      toastService.error('Check Failed', 'Failed to check for existing default type. Please try again.');
+      return;
+    }
+
+    const mode = existingDefault ? 'update' : 'create';
+    const initialVersion = existingDefault ? undefined : '1.0.0';
+
+    const doc = service.extractDocForDefaultType(loaded.id);
+    const dataTypeElements = listDataTypeElements(doc);
+    const reachableIds = collectReachableTypeIds(doc, loaded.id);
+    const summary = {
+      rootId: loaded.id,
+      totalDataTypeCount: dataTypeElements.length,
+      reachableDataTypeCount: Math.min(reachableIds.size, dataTypeElements.length) - 1,
+      removableDataTypeCount: 0,
+      removableTypeIds: [] as string[],
+      currentVersion: existingDefault?.version,
+      mode,
+    };
+
+    const result = await openDialog(SaveDefaultTypeDialog, { mode, initialVersion, summary });
+    if (result.type !== 'confirm') return;
+
+    const saveInfo = result.data as { versionUpdate?: 'major' | 'minor' | 'patch'; description?: string };
+    try {
+      await defaultTypeService.upload({
+        kind: loaded.typeKind,
+        instance: loaded.instanceType,
+        description: saveInfo.description?.trim() || undefined,
+        doc,
+        nextVersionType: mode === 'update' ? saveInfo.versionUpdate as any : undefined,
+        version: mode === 'create' ? initialVersion : undefined,
+      });
+      toastService.success(
+        mode === 'create' ? 'Default Type Created' : 'Default Type Saved',
+        `"${loaded.id}" was saved as default type successfully.`,
+      );
+    } catch {
+      toastService.error('Save Failed', 'Failed to save as default type. Please try again.');
+    }
+  }
+
   async function handleDelete() {
     const typeIdToDelete = typeDetailsState.loadedType?.id;
     if (!typeIdToDelete) {
@@ -286,6 +339,7 @@
   onOpenDefaultRootType={(rootTypeId, rootTypeKind) => openTypeById(rootTypeId, rootTypeKind, typeDetailsState.viewMode)}
   onUpdateDefaultTypeToLatest={updateDefaultTypeToLatest}
   onDetachDefault={detachDefaultType}
+  onClickDefault={handleSaveAsDefault}
   service={service}
   config={typeDetailsState.config}
 >
