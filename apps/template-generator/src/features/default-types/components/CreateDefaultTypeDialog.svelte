@@ -60,7 +60,8 @@
     closeDialog('cancel');
   }
 
-  async function handleInstanceChange(details: InstanceDetails) {
+  async function handleInstanceChange(details: InstanceDetails | null | undefined) {
+    if (!details) return;
     instance = details.instance;
     initialVersion = DEFAULT_INITIAL_VERSION;
     initialVersionInvalid = false;

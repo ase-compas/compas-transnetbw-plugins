@@ -1,4 +1,5 @@
 import type {
+  DataEntry,
   DataEntryWithContent,
   PagedDataEntryResponse,
   UploadDataResponse,
@@ -30,7 +31,11 @@ export interface UploadDataParams {
 export interface CustomResourceService {
   listData(params: ListDataParams): Promise<PagedDataEntryResponse>;
   getById(id: string): Promise<DataEntryWithContent>;
+  getLatestByType(dataType: string): Promise<DataEntry[]>;
+  getLatestByTypeAndName(dataType: string, name: string): Promise<DataEntryWithContent>;
   upload(params: UploadDataParams): Promise<UploadDataResponse>;
+  deleteByType(dataType: string): Promise<void>;
+  deleteByTypeAndName(dataType: string, name: string): Promise<void>;
 }
 
 export function createCustomResourceService(
@@ -39,6 +44,10 @@ export function createCustomResourceService(
   return {
     listData: (params) => api.getAllData(params),
     getById: (id) => api.getDataById({ id }),
+    getLatestByType: (dataType) => api.getLatestDataByType({ dataType }),
+    getLatestByTypeAndName: (dataType, name) => api.getLatestDataByTypeAndName({ dataType, name }),
     upload: (params) => api.uploadData(params),
+    deleteByType: (dataType) => api.deleteDataByType({ id: dataType }),
+    deleteByTypeAndName: (dataType, name) => api.deleteDataByTypeAndName({ dataType, name }),
   };
 }

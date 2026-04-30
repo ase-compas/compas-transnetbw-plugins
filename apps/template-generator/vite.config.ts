@@ -2,8 +2,16 @@
 import { defineConfig } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-export default defineConfig(async () => {
+export default (defineConfig as any)(async () => {
   const { svelte } = await import('@sveltejs/vite-plugin-svelte');
+
+  const backendProxy = {
+    '/compas-scl-data-service': {
+      target: 'http://localhost:8080',
+      changeOrigin: true,
+      // No rewrite: backend expects the full /compas-scl-data-service/... path
+    },
+  };
 
   return {
     root: __dirname,
@@ -13,13 +21,15 @@ export default defineConfig(async () => {
       port: 4200,
       host: 'localhost',
       fs: {
-        allow: ['..']
+        allow: ['..'],
       },
+      proxy: backendProxy,
     },
 
     preview: {
       port: 4300,
       host: 'localhost',
+      proxy: backendProxy,
     },
 
     plugins: [svelte(), nxViteTsPaths()],

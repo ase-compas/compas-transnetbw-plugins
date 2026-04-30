@@ -16,7 +16,7 @@ export class DefaultTypesState {
         this.loading = true;
         this.error = null;
         try {
-            this.data = await defaultTypeService.listLatest({ page: 0, size: 100 });
+            this.data = await defaultTypeService.listLatest();
         } catch (error) {
             this.error = "Failed to load default types";
         } finally {

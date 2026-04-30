@@ -1,5 +1,4 @@
 import type { Process, VersionBump } from '@oscd-transnet-plugins/shared';
-import { isVersionGreater } from '@oscd-transnet-plugins/shared';
 import type { CustomResourceService } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import {
   UploadDataContentTypeEnum,
@@ -34,26 +33,23 @@ export class ProcessService {
   constructor(private readonly svc: CustomResourceService) {}
 
   async listLatest(): Promise<RemoteProcessEntry[]> {
-    const result = await this.svc.listData({
-      type: ProcessService.RESOURCE_TYPE,
-      size: 100,
-      page: 0,
-    });
+    const entries = await this.svc.getLatestByType(ProcessService.RESOURCE_TYPE);
 
-    // Keep only the latest version per process name
-    const latestMap = new Map<string, RemoteProcessEntry>();
-    for (const entry of result.content ?? []) {
-      const existing = latestMap.get(entry.name);
-      if (!existing || isVersionGreater(entry.version, existing.version)) {
-        latestMap.set(entry.name, {
-          resourceId: entry.id,
-          processId: entry.name,
-          version: entry.version,
-          description: entry.description ?? '',
-        });
-      }
+    return entries.map((entry) => ({
+      resourceId: entry.id,
+      processId: entry.name,
+      version: entry.version,
+      description: entry.description ?? '',
+    }));
+  }
+
+  async getByName(name: string): Promise<Process> {
+    const entry = await this.svc.getLatestByTypeAndName(ProcessService.RESOURCE_TYPE, name);
+    try {
+      return JSON.parse(entry.content) as Process;
+    } catch (e) {
+      throw new Error(`Failed to parse process content for resource "${name}": ${e instanceof Error ? e.message : String(e)}`);
     }
-    return Array.from(latestMap.values());
   }
 
   async getById(resourceId: string): Promise<Process> {
@@ -92,5 +88,9 @@ export class ProcessService {
     }
 
     return { resourceId: result.id, version: result.version };
+  }
+
+  async delete(name: string): Promise<void> {
+    await this.svc.deleteByTypeAndName(ProcessService.RESOURCE_TYPE, name);
   }
 }

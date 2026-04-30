@@ -57,7 +57,14 @@
     }
 
     const mode = detailsState.isCreateMode ? 'create' : 'update';
-    const summary = detailsState.getSaveSummary();
+
+    let summary;
+    try {
+      summary = detailsState.getSaveSummary();
+    } catch (e) {
+      toastService.error('Save Failed', 'Could not prepare save summary. Please ensure the type ID is set.');
+      return;
+    }
 
     const result = await openDialog(SaveDefaultTypeDialog, {
       mode: mode,

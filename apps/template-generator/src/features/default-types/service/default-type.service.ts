@@ -1,4 +1,4 @@
-import {type CustomResourceService, type ListDataParams, type PagedDataEntryResponse,} from '@oscd-transnet-plugins/api-compas-custom-resource';
+import {type CustomResourceService, type PagedDataEntryResponse,} from '@oscd-transnet-plugins/api-compas-custom-resource';
 import type {
   DefaultType,
   DefaultTypeDetails,
@@ -9,7 +9,6 @@ import type {
 } from '../types';
 import { TypeKind } from '../../../shared/model';
 import { UploadDataContentTypeEnum } from '@oscd-transnet-plugins/api-compas-custom-resource';
-import { isVersionGreater, sortByVersionDescending } from '../utils/version.utils';
 import { extractRootIdFromXml } from '../utils/default-type-scl.utils';
 
 interface DefaultKey {
@@ -29,44 +28,37 @@ export class DefaultTypeService {
 
   constructor(private customResourceService: CustomResourceService) {}
 
-  async list(params: DefaultTypeFilterParam): Promise<DefaultTypeList> {
-    const listDataParams: ListDataParams = {
-      type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
-      page: params.page,
-      size: params.size
-    }
-    const result = await this.customResourceService.listData(listDataParams);
-    return this.mapListResponseDefaultTypeList(result);
-  }
-
-  async listLatest(params: DefaultTypeFilterParam): Promise<DefaultTypeList> {
-    const listDataParams: ListDataParams = {
-      type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
-      page: params.page,
-      size: params.size
-    }
-    const result = await this.customResourceService.listData(listDataParams);
-    const defaultTypeList = this.mapListResponseDefaultTypeList(result);
-    if (defaultTypeList.content === undefined) {
-      return defaultTypeList;
-    }
-
-    const latestDefaultTypesMap = new Map<string, DefaultType>();
-    for (const defaultType of defaultTypeList.content) {
-      const key = `${defaultType.kind}:${defaultType.instance}`;
-      const existing = latestDefaultTypesMap.get(key);
-      if (existing === undefined || isVersionGreater(defaultType.version, existing.version)) {
-        latestDefaultTypesMap.set(key, defaultType);
+  async listLatest(): Promise<DefaultTypeList> {
+    let entries;
+    try {
+      entries = await this.customResourceService.getLatestByType(DefaultTypeService.CUSTOM_RESOURCE_TYPE);
+    } catch (e) {
+      if (this.isNotFoundError(e)) {
+        return { content: [], totalElements: 0, totalPages: 0, page: 0, size: 0 };
       }
+      throw e;
     }
+
+    const content = entries.map((entry) => {
+      const key = this.nameToKey(entry.name);
+      return {
+        id: entry.id,
+        kind: key.kind,
+        instance: key.instance,
+        description: entry.description,
+        version: entry.version,
+        dataCompatibilityVersion: entry.dataCompatibilityVersion,
+        updatedAt: entry.uploadedAt
+      } as DefaultType;
+    });
 
     return {
-      content: Array.from(latestDefaultTypesMap.values()),
-      totalElements: latestDefaultTypesMap.size,
+      content,
+      totalElements: content.length,
       totalPages: 1,
       page: 0,
-      size: latestDefaultTypesMap.size
-    }
+      size: content.length
+    };
   }
 
   async listVersions(kind: TypeKind, instance: string): Promise<DefaultTypeList> {
@@ -79,7 +71,7 @@ export class DefaultTypeService {
     });
     return this.mapListResponseDefaultTypeList(result);
   }
-  
+
   async upload(params: DefaultTypeUploadParams): Promise<DefaultTypeUploadResponse> {
     const uploadDataParams = {
       type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
@@ -121,22 +113,42 @@ export class DefaultTypeService {
   }
 
   async getLatestByKindAndInstance(kind: TypeKind, instance: string): Promise<DefaultTypeDetails | null> {
-    const list = await this.getByKindAndInstance(kind, instance);
-    if (list.content === undefined || list.content.length === 0) {
-      return null;
-    }
+    const name = this.keyToName(kind, instance);
+    try {
+      const result = await this.customResourceService.getLatestByTypeAndName(DefaultTypeService.CUSTOM_RESOURCE_TYPE, name);
+      const key = this.nameToKey(result.name);
+      const doc = this.parseDoc(result.content);
+      if (doc === null) {
+        throw Error("could not parse default type content. invalid xml format")
+      }
 
-    const sorted = sortByVersionDescending(list.content);
-    return this.getById(sorted[0].id);
+      const rootId = extractRootIdFromXml(doc);
+      if (!rootId) {
+        throw Error("could not extract root ID from default type XML document. Missing 'id' attribute on root element");
+      }
+
+      return {
+        id: result.id,
+        rootId: rootId,
+        kind: key.kind,
+        instance: key.instance,
+        description: result.description,
+        version: result.version,
+        dataCompatibilityVersion: result.dataCompatibilityVersion,
+        updatedAt: result.uploadedAt,
+        doc: doc
+      }
+    } catch (e) {
+      if (this.isNotFoundError(e)) {
+        return null;
+      }
+      throw e;
+    }
   }
 
-  async getByKindAndInstance(kind: TypeKind, instance: string): Promise<DefaultTypeList> {
+  async delete(kind: TypeKind, instance: string): Promise<void> {
     const name = this.keyToName(kind, instance);
-    const result = await this.customResourceService.listData({
-      type: DefaultTypeService.CUSTOM_RESOURCE_TYPE,
-      name
-    });
-    return this.mapListResponseDefaultTypeList(result);
+    await this.customResourceService.deleteByTypeAndName(DefaultTypeService.CUSTOM_RESOURCE_TYPE, name);
   }
 
   private mapListResponseDefaultTypeList(result: PagedDataEntryResponse): DefaultTypeList {
@@ -174,6 +186,15 @@ export class DefaultTypeService {
       return null;
     }
     return doc; 
+  }
+
+  private isNotFoundError(error: unknown): boolean {
+    return (
+      error != null &&
+      typeof error === 'object' &&
+      'response' in error &&
+      (error as { response: Response }).response?.status === 404
+    );
   }
 
   private nameToKey(name: string): DefaultKey {
