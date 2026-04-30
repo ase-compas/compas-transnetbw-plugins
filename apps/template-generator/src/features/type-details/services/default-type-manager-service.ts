@@ -316,8 +316,7 @@ export class DefaultTypeManagerService {
         }
 
         for (const oldTypeElementId of current.typeElementIds) {
-            const escapedId = oldTypeElementId.replace(/"/g, '\\"');
-            const oldElements = Array.from(this.doc.querySelectorAll(`[id="${escapedId}"]`));
+            const oldElements = Array.from(this.doc.querySelectorAll(`[id="${CSS.escape(oldTypeElementId)}"]`));
             for (const oldElement of oldElements) {
                 edits.push({ node: oldElement } as RemoveV2);
             }

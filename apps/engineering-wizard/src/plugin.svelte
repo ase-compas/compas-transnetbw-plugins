@@ -49,5 +49,3 @@
   />
 {/if}
 
-<input type="hidden" name="package-name" value={pckg.name} />
-<input type="hidden" name="package-version" value={pckg.version} />

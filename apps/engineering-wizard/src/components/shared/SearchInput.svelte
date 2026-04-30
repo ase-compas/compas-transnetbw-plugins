@@ -21,6 +21,7 @@
   .search-input-wrapper {
     display: flex;
     align-items: center;
+    margin: 0;
   }
 
   .search-input {
@@ -35,6 +36,7 @@
     outline: none;
     box-sizing: border-box;
     min-width: 180px;
+    margin: 0;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     -webkit-appearance: none;
     appearance: none;

@@ -1,7 +1,6 @@
 <script lang="ts">
   import Select, { Option } from '@smui/select';
   import Textfield from '@smui/textfield';
-  import { OscdSmartSelect } from '@oscd-transnet-plugins/oscd-component';
 
   import {
     CONDITIONS,
@@ -26,35 +25,21 @@
   const contextNode = $derived(lastNodeFromContext(context));
   const attrOptions = $derived(getElementAttrs(contextNode));
 
-  // OscdSmartSelect expects string | null; ruleUi.attribute is string ('' when empty).
-  // Bridge: treat '' as null so the placeholder shows correctly and no stray X appears.
-  let attrValue = $state<string | null>(ruleUi.attribute || null);
-
+  // When the context node changes, clear the attribute if it is no longer valid.
   $effect(() => {
-    attrValue = ruleUi.attribute || null;
-  });
-
-  $effect(() => {
-    const next = attrValue ?? '';
-    if (next !== ruleUi.attribute) ruleUi.attribute = next;
-  });
-
-  // When the context node changes, the available attributes change.
-  // Clear the selection if the current attribute is no longer valid.
-  $effect(() => {
-    if (attrValue !== null && !attrOptions.includes(attrValue)) {
-      attrValue = null;
+    if (ruleUi.attribute && !attrOptions.includes(ruleUi.attribute)) {
+      ruleUi.attribute = '';
     }
   });
 </script>
 
 {#if attrOptions.length > 0}
-  <OscdSmartSelect
-    placeholder="Select attribute"
-    clearable
-    bind:value={attrValue}
-    options={attrOptions}
-  />
+  <Select bind:value={ruleUi.attribute} label="Attribute" variant="outlined">
+    <Option value="">Select attribute</Option>
+    {#each attrOptions as attr (attr)}
+      <Option value={attr}>{attr}</Option>
+    {/each}
+  </Select>
 {:else}
   <Textfield
     bind:value={ruleUi.attribute}

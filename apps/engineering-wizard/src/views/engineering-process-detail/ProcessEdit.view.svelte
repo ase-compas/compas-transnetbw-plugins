@@ -20,11 +20,9 @@
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import type { Plugin, Process, XPathValidation, VersionBump } from '@oscd-transnet-plugins/shared';
+  import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
-  import VersionBumpDialog from '../../features/processes/components/dialogs/VersionBumpDialog.svelte';
-  import type { VersionBump } from '../../features/processes/process.service';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -98,35 +96,34 @@
   async function exitEditing() {
     const proc = selectedEngineeringProcess.process;
     if (proc && hasChanges()) {
-      // First ask: save or discard?
-      const confirmResult = await openDialog(OscdConfirmDialog, {
-        title: 'Unsaved changes',
-        message: 'You have unsaved changes. Would you like to save them before leaving?',
-        confirmActionText: 'Save',
-        cancelActionText: 'Discard Changes',
+      const result = await openDialog(OscdDiscardChangesDialog, {
+        message: 'You have unsaved changes. If you go back now, they will be lost.',
       });
+      if (result?.type !== 'confirm') return;
+      restoreSnapshot();
+    }
+    leaveEditMode();
+  }
 
-      if (confirmResult?.type === 'confirm') {
-        // User wants to save — show version bump dialog
-        const versionResult = await openDialog(VersionBumpDialog, {
-          currentVersion: proc.version || '1.0.0',
-        });
-        if (versionResult?.type !== 'confirm') return; // user cancelled — stay in edit mode
+  /** Called by the Done button — skips the "save or discard?" prompt, goes straight to version bump. */
+  async function handleDone() {
+    const proc = selectedEngineeringProcess.process;
+    if (proc && hasChanges()) {
+      const versionResult = await openDialog(OscdVersionBumpDialog, {
+        currentVersion: proc.version || '1.0.0',
+      });
+      if (versionResult?.type !== 'confirm') return;
 
-        const bump = versionResult.data as VersionBump;
-        saving = true;
-        try {
-          await saveProcess(proc, bump);
-          toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
-        } catch {
-          toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
-          return; // stay in edit mode on failure
-        } finally {
-          saving = false;
-        }
-      } else {
-        // User chose to discard — restore original state
-        restoreSnapshot();
+      const bump = versionResult.data as VersionBump;
+      saving = true;
+      try {
+        await saveProcess(proc, bump);
+        toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
+      } catch {
+        toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
+        return;
+      } finally {
+        saving = false;
       }
     }
     leaveEditMode();
@@ -201,7 +198,7 @@
     <WorkflowActions
       onGoToPreviousStep={goToPreviousStep}
       onGoToNextStep={goToNextStep}
-      onDone={exitEditing}
+      onDone={handleDone}
 
       isAtFirstStep={isAtFirstStep}
       isAtLastStep={isAtLastStep}
@@ -217,6 +214,7 @@
           name={proc.name ?? ''}
           processId={proc.id}
           version={proc.version}
+          current={true}
           description={proc.description ?? ''}
           nameInvalid={proc.name?.trim().length === 0}
           onNameChange={(v) => updateProcessMetadata(proc.id, { name: v })}
@@ -239,7 +237,7 @@
           disabled={!selectedEngineeringProcess.process || !selectedPlugin}
           aria-label="Add validation"
         >
-          ADD NEW VALIDATION
+          Add new validation
         </Button>
       </div>
       <ProcessValidationView
@@ -252,21 +250,20 @@
 </div>
 
 <style>
-  * { font-family: 'Roboto', sans-serif; }
+  * { font-family: var(--ew-font-family, 'Roboto', sans-serif); }
 
   .edit-view {
     /*
      * Controls the max-height of the plugin panels.
      * Increase this value if panels still overflow (accounts for stepper + info bar + OpenSCD chrome).
      */
-    --oscd-panel-max-height: calc(100vh - 18rem);
+    --oscd-panel-max-height: calc(100vh - 23rem);
   }
 
   .step-content {
     padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
   }
 
   .stepper {
@@ -283,8 +280,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
     flex-shrink: 0;
+    padding-bottom: 12px;
   }
 
   .header :global(button) {

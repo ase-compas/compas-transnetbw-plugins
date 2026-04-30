@@ -44,7 +44,7 @@
   }
 
   .label {
-    font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--tg-font-family, 'Roboto', 'Helvetica Neue', Arial, sans-serif);
     font-size: 0.82rem;
     line-height: 1.2;
     font-weight: 600;

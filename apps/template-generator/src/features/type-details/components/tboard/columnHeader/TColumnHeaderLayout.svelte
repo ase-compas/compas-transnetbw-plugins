@@ -85,15 +85,15 @@
 
   .title-main {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: var(--tg-font-size-heading);
+    font-weight: var(--tg-font-weight-heading);
     line-height: 1.2;
     color: var(--mdc-theme-primary);
   }
 
   .title-secondary {
     opacity: 0.6;
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
     margin-left: 0.5rem;
   }
 

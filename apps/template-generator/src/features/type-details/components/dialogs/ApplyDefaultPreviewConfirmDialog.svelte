@@ -174,7 +174,7 @@
 
 <style>
   .preview-dialog-content {
-    padding-top: 1rem;
+    padding-top: 0;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -193,8 +193,6 @@
   .summary-label {
     font-size: 0.75rem;
     color: #5b6470;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
   }
 
   .summary-value {
@@ -247,8 +245,6 @@
 
   .section-title {
     font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
     color: #3b4a5a;
     margin: 0.25rem 0 0.35rem;
     font-weight: 700;
@@ -291,8 +287,6 @@
   .field-label {
     font-size: 0.72rem;
     color: #697786;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
   }
 
   .field-value {

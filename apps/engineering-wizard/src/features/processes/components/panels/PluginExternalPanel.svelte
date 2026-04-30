@@ -1,7 +1,7 @@
 <script lang="ts">
   import SearchInput from '../../../../components/shared/SearchInput.svelte';
-  import { OscdListItem, OscdPanel } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdAddCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdListItem, OscdPanel, OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdAddIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { OscdDragIndicatorIcon } from '@oscd-transnet-plugins/oscd-icons';
   import type { Plugin } from '@oscd-transnet-plugins/shared';
   import {
@@ -15,14 +15,14 @@
   interface Props {
     plugins: Plugin[];
     searchTerm?: string;
-
-    /** Called when user clicks the + button */
+    selectedGroupTitle?: string | null;
     onAddPlugin?: (plugin: Plugin) => void;
   }
 
   let {
     plugins,
     searchTerm = $bindable(''),
+    selectedGroupTitle = null,
     onAddPlugin = () => {}
   }: Props = $props();
 
@@ -70,6 +70,21 @@
   function handleAddClick(plugin: Plugin) {
     onAddPlugin(normalizeOriginal(plugin));
   }
+
+  /** Escape HTML special chars to safely embed a string in tooltip innerHTML content. */
+  function escapeHtml(s: string): string {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  let addTooltip = $derived(
+    selectedGroupTitle
+      ? `Add to group &ldquo;${escapeHtml(selectedGroupTitle)}&rdquo;`
+      : 'Select a group on the left panel first'
+  );
 </script>
 
 <OscdPanel backgroundColor="#DAE3E6" {header} {content} />
@@ -107,13 +122,17 @@
               <p class="plugin-name">{plugin.name}</p>
             </div>
 
-            <button
-              class="plugin-add-btn"
-              onclick={() => handleAddClick(plugin)}
-              aria-label={`Add ${plugin.name}`}
-            >
-              <OscdAddCircleIcon svgStyles="fill: var(--primary-base);" />
-            </button>
+            <OscdTooltip content={addTooltip} side="left">
+              <button
+                class="plugin-add-btn"
+                class:plugin-add-btn--active={!!selectedGroupTitle}
+                onclick={() => handleAddClick(plugin)}
+                disabled={!selectedGroupTitle}
+                aria-label={selectedGroupTitle ? `Add ${plugin.name} to group ${selectedGroupTitle}` : `Add ${plugin.name} (select a group first)`}
+              >
+                <OscdAddIcon svgStyles="fill: #fff; width: 16px; height: 16px;" />
+              </button>
+            </OscdTooltip>
           </div>
         </OscdListItem>
       </div>
@@ -131,9 +150,10 @@
   }
 
   .header-info {
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: 600;
     color: var(--primary-base);
-    font-size: 1.25rem;
     margin: 0;
   }
 
@@ -165,19 +185,39 @@
 
   .plugin-name {
     margin: 0;
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: 600;
     color: var(--primary-base);
+    user-select: none;
+    cursor: default;
+    pointer-events: none;
   }
 
   .plugin-add-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: var(--base1, #93a1a1);
     border: 0;
-    padding: 0;
+    padding: 3px;
     margin: 0;
     cursor: pointer;
-    border-radius: 0.375rem;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .plugin-add-btn--active {
+    background: var(--primary-base);
+    cursor: pointer;
+  }
+
+  .plugin-add-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 </style>
+

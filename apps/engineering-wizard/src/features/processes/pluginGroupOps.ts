@@ -28,11 +28,14 @@ export function addPluginToGroups(
 }
 
 export function removePluginFromGroups(groups: PluginGroup[], pluginId: string): PluginGroup[] {
-  return groups
-    .map((g) => ({ ...g, plugins: (g.plugins ?? []).filter((p) => p.id !== pluginId) }))
-    .filter((g) => g.plugins.length > 0);
+  // Empty groups are intentionally kept so users don't lose their group structure.
+  return groups.map((g) => ({ ...g, plugins: (g.plugins ?? []).filter((p) => p.id !== pluginId) }));
 }
 
+/**
+ * Clears all plugins from every group, but preserves the groups themselves (titles intact).
+ * Use this instead of `removeAllPluginsFromProcess` when the group structure should remain.
+ */
 export function removeAllPluginsFromGroups(groups: PluginGroup[]): PluginGroup[] {
   return groups.map((g) => ({ ...g, plugins: [] }));
 }

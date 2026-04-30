@@ -16,7 +16,10 @@
   import type { DetailsConfig } from '../types';
   import ApplyDefaultPreviewConfirmDialog from './dialogs/ApplyDefaultPreviewConfirmDialog.svelte';
   import ConfirmCascadeDeleteDefaultTypeDialog from './dialogs/ConfirmCascadeDeleteDefaultTypeDialog.svelte';
+  import SaveDefaultTypeDialog from '../../default-types/components/SaveDefaultTypeDialog.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { defaultTypeService } from '../../../bootstrap';
+  import { collectReachableTypeIds, listDataTypeElements } from '../../../shared/utils/scl.utils';
 
   interface Props {
     typeId: string;
@@ -74,7 +77,7 @@
    */
   async function openTypeDetails(memberId: string, mode: ViewMode = 'view') {
     const referenceType = typeDetailsState.getMemberReference(memberId);
-
+    if (!referenceType) return;
     await openTypeById(referenceType.id, referenceType.typeKind, mode);
   }
 
@@ -131,7 +134,7 @@
       }
     }
 
-    typeDetailsState.setRefernence(memberId, targetTypeId);
+    typeDetailsState.setReference(memberId, targetTypeId);
   }
 
 
@@ -148,7 +151,7 @@
    * Unmaks the current marked member if clicked outside of a reference item in the details drawer.
    * @param e the click event
    */
-  function handleUnMakenWhenClickedOutside(e: MouseEvent) {
+  function handleUnmarkedWhenClickedOutside(e: MouseEvent) {
     const isInside = e.composedPath().some(
         el => el instanceof HTMLElement && el.classList.contains('oscd-card-item')
       );
@@ -158,7 +161,7 @@
       }
   }
   
-  function hanldeColumnActionClick(columnId: string) {
+  function handleColumnActionClick(columnId: string) {
     if (columnId === 'refs') {
       applyDefaults();
     } else {
@@ -180,13 +183,15 @@
   });
 
   onMount(() => {
-    document.addEventListener('click', handleUnMakenWhenClickedOutside);
+    // Uses document intentionally — the handler uses e.composedPath() which
+    // correctly traverses shadow DOM boundaries, so document-level listening works fine.
+    document.addEventListener('click', handleUnmarkedWhenClickedOutside);
     typeDetailsState.setViewMode(mode);
     typeDetailsState.setConfig(config);
     typeDetailsState.loadById(typeId);
     mounted = true;
     return () => {
-      document.removeEventListener('click', handleUnMakenWhenClickedOutside);
+      document.removeEventListener('click', handleUnmarkedWhenClickedOutside);
     };
   });
 
@@ -230,6 +235,56 @@
     } catch (e) {
       console.error('Failed to detach default type', e);
       toastService.error('Customize failed', 'Could not customize this default type. Please try again.');
+    }
+  }
+
+  async function handleSaveAsDefault() {
+    const loaded = typeDetailsState.loadedType;
+    if (!loaded?.instanceType || loaded.defaultTypeInfo) return;
+
+    let existingDefault = null;
+    try {
+      existingDefault = await defaultTypeService.getLatestByKindAndInstance(loaded.typeKind, loaded.instanceType);
+    } catch {
+      toastService.error('Check Failed', 'Failed to check for existing default type. Please try again.');
+      return;
+    }
+
+    const mode = existingDefault ? 'update' : 'create';
+    const initialVersion = existingDefault ? undefined : '1.0.0';
+
+    const doc = service.extractDocForDefaultType(loaded.id);
+    const dataTypeElements = listDataTypeElements(doc);
+    const reachableIds = collectReachableTypeIds(doc, loaded.id);
+    const summary = {
+      rootId: loaded.id,
+      totalDataTypeCount: dataTypeElements.length,
+      reachableDataTypeCount: Math.min(reachableIds.size, dataTypeElements.length) - 1,
+      removableDataTypeCount: 0,
+      removableTypeIds: [] as string[],
+      currentVersion: existingDefault?.version,
+      mode,
+    };
+
+    const result = await openDialog(SaveDefaultTypeDialog, { mode, initialVersion, summary });
+    if (result.type !== 'confirm') return;
+
+    const saveInfo = result.data as { versionUpdate?: 'major' | 'minor' | 'patch'; description?: string };
+    try {
+      await defaultTypeService.upload({
+        kind: loaded.typeKind,
+        instance: loaded.instanceType,
+        description: saveInfo.description?.trim() || undefined,
+        doc,
+        nextVersionType: mode === 'update' ? saveInfo.versionUpdate as any : undefined,
+        version: mode === 'create' ? initialVersion : undefined,
+      });
+      toastService.success(
+        mode === 'create' ? 'Default Type Created' : 'Default Type Saved',
+        `"${loaded.id}" was saved as default type successfully.`,
+      );
+    } catch {
+      toastService.error('Save Failed', 'Failed to save as default type. Please try again.');
     }
   }
 
@@ -284,6 +339,7 @@
   onOpenDefaultRootType={(rootTypeId, rootTypeKind) => openTypeById(rootTypeId, rootTypeKind, typeDetailsState.viewMode)}
   onUpdateDefaultTypeToLatest={updateDefaultTypeToLatest}
   onDetachDefault={detachDefaultType}
+  onClickDefault={handleSaveAsDefault}
   service={service}
   config={typeDetailsState.config}
 >
@@ -299,14 +355,15 @@
       data={typeDetailsState.data}
       onItemClick={handleClickItem}
       onItemUnlink={(itemId) => typeDetailsState.clearReference(itemId)}
-      onItemDrop={(targetItemId, sourceItemId) => typeDetailsState.setRefernence(targetItemId, sourceItemId)}
+      onItemDrop={(targetItemId, sourceItemId) => typeDetailsState.setReference(targetItemId, sourceItemId)}
       onItemSelectChange={(itemId) => typeDetailsState.toggleMember(itemId)}
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}
-      onColumnActionClick={(columnId) => hanldeColumnActionClick(columnId)}
+      onColumnActionClick={(columnId) => handleColumnActionClick(columnId)}
       onItemApplyDefaults={(itemId) => applyDefaults([itemId])}
       onItemEditClick={(itemId) => {
         const typeKind = typeDetailsState.getType(itemId)?.typeKind;
+        if (!typeKind) return;
         openTypeById(itemId, typeKind, typeDetailsState.viewMode)
       }}
     />

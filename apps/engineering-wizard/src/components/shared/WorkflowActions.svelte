@@ -52,12 +52,16 @@
   }: Props = $props();
 
   const backStyles = $derived(`
-    ${backBg ? `background-color: ${backBg};` : `background-color: rgb(from var(--base0) r g b / 0.5);`}
-    ${backColor ? `color: ${backColor};` : `color: var(--white);`}
+    background-color: ${backBg ?? 'var(--base0)'};
+    color: ${backColor ?? 'var(--white)'};
+    opacity: ${isAtFirstStep ? '0.38' : '1'};
+    pointer-events: ${isAtFirstStep ? 'none' : 'auto'};
   `);
   const nextStyles = $derived(`
-    ${nextBg ? `background-color: ${nextBg};` : `background-color: var(--white);`}
-    ${nextColor ? `color: ${nextColor};` : `color: var(--primary-base);`}
+    background-color: ${nextBg ?? 'var(--white)'};
+    color: ${nextColor ?? 'var(--primary-base)'};
+    opacity: ${nextDisabled ? '0.38' : '1'};
+    pointer-events: ${nextDisabled ? 'none' : 'auto'};
   `);
   const doneStyles = $derived(`
     ${doneBg ? `background-color: ${doneBg};` : `background-color: var(--white);`}

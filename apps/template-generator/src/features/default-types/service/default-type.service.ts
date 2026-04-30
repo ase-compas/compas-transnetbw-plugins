@@ -10,7 +10,7 @@ import type {
 import { TypeKind } from '../../../shared/model';
 import { UploadDataContentTypeEnum } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import { isVersionGreater, sortByVersionDescending } from '../utils/version.utils';
-import { excractRootIdFromXml } from '../utils/default-type-scl.utils';
+import { extractRootIdFromXml } from '../utils/default-type-scl.utils';
 
 interface DefaultKey {
   kind: TypeKind;
@@ -102,7 +102,7 @@ export class DefaultTypeService {
       throw Error("could not parse default type content. invalid xml format")
     }
 
-    const rootId = excractRootIdFromXml(doc);
+    const rootId = extractRootIdFromXml(doc);
     if (!rootId) {
       throw Error("could not extract root ID from default type XML document. Missing 'id' attribute on root element");
     }

@@ -60,7 +60,7 @@
 <style>
     .add-group-form {
         display: flex;
-        padding: 1rem 0;
+        padding: 0;
         flex-direction: column;
         gap: 1rem;
     }

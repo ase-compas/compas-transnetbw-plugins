@@ -1,11 +1,14 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
+  import { OscdBadge } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     name?: string;
     processId?: string;
     version?: string;
+    /** When true, shows a green "CURRENT" badge below the version field. */
+    current?: boolean;
     description?: string;
     nameInvalid?: boolean;
     processIdDisabled?: boolean;
@@ -18,6 +21,7 @@
     name = '',
     processId = '',
     version = '',
+    current = false,
     description = '',
     nameInvalid = false,
     processIdDisabled = true,
@@ -51,13 +55,20 @@
   </div>
 
   <div class="field field--narrow">
-    <Textfield
-      variant="outlined"
-      label="Version"
-      value={version}
-      disabled
-    />
-  </div>
+      <div class="version-wrapper">
+        <Textfield
+          variant="outlined"
+          label="Version"
+          value={version}
+          disabled
+        />
+        {#if current}
+          <div class="version-badge-overlay">
+            <OscdBadge label="Current" type="success" size="small" />
+          </div>
+        {/if}
+      </div>
+    </div>
 
   <div class="field field--grow">
     <Textfield
@@ -99,6 +110,19 @@
 
   .field--narrow {
     flex: 0 0 120px;
+  }
+
+  .version-wrapper {
+    position: relative;
+  }
+
+  .version-badge-overlay {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%) scale(0.72);
+    transform-origin: right center;
+    pointer-events: none;
   }
 </style>
 

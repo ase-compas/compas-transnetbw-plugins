@@ -1,3 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── Template Generator – Typography tokens ──────────────────────────────── */
+
+/*
+ * Token values are defined twice:
+ *  • :root  – for normal (non-shadow-DOM) rendering
+ *  • :host  – for shadow DOM rendering (plugin mode)
+ *
+ * Why :host needs literal values: CSS custom properties defined in a shadow
+ * stylesheet's :root live on the ShadowRoot node. Shadow DOM children inherit
+ * from the shadow HOST, not the shadow root, so var() references in :root
+ * never reach the host or its descendants unless the tokens are also declared
+ * directly on :host. Using literal values on :host ensures all shadow DOM
+ * children can resolve the tokens through normal CSS inheritance.
+ */
+:root {
+  --tg-font-family: 'Inter', sans-serif;
+  --tg-font-size-heading:    1.25rem;  /* 20px – column headers, page-level headings */
+  --tg-font-size-value:      1.1rem;   /* ~18px – primary display values             */
+  --tg-font-size-subheading: 1rem;     /* 16px – card titles, section headings       */
+  --tg-font-size-body:       0.875rem; /* 14px – regular body text, descriptions     */
+  --tg-font-size-small:      0.75rem;  /* 12px – secondary labels, badges, captions  */
+
+  --tg-font-weight-bold:    700;
+  --tg-font-weight-heading: 600;
+  --tg-font-weight-medium:  500;
+  --tg-font-weight-normal:  400;
+
+  --mdc-typography-font-family: 'Inter', sans-serif;
+}
+
 html,
 body {
   position: relative;
@@ -10,8 +42,29 @@ body {
   margin: 0;
   padding: 8px;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: var(--tg-font-family);
+  font-size: var(--tg-font-size-body);
+  font-weight: var(--tg-font-weight-normal);
+}
+
+:host {
+  --tg-font-family: 'Inter', sans-serif;
+  --tg-font-size-heading:    1.25rem;
+  --tg-font-size-value:      1.1rem;
+  --tg-font-size-subheading: 1rem;
+  --tg-font-size-body:       0.875rem;
+  --tg-font-size-small:      0.75rem;
+
+  --tg-font-weight-bold:    700;
+  --tg-font-weight-heading: 600;
+  --tg-font-weight-medium:  500;
+  --tg-font-weight-normal:  400;
+
+  --mdc-typography-font-family: 'Inter', sans-serif;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 .oscd-app {
@@ -19,8 +72,7 @@ body {
   margin: 0;
   padding: 8px;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-  Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: var(--tg-font-family);
 }
 
 a {
@@ -76,19 +128,47 @@ button:focus {
   border-color: #666;
 }
 
+/*
+ * The generic form-element reset above adds margin-bottom to all <button>
+ * elements. SMUI/MDC renders <button class="mdc-button"> and manages its own
+ * spacing — zero out just the margin so it doesn't create extra whitespace.
+ */
+.mdc-button,
+.mdc-icon-button,
+.mdc-fab {
+  margin: 0;
+}
+
+/*
+ * Normalize MDC/SMUI button typography: sentence case, semi-bold, no wide
+ * letter-spacing (which is designed for uppercase labels only).
+ */
+:root {
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+    --mdc-typography-button-font-size: 0.875rem;
+}
+:host {
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+    --mdc-typography-button-font-size: 0.875rem;
+}
+
 
 .oscd-tooltip {
   background: #616159;
   color: #fff;
   padding: 6px 16px;
   border-radius: 2px;
-  font-size: -2.875rem;
-  font-family: Roboto, Arial, sans-serif;
+  font-size: var(--tg-font-size-small);
+  font-family: var(--tg-font-family);
   box-shadow: -2px 3px 6px rgba(0,0,0,0.16), 0px 1.5px 3px rgba(0,0,0,0.23);
   pointer-events: none;
   white-space: nowrap;
-  letter-spacing: -2.01em;
-  line-height: -1.4;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
   user-select: none;
 }
 
@@ -103,4 +183,11 @@ button:focus {
   max-width: 900px;
   margin: auto;
   padding: 20px;
+}
+
+/* Ensure icon wrappers inside SMUI buttons vertically centre the SVG */
+.mdc-button .mdc-button__icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }

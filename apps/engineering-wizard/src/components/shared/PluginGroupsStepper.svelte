@@ -3,6 +3,8 @@
   import type { RuleResult } from '../../services/validationStatusStore.svelte';
   import ValidationBadgePopover from './ValidationBadgePopover.svelte';
 
+  type PluginChip = { type: 'plugin'; plugin: Plugin; pluginIndex: number };
+
   interface Props {
     pluginGroups?: PluginGroup[];
     selectedGroupIndex?: number | null;
@@ -68,10 +70,19 @@
   function onSelectPlugin(groupIndex: number, pluginIndex: number) {
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
+    // Call selectPlugin directly to handle the case where the resolved plugin
+    // reference hasn't changed (same object) and the $effect would not re-fire.
+    const plugin = pluginGroups[groupIndex]?.plugins?.[pluginIndex];
+    if (plugin) selectPlugin?.(plugin);
   }
 
   function failureCount(pluginId: string): number {
     return (validationStatuses[pluginId] ?? []).filter((r) => !r.passed).length;
+  }
+
+  /** Returns all plugin chips for the group — no truncation. */
+  function visiblePluginChips(plugins: Plugin[]): PluginChip[] {
+    return plugins.map((plugin, i) => ({ type: 'plugin' as const, plugin, pluginIndex: i }));
   }
 </script>
 
@@ -90,18 +101,18 @@
       </button>
 
       {#if groupIndex === resolvedGroupIndex}
-        {#each group.plugins as plugin, pluginIndex}
+        {#each visiblePluginChips(group.plugins) as chip}
           <button
             type="button"
             class="validation-groups__plugin"
-            class:active={pluginIndex === resolvedPluginIndex}
-            onclick={() => onSelectPlugin(groupIndex, pluginIndex)}
+            class:active={chip.pluginIndex === resolvedPluginIndex}
+            onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
           >
-            <span>{plugin.name}</span>
-            {#if failureCount(plugin.id) > 0}
+            <span>{chip.plugin.name}</span>
+            {#if failureCount(chip.plugin.id) > 0}
               <ValidationBadgePopover
-                rules={validationStatuses[plugin.id] ?? []}
-                active={pluginIndex === selectedPluginIndex}
+                rules={validationStatuses[chip.plugin.id] ?? []}
+                active={chip.pluginIndex === selectedPluginIndex}
               />
             {/if}
           </button>
@@ -142,19 +153,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: 500;
+    min-height: 36px;
     padding: 0 8px;
     margin: 0;
 
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
     cursor: pointer;
     user-select: none;
 
     background: transparent;
     border: none;
-
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
 
     border-radius: 2px;
   }
@@ -168,10 +179,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
 
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: var(--primary-base);
-    padding: 6px 1rem;
+    padding: 6px 0.5rem;
+    min-height: 36px;
     background-color: white;
     border-radius: 2px;
 
@@ -181,8 +195,6 @@
 
     margin: 0;
     border: none;
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
     overflow: visible;
   }
 

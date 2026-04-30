@@ -5,7 +5,7 @@
     svgStyles?: string;
   }
 
-  let { svgStyles = 'fill: gray; width: 25px; height: 25px' }: Props = $props();
+  let { svgStyles = 'fill: gray; width: 20px; height: 20px' }: Props = $props();
 </script>
 
 <OscdIconBase>

@@ -17,7 +17,6 @@ class IdFormatEditorState {
   components: IdComponent[] = $state([]);
   segments: IdSegmentRef[] = $state([]);
 
-  // derived
   idFormat: IdFormat = $derived.by(() => ({
     segments: this.segments.map(s => s.segment)
   }));
@@ -26,19 +25,16 @@ class IdFormatEditorState {
     this.components = components;
     this.exampleContexts = exampleContexts || [];
 
-    if (!initialFormat || !initialFormat.segments || initialFormat.segments.length === 0 || initialFormat === undefined) {
-      console.log("here")
+    if (!initialFormat || !initialFormat.segments || initialFormat.segments.length === 0) {
       return;
     }
 
-    console.log("initializing with format", initialFormat)
     this.segments = initialFormat.segments.map(s => ({
       id: this.segmentId++,
       segment: s
     }));
   }
 
-  // functions
   setIdFormat(format: IdFormat) {
     this.segments = format.segments.map(s => ({
       id: this.segmentId++,

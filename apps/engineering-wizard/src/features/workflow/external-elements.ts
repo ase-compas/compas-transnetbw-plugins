@@ -28,6 +28,8 @@ export async function ensureCustomElementDefined(
   if (existing) return existing;
 
   const p = (async () => {
+    // Plugins may be served from external origins (e.g. GitHub Pages CDN).
+    // Trust is delegated to the backend that supplies the plugin registry.
     const mod = await import(/* @vite-ignore */ plugin.src);
     const ctor = (mod?.default ?? mod?.element) as
       | CustomElementConstructor

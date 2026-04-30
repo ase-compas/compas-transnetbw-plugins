@@ -102,15 +102,15 @@
         />
     {/if}
 
-    <OscdIconActionButton 
+    <OscdIconActionButton
       type="info"
       tooltip="Info"
-      tooltipSide="top" 
+      tooltipSide="top"
       onClick={() => openInfoPanel()}/>
     <OscdIconActionButton
       type="edit"
       tooltip="Convert this default type into a normal editable type. It will no longer be managed as a default."
-      tooltipSide="top" 
+      tooltipSide="top"
       onClick={onCustomizeDefault}/>
 
 

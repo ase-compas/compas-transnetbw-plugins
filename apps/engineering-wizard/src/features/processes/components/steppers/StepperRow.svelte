@@ -28,7 +28,7 @@
     <div class="step">
       <OscdTooltip content={tooltipMap[item.id] ?? ''} side="bottom">
         <button
-          onclick={() => onSelect(item.id)}
+          onclick={() => onSelect?.(item.id)}
           aria-current={item.id === currentId ? 'step' : undefined}
           class="step-button"
         >
@@ -62,9 +62,16 @@
     flex-direction: row;
     align-items: center;
     color: white;
-    gap: 0.8rem;
-    text-transform: uppercase;
+    gap: 0.4rem;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     cursor: pointer;
+  }
+
+  .step p {
+    margin: 0;
+    line-height: 1;
   }
 
   .step-line {
@@ -75,6 +82,7 @@
 
   .step-button {
     padding: 0;
+    margin: 0;
     border: none;
     background: transparent;
     cursor: pointer;

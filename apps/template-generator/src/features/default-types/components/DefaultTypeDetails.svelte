@@ -14,7 +14,7 @@
    import HeaderElement from '../../../shared/ui/HeaderElement.svelte';
   import VersionSelector from '../../../shared/ui/version-selector/VersionSelector.svelte';
   import OscdTooltip from 'libs/oscd-component/src/oscd-tooltip/OscdTooltip.svelte';
-  import type { CreateDefaultTypeInfo, DefaulteTypeSaveInfo } from '../types';
+  import type { CreateDefaultTypeInfo, DefaultTypeSaveInfo } from '../types';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import SaveDefaultTypeDialog from './SaveDefaultTypeDialog.svelte';
@@ -71,7 +71,7 @@
       return;
     }
 
-    const saveInfo = result.data as DefaulteTypeSaveInfo;
+    const saveInfo = result.data as DefaultTypeSaveInfo;
     const saveResult = await detailsState.saveAsNewVersion(saveInfo);
     if (isApiCallError(saveResult)) {
       toastService.error('Save Failed', saveResult.message, 8000);
@@ -343,7 +343,7 @@
   }
 
   .default-type__description-value {
-    font-size: 0.875rem;
+    font-size: var(--tg-font-size-body);
     color: #777;
     font-style: italic;
     min-width: 200px;

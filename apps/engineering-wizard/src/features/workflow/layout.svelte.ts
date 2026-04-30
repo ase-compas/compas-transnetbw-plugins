@@ -18,21 +18,16 @@ export const editorTabs = $state<{ visible: boolean }>({
 });
 
 /**
- * Call in onMount to hide editor tabs for the duration of a full-screen view.
- * Returns a cleanup function that restores tab visibility on unmount.
+ * Call in onMount to hide editor tabs and top app bar for the duration of a full-screen view.
+ * Returns a cleanup function that restores visibility on unmount.
  *
  * Usage: `onMount(() => enterFullscreenView())`
  */
 export function enterFullscreenView(): () => void {
   editorTabs.visible = false;
+  setEditorTabsVisibility(false);
   return () => {
     editorTabs.visible = true;
+    setEditorTabsVisibility(true);
   };
 }
-
-// Side-effect: propagate changes to host layout
-$effect.root(() => {
-  $effect(() => {
-    setEditorTabsVisibility(editorTabs.visible);
-  });
-});

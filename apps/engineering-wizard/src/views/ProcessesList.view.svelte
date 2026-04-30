@@ -3,9 +3,10 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon } from '@oscd-transnet-plugins/oscd-icons';
 
-  import Button from '@smui/button';
+  import Button, { Label, Icon } from '@smui/button';
+
   import {
     engineeringProcesses,
     engineeringProcessesStatus,
@@ -20,7 +21,7 @@
     docName?: string;
   }
 
-  type ProcessRow = Process & { displayName: string };
+  type ProcessRow = Process & { displayName: string; validationCount: number };
 
   const { handleStart, handleView, handleEdit, handleAddNew, docName }: Props = $props();
 
@@ -32,6 +33,9 @@
     processes.map((p) => ({
       ...p,
       displayName: p.name || p.id,
+      validationCount: (p.pluginGroups ?? [])
+        .flatMap((g) => g.plugins ?? [])
+        .reduce((sum, plugin) => sum + (plugin.validations?.length ?? 0), 0),
     }))
   );
 
@@ -44,8 +48,10 @@
   );
 
   const columns = [
-    { key: 'displayName', header: 'Name', bold: true },
-    { key: 'description', header: 'Description' }
+    { key: 'displayName', header: 'Name', bold: true, width: '15%' },
+    { key: 'description', header: 'Description', width: '50%' },
+    { key: 'version', header: 'Version', width: '10%' },
+    { key: 'validationCount', header: 'Validations', width: '15%' },
   ] as const;
 
   const runningProc = $derived(runningEngineeringProcess.process);
@@ -90,32 +96,37 @@
 </script>
 
 <div class="processes">
+  <div class="process-toolbar">
+    <h1 class="processes__header">Processes</h1>
+    <div class="process-toolbar__right">
+      <SearchInput bind:value={searchQuery} label="Search Processes" />
+      <Button
+        variant="raised"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        onclick={handleAddNew}
+        aria-label="Start process"
+      >
+        Add new process
+      </Button>
+    </div>
+  </div>
+
   {#if runningProc}
     <div class="process-banner">
       <div class="process-banner__info">
-        <OscdInfoIcon />
+        <OscdInfoIcon svgStyles="fill: var(--primary-base); width: 20px; height: 20px;" />
         <span>{bannerText}</span>
       </div>
       <Button
         type="button"
-        style="background: var(--white); color: var(--primary-base);"
+        variant="unelevated"
+        style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
         onclick={continueRunning}>
-        CONTINUE
+        <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
+        <Label>Continue</Label>
       </Button>
     </div>
   {/if}
-
-  <div class="process-toolbar">
-    <SearchInput bind:value={searchQuery} label="Search Processes" />
-    <Button
-      class="mdc-button--raised"
-      style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-      onclick={handleAddNew}
-      aria-label="Start process"
-    >
-      ADD NEW PROCESS
-    </Button>
-  </div>
 
   <OscdBasicDataTable
     items={filteredRows}
@@ -129,38 +140,31 @@
     onRowClick={handleView}
   >
     {#snippet actions({ item })}
-      <Button
-        type="button"
-        onclick={(e) => { e.stopPropagation(); handleEdit(item); }}
-        aria-label="Edit process"
-        class="mdc-button--raised"
-        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-      >
-        Edit
-      </Button>
-
-      {#if isRunningRow(item)}
-        <Button
-          variant="raised"
-          type="button"
-          aria-label="Start process"
-          onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-          class="mdc-button--raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-        >
-         Continue
-        </Button>
-      {:else}
-        <Button
-          type="button"
-          aria-label="Start process"
-          onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-          class="mdc-button--raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-        >
-         Start
-        </Button>
-      {/if}
+      <div class="actions-cell">
+        {#if isRunningRow(item)}
+          <Button
+            type="button"
+            variant="unelevated"
+            aria-label="Continue process"
+            onclick={(e) => { e.stopPropagation(); handleStart(item); }}
+            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+          >
+            <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
+            <Label>Continue</Label>
+          </Button>
+        {:else}
+          <Button
+            type="button"
+            variant="unelevated"
+            aria-label="Start process"
+            onclick={(e) => { e.stopPropagation(); handleStart(item); }}
+            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+          >
+            <Icon><OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" /></Icon>
+            <Label>Start</Label>
+          </Button>
+        {/if}
+      </div>
     {/snippet}
   </OscdBasicDataTable>
 </div>
@@ -171,6 +175,15 @@
     padding: 0 24px;
   }
 
+  .processes__header {
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-base);
+    margin: 0;
+    white-space: nowrap;
+  }
+
   .process-toolbar {
     display: flex;
     align-items: center;
@@ -179,6 +192,12 @@
     gap: 12px;
   }
 
+  .process-toolbar__right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
 
   .process-banner {
     display: flex;
@@ -188,7 +207,7 @@
     padding: 0 24px;
     margin-bottom: 24px;
     border-radius: 4px;
-    background-color: var(--primary-base);
+    background-color: #d9d800;
   }
 
   .process-banner__info {
@@ -197,9 +216,15 @@
     gap: 4px;
   }
 
+  .actions-cell {
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .process-banner span {
-    font-family: 'Roboto', sans-serif;
-    color: var(--white);
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    color: var(--primary-base);
+    font-weight: var(--ew-font-weight-medium, 500);
   }
 </style>

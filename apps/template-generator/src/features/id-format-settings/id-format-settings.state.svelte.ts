@@ -38,7 +38,6 @@ class IdFormatSettingsState {
     error: string | null = $state(null);
 
     settings: TypeIdFormatSettings = $state(createDefaultSettings());
-    draftSettings: TypeIdFormatSettings = $state(createDefaultSettings());
 
     private hasLoadedSettings = false;
     private settingsLoadedAt = 0;
@@ -46,6 +45,7 @@ class IdFormatSettingsState {
 
     public async load(forceReload: boolean = false) {
         this.loading = true;
+        this.error = null;
         try {
             await this.refreshSettingsIfStale(forceReload);
         } catch (error) {
@@ -59,10 +59,8 @@ class IdFormatSettingsState {
     public async save() {
         const saveToSettings = this.sanitizeSettings(this.settings);
 
-        // storage
-        localStorage.setItem('idFormatSettings', JSON.stringify(saveToSettings));
         try {
-            idFormatSettingsService.saveSettings(saveToSettings);
+            await idFormatSettingsService.saveSettings(saveToSettings);
             this.settings = saveToSettings;
             this.hasLoadedSettings = true;
             this.settingsLoadedAt = Date.now();
@@ -188,10 +186,8 @@ class IdFormatSettingsState {
     }
 
     /**
-    *  If not enabled, set refernceEnabled false, formats to null
-    * if referenceFormid reference not enable set reference format to null
-     * @param setting
-     * @returns
+     * Sanitizes a single setting: disables reference format if the setting
+     * itself is disabled, and clears reference format when not enabled.
      */
     private sanitizeSetting(setting: TypeIdFormatSetting): TypeIdFormatSetting {
         if (!setting.enabled) {

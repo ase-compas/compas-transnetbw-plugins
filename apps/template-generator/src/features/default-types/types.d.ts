@@ -13,7 +13,7 @@ export interface CreateDefaultTypeInfo {
     version: string;
 };
 
-export type DefaulteTypeSaveInfo =
+export type DefaultTypeSaveInfo =
     | {
           initialVersion: string;
           versionUpdate?: never;

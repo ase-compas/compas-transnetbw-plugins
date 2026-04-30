@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import type { TypeKind } from '../../../../shared/model';
 
   interface Props {
@@ -64,8 +63,6 @@
 
   .default-row-label {
     font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.045em;
     color: #677383;
     font-weight: 600;
     padding-top: 0.1rem;

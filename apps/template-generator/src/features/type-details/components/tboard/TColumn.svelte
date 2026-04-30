@@ -30,13 +30,14 @@
     onItemMarkChange?: (event: { itemId: string; item: TItem; marked: boolean }) => void;
     onItemSelectChange?: (event: { itemId: string; item: TItem | null }) => void;
     onItemReferenceClick?: (event: { itemId: string; item: TItem; reference: string }) => void;
-    onItemAddReferenceClick?: (evetn: { itemId: string; item: TItem}) => void;
+    onItemAddReferenceClick?: (event: { itemId: string; item: TItem}) => void;
     onItemUnlink?: (event: { itemId: string; item: TItem }) => void;
     onItemEdit?: (event: { itemId: string; item: TItem }) => void;
     onItemClick?: (event: { itemId: string; item: TItem }) => void;
     onItemApplyDefaults?: (event: { itemId: string; item: TItem }) => void;
     onColumnActionClick?: () => void;
     onApplyDefaults?: () => void;
+    onItemDefaultTypeClick?: (event: { itemId: string; item: TItem }) => void;
   }
 
   let {
@@ -71,6 +72,7 @@
     onItemApplyDefaults = () => {},
     onColumnActionClick = () => {},
     onApplyDefaults = () => {},
+    onItemDefaultTypeClick = () => {},
   }: Props = $props();
 
   let searchQuery = $state('');
@@ -142,6 +144,7 @@
     onItemDrop={(e) => onItemDrop(e)}
     onItemReferenceClick={(e) => onItemReferenceClick(e)}
     onItemAddReferenceClick={(e) => onItemAddReferenceClick(e)}
+    onItemDefaultTypeClick={(e) => onItemDefaultTypeClick(e)}
   />
   </div>
 </div>

@@ -43,10 +43,8 @@
   }
 
   .navigation-header__title {
-    font-size: 0.8rem;
+    font-size: var(--tg-font-size-small);
     color: var(--mdc-theme-text-secondary-on-background, #666);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-weight: var(--tg-font-weight-heading);
   }
 </style>

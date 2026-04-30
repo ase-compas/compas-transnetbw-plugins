@@ -76,13 +76,12 @@
     try {
       await saveProcess(created);
       toastService.success('Process saved', `"${created.name}" was saved to the database.`);
+      handleSaved(created);
     } catch {
       toastService.error('Save failed', `"${created.name}" was added locally but could not be saved to the database.`);
     } finally {
       saving = false;
     }
-
-    handleSaved(created);
   }
 
   function cancel() {
@@ -102,13 +101,13 @@
         variant="outlined"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={cancel}
-      >CANCEL</Button>
+      >Cancel</Button>
       <Button
         variant="raised"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={save}
         disabled={!canSave || saving}
-      >{saving ? 'SAVING…' : 'SAVE'}</Button>
+      >{saving ? 'Saving…' : 'Save'}</Button>
     </div>
   </div>
 
@@ -116,6 +115,7 @@
     {name}
     processId={procId}
     version="1.0.0"
+    current={true}
     {description}
     {nameInvalid}
     processIdDisabled={false}
@@ -130,24 +130,24 @@
     onRemoveAll={() => { pluginGroups = removeAllPluginsFromGroups(pluginGroups); }}
     onAddGroup={(name, pos) => { pluginGroups = addGroupToGroups(pluginGroups, name, pos); }}
     onUpdateGroups={(updated) => { pluginGroups = updated; }}
-    onAddPlugin={(p) => { pluginGroups = addPluginToGroups(pluginGroups, p); }}
+    onAddPlugin={(p, groupTitle) => { pluginGroups = addPluginToGroups(pluginGroups, p, groupTitle); }}
   />
 </div>
 
 <style>
-  * { font-family: 'Roboto', sans-serif; }
+  * { font-family: var(--ew-font-family, 'Roboto', sans-serif); }
 
   .page {
     padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
 
     /*
      * Controls the max-height of the plugin panels.
      * Increase this value if panels still overflow (accounts for page chrome + OpenSCD header/tabs).
      */
-    --oscd-panel-max-height: calc(100vh - 22rem);
+    --oscd-panel-max-height: calc(100vh - 21rem);
   }
 
   .topbar {
@@ -161,8 +161,8 @@
   .title {
     margin: 0;
     color: var(--primary-base);
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: var(--ew-font-weight-heading, 600);
   }
 
   .topbar__actions {

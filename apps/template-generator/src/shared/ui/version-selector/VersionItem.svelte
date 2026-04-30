@@ -56,13 +56,12 @@
   }
 
   .version-item__version {
-    font-weight: 500;
+    font-weight: var(--tg-font-weight-medium);
   }
 
   .version-item__secondary {
     white-space: nowrap;
-    font-size: 0.875em;
+    font-size: var(--tg-font-size-body);
     color: var(--smui-text-secondary-on-background);
   }
-
 </style>

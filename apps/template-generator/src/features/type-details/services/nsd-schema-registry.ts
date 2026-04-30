@@ -40,12 +40,17 @@ export type NsdSchemaTable = Record<TypeKind, Record<string, Record<string, NsdT
  * Registry for parsed NSD schema definitions, supporting lookup by type and instance.
  */
 
+let cachedSchemaTable: NsdSchemaTable | null = null;
+
 export class NsdSchemaRegistry {
     private schemaTable: NsdSchemaTable;
 
     constructor() {
-        // Loads and merges all NSD files into a single schema table
-        this.schemaTable = new NsdParser().parseFromStrings([nsd72, nsd73, nsd74, nsd7420]);
+        if (!cachedSchemaTable) {
+            // Loads and merges all NSD files into a single schema table (cached across instances)
+            cachedSchemaTable = new NsdParser().parseFromStrings([nsd72, nsd73, nsd74, nsd7420]);
+        }
+        this.schemaTable = cachedSchemaTable;
     }
 
     getTypeDefinition(kind: TypeKind, instanceType: string): Record<string, NsdTypeDefinition> | null {

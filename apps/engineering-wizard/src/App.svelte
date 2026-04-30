@@ -1,12 +1,12 @@
 <script lang="ts">
   import ProcessesListView from './views/ProcessesList.view.svelte';
-  import ProcessDetailView from './views/engineering-process-detail/ProcessDetail.view.svelte';
+  import ProcessEditView from './views/engineering-process-detail/ProcessEdit.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
   import { type Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
-  import { OscdConfirmDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdDiscardChangesDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
   import { loadEngineeringProcesses } from './features/processes/repository.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './features/workflow/document-state';
   import {
@@ -91,14 +91,14 @@
     const isNewProcess = !running || running.id !== process.id;
 
     if (running && isNewProcess) {
-      const result = await openDialog(OscdConfirmDialog as any, {
-        title: 'Do you want to start a new process?',
-        message: 'Starting a new process will stop the current running process. Any unsaved progress will be lost.',
-        confirmActionText: 'Start New Process',
+      const result = await openDialog(OscdDiscardChangesDialog as any, {
+        title: 'Start new process?',
+        message: 'Starting a new process will stop the current one. Any unsaved progress will be lost.',
+        discardActionText: 'Start new process',
         cancelActionText: 'Cancel',
       });
 
-      if (result.type === 'cancel') return;
+      if (result?.type !== 'confirm') return;
     }
 
     if (isNewProcess) {
@@ -114,8 +114,10 @@
 
     selectedEngineeringProcess.process = process;
 
+    if (!selectedEngineeringProcess.process) return;
     const viewPlugins = getPluginsForProcess(selectedEngineeringProcess.process);
-    openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    await openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    selectedEngineeringProcess.process = null;
   }
 
   $effect(() => {
@@ -123,17 +125,9 @@
     documentStore.doc = doc ?? null;
   });
 
-  function handleView(process: Process) {
-    selectedEngineeringProcess.process = process;
-  }
-
   function handleEdit(process: Process) {
     engineeringProcessEditing.isEditing = true;
     selectedEngineeringProcess.process = process;
-  }
-
-  function goBack() {
-    selectedEngineeringProcess.process = null;
   }
 
   function addNewProcess() {
@@ -147,9 +141,8 @@
     isCreatingProcess = false;
   }
 
-  function handleCreated(proc: Process) {
+  function handleCreated(_proc: Process) {
     isCreatingProcess = false;
-    selectedEngineeringProcess.process = proc;
   }
 </script>
 
@@ -158,11 +151,11 @@
 <div class="app-root">
   {#if isCreatingProcess}
     <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-  {:else if selectedEngineeringProcess.process}
-    <ProcessDetailView handleStart={startProcess} />
+  {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
+    <ProcessEditView />
   {:else}
     <ProcessesListView
-      handleView={handleView}
+      handleView={handleEdit}
       handleEdit={handleEdit}
       handleStart={startProcess}
       handleAddNew={addNewProcess}

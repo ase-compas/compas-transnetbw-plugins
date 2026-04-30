@@ -48,10 +48,6 @@
       event.preventDefault();
       exit('exit');
     }
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onBackdropClick();
-    }
   };
 
   $effect(() => {

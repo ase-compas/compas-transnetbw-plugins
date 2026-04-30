@@ -1,3 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── Engineering Wizard – Typography tokens ─────────────────────────────── */
+
+/*
+ * Token values are defined twice:
+ *  • :root  – for normal (non-shadow-DOM) rendering
+ *  • :host  – for shadow DOM rendering (plugin mode)
+ *
+ * Why :host needs literal values: CSS custom properties defined in a shadow
+ * stylesheet's :root live on the ShadowRoot node. Shadow DOM children inherit
+ * from the shadow HOST, not the shadow root, so var() references in :root
+ * never reach the host or its descendants unless the tokens are also declared
+ * directly on :host. Using literal values on :host ensures all shadow DOM
+ * children can resolve the tokens through normal CSS inheritance.
+ */
+:root {
+  --ew-font-family: 'Inter', sans-serif;
+  --ew-font-size-h1:   1.25rem;  /* 20px – page/dialog titles        */
+  --ew-font-size-h2:   1rem;     /* 16px – section titles            */
+  --ew-font-size-body: 0.875rem; /* 14px – regular body / labels     */
+  --ew-font-size-small: 0.75rem; /* 12px – tags, captions, badges    */
+  /* kept for back-compat */
+  --ew-font-size-heading: 1.25rem;
+
+  --ew-font-weight-heading: 600;
+  --ew-font-weight-medium:  500;
+  --ew-font-weight-normal:  400;
+
+  --mdc-typography-font-family: 'Inter', sans-serif;
+}
+
 html,
 body {
   position: relative;
@@ -10,8 +42,28 @@ body {
   margin: 0;
   padding: 8px;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: var(--ew-font-family);
+  font-size: var(--ew-font-size-body);
+  font-weight: var(--ew-font-weight-normal);
+}
+
+:host {
+  --ew-font-family: 'Inter', sans-serif;
+  --ew-font-size-h1:   1.25rem;
+  --ew-font-size-h2:   1rem;
+  --ew-font-size-body: 0.875rem;
+  --ew-font-size-small: 0.75rem;
+  --ew-font-size-heading: 1.25rem;
+
+  --ew-font-weight-heading: 600;
+  --ew-font-weight-medium:  500;
+  --ew-font-weight-normal:  400;
+
+  --mdc-typography-font-family: 'Inter', sans-serif;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 a {
@@ -65,4 +117,38 @@ button:not(:disabled):active {
 
 button:focus {
   border-color: #666;
+}
+
+/*
+ * The generic form-element reset above adds margin-bottom to all <button>
+ * elements. SMUI/MDC renders <button class="mdc-button"> and manages its own
+ * spacing — zero out just the margin so it doesn't create extra whitespace.
+ */
+.mdc-button,
+.mdc-icon-button,
+.mdc-fab {
+  margin: 0;
+}
+
+/*
+ * Normalize MDC button typography so all SMUI buttons look uniform:
+ * – drop the heavy uppercase + wide letter-spacing that makes dialog
+ *   action buttons look visually heavier/larger than navigation buttons.
+ */
+:root {
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+  }
+:host {
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform: none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+  }
+
+/* Ensure icon wrappers inside SMUI buttons vertically centre the SVG */
+.mdc-button .mdc-button__icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }

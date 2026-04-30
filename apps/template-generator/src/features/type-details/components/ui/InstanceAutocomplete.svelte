@@ -100,11 +100,11 @@ function loadOptions(kind: TypeKind, initial?: string) {
 {/if}
 <style>
   .title {
-    font-weight: bold;
+    font-weight: var(--tg-font-weight-heading);
   }
 
   .subtitle {
-    font-size: 0.85rem;
+    font-size: var(--tg-font-size-body);
     color: gray;
   }
 </style>

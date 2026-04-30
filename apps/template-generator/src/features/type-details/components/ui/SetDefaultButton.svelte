@@ -12,11 +12,9 @@ const {
   onClick
 }: Props = $props();
 
-
-
 let iconStyles = $derived.by(() => {
   return disabled
-    ? 'fill: var(--mdc-outlined-button-disabled-label-text-color, rgba(0, 0, 0, .38)); width: 1.3em; height: 1.3em; verticla-align: middle;'
+    ? 'fill: var(--mdc-outlined-button-disabled-label-text-color, rgba(0, 0, 0, .38)); width: 1.3em; height: 1.3em; vertical-align: middle;'
     : 'fill: var(--primary-base); width: 1.3em; height: 1.3em; vertical-align: middle;'
     ;
 })

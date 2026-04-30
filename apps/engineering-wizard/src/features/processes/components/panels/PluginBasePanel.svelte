@@ -2,7 +2,7 @@
   import type { Snippet } from 'svelte';
   import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdArrowSouthIcon, OscdAddCircleIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdArrowSouthIcon, OscdAddCircleIcon, OscdAddIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddPluginGroupDialog from '../dialogs/AddPluginGroupDialog.svelte';
   import EditPluginGroupsDialog from '../dialogs/EditPluginGroupsDialog.svelte';
@@ -21,6 +21,8 @@
   interface Props {
     pluginGroups?: PluginGroup[];
     title?: string;
+    /** Bindable — title of the currently selected group, or null if none. */
+    selectedGroupTitle?: string | null;
 
     headerAction?: Snippet;
     itemAction?: Snippet<[ItemActionContext]>;
@@ -32,6 +34,7 @@
   let {
     pluginGroups = [],
     title = 'Process',
+    selectedGroupTitle = $bindable<string | null>(null),
     headerAction,
     itemAction,
 
@@ -41,7 +44,7 @@
 
   async function addGroup() {
     const result = await openDialog(AddPluginGroupDialog, {groups: pluginGroups.length})
-    if (result.type !== 'confirm') return;
+    if (result?.type !== 'confirm') return;
     onAddGroup(result.data.name, result.data.position);
   }
 
@@ -49,18 +52,27 @@
   async function editGroups() {
     const currentGroups = pluginGroups.map((g, idx) => ({ id: idx.toString(), title: g.title }));
     const result = await openDialog(EditPluginGroupsDialog, { groups: currentGroups });
-    if (result.type !== 'confirm') return;
+    if (result?.type !== 'confirm') return;
 
     const updatedGroups: PluginGroup[] = result.data.groups.map((g: { id: string; title: string }) => {
       const originalIndex = parseInt(g.id, 10);
       return { ...pluginGroups[originalIndex], title: g.title };
     });
 
+    // Clear selection since groups may have been renamed or reordered.
+    selectedGroupTitle = null;
     onUpdateGroups(updatedGroups);
   }
 
+  function toggleGroupSelection(group: PluginGroup) {
+    selectedGroupTitle = selectedGroupTitle === group.title ? null : group.title;
+  }
+
   function handleSort(e, group) {
-    group.plugins = e.detail.items;
+    const updatedGroups = pluginGroups.map((g) =>
+      g === group ? { ...g, plugins: e.detail.items } : g,
+    );
+    onUpdateGroups(updatedGroups);
   }
 
   function handleFinalize(e, group) {
@@ -97,16 +109,28 @@
 {#snippet content()}
   <div class="plugin-list__body">
     {#each pluginGroups as group, groupIndex}
+      {@const isSelected = group.title === selectedGroupTitle}
       <section class="plugin-list__group">
-        <header class="plugin-list__group-header">
-          <span class="plugin-list__group-index plugin-list__group-plugins__indicator"><StepCircle number={groupIndex + 1} /></span>
+        <button
+          type="button"
+          class="plugin-list__group-header"
+          class:plugin-list__group-header--selected={isSelected}
+          onclick={() => toggleGroupSelection(group)}
+          aria-pressed={isSelected}
+        >
+          <span class="plugin-list__group-index plugin-list__group-plugins__indicator">
+            <StepCircle number={groupIndex + 1} selected={isSelected} />
+          </span>
           <span class="plugin-list__group-title">{group.title}</span>
-        </header>
+        </button>
 
-        <div class="plugin-list__group-plugins-section">
+        <div
+          class="plugin-list__group-plugins-section"
+        >
           <div
             class="plugin-list__group-plugins"
             class:plugin_list__group-plugins--dashed={engineeringProcessEditing.isEditing}
+            class:plugin_list__group-plugins--selected={isSelected}
             use:dragHandleZone={{
               items: group.plugins,
               flipDurationMs: 100,
@@ -125,7 +149,7 @@
 
                   <div class="plugin-list__item-row__left">
                     {#if engineeringProcessEditing.isEditing}
-                      <div use:dragHandle aria-label="drag-handle">
+                      <div use:dragHandle aria-label="drag-handle" class="drag-handle">
                         <OscdDragIndicatorIcon/>
                       </div>
                     {/if}
@@ -176,7 +200,9 @@
         class="plugin-list__footer-button plugin-list__footer-button--add"
         onclick={addGroup}
       >
-        <OscdAddCircleIcon svgStyles="fill: var(--primary-base);" aria-hidden="true" />
+        <span class="footer-btn__icon footer-btn__icon--filled">
+          <OscdAddIcon svgStyles="fill: #fff; width: 14px; height: 14px;" aria-hidden="true" />
+        </span>
         <span>Add group</span>
       </button>
     </div>
@@ -195,9 +221,10 @@
 
   .plugin-list__title {
     margin: 0;
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-weight: 600;
     color: var(--white);
-    font-size: 1.25rem;
     line-height: 1.2;
   }
 
@@ -211,7 +238,6 @@
   .plugin-list__body {
     display: flex;
     flex-direction: column;
-    /*gap: 1.5rem;*/
     flex: 1 1 auto;
     min-height: 0;
   }
@@ -229,11 +255,27 @@
     flex: 1;
   }
 
+  /* Group header as button */
+
   .plugin-list__group-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    border-radius: 4px;
   }
+
+  .plugin-list__group-header:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+
+  /* Group plugins section */
 
   .plugin-list__group-plugins-section {
     display: flex;
@@ -242,12 +284,16 @@
   }
 
   .plugin-list__group-plugins__indicator {
-    width: 40px;
+    width: 30px;
+    flex-shrink: 0;
   }
 
   .plugin-list__group-title {
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: #dae3e6;
+    user-select: none;
   }
 
   .plugin-list__item-row {
@@ -269,14 +315,28 @@
     min-height: 2rem;
     border-radius: 12px;
     border: 2px dashed rgba(255, 255, 255, 0.4);
+    transition: border-color 0.15s ease;
+  }
+
+  .plugin_list__group-plugins--dashed.plugin_list__group-plugins--selected {
+    border-color: rgba(255, 255, 255, 1);
   }
 
   .plugin-list__item-name {
-    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: 600;
     color: var(--primary-base);
+    user-select: none;
   }
 
   .plugin-list__item-action {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Drag handle wrapper — flex so the icon's inline span centres correctly */
+  .drag-handle {
     display: flex;
     align-items: center;
   }
@@ -285,25 +345,40 @@
 
   .plugin-list__footer {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     width: 100%;
     flex-shrink: 0;
+    justify-content: flex-end;
   }
 
   .plugin-list__footer-button {
-    flex: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     height: 36px;
-    width: 70px;
-    text-transform: uppercase;
+    padding: 0 16px;
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: 500;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    letter-spacing: 0.0892857143em;
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
-    margin: 0;
+    white-space: nowrap;
     background-color: white;
     color: var(--primary-base);
   }
+
+  .footer-btn__icon--filled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-base);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
 </style>
+

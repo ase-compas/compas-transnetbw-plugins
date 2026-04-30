@@ -1,9 +1,9 @@
 import { defaultTypeService } from "../../../bootstrap";
 import type { TypeKind } from "../../../shared/model";
 import { collectReachableTypeIds, createEmptySCLDocument, listDataTypeElements } from "../../../shared/utils/scl.utils";
-import type { CreateDefaultTypeInfo, DefaulteTypeSaveInfo, DefaultTypeList } from "../types";
-import { excractRootIdFromXml } from "../utils/default-type-scl.utils";
-import { mapDefaulTypesListToVersions } from "../utils/version.utils";
+import type { CreateDefaultTypeInfo, DefaultTypeSaveInfo, DefaultTypeList } from "../types";
+import { extractRootIdFromXml } from "../utils/default-type-scl.utils";
+import { mapDefaultTypesListToVersions } from "../utils/version.utils";
 
 export interface DefaultTypeInfo {
     kind: TypeKind;
@@ -91,7 +91,7 @@ export class DefaultTypeDetailsState {
                 kind: result.kind,
                 instance: result.instance,
                 description: result.description || '',
-                rootId: excractRootIdFromXml(result.doc) || '',
+                rootId: extractRootIdFromXml(result.doc) || '',
                 version: result.version || ''
             }
             this.typeVersions = await defaultTypeService.listVersions(result.kind, result.instance);
@@ -114,7 +114,7 @@ export class DefaultTypeDetailsState {
 
     private setVersions(typeVersions: DefaultTypeList) {
         this.typeVersions = typeVersions;
-        this.versions = mapDefaulTypesListToVersions(typeVersions);
+        this.versions = mapDefaultTypesListToVersions(typeVersions);
         this.currentVersion = this.versions.find(v => v.version === this.info?.version) || null
     }
 
@@ -148,7 +148,7 @@ export class DefaultTypeDetailsState {
      */
     createEmpty(initial: CreateDefaultTypeInfo) {
         this.mode = 'create';
-        this.dirty = true;
+        this.dirty = false;
         this.info = {
             kind: initial.kind,
             instance: initial.instance,
@@ -165,7 +165,7 @@ export class DefaultTypeDetailsState {
      * Uploads current in-memory document as a new default type version,
      * then reloads the persisted entity to refresh local state.
      */
-    async saveAsNewVersion(saveInfo: DefaulteTypeSaveInfo): Promise<ApiCallResult<{ id: string }>> {
+    async saveAsNewVersion(saveInfo: DefaultTypeSaveInfo): Promise<ApiCallResult<{ id: string }>> {
         const infoSnapshot = $state.snapshot(this.info);
 
         if (!infoSnapshot) {
@@ -183,7 +183,7 @@ export class DefaultTypeDetailsState {
         this.error = null;
         this.saving = true;
 
-        const updploadInfo = {
+        const uploadInfo = {
             kind: infoSnapshot.kind,
             instance: infoSnapshot.instance,
             description: saveInfo.description?.trim() || undefined,
@@ -194,7 +194,7 @@ export class DefaultTypeDetailsState {
 
         try {
             this.prepareDocForUpload();
-            const result = await defaultTypeService.upload(updploadInfo);
+            const result = await defaultTypeService.upload(uploadInfo);
 
             if (!result.id) {
                 return { ok: false, message: 'Failed to save default type.' };

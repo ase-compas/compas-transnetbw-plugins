@@ -75,7 +75,6 @@ export interface DataTypeMember {
     isMandatory: boolean;
     isConfigured: boolean;
 
-    // attributes of the referencing object
     requiresReference: boolean;
     reference?: string;
     refKind: TypeKind;
@@ -86,14 +85,13 @@ export interface DataTypeMember {
 }
 
 export interface DataTypeFilter {
-    query?: string; // search query, search by name, type kind or instance typek
+    query?: string;
     typeKind?: TypeKind;
     instanceType?: string;
 }
 
 export type ViewMode = 'view' | 'edit';
 
-// Represents the details of a type instance, used for showing details of a type in the UI.
 export interface InstanceDetails {
     instance: string;
     description?: string;

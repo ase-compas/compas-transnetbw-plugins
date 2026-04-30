@@ -11,7 +11,7 @@
     onRemoveAll: () => void;
     onAddGroup: (name: string, position: number) => void;
     onUpdateGroups: (updatedGroups: PluginGroup[]) => void;
-    onAddPlugin: (plugin: Plugin) => void;
+    onAddPlugin: (plugin: Plugin, groupTitle?: string) => void;
   }
 
   let {
@@ -25,11 +25,19 @@
 
   let searchTerm = $state('');
   let filteredPlugins = $derived(getFilteredCorePlugins(searchTerm));
+
+  let addedPluginIds = $derived(
+    new Set(pluginGroups.flatMap((g) => g.plugins ?? []).map((p) => p.id))
+  );
+  let availablePlugins = $derived(filteredPlugins.filter((p) => !addedPluginIds.has(p.id)));
+
+  let selectedGroupTitle = $state<string | null>(null);
 </script>
 
 <div class="plugin-editor-row">
   <PluginEditorPanel
     {pluginGroups}
+    bind:selectedGroupTitle
     {onRemoveOne}
     {onRemoveAll}
     {onAddGroup}
@@ -38,13 +46,14 @@
 
   <div class="arrows-col">
     <OscdCompareArrowsIcon svgStyles="fill: #6B9197" />
-    <p>SELECT OR DRAG &amp; DROP PLUGINS</p>
+    <p>Select or drag &amp; drop plugins</p>
   </div>
 
   <PluginExternalPanel
-    plugins={filteredPlugins}
+    plugins={availablePlugins}
     bind:searchTerm
-    {onAddPlugin}
+    {selectedGroupTitle}
+    onAddPlugin={(plugin) => onAddPlugin(plugin, selectedGroupTitle ?? undefined)}
   />
 </div>
 
@@ -69,6 +78,7 @@
   .plugin-editor-row > :global(.panel-parent) {
     flex: 1 1 0;
     min-width: 0;
+    height: var(--oscd-panel-max-height, calc(100vh - 14rem));
   }
 
   .arrows-col {
@@ -82,9 +92,12 @@
   }
 
   .arrows-col p {
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
     color: #6B9197;
-    font-weight: 500;
     margin: 0;
     text-align: center;
   }
 </style>
+

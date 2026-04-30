@@ -5,6 +5,7 @@
   import { TypeKind } from '../../../../shared/model';
   import ChooseInstanceTypeDialog from '../dialogs/ChooseInstanceTypeDialog.svelte';
   import ConfirmDetachDefaultTypeDialog from '../dialogs/ConfirmDetachDefaultTypeDialog.svelte';
+  import SetDefaultButton from './SetDefaultButton.svelte';
   import TypeActionMenu from './TypeActionMenu.svelte';
   import type { DataTypeService } from '../../services/type.service';
   import TypeInfo from 'apps/template-generator/src/shared/ui/TypeInfo.svelte';
@@ -139,6 +140,9 @@
         label="Edit Mode"
         labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
         disabled={toggleEditModeSwitchDisabled}/>
+      {#if showSetAsDefault && !defaultTypeInfo}
+        <SetDefaultButton onClick={onClickDefault} />
+      {/if}
     {:else}
       <Button variant="unelevated" color="primary" onclick={handleInstanceTypeSelect}>Choose Instance Type to Edit</Button>
     {/if}

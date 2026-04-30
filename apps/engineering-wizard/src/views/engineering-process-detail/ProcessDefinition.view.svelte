@@ -4,10 +4,10 @@
   import {
     addPluginToProcess,
     removePluginFromProcess,
-    removeAllPluginsFromProcess,
     addGroupToProcess,
     updateGroupsOfProcess,
   } from '../../features/processes/mutations.svelte';
+  import { removeAllPluginsFromGroups } from '../../features/processes/pluginGroupOps';
   import ProcessPluginEditor from '../../features/processes/components/ProcessPluginEditor.svelte';
 
   type Props = { pluginGroups?: PluginGroup[] };
@@ -19,8 +19,8 @@
 <ProcessPluginEditor
   {pluginGroups}
   onRemoveOne={(id) => removePluginFromProcess(procId(), id)}
-  onRemoveAll={() => removeAllPluginsFromProcess(procId())}
+  onRemoveAll={() => updateGroupsOfProcess(procId(), removeAllPluginsFromGroups(pluginGroups))}
   onAddGroup={(name, pos) => addGroupToProcess(procId(), name, pos)}
   onUpdateGroups={(groups) => updateGroupsOfProcess(procId(), groups)}
-  onAddPlugin={(p) => addPluginToProcess(procId(), p)}
+  onAddPlugin={(p, groupTitle) => addPluginToProcess(procId(), p, groupTitle)}
 />

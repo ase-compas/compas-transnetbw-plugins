@@ -21,12 +21,6 @@ export class DataTypeDetailsState {
         this.dataTypeService = dataTypeService;
     }
 
-    // ==================
-    // state
-    // ==================
-
-    // State to track the currently marked member.
-    // Dependent on which assignable/referenced types we want to show.
     private markedMemberId: string | null = null;
     private simpleTypesMap: Map<string, SimpleDataType> = new Map();
 
@@ -41,18 +35,9 @@ export class DataTypeDetailsState {
     loading = $state<boolean>(true);
 
 
-    // ==================
-    // derived state
-    // ==================
-
-    // Columns depend on the loaded type's kind and the current view mode (edit/view)
     columns = $derived.by(() => buildColumns(this.loadedType?.typeKind ?? TypeKind.LNodeType, this.isEditMode, this.config));
 
     isEditMode = $derived<boolean>(this.viewMode === 'edit');
-
-    // ==================
-    // actions
-    // ==================
 
     /**
      * Load type details by ID. Prepares data for display in TBoard and handles errors.
@@ -77,13 +62,11 @@ export class DataTypeDetailsState {
 
             const otherTypesByKind = this.getOtherTypesByKind(id);
 
-            // Cache all simple types for quick lookup when mapping members to TItems
             this.simpleTypesMap.clear();
             Object.values(otherTypesByKind).forEach(types => {
                 types.forEach(type => this.simpleTypesMap.set(type.id, type));
             });
 
-            // build data and map it to TTIems for UI
             this.data = {
                 refs: this.getDisplayMemberItems(typeDetails.members),
                 DOType: otherTypesByKind[TypeKind.DOType]
@@ -179,11 +162,11 @@ export class DataTypeDetailsState {
             console.warn('No member is marked to set reference');
             return;
         }
-        this.setRefernence(this.markedMemberId, typeId);
+        this.setReference(this.markedMemberId, typeId);
         this.markedMemberId = null;
     }
 
-    public setRefernence(memberName: string, typeId: string) {
+    public setReference(memberName: string, typeId: string) {
         if (!this.loadedType) return;
         try {
             this.dataTypeService.setReference(this.loadedType.id, memberName, typeId);
@@ -276,16 +259,15 @@ export class DataTypeDetailsState {
         }
 
         this.viewMode = this.isEditMode ? 'view' : 'edit';
-        this.data = this.data; // trigger update
+        this.refreshData();
     }
 
     public setViewMode(mode: ViewMode) {
         this.viewMode = mode;
-        this.data = this.data; // trigger update
+        this.refreshData();
     }
 
     public markMember(memberId: string) {
-        console.debug(`markMember ${memberId}`);
         this.markedMemberId = this.markedMemberId === memberId ? null : memberId;
         this.refreshData()
     }
@@ -312,9 +294,6 @@ export class DataTypeDetailsState {
         this.config = config;
     }
 
-    // ==================
-    // helper functions
-    // ==================
 
     private refreshData() {
         if (!this.loadedType) return;
@@ -360,9 +339,6 @@ export class DataTypeDetailsState {
         } as Record<TypeKind, SimpleDataType[]>);
     }
 
-    // ==================
-    // Mapping functions
-    // ==================
 
     private getDisplayMemberItems(members: DataTypeMember[]): TItem[] {
         return [...members]
