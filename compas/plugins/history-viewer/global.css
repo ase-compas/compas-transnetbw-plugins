@@ -1,3 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── Typography tokens ──────────────────────────────────────────────────── */
+/*
+ * Defined on both :root (normal DOM) and :host (shadow-DOM / plugin mode)
+ * so that all descendants can resolve the tokens via inheritance.
+ */
+:root,
+:host {
+  --oscd-font-family: 'Inter', sans-serif;
+
+  /* sizes */
+  --oscd-font-size-h1:      1.25rem;  /* 20px – page / dialog titles       */
+  --oscd-font-size-h2:      1rem;     /* 16px – section titles             */
+  --oscd-font-size-body:    0.875rem; /* 14px – body, table, inputs        */
+  --oscd-font-size-button:  0.875rem; /* 14px – buttons, tab bar           */
+  --oscd-font-size-tag:     0.75rem;  /* 12px – pills, chips               */
+  --oscd-font-size-caption: 0.75rem;  /* 12px – tooltips, helper text      */
+  --oscd-font-size-label:   0.75rem;  /* 12px – field labels               */
+
+  /* line-heights */
+  --oscd-line-height-h1:      1.2;
+  --oscd-line-height-h2:      1;
+  --oscd-line-height-body:    1.5;
+  --oscd-line-height-button:  1;
+  --oscd-line-height-tag:     1;
+  --oscd-line-height-caption: 1.4;
+  --oscd-line-height-label:   1.2;
+
+  /* weights */
+  --oscd-font-weight-heading: 600;
+  --oscd-font-weight-body:    400;
+  --oscd-font-weight-button:  600;
+  --oscd-font-weight-tag:     600;
+  --oscd-font-weight-caption: 400;
+  --oscd-font-weight-label:   600;
+
+  /* MDC/SMUI button overrides – sentence case, semi-bold */
+  --mdc-typography-button-font-size:       0.875rem;
+  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-text-transform:  none;
+  --mdc-typography-button-letter-spacing: 0.03em;
+  }
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -5,8 +49,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-  Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', sans-serif;
   height: 100vh;
   width: 100vw;
   background-color: #eee8d5 !important;
@@ -17,13 +60,11 @@ body {
   margin: 0;
   padding: 1rem 2rem;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-  Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 :host, * {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-  Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 
