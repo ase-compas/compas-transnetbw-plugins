@@ -46,7 +46,7 @@
 
   <div class="arrows-col">
     <OscdCompareArrowsIcon svgStyles="fill: #6B9197" />
-    <p>SELECT OR DRAG &amp; DROP PLUGINS</p>
+    <p>Select or drag &amp; drop plugins</p>
   </div>
 
   <PluginExternalPanel

@@ -74,7 +74,7 @@
    */
   async function openTypeDetails(memberId: string, mode: ViewMode = 'view') {
     const referenceType = typeDetailsState.getMemberReference(memberId);
-
+    if (!referenceType) return;
     await openTypeById(referenceType.id, referenceType.typeKind, mode);
   }
 
@@ -131,7 +131,7 @@
       }
     }
 
-    typeDetailsState.setRefernence(memberId, targetTypeId);
+    typeDetailsState.setReference(memberId, targetTypeId);
   }
 
 
@@ -148,7 +148,7 @@
    * Unmaks the current marked member if clicked outside of a reference item in the details drawer.
    * @param e the click event
    */
-  function handleUnMakenWhenClickedOutside(e: MouseEvent) {
+  function handleUnmarkedWhenClickedOutside(e: MouseEvent) {
     const isInside = e.composedPath().some(
         el => el instanceof HTMLElement && el.classList.contains('oscd-card-item')
       );
@@ -158,7 +158,7 @@
       }
   }
   
-  function hanldeColumnActionClick(columnId: string) {
+  function handleColumnActionClick(columnId: string) {
     if (columnId === 'refs') {
       applyDefaults();
     } else {
@@ -180,13 +180,15 @@
   });
 
   onMount(() => {
-    document.addEventListener('click', handleUnMakenWhenClickedOutside);
+    // Uses document intentionally — the handler uses e.composedPath() which
+    // correctly traverses shadow DOM boundaries, so document-level listening works fine.
+    document.addEventListener('click', handleUnmarkedWhenClickedOutside);
     typeDetailsState.setViewMode(mode);
     typeDetailsState.setConfig(config);
     typeDetailsState.loadById(typeId);
     mounted = true;
     return () => {
-      document.removeEventListener('click', handleUnMakenWhenClickedOutside);
+      document.removeEventListener('click', handleUnmarkedWhenClickedOutside);
     };
   });
 
@@ -299,14 +301,15 @@
       data={typeDetailsState.data}
       onItemClick={handleClickItem}
       onItemUnlink={(itemId) => typeDetailsState.clearReference(itemId)}
-      onItemDrop={(targetItemId, sourceItemId) => typeDetailsState.setRefernence(targetItemId, sourceItemId)}
+      onItemDrop={(targetItemId, sourceItemId) => typeDetailsState.setReference(targetItemId, sourceItemId)}
       onItemSelectChange={(itemId) => typeDetailsState.toggleMember(itemId)}
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}
-      onColumnActionClick={(columnId) => hanldeColumnActionClick(columnId)}
+      onColumnActionClick={(columnId) => handleColumnActionClick(columnId)}
       onItemApplyDefaults={(itemId) => applyDefaults([itemId])}
       onItemEditClick={(itemId) => {
         const typeKind = typeDetailsState.getType(itemId)?.typeKind;
+        if (!typeKind) return;
         openTypeById(itemId, typeKind, typeDetailsState.viewMode)
       }}
     />

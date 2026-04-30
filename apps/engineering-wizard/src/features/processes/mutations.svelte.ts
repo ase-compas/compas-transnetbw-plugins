@@ -111,6 +111,11 @@ export function removePluginFromProcess(procId: string, pluginId: string): boole
   return true;
 }
 
+/**
+ * Removes ALL plugin groups entirely from a process (groups are deleted, not just cleared).
+ * Use `removeAllPluginsFromGroups` (from pluginGroupOps) via `updateGroupsOfProcess`
+ * when you want to preserve the group structure but remove their plugins.
+ */
 export function removeAllPluginsFromProcess(procId: string): void {
   const process = getProcess(procId);
   if (!process) return;

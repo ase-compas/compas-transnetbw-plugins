@@ -347,51 +347,6 @@
     line-height: 1.2;
   }
 
-  /* Base subtitle */
-  .oscd-card-subtitle {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: var(--tg-font-size-small);
-    font-weight: var(--tg-font-weight-normal);
-    color: var(--mdc-theme-primary);
-    opacity: 0.8;
-    line-height: 1.2;
-    border-radius: 8px;
-    padding: 0.15rem 0.4rem;
-    outline: 2px solid var(--mdc-theme-primary, #004552);
-    transition: all 0.2s ease;
-  }
-
-  /* Neutral unreferenced */
-  .oscd-card-subtitle.empty {
-    color: #6E7C7C; /* subtle gray */
-    font-style: italic;
-    opacity: 0.9;
-    outline: 1px dashed #B0BEC5;
-    background: rgba(0, 69, 82, 0.03);
-    cursor: default;
-  }
-
-  /* Error / required state */
-  .oscd-card-subtitle.error-state {
-    color: var(--oscd-error);
-    font-style: italic;
-    outline: 2px dashed var(--oscd-error);
-    background: rgba(255, 76, 76, 0.05);
-  }
-
-  .oscd-card-subtitle.drop {
-    outline: 2px dashed #9dcaf5;
-    color: var(--mdc-theme-primary, #004552);
-  }
-
-  .oscd-card-subtitle--with-tooltip {
-    all: unset;
-    display: flex;
-    align-items: center;
-  }
-
   .oscd-references {
     padding-right: 4px;
     white-space: nowrap;
@@ -423,22 +378,6 @@
     align-items: center;
     justify-content: center;
     margin-right: 0.3rem
-  }
-
-  .pointer {
-    cursor: pointer;
-  }
-
-  .oscd-card-subtitle__add-reference {
-     all: unset;
-     cursor: pointer;
-     display: flex;
-     align-items: center;
-     gap: 0.1rem;
-  }
-
-  .oscd-card-subtitle__add-reference:hover {
-     cursor: pointer;
   }
 
   :global(.oscd-card-item .selection .oscd-icon svg) {
@@ -473,18 +412,6 @@
     background: none !important;
     outline: 2px dashed #9dcaf5;
     color: var(--mdc-theme-primary, #004552);
-  }
-
-  .default-type-star-button {
-    all: unset;
-    font-size: 1.2rem;
-    color: #FFD700;
-    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-    cursor: pointer;
-    transition: transform 0.2s ease, filter 0.2s ease;
   }
 
   .default-type-star {

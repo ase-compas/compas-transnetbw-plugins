@@ -58,7 +58,11 @@ export class ProcessService {
 
   async getById(resourceId: string): Promise<Process> {
     const entry = await this.svc.getById(resourceId);
-    return JSON.parse(entry.content) as Process;
+    try {
+      return JSON.parse(entry.content) as Process;
+    } catch (e) {
+      throw new Error(`Failed to parse process content for resource "${resourceId}": ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   async save(

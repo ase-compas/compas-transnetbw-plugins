@@ -1,7 +1,7 @@
 import {
   compareVersions,
   isVersionGreater,
-  mapDefaulTypesListToVersions,
+  mapDefaultTypesListToVersions,
   sortByVersionDescending,
 } from './version.utils';
 import { TypeKind } from '../../../shared/model';
@@ -52,7 +52,7 @@ describe('version.utils', () => {
     expect(input.map((item) => item.id)).toEqual(originalOrder);
   });
 
-  test('mapDefaulTypesListToVersions maps sorted versions with latest/locked flags', () => {
+  test('mapDefaultTypesListToVersions maps sorted versions with latest/locked flags', () => {
     const list: DefaultTypeList = {
       content: [
         createDefaultType('a', '1.0.0'),
@@ -65,7 +65,7 @@ describe('version.utils', () => {
       size: 3,
     };
 
-    const mapped = mapDefaulTypesListToVersions(list);
+    const mapped = mapDefaultTypesListToVersions(list);
 
     expect(mapped).toEqual([
       { version: '2.1.0', latest: true, locked: false, secondaryText: undefined },
@@ -74,7 +74,7 @@ describe('version.utils', () => {
     ]);
   });
 
-  test('mapDefaulTypesListToVersions returns empty array for missing content', () => {
-    expect(mapDefaulTypesListToVersions({})).toEqual([]);
+  test('mapDefaultTypesListToVersions returns empty array for missing content', () => {
+    expect(mapDefaultTypesListToVersions({})).toEqual([]);
   });
 });

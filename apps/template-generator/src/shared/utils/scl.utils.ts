@@ -5,6 +5,18 @@ import { get as getPrivate } from "./private-scl.utils";
 
 export const DATA_TYPE_TEMPLATES_TAG = 'DataTypeTemplates';
 
+/**
+ * Escapes special characters in a string for safe use as an XML attribute value.
+ */
+export function escapeXmlAttr(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
 export const DATA_TYPE_KIND_ORDER: TypeKind[] = [
     TypeKind.LNodeType,
     TypeKind.DOType,
@@ -141,7 +153,7 @@ export function findDataTypeTemplatesElement(doc: XMLDocument): Element | null {
  * Find a DataType element by id.
  */
 export function findDataTypeElement(doc: XMLDocument, id: string): Element {
-    const element = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${id}"]`);
+    const element = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${CSS.escape(id)}"]`);
     if (!element) {
         throw new Error(`DataType with id ${id} not found`);
     }
@@ -233,7 +245,7 @@ export function collectReachableTypeIds(doc: XMLDocument, rootId: string): Set<s
 
     while (queue.length > 0) {
         const currentId = queue.shift()!;
-        const typeElement = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${currentId}"]`);
+        const typeElement = doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${CSS.escape(currentId)}"]`);
         if (!typeElement) {
             continue;
         }
@@ -255,7 +267,7 @@ export function collectReachableTypeIds(doc: XMLDocument, rootId: string): Set<s
 export function createEmptySCLDocument(headerId: string): XMLDocument {
     const parser = new DOMParser();
     const sclString = `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
-        <Header id="${headerId}"/>
+        <Header id="${escapeXmlAttr(headerId)}"/>
     </SCL>`;
     return parser.parseFromString(sclString, "application/xml");
 }

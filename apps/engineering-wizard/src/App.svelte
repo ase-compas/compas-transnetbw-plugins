@@ -114,6 +114,7 @@
 
     selectedEngineeringProcess.process = process;
 
+    if (!selectedEngineeringProcess.process) return;
     const viewPlugins = getPluginsForProcess(selectedEngineeringProcess.process);
     await openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
     selectedEngineeringProcess.process = null;
@@ -123,10 +124,6 @@
     updateDialogProps({ editCount, doc });
     documentStore.doc = doc ?? null;
   });
-
-  function handleView(process: Process) {
-    handleEdit(process);
-  }
 
   function handleEdit(process: Process) {
     engineeringProcessEditing.isEditing = true;
@@ -144,7 +141,7 @@
     isCreatingProcess = false;
   }
 
-  function handleCreated(proc: Process) {
+  function handleCreated(_proc: Process) {
     isCreatingProcess = false;
   }
 </script>
@@ -158,7 +155,7 @@
     <ProcessEditView />
   {:else}
     <ProcessesListView
-      handleView={handleView}
+      handleView={handleEdit}
       handleEdit={handleEdit}
       handleStart={startProcess}
       handleAddNew={addNewProcess}

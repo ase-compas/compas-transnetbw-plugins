@@ -76,13 +76,12 @@
     try {
       await saveProcess(created);
       toastService.success('Process saved', `"${created.name}" was saved to the database.`);
+      handleSaved(created);
     } catch {
       toastService.error('Save failed', `"${created.name}" was added locally but could not be saved to the database.`);
     } finally {
       saving = false;
     }
-
-    handleSaved(created);
   }
 
   function cancel() {
@@ -136,7 +135,7 @@
 </div>
 
 <style>
-  * { font-family: 'Roboto', sans-serif; }
+  * { font-family: var(--ew-font-family, 'Roboto', sans-serif); }
 
   .page {
     padding: 16px 24px;

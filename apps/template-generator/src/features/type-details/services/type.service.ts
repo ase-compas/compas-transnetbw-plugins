@@ -67,13 +67,13 @@ export class DataTypeService {
      * @returns DataTypeDetails object with enriched member information.
      */
     getById(id: string): DataTypeDetails {
+        if (!id) {
+            throw new Error(`getById called with empty id`);
+        }
+
         // Get DataType from SCL Element
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
-
-        if (!id) {
-            throw new Error(`DataType element is missing required attributes: ${element.outerHTML}`);
-        }
 
         const defaultTypeInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(id) || undefined;
 
@@ -90,6 +90,17 @@ export class DataTypeService {
 
         // Get all NSD definitions for this typeKind and instanceType
         const nsdDefs = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
+
+        if (!nsdDefs) {
+            return {
+                id,
+                typeKind,
+                instanceType,
+                members: this.mapMembersFromElementWithoutNsd(element),
+                defaultTypeInfo,
+                defaultTypeVersionStatus: undefined,
+            };
+        }
 
         // Enrich DataType members with info from NSD definitions
         // Build children array by iterating over all NSD definitions (records)
@@ -232,7 +243,7 @@ export class DataTypeService {
             return false;
         }
 
-        return !!this.doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${id}"]`);
+        return !!this.doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${CSS.escape(id)}"]`);
     }
 
     /**
@@ -244,7 +255,6 @@ export class DataTypeService {
      */
     getAssignableTypes(id: string, focusMemberName?: string): SimpleDataType[] {
 
-        console.debug(`getAssignableTypes ${id}`);
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
 
@@ -324,7 +334,6 @@ export class DataTypeService {
      * @returns An array of SimpleDataType objects that are referenced by the specified member.
      */
     getReferencedTypes(id: string, focusMemberName?: string): SimpleDataType[] {
-        console.debug(`getReferencedTypes ${id}`);
         const visited = new Set<string>();
         const result: SimpleDataType[] = [];
         const startElement = findDataTypeElement(this.doc, id);
@@ -384,7 +393,7 @@ export class DataTypeService {
      * @param id The ID of the data type to delete.
      */
     delete(id: string): void {
-        const element = this.doc.querySelector(`DataTypeTemplates > [id="${id}"]`);
+        const element = this.doc.querySelector(`DataTypeTemplates > [id="${CSS.escape(id)}"]`);
         if (!element) {
             throw new Error(`DataType with id ${id} not found`);
         }
@@ -398,7 +407,7 @@ export class DataTypeService {
         if (plan.hasDefaultMetadata) {
             // Delete all tracked sub-types and their references
             for (const subTypeId of plan.trackedSubTypeIds) {
-                const subTypeElement = this.doc.querySelector(`DataTypeTemplates > [id="${subTypeId}"]`);
+                const subTypeElement = this.doc.querySelector(`DataTypeTemplates > [id="${CSS.escape(subTypeId)}"]`);
                 if (subTypeElement) {
                     // Clear references to sub-type
                     const subTypeRefEls = this.doc.querySelectorAll(`[type="${subTypeId}"]`);
@@ -691,7 +700,6 @@ export class DataTypeService {
             createHistoryEntry: true,
         });
 
-        console.log(`Set configured members of DataType ${id}. Added: ${addedCount}, Removed: ${removedCount}, Total changed: ${changedMemberCount}`);
 
         return changedMemberCount;
     }
@@ -722,8 +730,8 @@ export class DataTypeService {
      * @returns An array of InstanceDetails objects containing instance type and description for the given type kind.
      */
     listInstanceTypeDetails(typeKind: TypeKind): InstanceDetails[] {
-        const availableInstanceTpes = this.nsdSchemaRegistry.listInstanceTypes(typeKind);
-        return availableInstanceTpes.map(instanceType => INSTANCE_DESCRIPTIONS[typeKind][instanceType] ?? { instance: instanceType });
+        const availableInstanceTypes = this.nsdSchemaRegistry.listInstanceTypes(typeKind);
+        return availableInstanceTypes.map(instanceType => INSTANCE_DESCRIPTIONS[typeKind][instanceType] ?? { instance: instanceType });
     }
 
     /**
@@ -820,7 +828,6 @@ export class DataTypeService {
      */
     applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
         if (preview.entries.length === 0) {
-            console.warn(`No members with reference types found for DataType ${preview.dataTypeId}`);
             return;
         }
 
@@ -838,7 +845,6 @@ export class DataTypeService {
 
         const edits = this.buildApplyDefaultEditsFromPlans(preview.dataTypeId, members, plans);
         if (edits.length === 0) {
-            console.warn(`No edits to apply default types for DataType ${preview.dataTypeId}`);
             return;
         }
 
@@ -887,14 +893,12 @@ export class DataTypeService {
         for (const [refTypeKey, { memberNames }] of members) {
             const effectiveRootId = effectiveRootIds.get(refTypeKey);
             if (!effectiveRootId) {
-                console.warn(`No effective root ID for ${refTypeKey}, skipping members: ${memberNames.join(', ')}`);
                 continue;
             }
 
             for (const memberName of memberNames) {
                 const memberDefinition = nsdDefinitions?.[memberName];
                 if (!memberDefinition) {
-                    console.warn(`No NSD definition found for member ${memberName} in DataType ${id}, skipping`);
                     continue;
                 }
                 allEdits.push(...this.buildSetMemberTypeEdits(parentElement, memberName, memberDefinition, effectiveRootId));
@@ -945,19 +949,16 @@ export class DataTypeService {
 
         const nsdDefinitions = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
         if (!nsdDefinitions) {
-            console.warn(`No NSD definitions found for type kind ${typeKind} and instance type ${instanceType}`);
             return map;
         }
 
         for (const memberName of memberNames) {
             const memberDefinition: NsdTypeDefinition = nsdDefinitions[memberName];
             if (!memberDefinition?.requiresReference) {
-                console.debug(`Skipping member ${memberName} of DataType ${id} because it does not require a reference`);
                 continue;
             }
 
             if (!memberDefinition.refTypeKind || !memberDefinition.objectType) {
-                console.warn(`Member definition for ${memberName} of DataType ${id} is missing required reference type information`);
                 continue;
             }
 
@@ -1260,7 +1261,7 @@ export class DataTypeService {
 
 
     private isIdTaken(id: string): boolean {
-        return !!this.doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${id}"]`);
+        return !!this.doc.querySelector(`${DATA_TYPE_TEMPLATES_TAG} > [id="${CSS.escape(id)}"]`);
     }
 
     private generateDuplicateId(baseId: string): string {
@@ -1270,7 +1271,6 @@ export class DataTypeService {
         // use id format duplicate
         if (typeKind && instanceType && this.idSettingsState) {
             const generatedIdResult = this.idSettingsState.generateIdWithResult(typeKind, { instance: instanceType });
-            console.log('Generated ID result from ID Builder:', generatedIdResult);
             if (generatedIdResult.id) {
                 return generatedIdResult.id;
             }

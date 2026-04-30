@@ -13,7 +13,7 @@
     renameDataTypeWorkflow,
   } from '../type.workflows';
   import { sortSimpleDataTypes } from '../../../shared/utils/data-type.utils';
-  import OscdButton from '../../../../../../libs/oscd-component/src/oscd-button/OscdButton.svelte';
+  import { OscdButton } from '@oscd-transnet-plugins/oscd-component';
   import { openTypeDetailsDrawer } from '../type-details.drawer';
   import DataTypeFilter from './ui/DataTypeFilter.svelte';
   import { getIdSettingsState } from '../../id-format-settings/id-format-settings.state.svelte';
@@ -99,35 +99,22 @@
   }
 
   $effect(() => {
-    if (
-      query !== undefined ||
-      dataTypeKind !== undefined ||
-      instance !== undefined
-    ) {
-      loadDataTypes();
-    }
-  });
+    // Consolidate query/kind/instance filter changes, doc changes and edit count changes into one effect.
+    const _q = query;
+    const _k = dataTypeKind;
+    const _i = instance;
+    const _doc = docState?.doc;
+    const _editCount = docState?.editCount;
 
-    $effect(() => {
-    if(docState && docState.editCount > -1) {
-      if (suspendedReloadDepth > 0) {
-        hasPendingReload = true;
-        return;
-      }
-      loadDataTypes();
+    if (suspendedReloadDepth > 0 && _editCount !== undefined && _editCount > -1) {
+      hasPendingReload = true;
+      return;
     }
+    loadDataTypes();
   });
-
-  $effect(() => {
-    if(docState.doc) {
-      loadDataTypes();
-    }
-  });
-
 
   onMount(() => {
     idSettingsState.load();
-    loadDataTypes();
   });
 </script>
 

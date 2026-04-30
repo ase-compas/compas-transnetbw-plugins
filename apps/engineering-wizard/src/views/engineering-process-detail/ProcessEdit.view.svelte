@@ -20,10 +20,9 @@
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, Process, XPathValidation, VersionBump } from '@oscd-transnet-plugins/shared';
   import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
-  import type { VersionBump } from '@oscd-transnet-plugins/shared';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
@@ -251,7 +250,7 @@
 </div>
 
 <style>
-  * { font-family: 'Inter', sans-serif; }
+  * { font-family: var(--ew-font-family, 'Roboto', sans-serif); }
 
   .edit-view {
     /*

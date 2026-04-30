@@ -59,9 +59,8 @@ class IdFormatSettingsState {
     public async save() {
         const saveToSettings = this.sanitizeSettings(this.settings);
 
-        localStorage.setItem('idFormatSettings', JSON.stringify(saveToSettings));
         try {
-            idFormatSettingsService.saveSettings(saveToSettings);
+            await idFormatSettingsService.saveSettings(saveToSettings);
             this.settings = saveToSettings;
             this.hasLoadedSettings = true;
             this.settingsLoadedAt = Date.now();

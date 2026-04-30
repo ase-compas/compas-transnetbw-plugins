@@ -7,6 +7,10 @@ import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
 
 const VALIDATION_DEBOUNCE_MS = 1000;
 
+// Performance note: serialization runs on every edit event (after debounce).
+// Consider gating behind an isDirty flag if this becomes a bottleneck.
+const xmlSerializer = new XMLSerializer();
+
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 /**
@@ -32,7 +36,7 @@ async function runEditValidation(): Promise<void> {
   const doc = documentStore.doc;
   if (!doc) return;
 
-  const sclContent = new XMLSerializer().serializeToString(doc);
+  const sclContent = xmlSerializer.serializeToString(doc);
   const allPlugins = getPluginsForProcess(process);
 
   await Promise.allSettled(

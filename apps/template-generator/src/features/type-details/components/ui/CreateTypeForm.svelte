@@ -33,7 +33,7 @@
     typeKind: TypeKind;
 
     instanceType?: string;
-    canChooseInstaceType?: boolean;
+    canChooseInstanceType?: boolean;
 
     showCreateFromDefaultOption?: boolean;
     allowUseExistingDefault?: boolean;
@@ -48,7 +48,7 @@
     typeKind,
 
     instanceType,
-    canChooseInstaceType = true,
+    canChooseInstanceType = true,
 
     showCreateFromDefaultOption = false,
     allowUseExistingDefault = false,
@@ -150,8 +150,8 @@
 
   onMount(() => {
     loading = true;
-    if (!canChooseInstaceType) {
-      canChooseInstaceType = selectedInstance && canChooseInstaceType;
+    if (!canChooseInstanceType) {
+      canChooseInstanceType = selectedInstance && canChooseInstanceType;
     }
     loading = false;
     focusElement();
@@ -221,7 +221,7 @@
       bind:value={selectedInstance}
       onChange={(value) => handleInstanceChange(value)}
       required
-      disabled={!canChooseInstaceType && !!instanceType}
+      disabled={!canChooseInstanceType && !!instanceType}
       {service}
     />
 
@@ -289,3 +289,4 @@
     margin-top: 0.5rem;
   }
 </style>
+

@@ -162,11 +162,11 @@ export class DataTypeDetailsState {
             console.warn('No member is marked to set reference');
             return;
         }
-        this.setRefernence(this.markedMemberId, typeId);
+        this.setReference(this.markedMemberId, typeId);
         this.markedMemberId = null;
     }
 
-    public setRefernence(memberName: string, typeId: string) {
+    public setReference(memberName: string, typeId: string) {
         if (!this.loadedType) return;
         try {
             this.dataTypeService.setReference(this.loadedType.id, memberName, typeId);

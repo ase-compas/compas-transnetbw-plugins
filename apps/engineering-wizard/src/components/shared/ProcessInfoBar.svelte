@@ -1,6 +1,7 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
+  import { OscdBadge } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     name?: string;
@@ -62,7 +63,9 @@
           disabled
         />
         {#if current}
-          <span class="version-badge">CURRENT</span>
+          <div class="version-badge-overlay">
+            <OscdBadge label="Current" type="success" size="small" />
+          </div>
         {/if}
       </div>
     </div>
@@ -113,19 +116,13 @@
     position: relative;
   }
 
-  .version-badge {
+  .version-badge-overlay {
     position: absolute;
     top: 50%;
     right: 8px;
-    transform: translateY(-50%);
-    background: var(--success, #2e7d32);
-    color: #fff;
-    font-size: 0.575rem;
-    font-weight: 500;
-    padding: 2px 5px;
-    border-radius: 3px;
+    transform: translateY(-50%) scale(0.72);
+    transform-origin: right center;
     pointer-events: none;
-    white-space: nowrap;
   }
 </style>
 

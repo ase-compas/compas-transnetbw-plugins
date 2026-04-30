@@ -98,7 +98,7 @@
 
   function handleFormSubmit(details: CreateTypeFormSubmitDetails): void {
     handleFormChange(details);
-    if (details.valid && details.instanceType === refInstanceType) {
+    if (details.valid && details.instanceType == refInstanceType) {
       handleConfirm();
     }
   }
@@ -210,7 +210,7 @@
           <CreateTypeForm
             typeKind={refTypeKind}
             instanceType={refInstanceType}
-            canChooseInstaceType={false}
+            canChooseInstanceType={false}
             onChange={handleFormChange}
             onSubmit={handleFormSubmit}
             generateId={generateReferenceTypeId}

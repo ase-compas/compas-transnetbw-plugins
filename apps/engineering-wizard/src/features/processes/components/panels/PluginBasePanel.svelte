@@ -44,7 +44,7 @@
 
   async function addGroup() {
     const result = await openDialog(AddPluginGroupDialog, {groups: pluginGroups.length})
-    if (result.type !== 'confirm') return;
+    if (result?.type !== 'confirm') return;
     onAddGroup(result.data.name, result.data.position);
   }
 
@@ -52,7 +52,7 @@
   async function editGroups() {
     const currentGroups = pluginGroups.map((g, idx) => ({ id: idx.toString(), title: g.title }));
     const result = await openDialog(EditPluginGroupsDialog, { groups: currentGroups });
-    if (result.type !== 'confirm') return;
+    if (result?.type !== 'confirm') return;
 
     const updatedGroups: PluginGroup[] = result.data.groups.map((g: { id: string; title: string }) => {
       const originalIndex = parseInt(g.id, 10);
@@ -69,7 +69,10 @@
   }
 
   function handleSort(e, group) {
-    group.plugins = e.detail.items;
+    const updatedGroups = pluginGroups.map((g) =>
+      g === group ? { ...g, plugins: e.detail.items } : g,
+    );
+    onUpdateGroups(updatedGroups);
   }
 
   function handleFinalize(e, group) {
@@ -235,7 +238,6 @@
   .plugin-list__body {
     display: flex;
     flex-direction: column;
-    /*gap: 1.5rem;*/
     flex: 1 1 auto;
     min-height: 0;
   }

@@ -18,7 +18,6 @@
     columns?: TColumnConfig[];
     data?: TData;
 
-    onItemDragChange?: (event: EventDetails) => void;
     onItemMarkChange?: (event: { columnId: string, itemId: string; item: TItem; marked: boolean }) => void;
     onItemSelectChange?: (event: EventDetails) => void;
     onItemReferenceClick?: (event: { columnId: string, itemId: string; item: TItem; reference: string }) => void;

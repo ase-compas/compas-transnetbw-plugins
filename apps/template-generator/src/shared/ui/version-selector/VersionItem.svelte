@@ -64,18 +64,4 @@
     font-size: var(--tg-font-size-body);
     color: var(--smui-text-secondary-on-background);
   }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    width: fit-content;
-    height: 1.8rem;
-    padding: 0 0.5rem;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: var(--tg-font-weight-medium);
-    white-space: nowrap;
-    font-size: var(--tg-font-size-small);
-    background: var(--mdc-theme-primary, #ff3e00);
-  }
 </style>

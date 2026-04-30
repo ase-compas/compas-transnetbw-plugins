@@ -1,3 +1,7 @@
+<script module lang="ts">
+  const xmlSerializer = new XMLSerializer();
+</script>
+
 <script lang="ts">
   import Button from '@smui/button';
   import CircularProgress from '@smui/circular-progress';
@@ -20,7 +24,7 @@
   import XmlViewer from '../../XmlViewer.svelte';
 
   const xmlContent = $derived(
-    documentStore.doc ? new XMLSerializer().serializeToString(documentStore.doc) : '',
+    documentStore.doc ? xmlSerializer.serializeToString(documentStore.doc) : '',
   );
 
   let result = $state<ValidationResult | null>(null);

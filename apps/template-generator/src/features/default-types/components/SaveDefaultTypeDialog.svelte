@@ -1,5 +1,5 @@
 <script lang="ts">
-  import OscdBaseDialog from '../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
+  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import Textfield from '@smui/textfield';
   import List, { Item, Graphic, Label } from '@smui/list';
   import Radio from '@smui/radio';

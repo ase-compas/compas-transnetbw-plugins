@@ -28,7 +28,7 @@
     <div class="step">
       <OscdTooltip content={tooltipMap[item.id] ?? ''} side="bottom">
         <button
-          onclick={() => onSelect(item.id)}
+          onclick={() => onSelect?.(item.id)}
           aria-current={item.id === currentId ? 'step' : undefined}
           class="step-button"
         >

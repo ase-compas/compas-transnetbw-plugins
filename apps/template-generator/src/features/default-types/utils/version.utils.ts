@@ -3,7 +3,7 @@ import { compareVersions, isVersionGreater, sortByVersionDescending } from '@osc
 
 export { compareVersions, isVersionGreater, sortByVersionDescending };
 
-export function mapDefaulTypesListToVersions(defaultTypeList: DefaultTypeList): Version[] {
+export function mapDefaultTypesListToVersions(defaultTypeList: DefaultTypeList): Version[] {
     if (!defaultTypeList.content) return [];
     // sort by version. derive latest, rest is locked
     const sorted = sortByVersionDescending(defaultTypeList.content);

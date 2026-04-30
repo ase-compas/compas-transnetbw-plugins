@@ -34,7 +34,7 @@
     width: 1.375rem;
     height: 1.375rem;
     font-size: 0.65rem;
-    font-family: Arial, sans-serif;
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
     border-radius: 50%;
     display: flex;
     align-items: center;

@@ -11,7 +11,7 @@
     <p>No ID format defined.</p>
   {:else}
     <ul>
-      {#each state.previewIds as previewId, index}
+      {#each state.previewIds as previewId}
         <li>{previewId}</li>
       {/each}
     </ul>

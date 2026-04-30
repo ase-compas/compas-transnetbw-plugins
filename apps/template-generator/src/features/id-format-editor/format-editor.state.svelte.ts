@@ -25,7 +25,7 @@ class IdFormatEditorState {
     this.components = components;
     this.exampleContexts = exampleContexts || [];
 
-    if (!initialFormat || !initialFormat.segments || initialFormat.segments.length === 0 || initialFormat === undefined) {
+    if (!initialFormat || !initialFormat.segments || initialFormat.segments.length === 0) {
       return;
     }
 

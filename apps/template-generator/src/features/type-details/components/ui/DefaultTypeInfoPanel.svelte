@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { OscdTooltip } from '@oscd-transnet-plugins/oscd-component';
   import type { TypeKind } from '../../../../shared/model';
 
   interface Props {

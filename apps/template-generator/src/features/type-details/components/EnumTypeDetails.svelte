@@ -105,4 +105,22 @@
 		</Body>
 	</DataTable>
 </div>
+{:else}
+<div class="oscd-card oscd-container enum-type-details enum-type-details--empty">
+	<p class="enum-type-details__empty-msg">No enum values defined for this type.</p>
+</div>
 {/if}
+
+<style>
+	.enum-type-details--empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+	}
+	.enum-type-details__empty-msg {
+		color: var(--mdc-theme-text-secondary-on-background, rgba(0, 0, 0, .54));
+		font-style: italic;
+		margin: 0;
+	}
+</style>
