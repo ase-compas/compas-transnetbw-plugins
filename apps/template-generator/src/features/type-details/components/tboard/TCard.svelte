@@ -15,6 +15,7 @@
     canApplyDefaults?: boolean;
     canClick?: boolean;
     canUnlink?: boolean;
+    canAddReference?: boolean;
     canClickReference?: boolean;
     selectionEnabled?: boolean;
     selected?: boolean;
@@ -54,6 +55,7 @@
     canApplyDefaults = false,
     canClick = false,
     canUnlink = true,
+    canAddReference = true,
     canClickReference = true,
     selectionEnabled = false,
     selected = false,
@@ -101,7 +103,12 @@
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
   let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
+  let addReferenceDisabled = $derived(!subtitle && !canAddReference);
+  let addReferenceButtonProps = $derived.by(() => ({
+    disabled: addReferenceDisabled,
+  }));
   let referenceButtonState = $derived.by(() => {
+    if (addReferenceDisabled) return '';
     if (referencable) {
       if (isDragTarget && canDrop) return 'drop';
       if (subtitle) return 'has-reference';
@@ -205,13 +212,16 @@
     <OscdTooltip content={subtitle ? subtitle : 'Add reference'} hoverDelay={500} side="right">
       <Button
         variant={subtitle ? "outlined" : "unelevated"}
+        {...addReferenceButtonProps}
         class="reference-button {referenceButtonState ? referenceButtonState : ''}"
         onclick={(e) => {
           e.stopPropagation();
           if (subtitle) {
             handleOnReferenceClick(e);
           } else {
-            onAddReferenceClick();
+            if (canAddReference) {
+              onAddReferenceClick();
+            }
           }
         }}
         >
@@ -400,11 +410,11 @@
     text-transform: none !important;
   }
 
-  :global(.oscd-card-item .reference-button.needs-reference) {
+  :global(.oscd-card-item .reference-button.needs-reference:not(:disabled)) {
     background: var(--oscd-error) !important;
   }
 
-  :global(.oscd-card-item .reference-button.no-reference) {
+  :global(.oscd-card-item .reference-button.no-reference:not(:disabled)) {
     background: var(--primary) !important;
   }
 
@@ -412,6 +422,23 @@
     background: none !important;
     outline: 2px dashed #9dcaf5;
     color: var(--mdc-theme-primary, #004552);
+  }
+
+  :global(.oscd-card-item .reference-button:disabled) {
+    opacity: 1 !important;
+    border-color: transparent !important;
+    background: rgba(0, 0, 0, 0.12) !important;
+    color: rgba(0, 0, 0, 0.38) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+  }
+
+  :global(.oscd-card-item.selected .reference-button:disabled),
+  :global(.oscd-card-item.mandatory .reference-button:disabled) {
+    border-color: transparent !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    color: rgba(255, 255, 255, 0.45) !important;
+    box-shadow: none !important;
   }
 
   .default-type-star {

@@ -17,6 +17,7 @@ export type TItem = {
   canSelect?: boolean;
   canApplyDefaults?: boolean;
   canUnlink?: boolean
+  canAddReference?: boolean;
   
   isDefaultType?: boolean;
   defaultTypeVersion?: string;
