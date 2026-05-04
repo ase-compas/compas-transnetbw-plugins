@@ -33,12 +33,15 @@ export const DATA_TYPE_KIND_ORDER: TypeKind[] = [
  *
  * Elements whose `id` already exists in the document are skipped.
  * If `DataTypeTemplates` is missing, a create-edit for it is prepended.
+ * IDs listed in `releasedIds` are treated as reusable in this batch and are
+ * not considered duplicates.
  *
  * @param doc      Target SCL document.
  * @param elements Data type elements to insert.
+ * @param releasedIds IDs that should be treated as reusable during insertion.
  * @returns        Ordered `EditV2` array ready for a single dispatch.
  */
-export function insertTypeElements(doc: XMLDocument, elements: Element[], excludeIds?: Set<string>): EditV2[] {
+export function insertTypeElements(doc: XMLDocument, elements: Element[], releasedIds: string[] = []): EditV2[] {
     if (elements.length === 0) {
         return [];
     }
@@ -83,10 +86,8 @@ export function insertTypeElements(doc: XMLDocument, elements: Element[], exclud
             .filter((id): id is string => !!id),
     );
 
-    if (excludeIds) {
-        for (const id of excludeIds) {
-            alreadyKnownIds.delete(id);
-        }
+    for (const releasedId of releasedIds) {
+        alreadyKnownIds.delete(releasedId);
     }
 
     for (const sourceElement of sortedElements) {
