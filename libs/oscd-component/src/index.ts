@@ -8,6 +8,7 @@ export { default as OscdDiscardChangesDialog } from './oscd-dialog/OscdDiscardCh
 export { default as OscdVersionBumpDialog } from './oscd-dialog/OscdVersionBumpDialog.svelte';
 export { default as OscdBaseDialog } from './oscd-dialog/OscdBaseDialog.svelte';
 export { default as OscdWarningBox } from './oscd-warning-box/OscdWarningBox.svelte';
+export { default as OscdBox } from './oscd-warning-box/OscdBox.svelte';
 export { default as OscdFilterBox } from './oscd-filter-box/OscdFilterBox.svelte';
 export { default as OscdLoadingSpinner } from './oscd-loading-spinner/OscdLoadingSpinner.svelte';
 export { default as OscdDatePicker } from './oscd-datepicker/OscdDatePicker.svelte';
