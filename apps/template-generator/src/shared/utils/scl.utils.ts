@@ -38,7 +38,7 @@ export const DATA_TYPE_KIND_ORDER: TypeKind[] = [
  * @param elements Data type elements to insert.
  * @returns        Ordered `EditV2` array ready for a single dispatch.
  */
-export function insertTypeElements(doc: XMLDocument, elements: Element[]): EditV2[] {
+export function insertTypeElements(doc: XMLDocument, elements: Element[], excludeIds?: Set<string>): EditV2[] {
     if (elements.length === 0) {
         return [];
     }
@@ -82,6 +82,12 @@ export function insertTypeElements(doc: XMLDocument, elements: Element[]): EditV
             .map(element => element.getAttribute('id'))
             .filter((id): id is string => !!id),
     );
+
+    if (excludeIds) {
+        for (const id of excludeIds) {
+            alreadyKnownIds.delete(id);
+        }
+    }
 
     for (const sourceElement of sortedElements) {
         const id = sourceElement.getAttribute('id');

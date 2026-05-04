@@ -154,14 +154,40 @@ export class DefaultTypeManagerService {
     ): { edits: EditV2[], effectiveRootIds: Map<string, string | null> } {
         const edits: EditV2[] = [];
         const effectiveRootIds = new Map<string, string | null>();
+
+        const { planResults, upgradedIds } = this.preparePlanResults(plans, effectiveRootIds);
+
+        edits.push(...this.buildTypeElementInsertEdits(planResults, upgradedIds));
+        edits.push(...this.buildMetadataEdits(planResults));
+
+        return { edits, effectiveRootIds };
+    }
+
+    /**
+     * Normalizes plans for execution by resolving ID conflicts and collecting
+     * per-plan insertion metadata and effective root IDs.
+     */
+    private preparePlanResults(
+        plans: ResolveDefaultPlan[],
+        effectiveRootIds: Map<string, string | null>,
+    ): { planResults: Array<{ plan: ResolveDefaultPlan, effectiveRootId: string | null, typeElementIds: string[] }>, upgradedIds: Set<string> } {
         const reservedIds = new Set(
             listDataTypeElements(this.doc)
                 .map(el => el.getAttribute('id'))
                 .filter((id): id is string => !!id),
         );
 
-        // Collect all type elements and resolve ID conflicts upfront
-        const allTypeElements: Element[] = [];
+        // Exclude IDs being replaced by upgrades so incoming types can reuse those IDs.
+        const upgradedIds = new Set<string>();
+        for (const plan of plans) {
+            if (plan.scenario === "UPGRADE_TO_DB_DEFAULT" && plan.localBefore) {
+                for (const id of plan.localBefore.typeElementIds) {
+                    reservedIds.delete(id);
+                    upgradedIds.add(id);
+                }
+            }
+        }
+
         const planResults: Array<{ plan: ResolveDefaultPlan, effectiveRootId: string | null, typeElementIds: string[] }> = [];
 
         for (const plan of plans) {
@@ -177,64 +203,95 @@ export class DefaultTypeManagerService {
             const { effectiveRootId } = this.resolveIdConflicts(typeElements, plan.effectiveRootId, conflictScope, reservedIds);
             const typeElementIds = this.getTypeElementIds(typeElements);
 
-            allTypeElements.push(...typeElements);
             planResults.push({ plan, effectiveRootId, typeElementIds });
             effectiveRootIds.set(refTypeKey, effectiveRootId);
         }
 
-        // Insert all type elements at once (respects kind ordering)
-        if (allTypeElements.length > 0) {
-            edits.push(...insertTypeElements(this.doc, allTypeElements));
-        }
+        return { planResults, upgradedIds };
+    }
 
-        // Create the default-type info container once per batch (if needed)
-        let defaultTypeInfo = this.doc.querySelector(`SCL > Private[type="${SCL_PRIVATE_DEFAULT_TYPEINFO}"]`);
-        const needsDefaultTypeInfo = planResults.some(({ plan }) =>
+    /**
+     * Builds insertion edits for all type elements across plans in one batch.
+     */
+    private buildTypeElementInsertEdits(
+        planResults: Array<{ plan: ResolveDefaultPlan, effectiveRootId: string | null, typeElementIds: string[] }>,
+        upgradedIds: Set<string>,
+    ): EditV2[] {
+        const allTypeElements = planResults.flatMap(({ plan }) => [...plan.typeElementsToImport]);
+        if (allTypeElements.length === 0) {
+            return [];
+        }
+        return insertTypeElements(this.doc, allTypeElements, upgradedIds.size > 0 ? upgradedIds : undefined);
+    }
+
+    /**
+     * Builds metadata edits for default-type tracking entries in the Private section.
+     */
+    private buildMetadataEdits(
+        planResults: Array<{ plan: ResolveDefaultPlan, effectiveRootId: string | null, typeElementIds: string[] }>,
+    ): EditV2[] {
+        const edits: EditV2[] = [];
+
+        const needsContainer = planResults.some(({ plan }) =>
             (plan.scenario === "ADD_DB_DEFAULT" || plan.scenario === "UPGRADE_TO_DB_DEFAULT") && !!plan.dbBefore,
         );
+        const { element: defaultTypeInfo, edits: containerEdits } = this.ensureDefaultTypeInfoContainer(needsContainer);
+        edits.push(...containerEdits);
 
-        if (needsDefaultTypeInfo && !defaultTypeInfo) {
-            const sclRoot = this.doc.documentElement;
-            if (sclRoot) {
-                defaultTypeInfo = createElementInDefaultNS(this.doc, 'Private');
-                defaultTypeInfo.setAttribute('type', SCL_PRIVATE_DEFAULT_TYPEINFO);
-                edits.push({
-                    parent: sclRoot,
-                    node: defaultTypeInfo,
-                    reference: sclRoot.firstElementChild,
-                } as EditV2);
-            }
-        }
-
-        // Manage Private elements for each plan
         for (const { plan, effectiveRootId, typeElementIds } of planResults) {
-            switch (plan.scenario) {
-                case "ADD_DB_DEFAULT":
-                    if (plan.dbBefore && defaultTypeInfo) {
-                        if (!this.getDefaultTypeElement(plan.key, plan.dbBefore.version)) {
-                            edits.push(...this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds));
-                        }
-                    }
-                    break;
-
-                case "UPGRADE_TO_DB_DEFAULT":
-                    if (plan.dbBefore && defaultTypeInfo) {
-                        if (!this.getDefaultTypeElement(plan.key, plan.dbBefore.version)) {
-                            edits.push(...this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds));
-                        }
-                    }
-                    break;
-
-                case "REMOVE_LOCAL_DEFAULT":
-                    const privateToRemove = this.getDefaultTypeElement(plan.key);
-                    if (privateToRemove) {
-                        edits.push({ node: privateToRemove } as RemoveV2);
-                    }
-                    break;
-            }
+            edits.push(...this.buildPlanMetadataEdits(plan, effectiveRootId, typeElementIds, defaultTypeInfo));
         }
 
-        return { edits, effectiveRootIds };
+        return edits;
+    }
+
+    /**
+     * Ensures the default-type info Private container exists when needed.
+     */
+    private ensureDefaultTypeInfoContainer(needed: boolean): { element: Element | null, edits: EditV2[] } {
+        const existing = this.getDefaultTypeSectionPrivateElement();
+        if (!needed || existing) {
+            return { element: existing, edits: [] };
+        }
+
+        const sclRoot = this.doc.documentElement;
+        if (!sclRoot) {
+            return { element: null, edits: [] };
+        }
+
+        const container = createElementInDefaultNS(this.doc, 'Private');
+        container.setAttribute('type', SCL_PRIVATE_DEFAULT_TYPEINFO);
+        return {
+            element: container,
+            edits: [{ parent: sclRoot, node: container, reference: sclRoot.firstElementChild } as EditV2],
+        };
+    }
+
+    /**
+     * Builds metadata edits for a single plan based on its apply scenario.
+     */
+    private buildPlanMetadataEdits(
+        plan: ResolveDefaultPlan,
+        effectiveRootId: string | null,
+        typeElementIds: string[],
+        defaultTypeInfo: Element | null,
+    ): EditV2[] {
+        switch (plan.scenario) {
+            case "ADD_DB_DEFAULT":
+            case "UPGRADE_TO_DB_DEFAULT":
+                if (plan.dbBefore && defaultTypeInfo && !this.getDefaultTypeElement(plan.key, plan.dbBefore.version)) {
+                    return this.buildAddDefaultTypePrivateEdits(defaultTypeInfo, plan.key, plan.dbBefore, effectiveRootId, typeElementIds);
+                }
+                return [];
+
+            case "REMOVE_LOCAL_DEFAULT": {
+                const privateToRemove = this.getDefaultTypeElement(plan.key);
+                return privateToRemove ? [{ node: privateToRemove } as RemoveV2] : [];
+            }
+
+            default:
+                return [];
+        }
     }
 
     public async getVersionStatusByTypeId(typeId: string): Promise<DefaultTypeVersionStatus | null> {
