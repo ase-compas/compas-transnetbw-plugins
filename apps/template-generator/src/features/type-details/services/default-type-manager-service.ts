@@ -151,6 +151,7 @@ export class DefaultTypeManagerService {
      */
     public applyPlans(
         plans: ResolveDefaultPlan[],
+        options?: { releasedIds?: string[] },
     ): { edits: EditV2[], effectiveRootIds: Map<string, string | null> } {
         const edits: EditV2[] = [];
         const effectiveRootIds = new Map<string, string | null>();
@@ -159,6 +160,10 @@ export class DefaultTypeManagerService {
                 .map(el => el.getAttribute('id'))
                 .filter((id): id is string => !!id),
         );
+
+        for (const releasedId of options?.releasedIds ?? []) {
+            reservedIds.delete(releasedId);
+        }
 
         // Collect all type elements and resolve ID conflicts upfront
         const allTypeElements: Element[] = [];
@@ -184,7 +189,7 @@ export class DefaultTypeManagerService {
 
         // Insert all type elements at once (respects kind ordering)
         if (allTypeElements.length > 0) {
-            edits.push(...insertTypeElements(this.doc, allTypeElements));
+            edits.push(...insertTypeElements(this.doc, allTypeElements, options?.releasedIds ?? []));
         }
 
         // Create the default-type info container once per batch (if needed)
@@ -299,7 +304,9 @@ export class DefaultTypeManagerService {
 
         if (status.latestSource === 'db') {
             const plan = await this.resolve(status.key);
-            const { edits: planEdits, effectiveRootIds } = this.applyPlans([plan]);
+            const { edits: planEdits, effectiveRootIds } = this.applyPlans([plan], {
+                releasedIds: current.typeElementIds,
+            });
             edits.push(...planEdits);
             const key = `${status.key.kind}:${status.key.instance}`;
             targetRootId = effectiveRootIds.get(key) ?? targetRootId;

@@ -600,6 +600,71 @@ describe('DefaultTypeManagerService', () => {
 			expect(edits).toEqual([]);
 			expect(newRootId).toBeNull();
 		});
+
+		test('reuses old type IDs during db upgrade when old default types are removed', async () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="shared-root" version="1.0.0" id="local-v1">
+							<compas:type-element id="shared-root"/>
+							<compas:type-element id="shared-member"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="shared-root" cdc="SPS"/>
+						<DAType id="shared-member" bType="INT32"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefaultDoc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="shared-root" cdc="INS"/>
+						<DAType id="shared-member" bType="INT16"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefault: DefaultTypeDetails = {
+				id: 'db-v2',
+				kind: 'DOType',
+				instance: 'Measurement',
+				version: '2.0.0',
+				dataCompatibilityVersion: '1.0.0',
+				rootId: 'shared-root',
+				updatedAt: new Date(),
+				doc: dbDefaultDoc,
+			};
+
+			const mockService = createMockDefaultTypeService({
+				getLatestByKindAndInstance: vi.fn().mockResolvedValue(dbDefault),
+			});
+
+			const service = new DefaultTypeManagerService(doc, mockService);
+			const { edits, newRootId } = await service.buildUpdateToLatestEditsByTypeId('shared-root');
+
+			expect(newRootId).toBe('shared-root');
+			applyEdits(edits);
+
+			expect(doc.querySelector('[id*="imported-default"]')).toBeNull();
+
+			const sharedRoot = doc.querySelector('DataTypeTemplates > DOType[id="shared-root"]');
+			const sharedMember = doc.querySelector('DataTypeTemplates > DAType[id="shared-member"]');
+			expect(sharedRoot).not.toBeNull();
+			expect(sharedMember).not.toBeNull();
+			expect(sharedRoot?.getAttribute('cdc')).toBe('INS');
+			expect(sharedMember?.getAttribute('bType')).toBe('INT16');
+
+			const defaultTypeInfo = doc.querySelector('SCL > Private[type="compas:default-type-info"]');
+			const defaultTypeElements = Array.from(defaultTypeInfo?.children ?? []).filter((child) => {
+				const localName = (child.localName || child.tagName).toLowerCase();
+				return localName === 'default-type';
+			});
+
+			expect(defaultTypeElements).toHaveLength(1);
+			expect(defaultTypeElements[0].getAttribute('version')).toBe('2.0.0');
+		});
 	});
 
 	describe('buildRenameTypeIdEdits', () => {
