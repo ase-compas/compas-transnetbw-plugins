@@ -11,7 +11,7 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import EditFormatDialog from '../id-format-editor/EditFormatDialog.svelte';
   import { getIdSettingsState } from './id-format-settings.state.svelte';
-  import { onMount, untrack } from 'svelte';
+  import { onMount } from 'svelte';
   import CircularProgress from '@smui/circular-progress';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
@@ -147,21 +147,19 @@
   }
 
   async function saveSettings() {
-    try {
-      await state.save();
-      toastService.success('ID format settings saved');
-    } catch (error) {
-      toastService.error(`Failed to save settings: ${error}`);
+    if (state.loading || state.saving) return;
+    const saved = await state.save();
+    if (saved) {
+      toastService.success('Save Settings Successful', 'ID format settings saved successfully');
+    } else {
+      toastService.error('Could not save ID format settings',);
     }
   }
 
-  onMount(() => {
-    state.load(true);
-  });
-
-  $effect(() => {
+  onMount(async () => {
+    await state.load(true);
     if (state.error) {
-      untrack(() => toastService.error('ID Settings', state.error!));
+      toastService.error('Load Settings Failed', 'Could not load ID format settings.');
     }
   });
 
@@ -178,7 +176,17 @@
       style="display: flex; justify-content: space-between; align-items: center;"
     >
       <h2>ID Generation</h2>
-      <Button variant="raised" onclick={saveSettings}>Save</Button>
+      <Button
+        variant="raised"
+        onclick={saveSettings}
+      >
+        {#if state.saving}
+          <CircularProgress class="save-progress" indeterminate />
+          Saving...
+        {:else}
+          Save
+        {/if}
+      </Button>
     </div>
 
     <Card padded>
@@ -227,4 +235,12 @@
   h3 {
     margin-top: 0;
   }
+
+  :global(.save-progress) {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
 </style>
