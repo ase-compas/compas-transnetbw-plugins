@@ -394,6 +394,11 @@
     all: unset;
   }
 
+  :global(.oscd-card-item .selection .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background),
+  :global(.oscd-card-item .selection .mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background) {
+    border-color: var(--mdc-theme-on-primary, #fff) !important;
+  }
+
   :global(.oscd-card-item .reference-button) {
     min-height: 28px !important;
     padding: 1px 8px !important;
