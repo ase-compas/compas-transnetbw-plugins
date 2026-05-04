@@ -1,5 +1,6 @@
 
 import { DefaultTypeManagerService } from './default-type-manager-service';
+import type { ResolveDefaultPlan } from './default-type-manager-service';
 import type { DefaultTypeService } from '../../default-types/service/default-type.service';
 import type { DefaultTypeDetails } from '../../default-types/types';
 import { handleEditV2, type EditV2 } from '@oscd-transnet-plugins/oscd-event-api';
@@ -269,6 +270,275 @@ describe('DefaultTypeManagerService', () => {
 		});
 	});
 
+	describe('applyPlans', () => {
+		test('ADD_DB_DEFAULT: inserts imported types and adds default-type metadata', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<DataTypeTemplates>
+						<LNodeType id="existing-ln" lnClass="LLN0"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefaultDoc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="db-root" cdc="SPS"/>
+						<DAType id="db-member" bType="INT16"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefault: DefaultTypeDetails = {
+				id: 'db-v1',
+				kind: 'DOType',
+				instance: 'Measurement',
+				version: '1.0.0',
+				dataCompatibilityVersion: '1.0.0',
+				rootId: 'db-root',
+				updatedAt: new Date(),
+				doc: dbDefaultDoc,
+			};
+
+			const plan: ResolveDefaultPlan = {
+				key: { kind: 'DOType', instance: 'Measurement' },
+				scenario: 'ADD_DB_DEFAULT',
+				effectiveRootId: 'db-root',
+				localBefore: null,
+				dbBefore: dbDefault,
+				typeElementsToImport: Array.from(dbDefaultDoc.querySelectorAll('DataTypeTemplates > *')),
+			};
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const { edits, effectiveRootIds } = service.applyPlans([plan]);
+
+			expect(effectiveRootIds.get('DOType:Measurement')).toBe('db-root');
+			expect(edits.length).toBeGreaterThan(0);
+
+			applyEdits(edits);
+
+			expect(doc.getElementById('db-root')).not.toBeNull();
+			expect(doc.getElementById('db-member')).not.toBeNull();
+
+			const defaultTypeEl = doc.querySelector('SCL > Private[type="compas:default-type-info"] > *[kind="DOType"][instance="Measurement"][version="1.0.0"]');
+			expect(defaultTypeEl).not.toBeNull();
+			expect(defaultTypeEl?.getAttribute('rootId')).toBe('db-root');
+		});
+
+		test('USE_LOCAL_DEFAULT: produces no edits and keeps local root as effective root', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="local-root" version="1.0.0" id="local-v1">
+							<compas:type-element id="local-root"/>
+						</compas:default-type>
+					</Private>
+				</SCL>
+			`);
+
+			const plan: ResolveDefaultPlan = {
+				key: { kind: 'DOType', instance: 'Measurement' },
+				scenario: 'USE_LOCAL_DEFAULT',
+				effectiveRootId: 'local-root',
+				localBefore: {
+					kind: 'DOType',
+					instance: 'Measurement',
+					resourceId: 'local-v1',
+					rootId: 'local-root',
+					version: '1.0.0',
+					typeElementIds: ['local-root'],
+				},
+				dbBefore: null,
+				typeElementsToImport: [],
+			};
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const { edits, effectiveRootIds } = service.applyPlans([plan]);
+
+			expect(edits).toEqual([]);
+			expect(effectiveRootIds.get('DOType:Measurement')).toBe('local-root');
+		});
+
+		test('REMOVE_LOCAL_DEFAULT: removes matching default-type metadata entry', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="local-root" version="1.0.0" id="local-v1">
+							<compas:type-element id="local-root"/>
+						</compas:default-type>
+						<compas:default-type kind="LNodeType" instance="LLN0" rootId="keep-root" version="1.0.0" id="keep-v1">
+							<compas:type-element id="keep-root"/>
+						</compas:default-type>
+					</Private>
+				</SCL>
+			`);
+
+			const plan: ResolveDefaultPlan = {
+				key: { kind: 'DOType', instance: 'Measurement' },
+				scenario: 'REMOVE_LOCAL_DEFAULT',
+				effectiveRootId: null,
+				localBefore: {
+					kind: 'DOType',
+					instance: 'Measurement',
+					resourceId: 'local-v1',
+					rootId: 'local-root',
+					version: '1.0.0',
+					typeElementIds: ['local-root'],
+				},
+				dbBefore: null,
+				typeElementsToImport: [],
+			};
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const { edits, effectiveRootIds } = service.applyPlans([plan]);
+
+			expect(effectiveRootIds.get('DOType:Measurement')).toBeNull();
+			expect(edits.length).toBe(1);
+
+			applyEdits(edits);
+
+			const removed = doc.querySelector('SCL > Private[type="compas:default-type-info"] > *[kind="DOType"][instance="Measurement"]');
+			const stillPresent = doc.querySelector('SCL > Private[type="compas:default-type-info"] > *[kind="LNodeType"][instance="LLN0"]');
+			expect(removed).toBeNull();
+			expect(stillPresent).not.toBeNull();
+		});
+
+		test('UPGRADE_TO_DB_DEFAULT: incoming types reuse the same IDs as the replaced types without renaming', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-id" version="1.0.0" id="db-1">
+							<compas:type-element id="root-id"/>
+							<compas:type-element id="member-id"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-id" cdc="SPS"/>
+						<DAType id="member-id" bType="INT32"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefaultDoc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="root-id" cdc="MV"/>
+						<DAType id="member-id" bType="INT16"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefault: DefaultTypeDetails = {
+				id: 'db-2',
+				kind: 'DOType',
+				instance: 'Measurement',
+				version: '2.0.0',
+				dataCompatibilityVersion: '1.0.0',
+				rootId: 'root-id',
+				updatedAt: new Date(),
+				doc: dbDefaultDoc,
+			};
+
+			const plan: ResolveDefaultPlan = {
+				key: { kind: 'DOType', instance: 'Measurement' },
+				scenario: 'UPGRADE_TO_DB_DEFAULT',
+				effectiveRootId: 'root-id',
+				localBefore: {
+					kind: 'DOType',
+					instance: 'Measurement',
+					resourceId: 'db-1',
+					rootId: 'root-id',
+					version: '1.0.0',
+					typeElementIds: ['root-id', 'member-id'],
+				},
+				dbBefore: dbDefault,
+				typeElementsToImport: Array.from(dbDefaultDoc.querySelectorAll('DataTypeTemplates > *')),
+			};
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const { edits, effectiveRootIds } = service.applyPlans([plan]);
+
+			expect(effectiveRootIds.get('DOType:Measurement')).toBe('root-id');
+
+			const insertedIds = edits
+				.filter((e) => 'parent' in e && 'node' in e)
+				.map((e) => (e as any).node?.getAttribute?.('id'))
+				.filter(Boolean);
+
+			expect(insertedIds).toContain('root-id');
+			expect(insertedIds).toContain('member-id');
+			expect(insertedIds.every((id: string) => !id.includes('imported-default'))).toBe(true);
+		});
+
+		test('UPGRADE_TO_DB_DEFAULT: IDs conflicting with unrelated existing types are still renamed', () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="root-id" version="1.0.0" id="db-1">
+							<compas:type-element id="root-id"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="root-id" cdc="SPS"/>
+						<DAType id="unrelated-id" bType="INT32"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefaultDoc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="root-id" cdc="MV"/>
+						<DAType id="unrelated-id" bType="FLOAT32"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefault: DefaultTypeDetails = {
+				id: 'db-2',
+				kind: 'DOType',
+				instance: 'Measurement',
+				version: '2.0.0',
+				dataCompatibilityVersion: '1.0.0',
+				rootId: 'root-id',
+				updatedAt: new Date(),
+				doc: dbDefaultDoc,
+			};
+
+			const plan: ResolveDefaultPlan = {
+				key: { kind: 'DOType', instance: 'Measurement' },
+				scenario: 'UPGRADE_TO_DB_DEFAULT',
+				effectiveRootId: 'root-id',
+				localBefore: {
+					kind: 'DOType',
+					instance: 'Measurement',
+					resourceId: 'db-1',
+					rootId: 'root-id',
+					version: '1.0.0',
+					typeElementIds: ['root-id'],
+				},
+				dbBefore: dbDefault,
+				typeElementsToImport: Array.from(dbDefaultDoc.querySelectorAll('DataTypeTemplates > *')),
+			};
+
+			const service = new DefaultTypeManagerService(doc, {} as never);
+			const { edits, effectiveRootIds } = service.applyPlans([plan]);
+
+			expect(effectiveRootIds.get('DOType:Measurement')).toBe('root-id');
+
+			const insertedIds = edits
+				.filter((e) => 'parent' in e && 'node' in e)
+				.map((e) => (e as any).node?.getAttribute?.('id'))
+				.filter(Boolean);
+
+			// root-id is being replaced so it must not be renamed
+			expect(insertedIds).toContain('root-id');
+			// unrelated-id is NOT being replaced, so the conflict must be renamed
+			expect(insertedIds).not.toContain('unrelated-id');
+			expect(insertedIds.some((id: string) => id.includes('imported-default'))).toBe(true);
+		});
+	});
+
 	describe('buildUpdateToLatestEditsByTypeId', () => {
 		test('imports newer DB default, replaces references, and removes old default metadata/type elements when edits are applied', async () => {
 			const doc = parseScl(`
@@ -340,6 +610,80 @@ describe('DefaultTypeManagerService', () => {
 			expect(defaultTypeV1).toBeUndefined();
 			expect(defaultTypeV2).not.toBeNull();
 			expect(defaultTypeV2?.getAttribute('rootId')).toBe('db-root');
+		});
+
+		test('upgrades correctly when DB default reuses the same IDs as the local default', async () => {
+			const doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+					<Private type="compas:default-type-info">
+						<compas:default-type kind="DOType" instance="Measurement" rootId="shared-root" version="1.0.0" id="local-v1">
+							<compas:type-element id="shared-root"/>
+							<compas:type-element id="shared-member"/>
+						</compas:default-type>
+					</Private>
+					<DataTypeTemplates>
+						<DOType id="shared-root" cdc="SPS"/>
+						<DAType id="shared-member" bType="INT32"/>
+						<LNodeType id="consumer-ln" lnClass="LLN0">
+							<DO name="stVal" type="shared-root"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefaultDoc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="shared-root" cdc="MV"/>
+						<DAType id="shared-member" bType="INT16"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const dbDefault: DefaultTypeDetails = {
+				id: 'db-v2',
+				kind: 'DOType',
+				instance: 'Measurement',
+				version: '2.0.0',
+				dataCompatibilityVersion: '1.0.0',
+				rootId: 'shared-root',
+				updatedAt: new Date(),
+				doc: dbDefaultDoc,
+			};
+
+			const mockService = createMockDefaultTypeService({
+				getLatestByKindAndInstance: vi.fn().mockResolvedValue(dbDefault),
+			});
+
+			const service = new DefaultTypeManagerService(doc, mockService);
+			const { edits, newRootId } = await service.buildUpdateToLatestEditsByTypeId('shared-root');
+
+			expect(newRootId).toBe('shared-root');
+
+			applyEdits(edits);
+
+			// Old elements replaced by new ones with the same IDs - must still exist, not duplicated
+			const allDoTypes = Array.from(doc.querySelectorAll('DataTypeTemplates > DOType[id="shared-root"]'));
+			const allDaTypes = Array.from(doc.querySelectorAll('DataTypeTemplates > DAType[id="shared-member"]'));
+			expect(allDoTypes).toHaveLength(1);
+			expect(allDaTypes).toHaveLength(1);
+
+			// The replaced elements should have the new DB values
+			expect(allDoTypes[0].getAttribute('cdc')).toBe('MV');
+			expect(allDaTypes[0].getAttribute('bType')).toBe('INT16');
+
+			// Reference must still point to shared-root (no rename)
+			const doRef = doc.querySelector('LNodeType[id="consumer-ln"] > DO[name="stVal"]');
+			expect(doRef?.getAttribute('type')).toBe('shared-root');
+
+			// Old metadata version removed, new version present
+			const defaultTypeInfo = doc.querySelector('SCL > Private[type="compas:default-type-info"]');
+			const defaultTypeEls = Array.from(defaultTypeInfo?.children ?? []).filter((child) => {
+				const localName = (child.localName || child.tagName).toLowerCase();
+				return localName === 'default-type';
+			});
+			expect(defaultTypeEls.find((el) => el.getAttribute('version') === '1.0.0')).toBeUndefined();
+			expect(defaultTypeEls.find((el) => el.getAttribute('version') === '2.0.0')).not.toBeUndefined();
 		});
 
 		test('returns no edits when local default is already latest', async () => {
