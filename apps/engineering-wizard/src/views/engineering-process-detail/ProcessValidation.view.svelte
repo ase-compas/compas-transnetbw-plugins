@@ -60,44 +60,51 @@
     getRowId={(item, i) => `${item.processId}:${item.pluginId}:${item.title}:${i}`}
   >
     {#snippet actions({ item })}
-      <button
-        type="button"
-        class="action-btn action-btn--run"
-        title="Run validation"
-        aria-label="Run validation"
-        onclick={() => handleValidate(item)}
-      >
-        <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
-      </button>
-      <button
-        type="button"
-        class="action-btn action-btn--edit"
-        title="Edit"
-        aria-label="Edit validation"
-        onclick={() => {
-          const index = validationEntries.indexOf(item);
-          onEditEntry?.(item, index);
-        }}
-      >
-        <OscdEditIcon svgStyles="fill: var(--primary-base)" />
-      </button>
-      <button
-        type="button"
-        class="action-btn action-btn--delete"
-        title="Remove"
-        aria-label="Remove validation"
-        onclick={() => {
-          const index = validationEntries.indexOf(item);
-          onDeleteEntry?.(item, index);
-        }}
-      >
-        <OscdDeleteIcon svgStyles="fill: var(--red)" />
-      </button>
+      <div class="actions-cell">
+        <button
+          type="button"
+          class="action-btn action-btn--run"
+          title="Run validation"
+          aria-label="Run validation"
+          onclick={() => handleValidate(item)}
+        >
+          <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
+        </button>
+        <button
+          type="button"
+          class="action-btn action-btn--edit"
+          title="Edit"
+          aria-label="Edit validation"
+          onclick={() => {
+            const index = validationEntries.indexOf(item);
+            onEditEntry?.(item, index);
+          }}
+        >
+          <OscdEditIcon svgStyles="fill: var(--primary-base)" />
+        </button>
+        <button
+          type="button"
+          class="action-btn action-btn--delete"
+          title="Remove"
+          aria-label="Remove validation"
+          onclick={() => {
+            const index = validationEntries.indexOf(item);
+            onDeleteEntry?.(item, index);
+          }}
+        >
+          <OscdDeleteIcon svgStyles="fill: var(--red)" />
+        </button>
+      </div>
     {/snippet}
   </OscdBasicDataTable>
 {/if}
 
 <style>
+  .actions-cell {
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .action-btn {
     background: transparent;
     border: none;
