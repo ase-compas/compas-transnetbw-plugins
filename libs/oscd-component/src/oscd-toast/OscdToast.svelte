@@ -21,10 +21,10 @@
     };
 
     const colors = {
-        success: "#4CAF50",
-        error: "#F44336",
-        info: "#2196F3",
-        warn: "#FF9800"
+        success: "var(--oscd-status-success)",
+        error: "var(--oscd-status-error)",
+        info: "var(--oscd-status-info)",
+        warn: "var(--oscd-status-warning)"
     };
 
     function close() {

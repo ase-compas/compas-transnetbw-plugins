@@ -17,10 +17,10 @@
   } as const;
 
   const colors = {
-    success: '#4CAF50',
-    error: '#F44336',
-    info: '#2196F3',
-    warning: '#FF9800',
+    success: 'var(--oscd-status-success)',
+    error: 'var(--oscd-status-error)',
+    info: 'var(--oscd-status-info)',
+    warning: 'var(--oscd-status-warning)',
   } as const;
 </script>
 
