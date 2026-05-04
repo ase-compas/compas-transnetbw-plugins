@@ -35,6 +35,7 @@ class IdFormatSettingsState {
     public settingsCacheTtlSeconds: number = 45;
 
     loading: boolean = $state(false);
+    saving: boolean = $state(false);
     error: string | null = $state(null);
 
     settings: TypeIdFormatSettings = $state(createDefaultSettings());
@@ -50,23 +51,33 @@ class IdFormatSettingsState {
             await this.refreshSettingsIfStale(forceReload);
         } catch (error) {
             console.error('Failed to load ID format settings:', error);
-            this.error = 'Failed to load settings';
+            this.error = 'Could not load ID format settings';
         } finally {
             this.loading = false;
         }
     }
 
-    public async save() {
+    public async save(): Promise<boolean> {
+        this.saving = true;
+        this.error = null;
         const saveToSettings = this.sanitizeSettings(this.settings);
 
         try {
-            await idFormatSettingsService.saveSettings(saveToSettings);
+            const saved = await idFormatSettingsService.saveSettings(saveToSettings);
+            if (!saved) {
+                this.error = 'Could not save ID format settings';
+                return false;
+            }
             this.settings = saveToSettings;
             this.hasLoadedSettings = true;
             this.settingsLoadedAt = Date.now();
+            return true;
         } catch (error) {
             console.error('Failed to save ID format settings:', error);
-            this.error = 'Failed to save settings';
+            this.error = 'Could not save ID format settings';
+            return false;
+        } finally {
+            this.saving = false;
         }
     }
 
@@ -147,12 +158,13 @@ class IdFormatSettingsState {
             if (fetchedSettings) {
                 return fetchedSettings;
             }
+            // No saved settings found, use defaults silently
+            return createDefaultSettings();
         } catch (error) {
-            this.error = 'Failed to fetch ID format settings';
             console.error('Error fetching ID format settings:', error);
+            // Re-throw so load() can catch and set error state
+            throw new Error('Failed to fetch ID format settings');
         }
-
-        return createDefaultSettings();
     }
 
     private async refreshSettingsIfStale(forcedReload: boolean): Promise<void> {

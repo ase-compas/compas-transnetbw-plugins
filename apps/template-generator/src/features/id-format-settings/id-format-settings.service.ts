@@ -30,8 +30,7 @@ export class IdFormatSettingsService {
             if (this.isNotFoundError(error)) {
                 return null;
             }
-            console.error('Failed to get ID format settings:', error);
-            return null;
+            throw error;
         }
     }
 
@@ -48,10 +47,10 @@ export class IdFormatSettingsService {
      * Save ID format settings.
      * @param settings The ID format settings to save.
      */
-    async saveSettings(settings: TypeIdFormatSettings): Promise<void> {
+        async saveSettings(settings: TypeIdFormatSettings): Promise<boolean> {
         const content = new Blob([JSON.stringify(settings)], { type: 'application/json' });
 
-        await this.customResourceService.upload({
+            const result = await this.customResourceService.upload({
             type: IdFormatSettingsService.CUSTOM_RESOURCE_TYPE,
             name: IdFormatSettingsService.RESOURCE_NAME,
             contentType: UploadDataContentTypeEnum.Json,
@@ -59,6 +58,8 @@ export class IdFormatSettingsService {
             dataCompatibilityVersion: IdFormatSettingsService.DATA_COMPATIBILITY_VERSION,
             nextVersionType: UploadDataNextVersionTypeEnum.Patch
         });
+
+            return !!result?.uploadedAt;
     }
 
     /**
