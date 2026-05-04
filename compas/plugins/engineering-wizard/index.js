@@ -16252,7 +16252,7 @@ var uA = (i, e, t) => e(t()), cA = (i, e, t, n) => {
   var s;
   const r = d(e).indexOf(t());
   (s = n.onDeleteEntry) == null || s.call(n, t(), r);
-}, fA = /* @__PURE__ */ q('<button type="button" class="action-btn action-btn--run svelte-iwa4yq" title="Run validation" aria-label="Run validation"><!></button> <button type="button" class="action-btn action-btn--edit svelte-iwa4yq" title="Edit" aria-label="Edit validation"><!></button> <button type="button" class="action-btn action-btn--delete svelte-iwa4yq" title="Remove" aria-label="Remove validation"><!></button>', 1);
+}, fA = /* @__PURE__ */ q('<div class="actions-cell svelte-iwa4yq"><button type="button" class="action-btn action-btn--run svelte-iwa4yq" title="Run validation" aria-label="Run validation"><!></button> <button type="button" class="action-btn action-btn--edit svelte-iwa4yq" title="Edit" aria-label="Edit validation"><!></button> <button type="button" class="action-btn action-btn--delete svelte-iwa4yq" title="Remove" aria-label="Remove validation"><!></button></div>');
 function hA(i, e) {
   pe(e, !0);
   function t(c, f) {
@@ -16289,7 +16289,7 @@ function hA(i, e) {
       {
         const f = (g, p) => {
           let m = () => p == null ? void 0 : p().item;
-          var v = fA(), b = Q(v);
+          var v = fA(), b = P(v);
           b.__click = [uA, a, m];
           var y = P(b);
           bv(y, { svgStyles: "fill: var(--primary-base)" });
