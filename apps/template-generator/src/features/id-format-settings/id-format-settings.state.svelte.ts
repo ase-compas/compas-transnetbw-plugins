@@ -158,7 +158,6 @@ class IdFormatSettingsState {
             if (fetchedSettings) {
                 return fetchedSettings;
             }
-            console.log('No ID format settings found, using defaults');
             // No saved settings found, use defaults silently
             return createDefaultSettings();
         } catch (error) {
