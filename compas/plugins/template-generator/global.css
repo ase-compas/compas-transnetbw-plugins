@@ -67,11 +67,6 @@ body {
 
   --mdc-typography-font-family: 'Inter', sans-serif;
 
-  --oscd-status-success: #4CAF50;
-  --oscd-status-error: #F44336;
-  --oscd-status-info: #2196F3;
-  --oscd-status-warning: #FF9800;
-
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 400;

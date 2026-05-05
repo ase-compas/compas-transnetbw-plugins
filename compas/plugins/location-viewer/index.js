@@ -15903,10 +15903,10 @@ function Tb(t, e) {
     info: "info",
     warn: "warning"
   }, i = {
-    success: "var(--oscd-status-success)",
-    error: "var(--oscd-status-error)",
-    info: "var(--oscd-status-info)",
-    warn: "var(--oscd-status-warning)"
+    success: "var(--oscd-status-success, #4CAF50)",
+    error: "var(--oscd-status-error, #F44336)",
+    info: "var(--oscd-status-info, #2196F3)",
+    warn: "var(--oscd-status-warning, #FF9800)"
   };
   var a = xb(), o = me(a), u = me(o);
   As(u, {

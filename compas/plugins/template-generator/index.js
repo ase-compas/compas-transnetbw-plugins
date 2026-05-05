@@ -12380,10 +12380,10 @@ function Eb(a, e) {
     info: "info",
     warning: "warning"
   }, r = {
-    success: "var(--oscd-status-success)",
-    error: "var(--oscd-status-error)",
-    info: "var(--oscd-status-info)",
-    warning: "var(--oscd-status-warning)"
+    success: "var(--oscd-status-success, #4CAF50)",
+    error: "var(--oscd-status-error, #F44336)",
+    info: "var(--oscd-status-info, #2196F3)",
+    warning: "var(--oscd-status-warning, #FF9800)"
   };
   var s = fb(), o = w(s), d = w(o), c = w(d);
   Vn(c, {
@@ -18405,10 +18405,10 @@ function wA(a, e) {
     info: "info",
     warn: "warning"
   }, r = {
-    success: "var(--oscd-status-success)",
-    error: "var(--oscd-status-error)",
-    info: "var(--oscd-status-info)",
-    warn: "var(--oscd-status-warning)"
+    success: "var(--oscd-status-success, #4CAF50)",
+    error: "var(--oscd-status-error, #F44336)",
+    info: "var(--oscd-status-info, #2196F3)",
+    warn: "var(--oscd-status-warning, #FF9800)"
   };
   var s = GA(), o = w(s), d = w(o);
   Vn(d, {

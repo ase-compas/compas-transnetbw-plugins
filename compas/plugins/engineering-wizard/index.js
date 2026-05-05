@@ -15394,10 +15394,10 @@ function b_(i, e) {
     info: "info",
     warn: "warning"
   }, r = {
-    success: "var(--oscd-status-success)",
-    error: "var(--oscd-status-error)",
-    info: "var(--oscd-status-info)",
-    warn: "var(--oscd-status-warning)"
+    success: "var(--oscd-status-success, #4CAF50)",
+    error: "var(--oscd-status-error, #F44336)",
+    info: "var(--oscd-status-info, #2196F3)",
+    warn: "var(--oscd-status-warning, #FF9800)"
   };
   var s = v_(), a = P(s), o = P(a);
   as(o, {

@@ -40,6 +40,11 @@
   --mdc-typography-button-font-weight: 500;
   --mdc-typography-button-text-transform:  none;
   --mdc-typography-button-letter-spacing: 0.03em;
+
+  --oscd-status-success: #4CAF50;
+  --oscd-status-error: #F44336;
+  --oscd-status-info: #2196F3;
+  --oscd-status-warning: #FF9800;
   }
 
 * {
