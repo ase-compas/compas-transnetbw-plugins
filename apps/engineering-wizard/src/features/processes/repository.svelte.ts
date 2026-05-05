@@ -38,7 +38,13 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
       const entries = await processService.listLatest();
       if (entries.length > 0) {
         const backendProcesses = await Promise.all(
-          entries.map((e) => processService.getById(e.resourceId)),
+          entries.map(async (e) => {
+            const proc = await processService.getById(e.resourceId);
+            // The JSON content may have a stale version (written before the
+            // backend applied the version bump). Always use the authoritative
+            // version returned by listLatest().
+            return { ...proc, version: e.version };
+          }),
         );
         processes = mergeById(processes, backendProcesses);
       }

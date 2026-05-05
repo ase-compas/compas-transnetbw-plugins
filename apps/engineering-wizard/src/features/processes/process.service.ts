@@ -1,4 +1,5 @@
 import type { Process, VersionBump } from '@oscd-transnet-plugins/shared';
+import { bumpVersion } from '@oscd-transnet-plugins/shared';
 import type { CustomResourceService } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import {
   UploadDataContentTypeEnum,
@@ -65,7 +66,12 @@ export class ProcessService {
     process: Process,
     versionBump?: VersionBump,
   ): Promise<SaveResult> {
-    const content = new Blob([JSON.stringify(process)], {
+    // Pre-compute the new version so the stored JSON content is consistent
+    // with the version the backend will assign.
+    const currentVersion = process.version || '1.0.0';
+    const newVersion = versionBump ? bumpVersion(currentVersion, versionBump) : currentVersion;
+
+    const content = new Blob([JSON.stringify({ ...process, version: newVersion })], {
       type: 'application/json',
     });
 
@@ -76,7 +82,7 @@ export class ProcessService {
       content,
       dataCompatibilityVersion: ProcessService.DATA_COMPATIBILITY_VERSION,
       description: process.description ?? undefined,
-      version: versionBump ? undefined : (process.version || '1.0.0'),
+      version: versionBump ? undefined : newVersion,
       nextVersionType: versionBump ?? undefined,
     });
 
