@@ -1,4 +1,4 @@
-import { filter, map, Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { FileSearchResult } from '../domain';
 import type { SearchParams } from '../domain';
 import { Configuration, HistoryApi } from '@oscd-transnet-plugins/oscd-history-api-client';
@@ -7,8 +7,7 @@ import type { DataResourceSearch } from '@oscd-transnet-plugins/oscd-history-api
 export class VersionEditorFileService {
   private static instance: VersionEditorFileService;
 
-
-  private endpoint = '/compas-scl-data-service';
+  private readonly endpoint = '/compas-scl-data-service';
 
   private constructor() {}
 
@@ -19,34 +18,22 @@ export class VersionEditorFileService {
     return VersionEditorFileService.instance;
   }
 
-  searchFiles(params: SearchParams): Observable<FileSearchResult[]> {
-    const sclApiClient = this.generateApiClient(this.endpoint);
-    return sclApiClient
-      .searchForResources({
-        dataResourceSearch: this.mapToDataResourceSearch(params),
-      })
-      .pipe(
-        filter((response: any) => !!response || !!response.results),
-        map((response: any) => response.results),
-        map((data: any[]) =>
-          data.map((item: any) => this.mapToFileSearchResult(item))
-        )
-      );
+  async searchFiles(params: SearchParams): Promise<FileSearchResult[]> {
+    const client = this.generateApiClient(this.endpoint);
+    const response = await firstValueFrom(
+      client.searchForResources({ dataResourceSearch: this.mapToDataResourceSearch(params) })
+    ) as any;
+    if (!response?.results) return [];
+    return (response.results as any[]).map(item => this.mapToFileSearchResult(item));
   }
 
-  getHistoryFiles(uuid: string): Observable<any[]> {
-    const sclApiClient = this.generateApiClient(this.endpoint);
-    return sclApiClient
-      .retrieveDataResourceHistory({
-        id: uuid,
-      })
-      .pipe(
-        filter((response: any) => !!response || !!response.versions),
-        map((response: any) => response.versions),
-        map((data: any[]) =>
-          data.map((item: any) => this.mapToFileSearchResult(item))
-        )
-      );
+  async getHistoryFiles(uuid: string): Promise<FileSearchResult[]> {
+    const client = this.generateApiClient(this.endpoint);
+    const response = await firstValueFrom(
+      client.retrieveDataResourceHistory({ id: uuid })
+    ) as any;
+    if (!response?.versions) return [];
+    return (response.versions as any[]).map(item => this.mapToFileSearchResult(item));
   }
 
   /**
@@ -54,21 +41,16 @@ export class VersionEditorFileService {
    * @param type scl file type (e.g., SSD, SCL, etc.)
    * @param uuid uuid of the resource
    */
-  deleteResource(type: string, uuid: string): Observable<void> {
-    const sclApiClient = this.generateApiClient(this.endpoint);
-    return sclApiClient.deleteAllSclFileVersions({id: uuid, type: type});
+  async deleteResource(type: string, uuid: string): Promise<void> {
+    const client = this.generateApiClient(this.endpoint);
+    await firstValueFrom(client.deleteAllSclFileVersions({ id: uuid, type }));
   }
 
-  downloadSclData(
-    uuid: string,
-    type: string,
-    version: string
-  ): Observable<Blob> {
-    const sclApiClient = this.generateApiClient(this.endpoint);
-    return sclApiClient.retrieveDataResourceByVersion({
-      id: uuid,
-      version: version,
-    });
+  async downloadSclData(uuid: string, type: string, version: string): Promise<Blob> {
+    const client = this.generateApiClient(this.endpoint);
+    return firstValueFrom(
+      client.retrieveDataResourceByVersion({ id: uuid, version })
+    ) as Promise<Blob>;
   }
 
   private mapToFileSearchResult(data: any): FileSearchResult {
@@ -82,7 +64,7 @@ export class VersionEditorFileService {
       data.comment,
       data.archived,
       data.available,
-      data.deleted
+      data.deleted,
     );
   }
 
@@ -98,10 +80,6 @@ export class VersionEditorFileService {
   }
 
   private generateApiClient(url: string) {
-    const config = new Configuration({
-      basePath: url,
-      // accessToken: authInfo.token,
-    });
-    return new HistoryApi(config);
+    return new HistoryApi(new Configuration({ basePath: url }));
   }
 }

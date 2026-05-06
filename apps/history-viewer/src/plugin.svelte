@@ -4,14 +4,19 @@
 
   interface Props {
     doc?: XMLDocument;
+    editCount?: number;
+    docName?: string;
+    docId?: string;
+    host?: HTMLElement;
+    locale?: string;
     dev?: boolean;
   }
 
-  let { doc, dev = false }: Props = $props();
+  let { doc, editCount = -1, docName, docId, host, locale, dev = false }: Props = $props();
 </script>
 
 {#if doc || dev}
-  <App />
+  <App {doc} {editCount} {docName} {docId} {host} {locale} />
 {/if}
 
 <input type="hidden" name="package-name" value={pckg.name} />
