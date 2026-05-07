@@ -34,7 +34,6 @@
   import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { ArchiveExplorerService } from '@oscd-transnet-plugins/oscd-archive-explorer';
-  import { untrack } from 'svelte';
 
   interface Props {
     doc?: XMLDocument;
@@ -142,29 +141,15 @@
   onMount(() => {
     loadData();
 
-    // Re-fetch the list whenever any document is saved to the CoMPAS backend.
-    // 'doc-saved' is a CustomEvent<void> dispatched by CompasSave with
-    // { bubbles: true, composed: true }, so it propagates up to window.
-    const onDocSaved = () => scheduleSearch(800);
-    window.addEventListener('doc-saved', onDocSaved);
+    // Re-fetch the list whenever a document is saved to the CoMPAS backend.
+    // 'doc-saved' is dispatched by CompasSave only after the API call has
+    // completed, so the new version is already persisted — no delay needed.
+    window.addEventListener('doc-saved', loadData);
 
     return () => {
       clearTimeout(searchTimer);
-      window.removeEventListener('doc-saved', onDocSaved);
+      window.removeEventListener('doc-saved', loadData);
     };
-  });
-
-  // Auto-refresh when CoMPAS increments editCount (e.g. after a save).
-  // untrack() prevents prevEditCount mutation from creating a reactive loop.
-  let prevEditCount = editCount;
-  $effect(() => {
-    const current = editCount;
-    untrack(() => {
-      if (current !== prevEditCount) {
-        prevEditCount = current;
-        scheduleSearch(500);
-      }
-    });
   });
 
   function scheduleSearch(delay = 200) {
