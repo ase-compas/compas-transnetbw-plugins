@@ -1,71 +1,73 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
-import { mount } from "svelte";
+import { mount } from 'svelte';
 
-
-type Props = {
+interface PluginProps {
   doc?: XMLDocument;
-  editCount?: number;
+  editCount: number;
+  host: NewOSCDPlugin;
+  docName?: string;
+  docId?: string;
+  locale?: string;
 }
 
 export default class NewOSCDPlugin extends HTMLElement {
-
-  private readonly props: Props;
+  private _props: PluginProps;
 
   constructor() {
     super();
-    this.props = $state({
+    this._props = $state({
       doc: undefined,
-      editCount: undefined,
-    })
+      editCount: -1,
+      host: this as NewOSCDPlugin,
+      locale: navigator.language ?? 'en-US',
+    });
   }
 
   connectedCallback() {
+    if (this.shadowRoot) return;
+
     this.attachShadow({ mode: 'open' });
-    this.props.doc = this._doc;
-    this.props.editCount = this._editCount;
+    const shadowRoot = this.shadowRoot!;
 
     const linkElement = createStyleLinkElement();
-    this.shadowRoot!.appendChild(linkElement);
+    shadowRoot.appendChild(linkElement);
 
-    const mountPlugin = () => mount(Plugin, { target: this.shadowRoot!, props: this.props });
+    const themeEl = document.createElement('style');
+    themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
+    shadowRoot.appendChild(themeEl);
+
+    const mountPlugin = () => mount(Plugin, { target: shadowRoot, props: this._props });
     linkElement.addEventListener('load', mountPlugin, { once: true });
     linkElement.addEventListener('error', mountPlugin, { once: true });
   }
 
-  private _doc?: XMLDocument;
-  public set doc(newDoc: XMLDocument) {
-    this._doc = newDoc;
-    this.props.doc = newDoc;
+  set doc(newDoc: XMLDocument) {
+    this._props.doc = newDoc;
   }
 
-  private _editCount?: number;
-  public set editCount(newCount: number) {
-    this._editCount = newCount;
-    this.props.editCount = newCount;
+  set editCount(newCount: number) {
+    this._props.editCount = newCount;
+  }
+
+  set docName(v: string) {
+    this._props.docName = v;
+  }
+
+  set docId(v: string) {
+    this._props.docId = v;
+  }
+
+  set locale(v: string) {
+    this._props.locale = v;
   }
 }
 
-function createStyleLinkElement(): HTMLElement {
-  const id = `${pkg.name}-v${pkg.version}-style`;
-  const stylePath = generateStylePath();
-
-  const linkElement = document.createElement('link');
-  linkElement.rel = 'stylesheet';
-  linkElement.type = 'text/css';
-  linkElement.href = stylePath;
-  linkElement.id = id;
-
-  return linkElement;
-}
-
-function generateStylePath(): string {
-  const srcUrl = new URL(import.meta.url);
-  const origin = srcUrl.origin;
-  const path = srcUrl.pathname
-    .split('/')
-    .slice(0, -1)
-    .filter(Boolean)
-    .join('/');
-  return [origin, path, 'style.css'].filter(Boolean).join('/');
+function createStyleLinkElement(): HTMLLinkElement {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = new URL('./style.css', import.meta.url).href;
+  link.id = `${pkg.name}-v${pkg.version}-style`;
+  return link;
 }

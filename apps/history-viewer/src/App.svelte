@@ -3,93 +3,91 @@
   import de from './i18n/de.json';
   import en from './i18n/en.json';
 
-  setupTranslation({
-    en,
-    de,
-  });
+  setupTranslation({ en, de });
 </script>
+
 <script lang="ts">
   import {
-    OscdButton, OscdConfirmDialog,
+    OscdButton,
+    OscdConfirmDialog,
     OscdDataTable,
     OscdDialog,
-    OscdFilterTab, OscdToastHost
+    OscdFilterTab,
+    OscdToastHost,
   } from '@oscd-transnet-plugins/oscd-component';
-  import { Subject } from 'rxjs';
-  import { catchError, finalize, switchMap, take, tap, debounceTime, map, distinctUntilChanged, mergeWith } from 'rxjs/operators';
-  import { from, of } from 'rxjs';
+  import { firstValueFrom } from 'rxjs';
   import {
     FileSearchResult,
     VersionEditorFileService,
-    VersionEditorStore
+    VersionEditorStore,
   } from '@oscd-transnet-plugins/oscd-history-viewer';
   import type { SearchParams } from '@oscd-transnet-plugins/oscd-history-viewer';
   import { Label } from '@smui/button';
-  import { OscdCancelIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import {onMount} from "svelte";
-  import {_, locale} from 'svelte-i18n';
-  import "svelte-material-ui/bare.css"
-  import "../public/material-icon.css"
-  import "../public/global.css"
-  import "../public/smui.css"
+  import { OscdCancelIcon, OscdRefreshIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { onMount } from 'svelte';
+  import { _, locale } from 'svelte-i18n';
+  import 'svelte-material-ui/bare.css';
+  import '../public/material-icon.css';
+  import '../public/global.css';
+  import '../public/smui.css';
   import type { FilterDefinition } from '../../../libs/oscd-component/src/oscd-filter-builder/types';
   import { DialogHost, openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-    import {
-    ArchiveExplorerService,
-  } from '@oscd-transnet-plugins/oscd-archive-explorer';
-
-  const versionEditorDataService = VersionEditorFileService.getInstance();
-  const archiveExplorerService = ArchiveExplorerService.getInstance();
-
-  let rowData: FileSearchResult[] = [];
-  let historyData: FileSearchResult[] = [];
-  let currentSelectFile: FileSearchResult = $state();
-
-  const searchTrigger$ = new Subject<void>();
-  const initialLoad$ = new Subject<void>();
-  const search$ = initialLoad$.pipe(
-    mergeWith(
-      searchTrigger$.pipe(debounceTime(200))
-    ),
-    map(() => convertFilterToSearchParams(filterDefinitions)),
-    tap(() => {
-      loadingDone = false;
-    }),
-    switchMap(searchParams =>
-      versionEditorDataService.searchFiles(searchParams).pipe(
-        map((data: FileSearchResult[]) => data.filter(item => !item.deleted)),
-        tap((filteredData: FileSearchResult[]) => {
-          rowData = [...filteredData];
-          dataStore.updateData(filteredData);
-        }),
-        finalize(() => {
-          loadingDone = true;
-        })
-      )
-    )
-  );
+  import { ArchiveExplorerService } from '@oscd-transnet-plugins/oscd-archive-explorer';
 
   interface Props {
-    dataStore?: any;
-    historyStore?: any;
+    doc?: XMLDocument;
+    editCount?: number;
+    docName?: string;
+    docId?: string;
+    host?: HTMLElement;
+    locale?: string;
+    dataStore?: VersionEditorStore;
+    historyStore?: VersionEditorStore;
+    dev?: boolean;
   }
 
-  let { dataStore = new VersionEditorStore(), historyStore = new VersionEditorStore() }: Props = $props();
+  let {
+    doc,
+    editCount = -1,
+    docId,
+    docName: currentDocName,
+    dataStore = new VersionEditorStore(),
+    historyStore = new VersionEditorStore(),
+  }: Props = $props();
+
+  const service = VersionEditorFileService.getInstance();
+  const archiveService = ArchiveExplorerService.getInstance();
 
   let loadingDone = $state(true);
+  let historyLoadingDone = $state(true);
   let dialogOpen = $state(false);
   let searchText = $state('');
+  let currentSelectFile = $state<FileSearchResult | undefined>(undefined);
 
-  onMount(() => {
-    const sub = search$.subscribe();
-    initialLoad$.next();
-    return () => sub.unsubscribe();
-  });
+  let filterDefinitions: FilterDefinition[] = $state([
+    { key: 'uuid', label: 'UUID', type: 'text' },
+    {
+      key: 'type',
+      label: 'Type',
+      type: 'select',
+      options: [
+        { value: 'SSD', label: 'SSD' },
+        { value: 'IID', label: 'IID' },
+        { value: 'ICD', label: 'ICD' },
+        { value: 'SCD', label: 'SCD' },
+        { value: 'CID', label: 'CID' },
+        { value: 'SED', label: 'SED' },
+        { value: 'ISD', label: 'ISD' },
+        { value: 'STD', label: 'STD' },
+      ],
+    },
+    { key: 'author', label: 'Author', type: 'text' },
+    { key: 'from', label: 'Date from', type: 'date' },
+    { key: 'to', label: 'Date to', type: 'date' },
+  ]);
 
-  function formatDate(date: string) {
-    return new Date(date).toLocaleDateString();
-  }
+  // --- Column definitions ---------------------------------------------------
 
   const columnDefsActions = {
     headerName: '',
@@ -98,7 +96,7 @@
     filter: false,
     filterType: 'text',
     minWidth: '100px',
-    sortable: false
+    sortable: false,
   };
 
   let columnDefs = $derived([
@@ -113,10 +111,10 @@
       filter: false,
       filterType: 'text',
       sortable: true,
-      valueFormatter: formatDate
+      valueFormatter: formatDate,
     },
     { headerName: $_('version'), field: 'version', numeric: false, filter: false, filterType: 'text', sortable: true },
-    columnDefsActions
+    columnDefsActions,
   ]);
 
   let modalColumnDef = $derived([
@@ -124,66 +122,130 @@
     { headerName: 'Comment', field: 'comment', numeric: false, filter: false, filterType: 'text', sortable: true },
   ]);
 
-  const rowActions = [
+  const rowActions: any[] = [
     { icon: 'edit', tooltip: 'Open', callback: (row) => openDoc(row), disabled: (row) => !row.available },
-    { icon: 'find-in-page', tooltip: 'View History', callback: (row) => getHistoryByUuid(row), disabled: () => false },
+    { icon: 'find-in-page', tooltip: 'View History', callback: (row) => openHistoryDialog(row), disabled: () => false },
     { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
     { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false },
-    { icon: 'archive', tooltip: 'Archive', callback: (row) => archiveFile(row), disabled: () => false }
+    { icon: 'archive', tooltip: 'Archive', callback: (row) => archiveFile(row), disabled: () => false },
   ];
 
-  const historyRowActions = [
-    {
-      icon: 'download',
-      tooltip: 'Download',
-      callback: (row) => downloadBlob(row),
-      disabled: (row) => !row.available }
+  const historyRowActions: any[] = [
+    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
   ];
 
-  let filterDefinitions: FilterDefinition[] = $state([
-    { key: "uuid", label: "UUID", type: "text" },
-    { key: "type", label: "Type", type: "select", options: [
-        { value: 'SSD', label: 'SSD' },
-        { value: 'IID', label: 'IID' },
-        { value: 'ICD', label: 'ICD' },
-        { value: 'SCD', label: 'SCD' },
-        { value: 'CID', label: 'CID' },
-        { value: 'SED', label: 'SED' },
-        { value: 'ISD', label: 'ISD' },
-        { value: 'STD', label: 'STD' }]
-    },
-    { key: "author", label: "Author", type: "text" },
-    { key: "from", label: "Date from", type: "date" },
-    { key: "to", label: "Date to", type: "date" }
-  ]);
+  // --- Data loading ---------------------------------------------------------
 
-   async function deleteFile(row: FileSearchResult) {
-   console.debug('deleteResource: ', row);
-   const result = await openDialog(OscdConfirmDialog, {
-     title: 'Confirm Deletion',
-     message: `Are you sure you want to delete the resource "${row.filename} (${row.uuid})"? This action cannot be undone.`,
-     confirmActionText: 'Delete',
-     cancelActionText: 'Cancel',
-     confirmActionColor: 'danger',
-   });
-   if (result.type !== 'confirm') return;
+  let searchTimer: ReturnType<typeof setTimeout>;
 
-   versionEditorDataService.deleteResource(row.type, row.uuid)
-     .pipe(take(1))
-     .subscribe({
-       next: () => {
-         searchTrigger$.next(null);
-         toastService.success("Deleted resource", `Resource "${row.filename} (${row.uuid})" has been deleted.`);
-       },
-       error: (err) => {
-         console.error(`Failed to delete resource "${row.filename} (${row.uuid})":`, err);
-         toastService.error("Deletion failed", `Failed to delete resource "${row.filename} (${row.uuid})".`);
-       }
-     });
+  onMount(() => {
+    loadData();
+
+    // Re-fetch the list whenever a document is saved to the CoMPAS backend.
+    // 'doc-saved' is dispatched by CompasSave only after the API call has
+    // completed, so the new version is already persisted — no delay needed.
+    window.addEventListener('doc-saved', loadData);
+
+    return () => {
+      clearTimeout(searchTimer);
+      window.removeEventListener('doc-saved', loadData);
+    };
+  });
+
+  function scheduleSearch(delay = 200) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadData(), delay);
+  }
+
+  async function loadData() {
+    if (!loadingDone) return;
+    loadingDone = false;
+    try {
+      const params = buildSearchParams();
+      const data = await service.searchFiles(params);
+      dataStore.updateData(data.filter(item => !item.deleted));
+    } catch (err) {
+      console.error('Failed to load resources:', err);
+      toastService.error('Load Failed', 'Could not load the resource list.');
+    } finally {
+      loadingDone = true;
+    }
+  }
+
+  function buildSearchParams(): SearchParams {
+    const params: SearchParams = { uuid: null, filename: null, author: null, type: null, name: null, from: null, to: null };
+
+    for (const filter of filterDefinitions) {
+      if (filter.key in params && filter.type !== 'date' && filter.value) {
+        params[filter.key as keyof SearchParams] = filter.value;
+      } else if (filter.type === 'date' && filter.value) {
+        const d = new Date(filter.value);
+        if (filter.key === 'from') {
+          params.from = d.toISOString();
+        } else if (filter.key === 'to') {
+          d.setHours(23, 59, 59, 999);
+          params.to = d.toISOString();
+        }
+      }
+    }
+
+    if (searchText.trim()) {
+      params.filename = searchText.trim();
+    }
+
+    return params;
+  }
+
+  function formatDate(date: string) {
+    return new Date(date).toLocaleDateString();
+  }
+
+  // --- Actions --------------------------------------------------------------
+
+  async function deleteFile(row: FileSearchResult) {
+    const isCurrentlyOpen = !!docId && row.uuid === docId;
+
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Confirm Deletion',
+      message: isCurrentlyOpen
+        ? `"${row.filename}" is currently open in the editor.\n\nDeleting it will remove it from CoMPAS. The document will stay open locally but its CoMPAS link will be cleared — you will be prompted to save it as a new entry next time.`
+        : `Are you sure you want to delete the resource "${row.filename} (${row.uuid})"? This action cannot be undone.`,
+      confirmActionText: 'Delete',
+      cancelActionText: 'Cancel',
+      confirmActionColor: 'danger',
+    });
+    if (result.type !== 'confirm') return;
+
+    try {
+      await service.deleteResource(row.type, row.uuid);
+      toastService.success('Deleted resource', `Resource "${row.filename}" has been deleted.`);
+
+      if (isCurrentlyOpen && doc) {
+        // Dispatch open-doc without a docId so CoMPAS clears its UUID reference.
+        // CompasExistsIn will see docId='' → existInCompas=false → shows "new document"
+        // form instead of PATCH/MINOR/MAJOR on the next save attempt.
+        const fallbackDocName = currentDocName ?? `${row.filename}.${row.type}`;
+        window.document.getElementsByTagName('open-scd')[0]?.dispatchEvent(
+          new CustomEvent('open-doc', {
+            bubbles: true,
+            composed: true,
+            detail: { localFile: true, doc, docName: fallbackDocName, docId: '' },
+          }),
+        );
+        toastService.warn(
+          'CoMPAS link cleared',
+          `"${row.filename}" was deleted. The document is still open locally and can be saved as a new CoMPAS entry.`,
+        );
+      }
+
+      loadData();
+    } catch (err) {
+      console.error(`Failed to delete resource "${row.filename}":`, err);
+      toastService.error('Deletion failed', `Failed to delete resource "${row.filename}".`);
+    }
   }
 
   async function archiveFile(row: FileSearchResult) {
-    console.debug('archiveResource: ', row);
     const result = await openDialog(OscdConfirmDialog, {
       title: 'Confirm Archiving',
       message: `Archive latest version "${row.filename}" (v${row.version})? This keeps the file in History and does not delete it.`,
@@ -192,150 +254,83 @@
     });
     if (result.type !== 'confirm') return;
 
-    archiveExplorerService.archiveSclFile(row.uuid, row.version)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          searchTrigger$.next(null);
-          toastService.success("Archived resource", `Resource "${row.filename} (${row.uuid})" has been archived.`);
-        },
-        error: (err) => {
-          console.error(`Failed to archive resource "${row.filename} (${row.uuid})":`, err);
-          const errResponse = err?.response;
-          if (errResponse?.errorMessages && errResponse?.errorMessages.length > 0) {
-            toastService.error("Archiving failed", errResponse.errorMessages[0].message);
-          } else {
-            toastService.error("Archiving failed", `Failed to archive resource "${row.filename} (${row.uuid})".`);
-          }
-        }
-      });
-   }
-
-
-  function downloadBlob(row: FileSearchResult) {
-    console.log('Download file: ', row);
-    versionEditorDataService.downloadSclData(row.uuid, row.type, row.version)
-      .pipe(
-        take(1),
-        tap((data: Blob) => {
-          const url = window['URL'].createObjectURL(data);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${row.filename}.${row.type.toLowerCase()}`;
-          a.style.display = 'none';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window['URL'].revokeObjectURL(url);
-        })
-      )
-      .subscribe();
-  }
-
-  function convertFilterToSearchParams(filters: FilterDefinition[]): SearchParams {
-    const searchParams: SearchParams = {
-      uuid: null,
-      filename: null,
-      author: null,
-      type: null,
-      name: null,
-      from: null,
-      to: null
-    };
-
-    // Map filter values to searchParams
-    filters.forEach((filter) => {
-      if (filter.key in searchParams && filter.type !== 'date' && filter.value) {
-        searchParams[filter.key as keyof SearchParams] = filter.value;
-      } else if (filter.type === 'date' && filter.value) {
-        const dateValue = new Date(filter.value);
-        if (filter.key === 'from') {
-          searchParams.from = dateValue.toISOString();
-        } else if (filter.key === 'to') {
-          // set to end of day
-          dateValue.setHours(23, 59, 59, 999);
-          searchParams.to = dateValue.toISOString();
-        }
-      }
-    });
-
-    // Include searchText in filename search
-    if (searchText && searchText.trim() !== '') {
-      searchParams.filename = searchText.trim();
+    try {
+      await firstValueFrom(archiveService.archiveSclFile(row.uuid, row.version));
+      toastService.success('Archived resource', `Resource "${row.filename}" has been archived.`);
+      loadData();
+    } catch (err) {
+      console.error(`Failed to archive resource "${row.filename}":`, err);
+      const errResponse = (err as any)?.response;
+      const message = errResponse?.errorMessages?.[0]?.message ?? `Failed to archive resource "${row.filename}".`;
+      toastService.error('Archiving failed', message);
     }
-
-    return searchParams;
   }
 
-  function getHistoryByUuid(row: FileSearchResult) {
+  async function downloadBlob(row: FileSearchResult) {
+    try {
+      const blob = await service.downloadSclData(row.uuid, row.type, row.version);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${row.filename}.${row.type}`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(`Failed to download "${row.filename}":`, err);
+      toastService.error('Download failed', `Could not download "${row.filename}".`);
+    }
+  }
+
+  async function openHistoryDialog(row: FileSearchResult) {
     currentSelectFile = row;
-    versionEditorDataService.getHistoryFiles(row.uuid)
-      .pipe(
-        take(1),
-        tap((data: FileSearchResult[]) => {
-          dialogOpen = true;
-          historyData = [...data];
-          historyStore.updateData(data);
-        })
-      )
-      .subscribe();
+    historyLoadingDone = false;
+    dialogOpen = true;
+    try {
+      const data = await service.getHistoryFiles(row.uuid);
+      historyStore.updateData(data);
+    } catch (err) {
+      console.error(`Failed to load history for "${row.filename}":`, err);
+      toastService.error('History failed', `Could not load history for "${row.filename}".`);
+    } finally {
+      historyLoadingDone = true;
+    }
   }
 
-  function onCloseDialog(result: any) {
-    console.log('Dialog closed with result: ', result);
+  function onCloseDialog() {
     dialogOpen = false;
   }
 
   async function openDoc(row: FileSearchResult) {
-     const result = await openDialog(OscdConfirmDialog, {
+    const result = await openDialog(OscdConfirmDialog, {
       title: 'Open File',
-      message: `Do you want to open "${row.filename}"? \n\nAny unsaved changes in your current project will be lost.`,
+      message: `Do you want to open "${row.filename}"?\n\nAny unsaved changes in your current project will be lost.`,
       confirmActionText: 'Open',
       cancelActionText: 'Cancel',
-     });
+    });
+    if (result.type !== 'confirm') return;
 
-     if(result.type !== 'confirm') {
-       return;
-     }
+    try {
+      const blob = await service.downloadSclData(row.uuid, row.type, row.version);
+      const text = await blob.text();
+      const docName = `${row.filename}.${row.type}`;
+      const xmlDoc = new DOMParser().parseFromString(text, 'application/xml');
 
-    let url = '';
-
-    versionEditorDataService.downloadSclData(row.uuid, row.type, row.version)
-      .pipe(
-        take(1),
-        tap((data: Blob) => {
-          url = window['URL'].createObjectURL(data);
+      // docId (CoMPAS UUID) is required so CompasSave shows the version-bump
+      // dialog (PATCH/MINOR/MAJOR) instead of the "add as new document" form.
+      window.document.getElementsByTagName('open-scd')[0]?.dispatchEvent(
+        new CustomEvent('open-doc', {
+          bubbles: true,
+          composed: true,
+          detail: { localFile: false, doc: xmlDoc, docName, docId: row.uuid },
         }),
-        switchMap(() => from(fetch(url).then(response => {
-            if (response.status === 200) {
-              return response.text();
-            }
-
-            throw new Error(`Failed to load ${row.filename}: ${response.status} ${response.statusText}`);
-          }))
-        ),
-        take(1),
-        catchError(err => {
-          toastService.error("Open Document Failed", `Failed to open document "${row.filename}".`);
-          console.error(err);
-          return of(undefined);
-        }),
-        tap((text: string | undefined) => {
-          if (!text) {
-            return;
-          }
-
-          const docName = row.filename;
-          const doc = new DOMParser().parseFromString(text, 'application/xml');
-
-          window.document.getElementsByTagName('open-scd')[0]?.dispatchEvent(new CustomEvent('open-doc', {
-            bubbles: true,
-            composed: true,
-            detail: { localFile: false, doc, docName }
-          }));
-        }),
-        finalize(() => url && window['URL'].revokeObjectURL(url))
-      ).subscribe();
+      );
+    } catch (err) {
+      console.error(`Failed to open "${row.filename}":`, err);
+      toastService.error('Open failed', `Could not open "${row.filename}".`);
+    }
   }
 </script>
 
@@ -343,25 +338,23 @@
   <div class="version-editor-container">
     <OscdDialog bind:open={dialogOpen} onClose={onCloseDialog}>
       {#snippet title()}
-            <h3 >{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
-          {/snippet}
+        <h3>{$_('versionHistory.title', { values: { filename: currentSelectFile?.filename } })}</h3>
+      {/snippet}
       {#snippet content()}
-            <div >
-          <OscdDataTable columnDefs={modalColumnDef}
-                         store={historyStore}
-                         {loadingDone}
-                         rowActions={historyRowActions}
-                         searchInputLabel={$_('search')} />
-        </div>
-          {/snippet}
+        <OscdDataTable
+          columnDefs={modalColumnDef}
+          store={historyStore}
+          loadingDone={historyLoadingDone}
+          rowActions={historyRowActions}
+          searchInputLabel={$_('search')}
+        />
+      {/snippet}
       {#snippet actions()}
-            <div >
-          <OscdButton callback={onCloseDialog} variant="raised">
-            <OscdCancelIcon />
-            <Label>{$_('done')}</Label>
-          </OscdButton>
-        </div>
-          {/snippet}
+        <OscdButton callback={onCloseDialog} variant="raised">
+          <OscdCancelIcon />
+          <Label>{$_('done')}</Label>
+        </OscdButton>
+      {/snippet}
     </OscdDialog>
 
     <div class="search-filter">
@@ -369,23 +362,34 @@
         bind:filters={filterDefinitions}
         bind:searchText={searchText}
         searchLabel="Search file name..."
-        onFilterChange={() => searchTrigger$.next(null)}
-        onSearchInput={() => searchTrigger$.next(null)}
-    />
+        onFilterChange={() => scheduleSearch()}
+        onSearchInput={() => scheduleSearch()}
+      />
     </div>
+
+    <div class="toolbar">
+      <OscdButton callback={() => loadData()} variant="outlined" disabled={!loadingDone}>
+        <OscdRefreshIcon />
+        <Label>Refresh</Label>
+      </OscdButton>
+    </div>
+
     <div class="table-container">
-      <OscdDataTable 
+      <OscdDataTable
         emptyText="No resources found."
         {columnDefs}
         store={dataStore}
         {loadingDone}
         {rowActions}
-        searchInputLabel={$_('search')}/>
+        searchInputLabel={$_('search')}
+      />
     </div>
   </div>
 </div>
-<OscdToastHost/>
-<DialogHost/>
+
+<OscdToastHost />
+<DialogHost />
+
 <style lang="css" global>
   .version-editor-container {
     height: 100vh;
@@ -399,8 +403,15 @@
     height: auto;
   }
 
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+
   .table-container {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     height: 100%;
   }
 </style>
