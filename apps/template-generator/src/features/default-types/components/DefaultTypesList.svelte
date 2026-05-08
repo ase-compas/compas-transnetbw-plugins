@@ -2,12 +2,11 @@
   import { onMount } from 'svelte';
   import { DefaultTypesState } from '../state/default-types.state.svelte';
   import DataTypeFilter from '../../type-details/components/ui/DataTypeFilter.svelte';
-  import { OscdButton, OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdButton, OscdBasicDataTable, OscdIconActionButton } from '@oscd-transnet-plugins/oscd-component';
   import { DataTypeService } from '../../type-details/services/type.service';
-  // Note: DataTypeService is instantiated locally here. If this list grows to many instances,
-  // consider lifting the service to a shared context to avoid redundant re-instantiation.
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { untrack } from 'svelte';
+  import { deleteDefaultTypeWorkflow } from '../default-types.workflows';
 
   const defaultTypesState = new DefaultTypesState();
 
@@ -18,6 +17,11 @@
 
   let { onCreateDefaultType = () => {}, onEditDefaultType = () => {} }: Props =
     $props();
+
+  const filterService = new DataTypeService(
+    null as unknown as XMLDocument,
+    null as unknown as HTMLElement,
+  );
 
   const columns = [
     { header: 'Kind', key: 'kind' },
@@ -48,7 +52,7 @@
     bind:query={defaultTypesState.query}
     bind:dataTypeKind={defaultTypesState.kindFilter}
     bind:instance={defaultTypesState.instanceFilter}
-    service={new DataTypeService(null, null)}
+    service={filterService}
   />
   <OscdButton variant="unelevated" callback={onCreateDefaultType}>
     New Default Type
@@ -58,13 +62,24 @@
 <OscdBasicDataTable
   items={defaultTypesState.filteredTypes}
   {columns}
-  loading={defaultTypesState.loading}
+  loading={defaultTypesState.loading || defaultTypesState.deleting}
   emptyText="No default types found."
   headerBg="rgba(0,0,0,0.1)"
   rowBg="#ffffff"
   hasActions
   onRowClick={(item) => onEditDefaultType(item.id)}
-></OscdBasicDataTable>
+>
+  {#snippet actions({ item })}
+    <div class="actions-cell">
+      <OscdIconActionButton
+        tooltip="Delete"
+        type="delete"
+        fillColor="red"
+        onClick={() => deleteDefaultTypeWorkflow(item, defaultTypesState)}
+      />
+    </div>
+  {/snippet}
+</OscdBasicDataTable>
 
 <style>
   .toolbar {
@@ -72,5 +87,10 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+  }
+
+  .actions-cell {
+    display: flex;
+    justify-content: flex-end;
   }
 </style>
