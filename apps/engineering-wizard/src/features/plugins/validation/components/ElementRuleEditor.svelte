@@ -16,11 +16,20 @@
 </script>
 
 <div class="element-editor__section">
-  <Select bind:value={ruleUi.elementName} label="Element" variant="outlined" invalid={!ruleUi.elementName?.trim()}>
-    {#each ELEMENT_OPTIONS as el}
-      <Option value={el}>{el}</Option>
-    {/each}
-  </Select>
+  <div class="field-wrap">
+    <Select
+      bind:value={ruleUi.elementName}
+      label="Element"
+      variant="outlined"
+      invalid={!ruleUi.elementName?.trim()}
+      helperText$validationMsg
+    >
+      {#each ELEMENT_OPTIONS as el}
+        <Option value={el}>{el}</Option>
+      {/each}
+      {#snippet helperText()}Element is required.{/snippet}
+    </Select>
+  </div>
 
   <div class="check-row">
     <Select class="check-select" bind:value={ruleUi.elementCheckType} label="Check" variant="outlined">
@@ -49,6 +58,12 @@
     border: 1px solid #b2c7cb;
     border-radius: 5px;
     gap: 1rem;
+  }
+
+  /* Groups field + helper-line so parent gap doesn't inflate spacing */
+  .field-wrap {
+    display: flex;
+    flex-direction: column;
   }
 
   .check-row {

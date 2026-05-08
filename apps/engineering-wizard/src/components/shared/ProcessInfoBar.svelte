@@ -12,6 +12,8 @@
     description?: string;
     nameInvalid?: boolean;
     processIdDisabled?: boolean;
+    /** When true, all editable fields are read-only (e.g. during save). */
+    disabled?: boolean;
     onNameChange?: (value: string) => void;
     onDescriptionChange?: (value: string) => void;
     onProcessIdChange?: (value: string) => void;
@@ -25,6 +27,7 @@
     description = '',
     nameInvalid = false,
     processIdDisabled = true,
+    disabled = false,
     onNameChange = () => {},
     onDescriptionChange = () => {},
     onProcessIdChange,
@@ -38,6 +41,7 @@
       label="Process name"
       value={name}
       invalid={nameInvalid}
+      disabled={disabled}
       oninput={(e) => onNameChange((e.target as HTMLInputElement).value)}
     >
       {#snippet helper()}<HelperText validationMsg>Process name is required.</HelperText>{/snippet}
@@ -49,7 +53,7 @@
       variant="outlined"
       label="Process ID"
       value={processId}
-      disabled={processIdDisabled}
+      disabled={processIdDisabled || disabled}
       oninput={onProcessIdChange ? (e) => onProcessIdChange!((e.target as HTMLInputElement).value) : undefined}
     />
   </div>
@@ -75,13 +79,14 @@
       variant="outlined"
       label="Description"
       value={description}
+      disabled={disabled}
       oninput={(e) => onDescriptionChange((e.target as HTMLInputElement).value)}
     />
   </div>
 </div>
 
 <style>
-  * { font-family: 'Roboto', sans-serif; }
+  * { font-family: var(--ew-font-family, 'Inter', sans-serif); }
 
   .info-bar {
     display: flex;

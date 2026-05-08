@@ -96,7 +96,7 @@
     max-width: 22rem;
     display: grid;
     gap: 0.4rem;
-    font-family: "Roboto", sans-serif;
+    font-family: var(--ew-font-family, 'Inter', sans-serif);
   }
 
   .box {
@@ -173,7 +173,7 @@
     top: -99999px;
     white-space: nowrap;
 
-    font-family: "Roboto", sans-serif;
+    font-family: var(--ew-font-family, 'Inter', sans-serif);
     font-size: 0.95rem;
     font-weight: 400;
   }

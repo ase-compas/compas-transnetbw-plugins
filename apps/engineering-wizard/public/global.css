@@ -29,6 +29,13 @@
 
   --mdc-typography-font-family: 'Inter', sans-serif;
 
+  /*
+   * smui.css was compiled with Svelte's default orange (#ff3e00) as primary.
+   * Redefine --mdc-theme-primary here so every var(--mdc-theme-primary, …) rule
+   * in smui.css resolves to the actual primary colour instead of orange.
+   */
+  --mdc-theme-primary: var(--primary-base, #4a7a7f);
+
   --oscd-status-success: #4CAF50;
   --oscd-status-error: #F44336;
   --oscd-status-info: #2196F3;
@@ -65,6 +72,7 @@ body {
   --ew-font-weight-normal:  400;
 
   --mdc-typography-font-family: 'Inter', sans-serif;
+  --mdc-theme-primary: var(--primary-base, #4a7a7f);
 
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
@@ -141,15 +149,67 @@ button:focus {
  *   action buttons look visually heavier/larger than navigation buttons.
  */
 :root {
-  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-font-weight: 600;
   --mdc-typography-button-text-transform: none;
   --mdc-typography-button-letter-spacing: 0.03em;
-  }
+}
 :host {
-  --mdc-typography-button-font-weight: 500;
+  --mdc-typography-button-font-weight: 600;
   --mdc-typography-button-text-transform: none;
   --mdc-typography-button-letter-spacing: 0.03em;
-  }
+}
+
+/* Remove elevation from raised buttons */
+.mdc-button--raised,
+.mdc-button--raised:hover,
+.mdc-button--raised:focus,
+.mdc-button--raised:active,
+.mdc-button--raised:not(:disabled) {
+  box-shadow: none !important;
+}
+
+/* Table header: semibold */
+.mdc-data-table__header-cell {
+  font-weight: 600 !important;
+}
+
+/* Fix table bottom border-radius corners being clipped */
+.mdc-data-table {
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mdc-data-table__table-container {
+  border-radius: inherit;
+}
+
+/* SMUI text field: any invalid state (focused or not) uses primary, not error red.
+ * We redefine --mdc-theme-error at the component level so every SMUI rule that
+ * reads var(--mdc-theme-error) (label, outline segments, caret) automatically
+ * picks up the primary colour instead of the hardcoded red. */
+.mdc-text-field--invalid,
+.mdc-select--invalid {
+  --mdc-theme-error: var(--primary-base, #4a7a7f);
+}
+
+/*
+ * smui.css bakes focused label colours as hardcoded rgba values (no CSS variable)
+ * for both text fields and selects — override with !important.
+ */
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label,
+.mdc-select:not(.mdc-select--disabled).mdc-select--focused .mdc-floating-label {
+  color: var(--primary-base, #4a7a7f) !important;
+}
+
+/*
+ * Validation helper/error text is a sibling of the field element, so
+ * CSS variable inheritance from --invalid doesn't reach it.
+ * Override the computed colour directly.
+ */
+.mdc-text-field--invalid + .mdc-text-field-helper-line
+  .mdc-text-field-helper-text--validation-msg,
+.mdc-select--invalid + .mdc-select-helper-text--validation-msg {
+  color: var(--primary-base, #4a7a7f) !important;
+}
 
 /* Ensure icon wrappers inside SMUI buttons vertically centre the SVG */
 .mdc-button .mdc-button__icon {

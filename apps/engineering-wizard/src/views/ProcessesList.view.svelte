@@ -176,9 +176,9 @@
   }
 
   .processes__header {
-    font-family: var(--ew-font-family, 'Roboto', sans-serif);
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-family: var(--ew-font-family, 'Inter', sans-serif);
+    font-size: var(--ew-font-size-h1, 1.25rem);
+    font-weight: var(--ew-font-weight-heading, 600);
     color: var(--primary-base);
     margin: 0;
     white-space: nowrap;

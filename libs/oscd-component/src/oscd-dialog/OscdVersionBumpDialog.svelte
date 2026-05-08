@@ -59,7 +59,7 @@
         onclick={confirm}
         disabled={!selected}
         style="text-transform: none{selected
-          ? '; background-color: var(--mdc-theme-primary, #ff3e00); color: white'
+          ? '; background-color: var(--mdc-theme-primary, #4a7a7f); color: white'
           : ''}"
       >
         Increase version
@@ -92,17 +92,17 @@
   }
 
   .option:hover {
-    border-color: var(--mdc-theme-primary, #ff3e00);
+    border-color: var(--mdc-theme-primary, #4a7a7f);
   }
 
   .option--selected {
-    border-color: var(--mdc-theme-primary, #ff3e00);
-    background-color: rgba(255, 62, 0, 0.04);
+    border-color: var(--mdc-theme-primary, #4a7a7f);
+    background-color: color-mix(in srgb, var(--mdc-theme-primary, #4a7a7f) 8%, transparent);
   }
 
   .option input[type='radio'] {
     margin: 0;
-    accent-color: var(--mdc-theme-primary, #ff3e00);
+    accent-color: var(--mdc-theme-primary, #4a7a7f);
   }
 
   .option__label {
@@ -110,7 +110,7 @@
   }
 
   .option__preview {
-    color: var(--mdc-theme-primary, #ff3e00);
+    color: var(--mdc-theme-primary, #4a7a7f);
     font-weight: 500;
     font-family: monospace;
     white-space: nowrap;

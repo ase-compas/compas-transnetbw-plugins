@@ -27,8 +27,8 @@
   .search-input {
     height: 36px;
     padding: 0 12px;
-    font-family: Roboto, sans-serif;
-    font-size: 14px;
+    font-family: var(--ew-font-family, 'Inter', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
     color: var(--primary-base, #1a3c54);
     background: white;
     border: 1.5px solid var(--primary-base, #1a3c54);
@@ -44,7 +44,7 @@
 
   .search-input::placeholder {
     color: #6b9197;
-    font-size: 14px;
+    font-size: var(--ew-font-size-body, 0.875rem);
   }
 
   .search-input:focus {

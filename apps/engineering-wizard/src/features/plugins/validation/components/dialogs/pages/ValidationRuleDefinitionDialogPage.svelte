@@ -1,5 +1,6 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
+  import HelperText from '@smui/textfield/helper-text';
   import { getElementContext } from '../../../validationRuleUi';
   import { buildAssertionExpression } from '../../../xpathBuilder';
   import { validationEditor } from '../../../validationEditorStore.svelte';
@@ -27,13 +28,17 @@
     <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} />
   {/if}
 
-  <Textfield
-    textarea
-    bind:value={validationEditor.ruleUi.message}
-    label="Error Message"
-    variant="outlined"
-    invalid={!validationEditor.ruleUi.message?.trim()}
-  />
+  <div class="field-wrap">
+    <Textfield
+      textarea
+      bind:value={validationEditor.ruleUi.message}
+      label="Error Message"
+      variant="outlined"
+      invalid={!validationEditor.ruleUi.message?.trim()}
+    >
+      {#snippet helper()}<HelperText validationMsg>Error Message is required.</HelperText>{/snippet}
+    </Textfield>
+  </div>
 
   <PreviewBox label="Live Code Preview" value={validationEditor.entry.assert} />
 </div>
@@ -48,5 +53,11 @@
 
   .rule-info {
     margin: 0;
+  }
+
+  /* Groups field + helper-line so parent gap doesn't inflate spacing */
+  .field-wrap {
+    display: flex;
+    flex-direction: column;
   }
 </style>

@@ -46,7 +46,16 @@
     const result = await openDialog(AddPluginGroupDialog, {groups: pluginGroups.length})
     if (result?.type !== 'confirm') return;
     onAddGroup(result.data.name, result.data.position);
+    // Auto-select the newly added group
+    selectedGroupTitle = result.data.name;
   }
+
+  // Auto-select the only group when there is exactly one
+  $effect(() => {
+    if (pluginGroups.length === 1 && selectedGroupTitle == null) {
+      selectedGroupTitle = pluginGroups[0].title;
+    }
+  });
 
 
   async function editGroups() {

@@ -175,8 +175,8 @@
     background: var(--base3);
     color: inherit;
     box-shadow: none;
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.95rem;
+    font-family: var(--ew-font-family, 'Inter', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
     line-height: 1;
     font-weight: 600;
     cursor: pointer;

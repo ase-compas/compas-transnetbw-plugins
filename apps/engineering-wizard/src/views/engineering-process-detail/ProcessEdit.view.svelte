@@ -202,6 +202,7 @@
 
       isAtFirstStep={isAtFirstStep}
       isAtLastStep={isAtLastStep}
+      nextDisabled={isAtLastStep}
       doneDisabled={saving}
     />
   </div>

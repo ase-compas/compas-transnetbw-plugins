@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import Button from '@smui/button';
+  import CircularProgress from '@smui/circular-progress';
   import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -107,7 +108,15 @@
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
         onclick={save}
         disabled={!canSave || saving}
-      >{saving ? 'Saving…' : 'Save'}</Button>
+      >
+        {#if saving}
+          <CircularProgress
+            style="height: 16px; width: 16px; margin-right: 6px; --mdc-circular-progress-bar-color: var(--white);"
+            indeterminate
+          />
+        {/if}
+        {saving ? 'Saving…' : 'Save'}
+      </Button>
     </div>
   </div>
 
@@ -119,6 +128,7 @@
     {description}
     {nameInvalid}
     processIdDisabled={false}
+    disabled={saving}
     onNameChange={(v) => (name = v)}
     onDescriptionChange={(v) => (description = v)}
     onProcessIdChange={(v) => { procId = v; idTouched = true; }}
@@ -161,7 +171,7 @@
   .title {
     margin: 0;
     color: var(--primary-base);
-    font-size: var(--ew-font-size-heading, 1.125rem);
+    font-size: var(--ew-font-size-h1, 1.25rem);
     font-weight: var(--ew-font-weight-heading, 600);
   }
 

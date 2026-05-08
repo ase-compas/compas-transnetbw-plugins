@@ -120,6 +120,8 @@
     flex-direction: column;
     gap: 1.25rem;
     padding: 1rem 0;
+    font-family: var(--ew-font-family, 'Inter', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
   }
 
   .test-validate__hint {
@@ -128,7 +130,7 @@
 
   .test-validate__no-doc {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: var(--ew-font-size-body, 0.875rem);
     color: #6b9197;
     font-style: italic;
   }
@@ -154,13 +156,11 @@
 
   .result__label {
     font-weight: 600;
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.875rem;
+    font-size: var(--ew-font-size-body, 0.875rem);
   }
 
   .result__value {
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.875rem;
+    font-size: var(--ew-font-size-body, 0.875rem);
     color: #1a2b34;
   }
 
@@ -196,7 +196,7 @@
 
   .result--error .result__value {
     font-family: monospace;
-    font-size: 0.8rem;
+    font-size: var(--ew-font-size-small, 0.75rem);
   }
 
   /* Error list */
@@ -217,7 +217,7 @@
   .result__error-line {
     display: inline-block;
     align-self: flex-start;
-    font-size: 0.75rem;
+    font-size: var(--ew-font-size-small, 0.75rem);
     font-family: monospace;
     font-weight: 600;
     color: #b33a3a;
@@ -228,14 +228,12 @@
   }
 
   .result__error-message {
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.875rem;
+    font-size: var(--ew-font-size-body, 0.875rem);
     color: #b33a3a;
   }
 
   .result__error-note {
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.8rem;
+    font-size: var(--ew-font-size-small, 0.75rem);
     font-style: italic;
     color: #7a5800;
   }

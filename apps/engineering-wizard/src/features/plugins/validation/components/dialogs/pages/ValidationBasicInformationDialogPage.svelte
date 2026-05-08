@@ -1,9 +1,9 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
+  import HelperText from '@smui/textfield/helper-text';
   import Radio from '@smui/radio';
   import FormField from '@smui/form-field';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
-  import { OscdInput } from '@oscd-transnet-plugins/oscd-component';
   import PreviewBox from '../../PreviewBox.svelte';
   import { validationEditor } from '../../../validationEditorStore.svelte';
 
@@ -12,13 +12,18 @@
 
 <div class="validation-form">
   <section class="validation-form__section">
-    <OscdInput
-      label="Rule Name"
-      placeholder="Rule Name"
-      variant="outlined"
-      bind:value={validationEditor.entry.title}
-      invalid={!validationEditor.entry.title?.trim()}
-    />
+    <div class="field-wrap">
+      <Textfield
+        variant="outlined"
+        label="Rule Name"
+        placeholder="Rule Name"
+        style="width: 100%"
+        bind:value={validationEditor.entry.title}
+        invalid={!validationEditor.entry.title?.trim()}
+      >
+        {#snippet helper()}<HelperText validationMsg>Rule Name is required.</HelperText>{/snippet}
+      </Textfield>
+    </div>
 
     <Textfield textarea bind:value={validationEditor.entry.description} label="Description" />
   </section>
@@ -85,5 +90,11 @@
     gap: 1rem;
     align-items: center;
     --mdc-theme-secondary: var(--primary-base);
+  }
+
+  /* Groups field + helper-line so parent gap doesn't inflate spacing */
+  .field-wrap {
+    display: flex;
+    flex-direction: column;
   }
 </style>
