@@ -12,6 +12,8 @@
     icons?: boolean;
     preventToggleOnClick?: boolean;
     disabled?: boolean;
+    /** Label alignment */
+    align?: 'start' | 'end';
 
     onChange?: (newChecked: boolean) => void;
   }
@@ -26,6 +28,7 @@
     icons = false,
     preventToggleOnClick = false,
     disabled = false,
+    align = 'start',
 
     onChange = (_) => {},
   }: Props = $props();
@@ -43,7 +46,7 @@
   }
 </script>
 
-<FormField class={formFieldClass}>
+<FormField {align} class={formFieldClass}>
   <Switch
     id={id}
     disabled={disabled}

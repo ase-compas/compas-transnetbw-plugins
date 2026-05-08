@@ -5,9 +5,10 @@
     children?: import('svelte').Snippet;
     message?: string;
     type?: 'success' | 'error' | 'info' | 'warning';
+    size?: 'default' | 'compact';
   }
 
-  let { children, message, type = 'warning' }: Props = $props();
+  let { children, message, type = 'warning', size = 'default' }: Props = $props();
 
   const icons = {
     success: 'check_circle',
@@ -24,7 +25,7 @@
   } as const;
 </script>
 
-<div class="box-container" style="--color: {colors[type]}">
+<div class="box-container" class:compact={size === 'compact'} style="--color: {colors[type]}">
   <div class="box-content">
     <div class="icon">
       <Icon class="material-icons">{icons[type]}</Icon>
@@ -71,5 +72,23 @@
 
   .content :global(p) {
     margin: 0;
+  }
+
+  .box-container.compact {
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-left-width: 3px;
+  }
+
+  .box-container.compact :global(.icon) {
+    font-size: 1rem;
+  }
+
+  .box-container.compact .content {
+    font-size: 0.85rem;
+  }
+
+  .box-container.compact .box-content {
+    gap: 0.35rem;
   }
 </style>
