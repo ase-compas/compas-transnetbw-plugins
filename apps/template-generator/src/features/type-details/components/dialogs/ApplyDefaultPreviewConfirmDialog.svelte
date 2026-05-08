@@ -1,26 +1,26 @@
 <script lang="ts">
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
-  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdBaseDialog, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
   import type { ApplyScenario } from '../../services/default-type-manager-service';
   import type { ApplyDefaultTypesPreview, ApplyDefaultTypesPreviewEntry } from "../../services/type.service";
+  import ApplyDefaultMemberRow from './ApplyDefaultMemberRow.svelte';
 
   interface Props {
     open?: boolean;
-    applyDefaultPreview: ApplyDefaultTypesPreview
+    applyDefaultPreview: ApplyDefaultTypesPreview;
+    configuredMemberNames?: string[];
+    memberReferenceMap?: Record<string, string | undefined>;
   }
 
   let {
     open = $bindable(false),
     applyDefaultPreview,
+    configuredMemberNames = [],
+    memberReferenceMap = {},
   }: Props = $props();
 
-  const scenarioMeta: Record<ApplyScenario, { label: string; tone: 'success' | 'danger' }> = {
-    ADD_DB_DEFAULT: { label: 'To apply', tone: 'success' },
-    USE_LOCAL_DEFAULT: { label: 'To apply', tone: 'success' },
-    UPGRADE_TO_DB_DEFAULT: { label: 'To apply', tone: 'success' },
-    REMOVE_LOCAL_DEFAULT: { label: 'No default', tone: 'danger' },
-  };
+  let selectedMemberNames = $state(new Set<string>());
 
   type MemberPreviewRow = {
     memberName: string;
@@ -32,6 +32,7 @@
     versionFrom: string | null;
     versionTo: string | null;
     isUpgrade: boolean;
+    existingReference: string | null;
   };
 
   const entries = $derived(applyDefaultPreview?.entries ?? []);
@@ -59,6 +60,7 @@
             versionFrom,
             versionTo,
             isUpgrade,
+            existingReference: memberReferenceMap[memberName] ?? null,
           } satisfies MemberPreviewRow;
         }),
       )
@@ -69,16 +71,69 @@
   const applicableRows = $derived(memberRows.filter((row) => row.willApply));
   const unavailableRows = $derived(memberRows.filter((row) => !row.willApply));
   const totalMembers = $derived(memberRows.length);
+
+  const configuredSet = $derived(new Set(configuredMemberNames));
+
+  $effect(() => {
+    const initial = new Set<string>();
+    for (const row of applicableRows) {
+      if (configuredSet.has(row.memberName)) {
+        initial.add(row.memberName);
+      }
+    }
+    selectedMemberNames = initial;
+  });
+
+  const selectedCount = $derived(selectedMemberNames.size);
+  const confirmText = $derived(
+    applicableRows.length === 0
+      ? 'Close'
+      : selectedCount === 0
+        ? 'Apply'
+        : `Apply (${selectedCount})`
+  );
+  const confirmDisabled = $derived(applicableRows.length > 0 && selectedCount === 0);
+
+  const allApplicableSelected = $derived(
+    applicableRows.length > 0 && selectedCount === applicableRows.length
+  );
+
+  function toggleMember(memberName: string) {
+    const next = new Set(selectedMemberNames);
+    if (next.has(memberName)) {
+      next.delete(memberName);
+    } else {
+      next.add(memberName);
+    }
+    selectedMemberNames = next;
+  }
+
+  function toggleAllApplicable() {
+    const next = new Set(selectedMemberNames);
+    if (allApplicableSelected) {
+      // Deselect all applicable rows
+      for (const row of applicableRows) {
+        next.delete(row.memberName);
+      }
+    } else {
+      // Select all applicable rows
+      for (const row of applicableRows) {
+        next.add(row.memberName);
+      }
+    }
+    selectedMemberNames = next;
+  }
 </script>
 
 <OscdBaseDialog
   title="Apply Default Preview"
-  confirmActionText={applicableRows.length === 0 ? 'Close' : 'Apply'}
+  confirmActionText={confirmText}
+  confirmDisabled={confirmDisabled}
   maxWidth="1000px"
   height="auto"
   maxHeight="80vh"
   bind:open
-  onConfirm={() => {closeDialog('confirm')}}
+  onConfirm={() => { closeDialog('confirm', { selectedMemberNames: [...selectedMemberNames] }) }}
   onCancel={() => closeDialog('cancel')}
   onClose={() => closeDialog('exit')}
 >
@@ -91,8 +146,8 @@
         </Card>
         {#if totalMembers > 1}
           <Card padded variant="outlined" class="summary-card">
-            <div class="summary-label">Will Be Assigned</div>
-            <div class="summary-value success-text">{applicableRows.length}</div>
+          <div class="summary-label">Will Be Applied</div>
+          <div class="summary-value success-text">{selectedCount}</div>
           </Card>
           <Card padded variant="outlined" class="summary-card">
             <div class="summary-label">No Default Available</div>
@@ -109,34 +164,36 @@
         <Card padded variant="outlined" class="empty-state">No applicable default updates found for the selected members.</Card>
       {:else}
         <section>
-          <div class="section-title">Will Be Applied</div>
+          <div class="section-header">
+            <div class="section-title">Will Be Applied</div>
+            {#if applicableRows.length > 1}
+              <OscdSwitch
+                checked={allApplicableSelected}
+                onChange={toggleAllApplicable}
+                id="bulk-toggle-applicable"
+                label="All"
+                align="end"
+                labelStyle="font-size: 0.8rem; color: var(--mdc-theme-primary);"
+              />
+            {/if}
+          </div>
           {#if applicableRows.length === 0}
             <Card padded variant="outlined" class="empty-state">No data objects.</Card>
           {:else}
             <div class="rows-list">
               {#each applicableRows as row}
-                <Card padded variant="outlined" class="row-card">
-                  <header class="row-header">
-                    <div class="row-title">{row.memberName}</div>
-                    <span class={`chip chip-${scenarioMeta[row.scenario].tone}`}>
-                      {scenarioMeta[row.scenario].label}
-                    </span>
-                  </header>
-                  <div class="row-grid">
-                      <div>
-                        <div class="field-label">Reference ID</div>
-                        <div class="field-value mono">{row.referenceId}</div>
-                      </div>
-                      <div>
-                        <div class="field-label">Reference Type</div>
-                        <div class="field-value">{row.refTypeLabel}</div>
-                      </div>
-                      <div>
-                        <div class="field-label">Version <span class="version-note">(latest)</span></div>
-                        <div class="field-value">{row.versionTo ?? '-'}</div>
-                      </div>
-                    </div>
-                </Card>
+                <ApplyDefaultMemberRow
+                  memberName={row.memberName}
+                  refTypeLabel={row.refTypeLabel}
+                  referenceId={row.referenceId}
+                  versionTo={row.versionTo}
+                  refTypeKey={row.refTypeKey}
+                  scenario={row.scenario}
+                  willApply={row.willApply}
+                  isSelected={selectedMemberNames.has(row.memberName)}
+                  existingReference={row.existingReference}
+                  onToggle={() => toggleMember(row.memberName)}
+                />
               {/each}
             </div>
           {/if}
@@ -147,22 +204,18 @@
             <div class="section-title muted-title">No Default Available</div>
             <div class="rows-list">
               {#each unavailableRows as row}
-                <Card padded variant="outlined" class="row-card unavailable">
-                  <header class="row-header">
-                    <div class="row-title muted-text">{row.memberName}</div>
-                    <span class="chip chip-danger">No default</span>
-                  </header>
-                  <div class="row-grid">
-                      <div>
-                        <div class="field-label">Reference Type</div>
-                        <div class="field-value muted-text">{row.refTypeLabel}</div>
-                      </div>
-                      <div>
-                        <div class="field-label">Reason</div>
-                        <div class="field-value muted-text">No default exists for this reference type.</div>
-                      </div>
-                    </div>
-                </Card>
+                <ApplyDefaultMemberRow
+                  memberName={row.memberName}
+                  refTypeLabel={row.refTypeLabel}
+                  referenceId={row.referenceId}
+                  versionTo={row.versionTo}
+                  refTypeKey={row.refTypeKey}
+                  scenario={row.scenario}
+                  willApply={row.willApply}
+                  isSelected={selectedMemberNames.has(row.memberName)}
+                  existingReference={row.existingReference}
+                  onToggle={() => toggleMember(row.memberName)}
+                />
               {/each}
             </div>
           </section>
@@ -186,125 +239,42 @@
     gap: 0.5rem;
   }
 
-  .summary-card {
-    height: 100%;
-  }
-
   .summary-label {
-    font-size: 0.75rem;
+    font-size: var(--tg-font-size-small);
     color: #5b6470;
   }
 
   .summary-value {
     margin-top: 0.25rem;
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: var(--tg-font-weight-heading);
     color: #1f2933;
     word-break: break-word;
   }
 
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    padding: 0.2rem 0.55rem;
-    border: 1px solid transparent;
-    font-weight: 600;
-  }
-
-  .chip-neutral {
-    background: #eef1f5;
-    border-color: #d0d7e1;
-    color: #445266;
-  }
-
-  .chip-success {
-    background: #e8f7ee;
-    border-color: #bde8cd;
-    color: #276749;
-  }
-
-  .chip-warning {
-    background: #fff4e5;
-    border-color: #ffd9a8;
-    color: #9c5a11;
-  }
-
-  .chip-danger {
-    background: #fdecec;
-    border-color: #f8c8c8;
-    color: #a63131;
-  }
-
-  .chip-muted {
-    background: #eef1f4;
-    border-color: #d6dde5;
-    color: #708090;
-  }
-
   .section-title {
-    font-size: 0.8rem;
+    font-size: var(--tg-font-size-small);
     color: #3b4a5a;
     margin: 0.25rem 0 0.35rem;
-    font-weight: 700;
+    font-weight: var(--tg-font-weight-heading);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .section-header .section-title {
+    margin: 0;
   }
 
   .rows-list {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-  }
-
-  .row-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-  }
-
-  .row-card.unavailable {
-    background: #f6f8fa;
-  }
-
-  .row-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .row-title {
-    font-weight: 700;
-    color: #202b36;
-  }
-
-  .row-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.5rem;
-  }
-
-  .field-label {
-    font-size: 0.72rem;
-    color: #697786;
-  }
-
-  .field-value {
-    margin-top: 0.15rem;
-    color: #1f2933;
-    font-size: 0.9rem;
-    word-break: break-word;
-  }
-
-  .version-note {
-    font-size: 0.65rem;
-    color: #a0aec0;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-  }
-
-  .mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
 
   .success-text {
@@ -319,14 +289,8 @@
     color: #718096;
   }
 
-  .empty-state {
-    color: #5f6b7a;
-    background: #f9fbfd;
-  }
-
   @media (max-width: 760px) {
-    .summary-grid,
-    .row-grid {
+    .summary-grid {
       grid-template-columns: 1fr;
     }
   }

@@ -6,7 +6,7 @@
   import { createDataTypeWorkflow } from '../type.workflows';
   import { openTypeDetailsDrawer } from '../type-details.drawer';
   import AddReferenceDialog from './dialogs/AddReferenceDialog.svelte';
-  import { DataTypeService } from '../services/type.service';
+  import { DataTypeService, type ApplyDefaultTypesPreview } from '../services/type.service';
   import TypeDetailsLayout from './TypeDetailsLayout.svelte';
   import TBoardTypeDetailsView from './TBoardTypeDetailsView.svelte';
   import EnumTypeDetails from './EnumTypeDetails.svelte';
@@ -195,15 +195,45 @@
     };
   });
 
-  async function applyDefaults(members: string[]  | undefined = undefined) {
+  /**
+   * Filters the apply default preview to only include entries for the selected member names.
+   * @param preview The apply default types preview to filter.
+   * @param selectedNames The set of selected member names to include in the filtered preview.
+   * @returns A new apply default types preview containing only the entries for the selected member names.
+   */
+  function filterPreviewByMembers(
+    preview: ApplyDefaultTypesPreview,
+    selectedNames: Set<string>,
+  ): ApplyDefaultTypesPreview {
+    const filteredEntries = preview.entries
+      .map((entry) => ({ ...entry, memberNames: entry.memberNames.filter((n) => selectedNames.has(n)) }))
+      .filter((entry) => entry.memberNames.length > 0);
+    return { ...preview, entries: filteredEntries };
+  }
+
+  async function applyDefaults(members: string[] | undefined = undefined) {
     try {
+      // For single-member applies: pre-select that member
+      // For apply-all: pre-select only configured/mandatory members
+      const configuredMemberNames = members && members.length > 0
+        ? members
+        : typeDetailsState.getConfiguredMemberNames();
+      const memberReferenceMap = typeDetailsState.getMemberReferenceMap();
       const preview = await typeDetailsState.getApplyDefaultTypesPreview(members);
+      if (preview === null) {
+        toastService.info('No defaults to apply', 'There are no default types to apply for the members of this type.');
+        return;
+      }
       const result = await openDialog(ApplyDefaultPreviewConfirmDialog, {
         applyDefaultPreview: preview,
+        configuredMemberNames,
+        memberReferenceMap,
       });
-    if(result.type === 'confirm') {
-      typeDetailsState.applyDefaultTypesFromPreview(preview);
-    }
+      if (result.type === 'confirm') {
+        const selectedNames = new Set<string>((result.data?.selectedMemberNames as string[]) ?? []);
+        const filteredPreview = filterPreviewByMembers(preview, selectedNames);
+        typeDetailsState.applyDefaultTypesFromPreview(filteredPreview);
+      }
     } catch (e) {
       console.error('Failed to get apply default types preview', e);
       toastService.error('Apply default failed', 'Failed to get apply default types. Please try again.');
