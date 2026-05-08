@@ -81,11 +81,11 @@
   }
 
   .box-container.compact :global(.icon) {
-    font-size: 1rem;
+    font-size: var(--tg-font-size-subheading);
   }
 
   .box-container.compact .content {
-    font-size: 0.85rem;
+    font-size: var(--tg-font-size-body);
   }
 
   .box-container.compact .box-content {
