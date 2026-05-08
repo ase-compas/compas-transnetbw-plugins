@@ -294,6 +294,25 @@ export class DataTypeDetailsState {
         this.config = config;
     }
 
+    /**
+     * Get names of members that are either configured or mandatory.
+     */
+    public getConfiguredMemberNames(): string[] {
+        return this.loadedType?.members
+            .filter((m) => m.isConfigured || m.isMandatory)
+            .map((m) => m.name) ?? [];
+    }
+
+    /**
+     * Get a map of member names to their current reference IDs.
+     */
+    public getMemberReferenceMap(): Record<string, string | undefined> {
+        const map: Record<string, string | undefined> = {};
+        for (const m of this.loadedType?.members ?? []) {
+            map[m.name] = m.reference;
+        }
+        return map;
+    }
 
     private refreshData() {
         if (!this.loadedType) return;
