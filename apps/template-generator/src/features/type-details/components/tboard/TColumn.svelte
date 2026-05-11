@@ -154,11 +154,18 @@
   .oscd-tcolumn {
     padding: 0.5rem;
     border-radius: 8px;
-    width: 100%;
-    height: 100%;
+    flex: 1 1 220px;
+    min-width: 220px;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+  }
+
+  @media (min-width: 1400px) {
+    .oscd-tcolumn {
+      height: 100%;
+    }
   }
 
   .oscd-tcolumn__list {
@@ -166,6 +173,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 0.2rem;
+    min-height: 80px;
   }
 
   .oscd-tcolumn.apply-defaults {

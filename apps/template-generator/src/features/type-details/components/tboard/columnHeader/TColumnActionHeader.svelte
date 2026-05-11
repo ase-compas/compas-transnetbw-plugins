@@ -38,8 +38,17 @@
   {onAction}
 >
   {#snippet botAction()}
-    <OscdButton variant="raised" callback={onSecondaryAction} >
-      {secondaryActionLabel}
-    </OscdButton>
+    <div class="secondary-action-wrapper">
+      <OscdButton variant="raised" callback={onSecondaryAction} >
+        {secondaryActionLabel}
+      </OscdButton>
+    </div>
   {/snippet}
 </TColumnHeaderLayout>
+
+<style>
+  .secondary-action-wrapper {
+    width: 100%;
+    display: flex;
+  }
+</style>
