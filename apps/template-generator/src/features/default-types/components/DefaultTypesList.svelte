@@ -6,6 +6,7 @@
   import { DataTypeService } from '../../type-details/services/type.service';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { untrack } from 'svelte';
+  import OscdWarningIcon from 'libs/oscd-icons/src/oscd-warning-icon/OscdWarningIcon.svelte';
 
   const defaultTypesState = new DefaultTypesState();
 
@@ -52,6 +53,11 @@
     New Default Type
   </OscdButton>
 </div>
+<div class="warning">
+  <OscdWarningIcon size="15px" />
+  Default types are generic and do not consider underlying enumeration variants due to IEC 61850 limitations. You can leave specific parameters undefined and configure them after application.
+
+</div>
 
 <OscdBasicDataTable
   items={defaultTypesState.filteredTypes}
@@ -66,9 +72,20 @@
 
 <style>
   .toolbar {
-    margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+  }
+
+  .warning {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--primary);
+    font-size: var(--tg-font-size-small);
+    border-radius: 4px;
+    background-color: #D9D800;
+    padding: 0.2rem;
+    width: fit-content;
   }
 </style>
