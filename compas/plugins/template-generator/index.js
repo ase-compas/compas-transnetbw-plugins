@@ -49639,7 +49639,8 @@ function Om(a, e) {
     [() => ({ invisible: !o() || !n() })]
   ), A(a, l);
 }
-function Iy(a, e) {
+var Iy = /* @__PURE__ */ U('<div class="secondary-action-wrapper svelte-1y1dwrg"><!></div>');
+function _y(a, e) {
   let t = u(e, "subtitle", 3, null), n = u(e, "actionLabel", 3, null), r = u(e, "actionIcon", 3, null), s = u(e, "hasAction", 3, !1), o = u(e, "secondaryActionLabel", 3, null), d = u(e, "onAction", 3, () => {
   }), c = u(e, "onSecondaryAction", 3, () => {
   });
@@ -49663,22 +49664,23 @@ function Iy(a, e) {
       return d();
     },
     botAction: (C) => {
-      Xd(C, {
+      var m = Iy(), p = V(m);
+      Xd(p, {
         variant: "raised",
         get callback() {
           return c();
         },
-        children: (m, p) => {
-          var _ = Re();
-          me(() => fe(_, o())), A(m, _);
+        children: (_, I) => {
+          var D = Re();
+          me(() => fe(D, o())), A(_, D);
         },
         $$slots: { default: !0 }
-      });
+      }), A(C, m);
     },
     $$slots: { botAction: !0 }
   });
 }
-function _y(a, e) {
+function Dy(a, e) {
   _e(e, !0);
   let t = u(e, "subtitle", 3, null), n = u(e, "actionLabel", 3, null);
   u(e, "actionIcon", 3, null);
@@ -49733,8 +49735,8 @@ function _y(a, e) {
     $$slots: { botAction: !0 }
   }), De();
 }
-var Dy = /* @__PURE__ */ U('<div><!> <div class="oscd-tcolumn__list svelte-mxbdpr"><!></div></div>');
-function by(a, e) {
+var by = /* @__PURE__ */ U('<div><!> <div class="oscd-tcolumn__list svelte-mxbdpr"><!></div></div>');
+function fy(a, e) {
   _e(e, !0);
   let t = u(e, "subtitle", 3, null), n = u(e, "actionLabel", 3, "Action"), r = u(e, "actionIcon", 3, null), s = u(e, "hasSearch", 3, !1), o = u(e, "searchPlaceHolder", 3, "Search..."), d = u(e, "hasAction", 3, !1), c = u(e, "actionDisabled", 3, !1), l = u(e, "showApplyDefaults", 3, !1), C = u(e, "highlighted", 3, !1), m = u(e, "dragAndDropBorder", 3, !1), p = u(e, "canSelectItems", 3, !1), _ = u(e, "showSelectionIndicator", 3, !1), I = u(e, "itemsDraggable", 3, !1), D = u(e, "dropCandidate", 3, null), f = u(e, "items", 19, () => []), E = u(e, "onItemDrop", 3, () => {
   }), y = u(e, "onItemDragChange", 3, () => {
@@ -49758,12 +49760,12 @@ function by(a, e) {
   function K(k, X) {
     return k.filter((Y) => G(Y, X));
   }
-  var j = Dy();
+  var j = by();
   let q;
   var H = V(j);
   {
     var x = (k) => {
-      _y(k, {
+      Dy(k, {
         get title() {
           return e.title;
         },
@@ -49801,7 +49803,7 @@ function by(a, e) {
         }
       });
     }, J = (k) => {
-      Iy(k, {
+      _y(k, {
         get title() {
           return e.title;
         },
@@ -49868,8 +49870,8 @@ function by(a, e) {
     })
   ]), A(a, j), De();
 }
-var fy = /* @__PURE__ */ U('<div class="seperator"><!></div>'), Ey = /* @__PURE__ */ U("<!> <!>", 1), Ay = /* @__PURE__ */ U('<div class="oscd-board svelte-cw16i9"></div>');
-function vy(a, e) {
+var Ey = /* @__PURE__ */ U('<div class="seperator"><!></div>'), Ay = /* @__PURE__ */ U("<!> <!>", 1), vy = /* @__PURE__ */ U('<div class="oscd-board svelte-cw16i9"></div>');
+function hy(a, e) {
   _e(e, !0);
   let t = u(e, "columns", 19, () => []), n = u(e, "data", 31, () => Ee({})), r = u(e, "onItemMarkChange", 3, () => {
   }), s = u(e, "onItemSelectChange", 3, () => {
@@ -49921,10 +49923,10 @@ function vy(a, e) {
         throw new Error(`Duplicate item ids detected in column "${S.id}". Each item id must be unique.`);
     }
   });
-  var b = Ay();
+  var b = vy();
   Mt(b, 23, t, (S) => S.id, (S, v, h) => {
-    var g = Ey(), T = Z(g);
-    by(T, {
+    var g = Ay(), T = Z(g);
+    fy(T, {
       get title() {
         return i(v).title;
       },
@@ -49992,7 +49994,7 @@ function vy(a, e) {
     var N = B(T, 2);
     {
       var w = (L) => {
-        var F = fy(), P = V(F);
+        var F = Ey(), P = V(F);
         k_(P, {
           class: "material-icons",
           children: (R, G) => {
@@ -50009,8 +50011,8 @@ function vy(a, e) {
     A(S, g);
   }), A(a, b), De();
 }
-function hy(a, e) {
-  _e(e, !0), vy(a, {
+function Sy(a, e) {
+  _e(e, !0), hy(a, {
     get columns() {
       return e.columns;
     },
@@ -50028,8 +50030,8 @@ function hy(a, e) {
     onItemApplyDefaults: (t) => e.onItemApplyDefaults(t.itemId)
   }), De();
 }
-var Sy = /* @__PURE__ */ U("<strong>Ord</strong>"), yy = /* @__PURE__ */ U("<strong>Label</strong>"), Oy = /* @__PURE__ */ U("<!> <!> <!>", 1), gy = /* @__PURE__ */ U("<strong> </strong>"), Ty = /* @__PURE__ */ U("<!> <!> <!>", 1), Ly = /* @__PURE__ */ U("<!> <!>", 1), Ny = /* @__PURE__ */ U('<div class="oscd-card oscd-container enum-type-details"><!> <!></div>'), Py = /* @__PURE__ */ U('<div class="oscd-card oscd-container enum-type-details enum-type-details--empty svelte-cn3s0d"><p class="enum-type-details__empty-msg svelte-cn3s0d">No enum values defined for this type.</p></div>');
-function Ry(a, e) {
+var yy = /* @__PURE__ */ U("<strong>Ord</strong>"), Oy = /* @__PURE__ */ U("<strong>Label</strong>"), gy = /* @__PURE__ */ U("<!> <!> <!>", 1), Ty = /* @__PURE__ */ U("<strong> </strong>"), Ly = /* @__PURE__ */ U("<!> <!> <!>", 1), Ny = /* @__PURE__ */ U("<!> <!>", 1), Py = /* @__PURE__ */ U('<div class="oscd-card oscd-container enum-type-details"><!> <!></div>'), Ry = /* @__PURE__ */ U('<div class="oscd-card oscd-container enum-type-details enum-type-details--empty svelte-cn3s0d"><p class="enum-type-details__empty-msg svelte-cn3s0d">No enum values defined for this type.</p></div>');
+function My(a, e) {
   _e(e, !0);
   let t = /* @__PURE__ */ $(""), n = /* @__PURE__ */ $(Ee([])), r = /* @__PURE__ */ z(() => e.members.filter((p) => e.isEditMode ? !0 : p.isConfigured).filter((p) => p.name.toLowerCase().includes(i(t).toLowerCase())));
   function s(p) {
@@ -50050,7 +50052,7 @@ function Ry(a, e) {
   var c = pe(), l = Z(c);
   {
     var C = (p) => {
-      var _ = Ny(), I = V(_);
+      var _ = Py(), I = V(_);
       Tl(I, {
         icon: "search",
         label: "Search...",
@@ -50066,13 +50068,13 @@ function Ry(a, e) {
       Fp(D, {
         style: "width: 100%; margin-top: 1rem;",
         children: (f, E) => {
-          var y = Ly(), O = Z(y);
+          var y = Ny(), O = Z(y);
           Vp(O, {
             style: "font-weight: bold;",
             children: (S, v) => {
               Rs(S, {
                 children: (h, g) => {
-                  var T = Oy(), N = Z(T);
+                  var T = gy(), N = Z(T);
                   {
                     var w = (P) => {
                       oa(P, {
@@ -50101,7 +50103,7 @@ function Ry(a, e) {
                   oa(L, {
                     numeric: !0,
                     children: (P, R) => {
-                      var G = Sy();
+                      var G = yy();
                       A(P, G);
                     },
                     $$slots: { default: !0 }
@@ -50109,7 +50111,7 @@ function Ry(a, e) {
                   var F = B(L, 2);
                   oa(F, {
                     children: (P, R) => {
-                      var G = yy();
+                      var G = Oy();
                       A(P, G);
                     },
                     $$slots: { default: !0 }
@@ -50128,7 +50130,7 @@ function Ry(a, e) {
                 Rs(T, {
                   style: "background: white",
                   children: (w, L) => {
-                    var F = Ty(), P = Z(F);
+                    var F = Ly(), P = Z(F);
                     {
                       var R = (j) => {
                         oa(j, {
@@ -50166,7 +50168,7 @@ function Ry(a, e) {
                     var K = B(G, 2);
                     oa(K, {
                       children: (j, q) => {
-                        var H = gy(), x = V(H);
+                        var H = Ty(), x = V(H);
                         me(() => fe(x, i(N).name)), A(j, H);
                       },
                       $$slots: { default: !0 }
@@ -50182,7 +50184,7 @@ function Ry(a, e) {
         $$slots: { default: !0 }
       }), A(p, _);
     }, m = (p) => {
-      var _ = Py();
+      var _ = Ry();
       A(p, _);
     };
     Q(l, (p) => {
@@ -50191,7 +50193,7 @@ function Ry(a, e) {
   }
   A(a, c), De();
 }
-var My = /* @__PURE__ */ U("<div><!></div>");
+var Fy = /* @__PURE__ */ U("<div><!></div>");
 function ba(a, e) {
   _e(e, !0);
   let t = u(e, "use", 19, () => []), n = u(e, "class", 3, ""), r = u(e, "variant", 3, "raised"), s = u(e, "padded", 3, !1), o = /* @__PURE__ */ We(e, [
@@ -50207,7 +50209,7 @@ function ba(a, e) {
   function c() {
     return d;
   }
-  var l = { getElement: c }, C = My();
+  var l = { getElement: c }, C = Fy();
   ke(C, (p) => ({ class: p, ...o }), [
     () => Ue({
       "mdc-card": !0,
@@ -50219,7 +50221,7 @@ function ba(a, e) {
   var m = V(C);
   return Pe(m, () => e.children ?? Le), he(C, (p) => d = p, () => d), Be(C, (p, _) => re == null ? void 0 : re(p, _), t), A(a, C), De(l);
 }
-var Fy = /* @__PURE__ */ U('<div><div class="field-label svelte-1itmrfj">Reference ID</div> <div class="field-value mono svelte-1itmrfj"> </div></div> <div><div class="field-label svelte-1itmrfj">Reference Type</div> <div class="field-value svelte-1itmrfj"> </div></div> <div><div class="field-label svelte-1itmrfj">Version <span class="version-note svelte-1itmrfj">(latest)</span></div> <div class="field-value svelte-1itmrfj"> </div></div>', 1), Vy = /* @__PURE__ */ U('<div><div class="field-label svelte-1itmrfj">Reference Type</div> <div class="field-value muted-text svelte-1itmrfj"> </div></div> <div><div class="field-label svelte-1itmrfj">Reason</div> <div class="field-value muted-text svelte-1itmrfj">No default exists for this reference type.</div></div>', 1), Gy = /* @__PURE__ */ U('<div class="overwrite-box svelte-1itmrfj"><!></div>'), wy = /* @__PURE__ */ U('<header class="row-header svelte-1itmrfj"><div> </div> <!></header> <div class="row-grid svelte-1itmrfj"><!></div> <!>', 1);
+var Vy = /* @__PURE__ */ U('<div><div class="field-label svelte-1itmrfj">Reference ID</div> <div class="field-value mono svelte-1itmrfj"> </div></div> <div><div class="field-label svelte-1itmrfj">Reference Type</div> <div class="field-value svelte-1itmrfj"> </div></div> <div><div class="field-label svelte-1itmrfj">Version <span class="version-note svelte-1itmrfj">(latest)</span></div> <div class="field-value svelte-1itmrfj"> </div></div>', 1), Gy = /* @__PURE__ */ U('<div><div class="field-label svelte-1itmrfj">Reference Type</div> <div class="field-value muted-text svelte-1itmrfj"> </div></div> <div><div class="field-label svelte-1itmrfj">Reason</div> <div class="field-value muted-text svelte-1itmrfj">No default exists for this reference type.</div></div>', 1), wy = /* @__PURE__ */ U('<div class="overwrite-box svelte-1itmrfj"><!></div>'), xy = /* @__PURE__ */ U('<header class="row-header svelte-1itmrfj"><div> </div> <!></header> <div class="row-grid svelte-1itmrfj"><!></div> <!>', 1);
 function du(a, e) {
   {
     let t = /* @__PURE__ */ z(() => `row-card ${e.willApply ? "" : "unavailable"}`);
@@ -50230,7 +50232,7 @@ function du(a, e) {
         return i(t);
       },
       children: (n, r) => {
-        var s = wy(), o = Z(s), d = V(o);
+        var s = xy(), o = Z(s), d = V(o);
         let c;
         var l = V(d), C = B(d, 2);
         {
@@ -50258,12 +50260,12 @@ function du(a, e) {
         var m = B(o, 2), p = V(m);
         {
           var _ = (E) => {
-            var y = Fy(), O = Z(y), b = B(V(O), 2), S = V(b), v = B(O, 2), h = B(V(v), 2), g = V(h), T = B(v, 2), N = B(V(T), 2), w = V(N);
+            var y = Vy(), O = Z(y), b = B(V(O), 2), S = V(b), v = B(O, 2), h = B(V(v), 2), g = V(h), T = B(v, 2), N = B(V(T), 2), w = V(N);
             me(() => {
               fe(S, e.referenceId), fe(g, e.refTypeLabel), fe(w, e.versionTo ?? "-");
             }), A(E, y);
           }, I = (E) => {
-            var y = Vy(), O = Z(y), b = B(V(O), 2), S = V(b);
+            var y = Gy(), O = Z(y), b = B(V(O), 2), S = V(b);
             me(() => fe(S, e.refTypeLabel)), A(E, y);
           };
           Q(p, (E) => {
@@ -50273,7 +50275,7 @@ function du(a, e) {
         var D = B(m, 2);
         {
           var f = (E) => {
-            var y = Gy(), O = V(y);
+            var y = wy(), O = V(y);
             vp(O, {
               type: "warning",
               size: "compact",
@@ -50297,8 +50299,8 @@ function du(a, e) {
     });
   }
 }
-var xy = /* @__PURE__ */ U('<div class="loading-state svelte-1u81a6t"><!> <span>Loading defaults…</span></div>'), jy = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">DataType</div> <div class="summary-value svelte-1u81a6t"> </div>', 1), By = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">Will Be Applied</div> <div class="summary-value success-text svelte-1u81a6t"> </div>', 1), Uy = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">No Default Available</div> <div class="summary-value muted-text svelte-1u81a6t"> </div>', 1), ky = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">Data Objects Considered</div> <div class="summary-value svelte-1u81a6t"> </div>', 1), Ky = /* @__PURE__ */ U("<!> <!> <!>", 1), Hy = /* @__PURE__ */ U('<div class="rows-list svelte-1u81a6t"></div>'), Wy = /* @__PURE__ */ U('<section><div class="section-title muted-title svelte-1u81a6t">No Default Available</div> <div class="rows-list svelte-1u81a6t"></div></section>'), qy = /* @__PURE__ */ U('<section><div class="section-header svelte-1u81a6t"><div class="section-title svelte-1u81a6t">Will Be Applied</div> <!></div> <!></section> <!>', 1), zy = /* @__PURE__ */ U('<div class="summary-grid svelte-1u81a6t"><!> <!></div> <!>', 1), Xy = /* @__PURE__ */ U('<div class="preview-dialog-content svelte-1u81a6t"><!></div>');
-function Zy(a, e) {
+var jy = /* @__PURE__ */ U('<div class="loading-state svelte-1u81a6t"><!> <span>Loading defaults…</span></div>'), By = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">DataType</div> <div class="summary-value svelte-1u81a6t"> </div>', 1), Uy = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">Will Be Applied</div> <div class="summary-value success-text svelte-1u81a6t"> </div>', 1), ky = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">No Default Available</div> <div class="summary-value muted-text svelte-1u81a6t"> </div>', 1), Ky = /* @__PURE__ */ U('<div class="summary-label svelte-1u81a6t">Data Objects Considered</div> <div class="summary-value svelte-1u81a6t"> </div>', 1), Hy = /* @__PURE__ */ U("<!> <!> <!>", 1), Wy = /* @__PURE__ */ U('<div class="rows-list svelte-1u81a6t"></div>'), qy = /* @__PURE__ */ U('<section><div class="section-title muted-title svelte-1u81a6t">No Default Available</div> <div class="rows-list svelte-1u81a6t"></div></section>'), zy = /* @__PURE__ */ U('<section><div class="section-header svelte-1u81a6t"><div class="section-title svelte-1u81a6t">Will Be Applied</div> <!></div> <!></section> <!>', 1), Xy = /* @__PURE__ */ U('<div class="summary-grid svelte-1u81a6t"><!> <!></div> <!>', 1), Zy = /* @__PURE__ */ U('<div class="preview-dialog-content svelte-1u81a6t"><!></div>');
+function Yy(a, e) {
   _e(e, !0);
   let t = u(e, "open", 15, !1), n = u(e, "isLoading", 3, !1), r = u(e, "configuredMemberNames", 19, () => []), s = u(e, "memberReferenceMap", 19, () => ({})), o = /* @__PURE__ */ $(Ee(/* @__PURE__ */ new Set()));
   const d = /* @__PURE__ */ z(() => {
@@ -50368,19 +50370,19 @@ function Zy(a, e) {
       t(S);
     },
     content: (S) => {
-      var v = Xy(), h = V(v);
+      var v = Zy(), h = V(v);
       {
         var g = (N) => {
-          var w = xy(), L = V(w);
+          var w = jy(), L = V(w);
           or(L, { style: "height: 32px; width: 32px;", indeterminate: !0 }), A(N, w);
         }, T = (N) => {
-          var w = zy(), L = Z(w), F = V(L);
+          var w = Xy(), L = Z(w), F = V(L);
           ba(F, {
             padded: !0,
             variant: "outlined",
             class: "summary-card",
             children: (q, H) => {
-              var x = jy(), J = B(Z(x), 2), be = V(J);
+              var x = By(), J = B(Z(x), 2), be = V(J);
               me(() => {
                 var Ce;
                 return fe(be, ((Ce = e.applyDefaultPreview) == null ? void 0 : Ce.dataTypeId) ?? "-");
@@ -50391,13 +50393,13 @@ function Zy(a, e) {
           var P = B(F, 2);
           {
             var R = (q) => {
-              var H = Ky(), x = Z(H);
+              var H = Hy(), x = Z(H);
               ba(x, {
                 padded: !0,
                 variant: "outlined",
                 class: "summary-card",
                 children: (Ce, k) => {
-                  var X = By(), Y = B(Z(X), 2), le = V(Y);
+                  var X = Uy(), Y = B(Z(X), 2), le = V(Y);
                   me(() => fe(le, i(I))), A(Ce, X);
                 },
                 $$slots: { default: !0 }
@@ -50408,7 +50410,7 @@ function Zy(a, e) {
                 variant: "outlined",
                 class: "summary-card",
                 children: (Ce, k) => {
-                  var X = Uy(), Y = B(Z(X), 2), le = V(Y);
+                  var X = ky(), Y = B(Z(X), 2), le = V(Y);
                   me(() => fe(le, i(m).length)), A(Ce, X);
                 },
                 $$slots: { default: !0 }
@@ -50419,7 +50421,7 @@ function Zy(a, e) {
                 variant: "outlined",
                 class: "summary-card",
                 children: (Ce, k) => {
-                  var X = ky(), Y = B(Z(X), 2), le = V(Y);
+                  var X = Ky(), Y = B(Z(X), 2), le = V(Y);
                   me(() => fe(le, i(p))), A(Ce, X);
                 },
                 $$slots: { default: !0 }
@@ -50443,7 +50445,7 @@ function Zy(a, e) {
                 $$slots: { default: !0 }
               });
             }, j = (q) => {
-              var H = qy(), x = Z(H), J = V(x), be = B(V(J), 2);
+              var H = zy(), x = Z(H), J = V(x), be = B(V(J), 2);
               {
                 var Ce = (te) => {
                   Rl(te, {
@@ -50475,7 +50477,7 @@ function Zy(a, e) {
                     $$slots: { default: !0 }
                   });
                 }, Y = (te) => {
-                  var ce = Hy();
+                  var ce = Wy();
                   Mt(ce, 21, () => i(C), yn, (de, Ie) => {
                     {
                       let Ne = /* @__PURE__ */ z(() => i(o).has(i(Ie).memberName));
@@ -50513,7 +50515,7 @@ function Zy(a, e) {
               var le = B(x, 2);
               {
                 var W = (te) => {
-                  var ce = Wy(), de = B(V(ce), 2);
+                  var ce = qy(), de = B(V(ce), 2);
                   Mt(de, 21, () => i(m), yn, (Ie, Ne) => {
                     {
                       let ge = /* @__PURE__ */ z(() => i(o).has(i(Ne).memberName));
@@ -50565,8 +50567,8 @@ function Zy(a, e) {
     $$slots: { content: !0 }
   }), De();
 }
-var Yy = /* @__PURE__ */ U('<li class="svelte-1phf1v8"> </li>'), Qy = /* @__PURE__ */ U('<div class="content svelte-1phf1v8"><p class="svelte-1phf1v8"><strong> </strong> is part of a default type group. Deleting it will also remove all types of that default type:</p> <ul class="sub-type-list svelte-1phf1v8"></ul> <!></div>');
-function Jy(a, e) {
+var Qy = /* @__PURE__ */ U('<li class="svelte-1phf1v8"> </li>'), Jy = /* @__PURE__ */ U('<div class="content svelte-1phf1v8"><p class="svelte-1phf1v8"><strong> </strong> is part of a default type group. Deleting it will also remove all types of that default type:</p> <ul class="sub-type-list svelte-1phf1v8"></ul> <!></div>');
+function $y(a, e) {
   _e(e, !0);
   let t = u(e, "open", 15, !1);
   ga(a, {
@@ -50585,9 +50587,9 @@ function Jy(a, e) {
       t(r);
     },
     content: (r) => {
-      var s = Qy(), o = V(s), d = V(o), c = V(d), l = B(o, 2);
+      var s = Jy(), o = V(s), d = V(o), c = V(d), l = B(o, 2);
       Mt(l, 21, () => e.subTypeIds, yn, (m, p) => {
-        var _ = Yy(), I = V(_);
+        var _ = Qy(), I = V(_);
         me(() => fe(I, i(p))), A(m, _);
       });
       var C = B(l, 2);
@@ -50596,7 +50598,7 @@ function Jy(a, e) {
     $$slots: { content: !0 }
   }), De();
 }
-var $y = (a, e) => M(e, !i(e)), eO = /* @__PURE__ */ U("<li> </li>"), tO = /* @__PURE__ */ U('<ul class="summary__removable-list svelte-1mkvu06"></ul>'), nO = /* @__PURE__ */ U('<button type="button" class="summary__toggle svelte-1mkvu06"> </button> <!>', 1), aO = /* @__PURE__ */ U('<div class="summary__grid svelte-1mkvu06"><div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Root ID</span> <span class="summary__value summary__value--mono svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Mode</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Current Version</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Total Data Types</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Reachable from Root</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Will Be Removed</span> <span> </span></div></div> <p class="summary__note svelte-1mkvu06">Unreferenced types (not directly or indirectly referenced from the root data type) will be removed during save.</p> <!>', 1), rO = /* @__PURE__ */ U('<p class="summary__note svelte-1mkvu06">Summary is not available yet.</p>'), sO = /* @__PURE__ */ U("<!> <!>", 1), iO = /* @__PURE__ */ U("<!> <!>", 1), oO = /* @__PURE__ */ U("<!> <!>", 1), dO = /* @__PURE__ */ U("<!> <!> <!>", 1), cO = /* @__PURE__ */ U("<!> <!>", 1), lO = /* @__PURE__ */ U('<div class="content svelte-1mkvu06"><section class="summary svelte-1mkvu06"><p class="summary__title svelte-1mkvu06">Summary</p> <!></section> <div class="update-info"><h4>Versioning <span class="required-indicator svelte-1mkvu06" aria-hidden="true">*</span></h4> <div class="update-info__content svelte-1mkvu06"><!> <!></div> <!></div></div>');
+var eO = (a, e) => M(e, !i(e)), tO = /* @__PURE__ */ U("<li> </li>"), nO = /* @__PURE__ */ U('<ul class="summary__removable-list svelte-1mkvu06"></ul>'), aO = /* @__PURE__ */ U('<button type="button" class="summary__toggle svelte-1mkvu06"> </button> <!>', 1), rO = /* @__PURE__ */ U('<div class="summary__grid svelte-1mkvu06"><div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Root ID</span> <span class="summary__value summary__value--mono svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Mode</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Current Version</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Total Data Types</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Reachable from Root</span> <span class="summary__value svelte-1mkvu06"> </span></div> <div class="summary__item svelte-1mkvu06"><span class="summary__label svelte-1mkvu06">Will Be Removed</span> <span> </span></div></div> <p class="summary__note svelte-1mkvu06">Unreferenced types (not directly or indirectly referenced from the root data type) will be removed during save.</p> <!>', 1), sO = /* @__PURE__ */ U('<p class="summary__note svelte-1mkvu06">Summary is not available yet.</p>'), iO = /* @__PURE__ */ U("<!> <!>", 1), oO = /* @__PURE__ */ U("<!> <!>", 1), dO = /* @__PURE__ */ U("<!> <!>", 1), cO = /* @__PURE__ */ U("<!> <!> <!>", 1), lO = /* @__PURE__ */ U("<!> <!>", 1), CO = /* @__PURE__ */ U('<div class="content svelte-1mkvu06"><section class="summary svelte-1mkvu06"><p class="summary__title svelte-1mkvu06">Summary</p> <!></section> <div class="update-info"><h4>Versioning <span class="required-indicator svelte-1mkvu06" aria-hidden="true">*</span></h4> <div class="update-info__content svelte-1mkvu06"><!> <!></div> <!></div></div>');
 function gm(a, e) {
   _e(e, !0);
   let t = u(e, "open", 15, !1), n = u(e, "initialVersion", 7), r = u(e, "summary", 3, null), s = /* @__PURE__ */ $(null), o = /* @__PURE__ */ $(!1), d = /* @__PURE__ */ $(""), c = /* @__PURE__ */ $("");
@@ -50615,20 +50617,20 @@ function gm(a, e) {
   let p = /* @__PURE__ */ z(() => e.mode === "update" ? i(c) !== "" && i(c) !== null : !0);
   {
     const _ = (f) => {
-      var E = lO(), y = V(E), O = B(V(y), 2);
+      var E = CO(), y = V(E), O = B(V(y), 2);
       {
         var b = (P) => {
-          var R = aO(), G = Z(R), K = V(G), j = B(V(K), 2), q = V(j), H = B(K, 2), x = B(V(H), 2), J = V(x), be = B(H, 2), Ce = B(V(be), 2), k = V(Ce), X = B(be, 2), Y = B(V(X), 2), le = V(Y), W = B(X, 2), te = B(V(W), 2), ce = V(te), de = B(W, 2), Ie = B(V(de), 2), Ne = V(Ie), ge = B(G, 4);
+          var R = rO(), G = Z(R), K = V(G), j = B(V(K), 2), q = V(j), H = B(K, 2), x = B(V(H), 2), J = V(x), be = B(H, 2), Ce = B(V(be), 2), k = V(Ce), X = B(be, 2), Y = B(V(X), 2), le = V(Y), W = B(X, 2), te = B(V(W), 2), ce = V(te), de = B(W, 2), Ie = B(V(de), 2), Ne = V(Ie), ge = B(G, 4);
           {
             var Ve = (Ge) => {
-              var Xe = nO(), se = Z(Xe);
-              se.__click = [$y, o];
+              var Xe = aO(), se = Z(Xe);
+              se.__click = [eO, o];
               var ee = V(se), ue = B(se, 2);
               {
                 var Te = (Je) => {
-                  var ct = tO();
+                  var ct = nO();
                   Mt(ct, 21, () => r().removableTypeIds, yn, (Lt, Fe) => {
-                    var ne = eO(), ie = V(ne);
+                    var ne = tO(), ie = V(ne);
                     me(() => fe(ie, i(Fe))), A(Lt, ne);
                   }), A(Je, ct);
                 };
@@ -50646,7 +50648,7 @@ function gm(a, e) {
             fe(q, r().rootId), fe(J, r().mode === "create" ? "Create new default type" : "Save as new version"), fe(k, r().currentVersion || "-"), fe(le, r().totalDataTypeCount), fe(ce, r().reachableDataTypeCount), un(Ie, 1, `summary__value ${r().removableDataTypeCount > 0 ? "summary__value--warn" : ""}`, "svelte-1mkvu06"), fe(Ne, r().removableDataTypeCount);
           }), A(P, R);
         }, S = (P) => {
-          var R = rO();
+          var R = sO();
           A(P, R);
         };
         Q(O, (P) => {
@@ -50656,15 +50658,15 @@ function gm(a, e) {
       var v = B(y, 2), h = B(V(v), 2), g = V(h);
       {
         var T = (P) => {
-          var R = cO(), G = Z(R);
+          var R = lO(), G = Z(R);
           ko(G, {
             class: "demo-list",
             radioList: !0,
             children: (j, q) => {
-              var H = dO(), x = Z(H);
+              var H = cO(), x = Z(H);
               va(x, {
                 children: (Ce, k) => {
-                  var X = sO(), Y = Z(X);
+                  var X = iO(), Y = Z(X);
                   vo(Y, {
                     children: (W, te) => {
                       ls(W, {
@@ -50693,7 +50695,7 @@ function gm(a, e) {
               var J = B(x, 2);
               va(J, {
                 children: (Ce, k) => {
-                  var X = iO(), Y = Z(X);
+                  var X = oO(), Y = Z(X);
                   vo(Y, {
                     children: (W, te) => {
                       ls(W, {
@@ -50722,7 +50724,7 @@ function gm(a, e) {
               var be = B(J, 2);
               va(be, {
                 children: (Ce, k) => {
-                  var X = oO(), Y = Z(X);
+                  var X = dO(), Y = Z(X);
                   vo(Y, {
                     children: (W, te) => {
                       ls(W, {
@@ -50942,7 +50944,7 @@ function Tm(a, e) {
   }
   async function y(h = void 0) {
     var w;
-    const g = h && h.length > 0 ? h : r.getConfiguredMemberNames(), T = r.getMemberReferenceMap(), N = Hn(Zy, { isLoading: !0, configuredMemberNames: g, memberReferenceMap: T });
+    const g = h && h.length > 0 ? h : r.getConfiguredMemberNames(), T = r.getMemberReferenceMap(), N = Hn(Yy, { isLoading: !0, configuredMemberNames: g, memberReferenceMap: T });
     try {
       const L = await r.getApplyDefaultTypesPreview(h);
       if (L === null) {
@@ -51020,7 +51022,7 @@ function Tm(a, e) {
       try {
         const N = e.service.getDeletePlan(h);
         if (N.hasDefaultMetadata && N.trackedSubTypeIds.length > 0) {
-          if ((await Hn(Jy, {
+          if ((await Hn($y, {
             rootTypeId: h,
             subTypeIds: N.trackedSubTypeIds
           })).type !== "confirm")
@@ -51092,7 +51094,7 @@ function Tm(a, e) {
         var P = pe(), R = Z(P);
         {
           var G = (j) => {
-            Ry(j, {
+            My(j, {
               get members() {
                 return r.loadedType.members;
               },
@@ -51102,7 +51104,7 @@ function Tm(a, e) {
               onMemberChange: (q) => r.setConfiguredMembers(q)
             });
           }, K = (j) => {
-            hy(j, {
+            Sy(j, {
               get columns() {
                 return r.columns;
               },
@@ -51437,10 +51439,10 @@ const So = class So {
 };
 si = new WeakMap(), ii = new WeakMap(), oi = new WeakMap(), di = new WeakMap(), ci = new WeakMap(), li = new WeakMap(), Ci = new WeakMap(), ui = new WeakMap(), pi = new WeakMap(), mi = new WeakMap(), Ii = new WeakMap(), _i = new WeakMap(), Di = new WeakMap(), bi = new WeakMap(), fi = new WeakMap(), Ei = new WeakMap(), Ai = new WeakMap(), vi = new WeakMap(), So.DRAFT_ROOT_ID = "default-root-id";
 let cl = So;
-var CO = /* @__PURE__ */ U('<span class="version-item__secondary svelte-1an6iow"> </span>'), uO = /* @__PURE__ */ U('<div class="version-item__latest svelte-1an6iow"><!></div>'), pO = /* @__PURE__ */ U('<div class="version-item svelte-1an6iow"><div class="version-item__icon svelte-1an6iow"><!></div> <div class="version-item__version-container svelte-1an6iow"><span class="version-item__version svelte-1an6iow"> </span></div> <div class="version-item__meta svelte-1an6iow"><!></div> <!></div>');
-function mO(a, e) {
+var uO = /* @__PURE__ */ U('<span class="version-item__secondary svelte-1an6iow"> </span>'), pO = /* @__PURE__ */ U('<div class="version-item__latest svelte-1an6iow"><!></div>'), mO = /* @__PURE__ */ U('<div class="version-item svelte-1an6iow"><div class="version-item__icon svelte-1an6iow"><!></div> <div class="version-item__version-container svelte-1an6iow"><span class="version-item__version svelte-1an6iow"> </span></div> <div class="version-item__meta svelte-1an6iow"><!></div> <!></div>');
+function IO(a, e) {
   _e(e, !0);
-  var t = pO(), n = V(t), r = V(n);
+  var t = mO(), n = V(t), r = V(n);
   {
     var s = (I) => {
       Vn(I, {
@@ -51459,7 +51461,7 @@ function mO(a, e) {
   var o = B(n, 2), d = V(o), c = V(d), l = B(o, 2), C = V(l);
   {
     var m = (I) => {
-      var D = CO(), f = V(D);
+      var D = uO(), f = V(D);
       me(() => fe(f, e.version.secondaryText)), A(I, D);
     };
     Q(C, (I) => {
@@ -51469,7 +51471,7 @@ function mO(a, e) {
   var p = B(l, 2);
   {
     var _ = (I) => {
-      var D = uO(), f = V(D);
+      var D = pO(), f = V(D);
       tl(f, { label: "latest", type: "primary", size: "small" }), A(I, D);
     };
     Q(p, (I) => {
@@ -51478,13 +51480,13 @@ function mO(a, e) {
   }
   me(() => fe(c, e.version.version)), A(a, t), De();
 }
-var IO = /* @__PURE__ */ U("<!> <!>", 1), _O = /* @__PURE__ */ U('<div class="loading-container svelte-1wvf8iy"><!></div>'), DO = /* @__PURE__ */ U('<div style="overflow-y: auto;"><!></div>'), bO = /* @__PURE__ */ U("<!> <!>", 1);
-function fO(a, e) {
+var _O = /* @__PURE__ */ U("<!> <!>", 1), DO = /* @__PURE__ */ U('<div class="loading-container svelte-1wvf8iy"><!></div>'), bO = /* @__PURE__ */ U('<div style="overflow-y: auto;"><!></div>'), fO = /* @__PURE__ */ U("<!> <!>", 1);
+function EO(a, e) {
   _e(e, !0);
   let t = u(e, "versions", 19, () => []), n = u(e, "onVersionChange", 3, () => {
   }), r = u(e, "loading", 3, !1), s = u(e, "loadingCurrentVersion", 3, !1), o = u(e, "disabled", 3, !1), d = u(e, "onOpenMenu", 3, () => {
   }), c;
-  var l = bO(), C = Z(l);
+  var l = fO(), C = Z(l);
   Xt(C, {
     variant: "outlined",
     get disabled() {
@@ -51494,7 +51496,7 @@ function fO(a, e) {
       d()(), c.setOpen(!0);
     },
     children: (p, _) => {
-      var I = IO(), D = Z(I);
+      var I = _O(), D = Z(I);
       Ui(D, {
         children: (E, y) => {
           var O = pe(), b = Z(O);
@@ -51531,10 +51533,10 @@ function fO(a, e) {
       anchorCorner: "BOTTOM_LEFT",
       maxHeight: 300,
       children: (p, _) => {
-        var I = DO(), D = V(I);
+        var I = bO(), D = V(I);
         {
           var f = (y) => {
-            var O = _O(), b = V(O);
+            var O = DO(), b = V(O);
             or(b, { style: "height: 32px; width: 32px;", indeterminate: !0 }), A(y, O);
           }, E = (y) => {
             ko(y, {
@@ -51544,7 +51546,7 @@ function fO(a, e) {
                   va(h, {
                     onclick: () => n()(i(g)),
                     children: (T, N) => {
-                      mO(T, {
+                      IO(T, {
                         get version() {
                           return i(g);
                         }
@@ -51569,8 +51571,8 @@ function fO(a, e) {
     () => c
   ), A(a, l), De();
 }
-var EO = /* @__PURE__ */ U("<!> Back to List", 1), AO = /* @__PURE__ */ U("<p> </p>"), vO = /* @__PURE__ */ U('<div class="default-type__reload-progress svelte-1xuwfh"><!></div>'), hO = /* @__PURE__ */ U('<div class="default-type__version-info-value svelte-1xuwfh"><!> <span><!></span></div>'), SO = /* @__PURE__ */ U('<span class="default-type__description-value svelte-1xuwfh"> </span>'), yO = /* @__PURE__ */ U("<!> Saving...", 1), OO = /* @__PURE__ */ U('<div class="default-type svelte-1xuwfh"><!> <div class="default-type__header svelte-1xuwfh"><div class="default-type__header-left svelte-1xuwfh"><!> <!> <!></div> <div class="default-type__header-actions svelte-1xuwfh"><!></div></div> <div class="default-type__content"><!></div></div>'), gO = /* @__PURE__ */ U('<div class="default-type-back-button"><!></div> <!>', 1);
-function TO(a, e) {
+var AO = /* @__PURE__ */ U("<!> Back to List", 1), vO = /* @__PURE__ */ U("<p> </p>"), hO = /* @__PURE__ */ U('<div class="default-type__reload-progress svelte-1xuwfh"><!></div>'), SO = /* @__PURE__ */ U('<div class="default-type__version-info-value svelte-1xuwfh"><!> <span><!></span></div>'), yO = /* @__PURE__ */ U('<span class="default-type__description-value svelte-1xuwfh"> </span>'), OO = /* @__PURE__ */ U("<!> Saving...", 1), gO = /* @__PURE__ */ U('<div class="default-type svelte-1xuwfh"><!> <div class="default-type__header svelte-1xuwfh"><div class="default-type__header-left svelte-1xuwfh"><!> <!> <!></div> <div class="default-type__header-actions svelte-1xuwfh"><!></div></div> <div class="default-type__content"><!></div></div>'), TO = /* @__PURE__ */ U('<div class="default-type-back-button"><!></div> <!>', 1);
+function LO(a, e) {
   _e(e, !0);
   let t = u(e, "onBack", 3, () => {
   });
@@ -51655,14 +51657,14 @@ function TO(a, e) {
       throw new Error("Invalid props: either 'id' or 'createInfo' must be provided.");
     o.docIsReady = !0;
   });
-  var D = gO(), f = Z(D), E = V(f);
+  var D = TO(), f = Z(D), E = V(f);
   Xt(E, {
     variant: "text",
     get onclick() {
       return t();
     },
     children: (S, v) => {
-      var h = EO(), g = Z(h);
+      var h = AO(), g = Z(h);
       Vn(g, {
         class: "material-icons",
         children: (T, N) => {
@@ -51677,16 +51679,16 @@ function TO(a, e) {
   var y = B(f, 2);
   {
     var O = (S) => {
-      var v = AO(), h = V(v);
+      var v = vO(), h = V(v);
       me(() => fe(h, o.error)), A(S, v);
     }, b = (S) => {
       var v = pe(), h = Z(v);
       {
         var g = (N) => {
-          var w = OO(), L = V(w);
+          var w = gO(), L = V(w);
           {
             var F = (Ce) => {
-              var k = vO(), X = V(k);
+              var k = hO(), X = V(k);
               Wc(X, { indeterminate: !0 }), A(Ce, k);
             };
             Q(L, (Ce) => {
@@ -51717,8 +51719,8 @@ function TO(a, e) {
           }
           var K = B(G, 2);
           js(K, { label: "Version", children: (k) => {
-            var X = hO(), Y = V(X);
-            fO(Y, {
+            var X = SO(), Y = V(X);
+            EO(Y, {
               get loadingCurrentVersion() {
                 return o.loading;
               },
@@ -51766,7 +51768,7 @@ function TO(a, e) {
           }, $$slots: { default: !0 } });
           var j = B(K, 2);
           js(j, { label: "Description", children: (k) => {
-            var X = SO(), Y = V(X);
+            var X = yO(), Y = V(X);
             me(() => fe(Y, o.info.description ? o.info.description : "No description")), A(k, X);
           }, $$slots: { default: !0 } });
           var q = B(R, 2), H = V(q);
@@ -51786,7 +51788,7 @@ function TO(a, e) {
                     var W = pe(), te = Z(W);
                     {
                       var ce = (Ie) => {
-                        var Ne = yO(), ge = Z(Ne);
+                        var Ne = OO(), ge = Z(Ne);
                         or(ge, { style: "height: 25px; width: 25px;", indeterminate: !0 }), A(Ie, Ne);
                       }, de = (Ie) => {
                         var Ne = Re();
@@ -51866,7 +51868,7 @@ function TO(a, e) {
   A(a, D), De();
 }
 var hi, Si, yi, Oi, gi, Ti, Li;
-class LO {
+class NO {
   constructor() {
     we(this, hi);
     we(this, Si);
@@ -52033,10 +52035,10 @@ function Lm(a, e) {
     }
   }), De();
 }
-var NO = /* @__PURE__ */ U('<div class="toolbar svelte-xoxzn6"><!> <!></div> <!>', 1);
-function PO(a, e) {
+var PO = /* @__PURE__ */ U('<div class="toolbar svelte-xoxzn6"><!> <!></div> <!>', 1);
+function RO(a, e) {
   _e(e, !0);
-  const t = new LO();
+  const t = new NO();
   let n = u(e, "onCreateDefaultType", 3, () => {
   }), r = u(e, "onEditDefaultType", 3, () => {
   });
@@ -52051,7 +52053,7 @@ function PO(a, e) {
   }), ze(() => {
     t.load();
   });
-  var o = NO(), d = Z(o), c = V(d);
+  var o = PO(), d = Z(o), c = V(d);
   {
     let m = /* @__PURE__ */ z(() => new ac(null, null));
     Lm(c, {
@@ -52109,8 +52111,8 @@ function PO(a, e) {
     onRowClick: (m) => r()(m.id)
   }), A(a, o), De();
 }
-var RO = /* @__PURE__ */ U("<!> <!> <!> <!>", 1), MO = /* @__PURE__ */ U('<div class="loading-container svelte-18d07ir"><!> <p class="svelte-18d07ir">Checking for existing default type...</p></div>'), FO = /* @__PURE__ */ U('<div class="warning-content svelte-18d07ir"><p class="svelte-18d07ir">A default type with this kind and instance already exists.</p> <!></div>'), VO = /* @__PURE__ */ U('<div class="content svelte-18d07ir"><!> <!> <!> <!> <!> <!></div>');
-function GO(a, e) {
+var MO = /* @__PURE__ */ U("<!> <!> <!> <!>", 1), FO = /* @__PURE__ */ U('<div class="loading-container svelte-18d07ir"><!> <p class="svelte-18d07ir">Checking for existing default type...</p></div>'), VO = /* @__PURE__ */ U('<div class="warning-content svelte-18d07ir"><p class="svelte-18d07ir">A default type with this kind and instance already exists.</p> <!></div>'), GO = /* @__PURE__ */ U('<div class="content svelte-18d07ir"><!> <!> <!> <!> <!> <!></div>');
+function wO(a, e) {
   _e(e, !0);
   const t = "1.0.0";
   let n = u(e, "open", 15, !1), r = /* @__PURE__ */ $(void 0), s = /* @__PURE__ */ $(void 0), o = /* @__PURE__ */ $(t), d = /* @__PURE__ */ $(!1), c = /* @__PURE__ */ $(
@@ -52154,7 +52156,7 @@ function GO(a, e) {
   const D = /* @__PURE__ */ z(() => !i(l) && i(C) === null && (!!i(c) || !i(d) && !!i(r) && !!i(s)));
   {
     const f = (O) => {
-      var b = VO(), S = V(b);
+      var b = GO(), S = V(b);
       Dp(S, {
         label: "Type",
         required: !0,
@@ -52166,7 +52168,7 @@ function GO(a, e) {
           M(r, P, !0);
         },
         children: (P, R) => {
-          var G = RO(), K = Z(G);
+          var G = MO(), K = Z(G);
           Do(K, {
             get value() {
               return Oe.LNodeType;
@@ -52271,7 +52273,7 @@ function GO(a, e) {
       var g = B(h, 2);
       {
         var T = (P) => {
-          var R = MO(), G = V(R);
+          var R = FO(), G = V(R);
           or(G, { style: "height: 32px; width: 32px;", indeterminate: !0 }), A(P, R);
         };
         Q(g, (P) => {
@@ -52295,7 +52297,7 @@ function GO(a, e) {
       {
         var F = (P) => {
           Gs(P, { children: (G) => {
-            var K = FO(), j = B(V(K), 2);
+            var K = VO(), j = B(V(K), 2);
             Xt(j, {
               variant: "unelevated",
               onclick: m,
@@ -52339,8 +52341,8 @@ function GO(a, e) {
   }
   De();
 }
-var wO = /* @__PURE__ */ U('<div class="container svelte-1btn2yw"><!></div>');
-function xO(a, e) {
+var xO = /* @__PURE__ */ U('<div class="container svelte-1btn2yw"><!></div>');
+function jO(a, e) {
   _e(e, !0);
   let t = /* @__PURE__ */ $(Ee({ mode: "list", selectedId: void 0, createInfo: void 0 }));
   const n = (m) => {
@@ -52351,7 +52353,7 @@ function xO(a, e) {
     M(t, { mode: "list", selectedId: void 0, createInfo: void 0 }, !0);
   };
   async function o() {
-    const m = await Hn(GO);
+    const m = await Hn(wO);
     if (m.type !== "confirm")
       return;
     const p = m.data;
@@ -52361,10 +52363,10 @@ function xO(a, e) {
       version: p.initialVersion
     });
   }
-  var d = wO(), c = V(d);
+  var d = xO(), c = V(d);
   {
     var l = (m) => {
-      TO(m, {
+      LO(m, {
         get id() {
           return i(t).selectedId;
         },
@@ -52374,7 +52376,7 @@ function xO(a, e) {
         onBack: s
       });
     }, C = (m) => {
-      PO(m, {
+      RO(m, {
         onCreateDefaultType: o,
         onEditDefaultType: (p) => n(p)
       });
@@ -52385,8 +52387,8 @@ function xO(a, e) {
   }
   A(a, d), De();
 }
-var jO = /* @__PURE__ */ U('<div class="actions-cell svelte-uif74w"><!> <!> <!></div>'), BO = /* @__PURE__ */ U('<div class="toolbar svelte-uif74w"><!> <!></div> <!>', 1);
-function UO(a, e) {
+var BO = /* @__PURE__ */ U('<div class="actions-cell svelte-uif74w"><!> <!> <!></div>'), UO = /* @__PURE__ */ U('<div class="toolbar svelte-uif74w"><!> <!></div> <!>', 1);
+function kO(a, e) {
   _e(e, !0);
   let t = /* @__PURE__ */ $(Ee([])), n = /* @__PURE__ */ $(null), r = /* @__PURE__ */ $(!1), s = /* @__PURE__ */ $(""), o = /* @__PURE__ */ $(Ee(Oe.LNodeType)), d = /* @__PURE__ */ $(void 0), c = 0, l = !1;
   const C = rc();
@@ -52445,7 +52447,7 @@ function UO(a, e) {
   }), ze(() => {
     C.load();
   });
-  var y = BO(), O = Z(y), b = V(O);
+  var y = UO(), O = Z(y), b = V(O);
   Lm(b, {
     get service() {
       return e.service;
@@ -52501,7 +52503,7 @@ function UO(a, e) {
     ],
     actions: (g, T) => {
       let N = () => T == null ? void 0 : T().item;
-      var w = jO(), L = V(w);
+      var w = BO(), L = V(w);
       qn(L, {
         tooltip: "Rename",
         type: "edit",
@@ -52524,8 +52526,8 @@ function UO(a, e) {
     $$slots: { actions: !0 }
   }), A(a, y), De();
 }
-var kO = /* @__PURE__ */ U("<!> <!>", 1), KO = /* @__PURE__ */ U('<div class="navigation-header svelte-1mt2ath"><span class="navigation-header__title svelte-1mt2ath"> </span> <!></div>');
-function HO(a, e) {
+var KO = /* @__PURE__ */ U("<!> <!>", 1), HO = /* @__PURE__ */ U('<div class="navigation-header svelte-1mt2ath"><span class="navigation-header__title svelte-1mt2ath"> </span> <!></div>');
+function WO(a, e) {
   _e(e, !0);
   const t = ["Data Types", "Default Types", "Settings"], n = {
     "Data Types": "table_view",
@@ -52533,7 +52535,7 @@ function HO(a, e) {
     Settings: "settings"
   };
   let r = u(e, "activeTab", 31, () => Ee(t[0])), s = u(e, "title", 3, "Navigation");
-  var o = KO(), d = V(o), c = V(d), l = B(d, 2);
+  var o = HO(), d = V(o), c = V(d), l = B(d, 2);
   nm(l, {
     get tabs() {
       return t;
@@ -52551,7 +52553,7 @@ function HO(a, e) {
         },
         minWidth: !0,
         children: (_, I) => {
-          var D = kO(), f = Z(D);
+          var D = KO(), f = Z(D);
           Vn(f, {
             class: "material-icons",
             children: (y, O) => {
@@ -52575,15 +52577,15 @@ function HO(a, e) {
     $$slots: { tab: !0 }
   }), me(() => fe(c, s())), A(a, o), De();
 }
-var WO = /* @__PURE__ */ U("<!>Edit Format", 1), qO = /* @__PURE__ */ U('<div class="preview-inline svelte-cqdvyh"><span class="tag svelte-cqdvyh">Format</span> <span class="mono svelte-cqdvyh"> </span> <span class="tag svelte-cqdvyh">Preview</span> <span class="mono svelte-cqdvyh"> </span></div>'), zO = /* @__PURE__ */ U("<!>Edit Format", 1), XO = /* @__PURE__ */ U('<div class="preview-inline svelte-cqdvyh"><span class="tag svelte-cqdvyh">Format</span> <span class="mono svelte-cqdvyh"> </span> <span class="tag svelte-cqdvyh">Preview</span> <span class="mono svelte-cqdvyh"> </span></div>'), ZO = /* @__PURE__ */ U(
+var qO = /* @__PURE__ */ U("<!>Edit Format", 1), zO = /* @__PURE__ */ U('<div class="preview-inline svelte-cqdvyh"><span class="tag svelte-cqdvyh">Format</span> <span class="mono svelte-cqdvyh"> </span> <span class="tag svelte-cqdvyh">Preview</span> <span class="mono svelte-cqdvyh"> </span></div>'), XO = /* @__PURE__ */ U("<!>Edit Format", 1), ZO = /* @__PURE__ */ U('<div class="preview-inline svelte-cqdvyh"><span class="tag svelte-cqdvyh">Format</span> <span class="mono svelte-cqdvyh"> </span> <span class="tag svelte-cqdvyh">Preview</span> <span class="mono svelte-cqdvyh"> </span></div>'), YO = /* @__PURE__ */ U(
   `<div class="row svelte-cqdvyh" style="margin: 1rem 0;"><div class="col-switch svelte-cqdvyh"></div> <div class="col-content svelte-cqdvyh"><div class="separator svelte-cqdvyh"></div></div></div> <div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"><!></div> <div class="col-content header svelte-cqdvyh"><div><h5 class="svelte-cqdvyh">Enable Reference-based ID Pattern</h5> <p class="description svelte-cqdvyh">Used when an instance is created from a parent. Allows for including
             parent reference in id.</p></div> <!></div></div> <div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"></div> <div class="col-content svelte-cqdvyh"></div></div> <div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"></div> <div class="col-content preview svelte-cqdvyh"><!></div></div>`,
   1
-), YO = /* @__PURE__ */ U('<div class="format-grid svelte-cqdvyh"><div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"><!></div> <div class="col-content header svelte-cqdvyh"><div><h5 class="svelte-cqdvyh">Enable Auto-ID Generation</h5> <p class="description svelte-cqdvyh"> </p></div> <!></div></div> <div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"></div> <div class="col-content preview svelte-cqdvyh"><!></div></div> <!></div>');
-function QO(a, e) {
+), QO = /* @__PURE__ */ U('<div class="format-grid svelte-cqdvyh"><div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"><!></div> <div class="col-content header svelte-cqdvyh"><div><h5 class="svelte-cqdvyh">Enable Auto-ID Generation</h5> <p class="description svelte-cqdvyh"> </p></div> <!></div></div> <div class="row svelte-cqdvyh"><div class="col-switch svelte-cqdvyh"></div> <div class="col-content preview svelte-cqdvyh"><!></div></div> <!></div>');
+function JO(a, e) {
   _e(e, !0);
   let t = u(e, "enabled", 15), n = u(e, "referenceFormatEnabled", 15);
-  var r = YO(), s = V(r), o = V(s), d = V(o);
+  var r = QO(), s = V(r), o = V(s), d = V(o);
   qc(d, {
     icons: !1,
     get checked() {
@@ -52602,7 +52604,7 @@ function QO(a, e) {
           return e.onEditFormat;
         },
         children: (S, v) => {
-          var h = WO(), g = Z(h);
+          var h = qO(), g = Z(h);
           Vn(g, {
             class: "material-icons",
             children: (T, N) => {
@@ -52622,7 +52624,7 @@ function QO(a, e) {
   var I = B(s, 2), D = B(V(I), 2), f = V(D);
   {
     var E = (b) => {
-      var S = qO(), v = B(V(S), 2), h = V(v), g = B(v, 4), T = V(g);
+      var S = zO(), v = B(V(S), 2), h = V(v), g = B(v, 4), T = V(g);
       me(
         (N, w) => {
           fe(h, N), fe(T, w);
@@ -52640,7 +52642,7 @@ function QO(a, e) {
   var y = B(I, 2);
   {
     var O = (b) => {
-      var S = ZO(), v = B(Z(S), 2), h = V(v), g = V(h);
+      var S = YO(), v = B(Z(S), 2), h = V(v), g = V(h);
       qc(g, {
         icons: !1,
         get checked() {
@@ -52659,7 +52661,7 @@ function QO(a, e) {
               return e.onEditReferenceFormat;
             },
             children: (K, j) => {
-              var q = zO(), H = Z(q);
+              var q = XO(), H = Z(q);
               Vn(H, {
                 class: "material-icons",
                 children: (x, J) => {
@@ -52679,7 +52681,7 @@ function QO(a, e) {
       var L = B(v, 4), F = B(V(L), 2), P = V(F);
       {
         var R = (G) => {
-          var K = XO(), j = B(V(K), 2), q = V(j), H = B(j, 4), x = V(H);
+          var K = ZO(), j = B(V(K), 2), q = V(j), H = B(j, 4), x = V(H);
           me(
             (J, be) => {
               fe(q, J), fe(x, be);
@@ -52703,7 +52705,7 @@ function QO(a, e) {
   me(() => fe(m, e.description)), A(a, r), De();
 }
 var Ni, Pi, Ri, Mi;
-class JO {
+class $O {
   constructor() {
     we(this, Ni);
     we(this, Pi);
@@ -52758,8 +52760,8 @@ class JO {
 }
 Ni = new WeakMap(), Pi = new WeakMap(), Ri = new WeakMap(), Mi = new WeakMap();
 const Nm = "ID-FORMAT-EDITOR-STATE";
-function $O() {
-  return Se(Nm, new JO());
+function eg() {
+  return Se(Nm, new $O());
 }
 function Kl() {
   return ve(Nm);
@@ -52784,8 +52786,8 @@ function Pm(a) {
       return "UNKNOWN";
   }
 }
-var eg = /* @__PURE__ */ U("<!> <!>", 1), tg = /* @__PURE__ */ U('<h3>Components</h3> <div class="id-field-set svelte-1on4ese"></div> <h4>Custom Text</h4> <form class="custom-text-form svelte-1on4ese"><div><!></div> <!></form>', 1);
-function ng(a, e) {
+var tg = /* @__PURE__ */ U("<!> <!>", 1), ng = /* @__PURE__ */ U('<h3>Components</h3> <div class="id-field-set svelte-1on4ese"></div> <h4>Custom Text</h4> <form class="custom-text-form svelte-1on4ese"><div><!></div> <!></form>', 1);
+function ag(a, e) {
   _e(e, !0);
   const t = Kl();
   let n = /* @__PURE__ */ $(""), r = /* @__PURE__ */ $("");
@@ -52817,7 +52819,7 @@ function ng(a, e) {
   ba(a, {
     padded: !0,
     children: (l, C) => {
-      var m = tg(), p = B(Z(m), 2);
+      var m = ng(), p = B(Z(m), 2);
       Mt(p, 21, () => t.components, (E) => E.id, (E, y) => {
         {
           let O = /* @__PURE__ */ z(() => !i(y).description);
@@ -52838,7 +52840,7 @@ function ng(a, e) {
                 class: "id-builder-component-chip",
                 onclick: () => t.addSegment(i(y)),
                 children: (v, h) => {
-                  var g = eg(), T = Z(g);
+                  var g = tg(), T = Z(g);
                   Lp(T, {
                     class: "material-icons",
                     children: (w, L) => {
@@ -52914,22 +52916,22 @@ function ng(a, e) {
     $$slots: { default: !0 }
   }), De();
 }
-var ag = /* @__PURE__ */ U("<p>No ID format defined.</p>"), rg = /* @__PURE__ */ U('<li class="svelte-3o6puo"> </li>'), sg = /* @__PURE__ */ U("<ul></ul>"), ig = /* @__PURE__ */ U("<h3>Preview</h3> <!>", 1);
-function og(a, e) {
+var rg = /* @__PURE__ */ U("<p>No ID format defined.</p>"), sg = /* @__PURE__ */ U('<li class="svelte-3o6puo"> </li>'), ig = /* @__PURE__ */ U("<ul></ul>"), og = /* @__PURE__ */ U("<h3>Preview</h3> <!>", 1);
+function dg(a, e) {
   _e(e, !1);
   const t = Kl();
   Hd(), ba(a, {
     padded: !0,
     children: (n, r) => {
-      var s = ig(), o = B(Z(s), 2);
+      var s = og(), o = B(Z(s), 2);
       {
         var d = (l) => {
-          var C = ag();
+          var C = rg();
           A(l, C);
         }, c = (l) => {
-          var C = sg();
+          var C = ig();
           Mt(C, 5, () => t.previewIds, yn, (m, p) => {
-            var _ = rg(), I = V(_);
+            var _ = sg(), I = V(_);
             me(() => fe(I, i(p))), A(m, _);
           }), A(l, C);
         };
@@ -52942,8 +52944,8 @@ function og(a, e) {
     $$slots: { default: !0 }
   }), De();
 }
-var dg = /* @__PURE__ */ U("<!> <!>", 1), cg = /* @__PURE__ */ U("<div><!></div>"), lg = /* @__PURE__ */ U('<div class="id-field-set svelte-1kw2781"></div>'), Cg = /* @__PURE__ */ U("<h3>Compose ID</h3> <!>", 1);
-function ug(a, e) {
+var cg = /* @__PURE__ */ U("<!> <!>", 1), lg = /* @__PURE__ */ U("<div><!></div>"), Cg = /* @__PURE__ */ U('<div class="id-field-set svelte-1kw2781"></div>'), ug = /* @__PURE__ */ U("<h3>Compose ID</h3> <!>", 1);
+function pg(a, e) {
   _e(e, !1);
   const t = /* @__PURE__ */ jd(Kl());
   function n(s) {
@@ -52955,17 +52957,17 @@ function ug(a, e) {
   Hd(), ba(a, {
     padded: !0,
     children: (s, o) => {
-      var d = Cg(), c = B(Z(d), 2);
+      var d = ug(), c = B(Z(d), 2);
       {
         var l = (C) => {
-          var m = lg();
+          var m = Cg();
           Mt(m, 13, () => i(t).segments, (p) => p.id, (p, _) => {
-            var I = cg(), D = V(I);
+            var I = lg(), D = V(I);
             gp(D, {
               chip: !0,
               class: "id-field-chip",
               children: (f, E) => {
-                var y = dg(), O = Z(y);
+                var y = cg(), O = Z(y);
                 Tp(O, {
                   children: (S, v) => {
                     var h = Re();
@@ -52997,18 +52999,18 @@ function ug(a, e) {
     $$slots: { default: !0 }
   }), De();
 }
-var pg = /* @__PURE__ */ U('<div class="id-builder svelte-j8wbcs"><div class="id-builder__left"><!></div> <div class="id-builder__main svelte-j8wbcs"><!> <!></div></div>');
-function mg(a) {
-  var e = pg(), t = V(e), n = V(t);
-  ng(n, {});
+var mg = /* @__PURE__ */ U('<div class="id-builder svelte-j8wbcs"><div class="id-builder__left"><!></div> <div class="id-builder__main svelte-j8wbcs"><!> <!></div></div>');
+function Ig(a) {
+  var e = mg(), t = V(e), n = V(t);
+  ag(n, {});
   var r = B(t, 2), s = V(r);
-  ug(s, {});
+  pg(s, {});
   var o = B(s, 2);
-  og(o, {}), A(a, e);
+  dg(o, {}), A(a, e);
 }
-function Ig(a, e) {
+function _g(a, e) {
   _e(e, !0);
-  const t = $O();
+  const t = eg();
   let n = u(e, "open", 15, !1);
   ze(() => {
     t.initState(e.components, e.format, e.context);
@@ -53031,13 +53033,13 @@ function Ig(a, e) {
       n(s);
     },
     content: (s) => {
-      mg(s);
+      Ig(s);
     },
     $$slots: { content: !0 }
   }), De();
 }
-var _g = /* @__PURE__ */ U("<!> Saving...", 1), Dg = /* @__PURE__ */ U('<div style="display: flex; justify-content: center"><!></div>'), bg = /* @__PURE__ */ U('<div class="separator svelte-1me1gb0"></div>'), fg = /* @__PURE__ */ U('<h3 class="svelte-1me1gb0"> </h3> <!> <!>', 1), Eg = /* @__PURE__ */ U('<div style="width: 100%; display: flex; justify-content: center;"><div style="width: 100%; max-width: 1000px;"><div style="display: flex; justify-content: space-between; align-items: center;"><h2>ID Generation</h2> <!></div> <!></div></div>');
-function Ag(a, e) {
+var Dg = /* @__PURE__ */ U("<!> Saving...", 1), bg = /* @__PURE__ */ U('<div style="display: flex; justify-content: center"><!></div>'), fg = /* @__PURE__ */ U('<div class="separator svelte-1me1gb0"></div>'), Eg = /* @__PURE__ */ U('<h3 class="svelte-1me1gb0"> </h3> <!> <!>', 1), Ag = /* @__PURE__ */ U('<div style="width: 100%; display: flex; justify-content: center;"><div style="width: 100%; max-width: 1000px;"><div style="display: flex; justify-content: space-between; align-items: center;"><h2>ID Generation</h2> <!></div> <!></div></div>');
+function vg(a, e) {
   _e(e, !1);
   const t = rc(), n = { segments: [] }, r = /* @__PURE__ */ jd([
     {
@@ -53096,7 +53098,7 @@ function Ag(a, e) {
     // Measurement unit: phase current
   ];
   async function c(b, S) {
-    const v = await Hn(Ig, {
+    const v = await Hn(_g, {
       components: b,
       format: S ?? n,
       context: d
@@ -53148,7 +53150,7 @@ function Ag(a, e) {
     return b === "global" ? t.settings.global : t.settings.typeSpecific[b];
   }
   Hd();
-  var D = Eg(), f = V(D), E = V(f), y = B(V(E), 2);
+  var D = Ag(), f = V(D), E = V(f), y = B(V(E), 2);
   Xt(y, {
     variant: "raised",
     onclick: _,
@@ -53156,7 +53158,7 @@ function Ag(a, e) {
       var v = pe(), h = Z(v);
       {
         var g = (N) => {
-          var w = _g(), L = Z(w);
+          var w = Dg(), L = Z(w);
           or(L, { class: "save-progress", indeterminate: !0 }), A(N, w);
         }, T = (N) => {
           var w = Re("Save");
@@ -53177,16 +53179,16 @@ function Ag(a, e) {
       var v = pe(), h = Z(v);
       {
         var g = (N) => {
-          var w = Dg(), L = V(w);
+          var w = bg(), L = V(w);
           or(L, { style: "height: 32px; width: 32px;", indeterminate: !0 }), A(N, w);
         }, T = (N) => {
           var w = pe(), L = Z(w);
           Mt(L, 1, () => i(r), yn, (F, P, R) => {
             const G = /* @__PURE__ */ Dr(() => I(i(P).kind));
-            var K = fg(), j = Z(K), q = V(j), H = B(j, 2);
+            var K = Eg(), j = Z(K), q = V(j), H = B(j, 2);
             {
               let be = /* @__PURE__ */ Dr(() => l(i(G).format)), Ce = /* @__PURE__ */ Dr(() => p(i(G).format)), k = /* @__PURE__ */ Dr(() => l(i(G).referenceFormat)), X = /* @__PURE__ */ Dr(() => p(i(G).referenceFormat));
-              QO(H, {
+              JO(H, {
                 get format() {
                   return i(be);
                 },
@@ -53222,7 +53224,7 @@ function Ag(a, e) {
             var x = B(H, 2);
             {
               var J = (be) => {
-                var Ce = bg();
+                var Ce = fg();
                 A(be, Ce);
               };
               Q(x, (be) => {
@@ -53241,8 +53243,8 @@ function Ag(a, e) {
     $$slots: { default: !0 }
   }), A(a, D), De();
 }
-var vg = /* @__PURE__ */ U('<div class="template-generator-container svelte-1fhx3oi"><!> <!></div>'), hg = /* @__PURE__ */ U('<div class="oscd-app"><!></div> <!> <!> <!>', 1);
-function Sg(a, e) {
+var hg = /* @__PURE__ */ U('<div class="template-generator-container svelte-1fhx3oi"><!> <!></div>'), Sg = /* @__PURE__ */ U('<div class="oscd-app"><!></div> <!> <!> <!>', 1);
+function yg(a, e) {
   _e(e, !0);
   let t = u(e, "editCount", 3, 0);
   rS();
@@ -53254,11 +53256,11 @@ function Sg(a, e) {
   }), ye(() => {
     gc.editCount = t() ?? -1;
   });
-  var d = hg(), c = Z(d), l = V(c);
+  var d = Sg(), c = Z(d), l = V(c);
   {
     var C = (I) => {
-      var D = vg(), f = V(D);
-      HO(f, {
+      var D = hg(), f = V(D);
+      WO(f, {
         title: "Template Generator",
         get activeTab() {
           return i(r);
@@ -53270,7 +53272,7 @@ function Sg(a, e) {
       var E = B(f, 2);
       {
         var y = (b) => {
-          UO(b, {
+          kO(b, {
             get service() {
               return i(o);
             },
@@ -53282,12 +53284,12 @@ function Sg(a, e) {
           var S = pe(), v = Z(S);
           {
             var h = (T) => {
-              xO(T, {});
+              jO(T, {});
             }, g = (T) => {
               var N = pe(), w = Z(N);
               {
                 var L = (F) => {
-                  Ag(F, {});
+                  vg(F, {});
                 };
                 Q(
                   w,
@@ -53328,14 +53330,14 @@ function Sg(a, e) {
   HA(_, {}), A(a, d), De();
 }
 const Rm = "template-generator", Mm = "0.0.1";
-var yg = /* @__PURE__ */ U('<!> <input type="hidden" name="package-name"/> <input type="hidden" name="package-version"/>', 1);
+var Og = /* @__PURE__ */ U('<!> <input type="hidden" name="package-name"/> <input type="hidden" name="package-version"/>', 1);
 function cu(a, e) {
   _e(e, !0);
   let t = u(e, "editCount", 3, 0), n = u(e, "plugins", 19, () => []);
-  var r = yg(), s = Z(r);
+  var r = Og(), s = Z(r);
   {
     var o = (l) => {
-      Sg(l, {
+      yg(l, {
         get doc() {
           return e.doc;
         },
@@ -53381,7 +53383,7 @@ function cu(a, e) {
   }), A(a, r), De();
 }
 var Fi;
-class Lg extends HTMLElement {
+class Ng extends HTMLElement {
   constructor() {
     super();
     we(this, Fi);
@@ -53401,7 +53403,7 @@ class Lg extends HTMLElement {
   connectedCallback() {
     if (this.shadowRoot) return;
     this.attachShadow({ mode: "open" });
-    const t = this.shadowRoot, n = Og();
+    const t = this.shadowRoot, n = gg();
     t.appendChild(n);
     const r = document.createElement("style");
     r.textContent = ":host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }", t.appendChild(r), n.addEventListener("load", () => sC(cu, { target: t, props: this._props }), { once: !0 }), n.addEventListener("error", () => sC(cu, { target: t, props: this._props }), { once: !0 });
@@ -53438,10 +53440,10 @@ class Lg extends HTMLElement {
   }
 }
 Fi = new WeakMap();
-function Og() {
+function gg() {
   const a = document.createElement("link");
   return a.rel = "stylesheet", a.type = "text/css", a.href = new URL("./style.css", import.meta.url).href, a.id = `${Rm}-v${Mm}-style`, a;
 }
 export {
-  Lg as default
+  Ng as default
 };
