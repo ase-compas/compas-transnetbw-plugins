@@ -39,6 +39,7 @@
   {subtitle}
   {actionDisabled}
   {actionLabel}
+  {actionIcon}
   {hasAction}
   onAction={onAction}
 >

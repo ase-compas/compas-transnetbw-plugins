@@ -104,8 +104,8 @@ export function buildColumns(typeKind: TypeKind, isEditMode: boolean, config: De
         itemsDraggable: false,
         hasAction: config?.defaultTypeFeatureEnabled ?? false,
         actionDisabled: !isEditMode,
-        actionLabel: 'Apply All Default Types',
-        actionIcon: 'wand-stars',
+        actionLabel: config.defaultTypeFeatureEnabled ? 'Apply All' : undefined,
+        actionIcon: config.defaultTypeFeatureEnabled ? 'wand-stars' : undefined,
     };
 
     const typeColumns: TColumnConfig[] = layout.columns.map((column) => ({
