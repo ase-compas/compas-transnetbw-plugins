@@ -2,19 +2,22 @@
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
   import { OscdBaseDialog, OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
+  import CircularProgress from '@smui/circular-progress';
   import type { ApplyScenario } from '../../services/default-type-manager-service';
   import type { ApplyDefaultTypesPreview, ApplyDefaultTypesPreviewEntry } from "../../services/type.service";
   import ApplyDefaultMemberRow from './ApplyDefaultMemberRow.svelte';
 
   interface Props {
     open?: boolean;
-    applyDefaultPreview: ApplyDefaultTypesPreview;
+    isLoading?: boolean;
+    applyDefaultPreview?: ApplyDefaultTypesPreview;
     configuredMemberNames?: string[];
     memberReferenceMap?: Record<string, string | undefined>;
   }
 
   let {
     open = $bindable(false),
+    isLoading = false,
     applyDefaultPreview,
     configuredMemberNames = [],
     memberReferenceMap = {},
@@ -92,7 +95,7 @@
         ? 'Apply'
         : `Apply (${selectedCount})`
   );
-  const confirmDisabled = $derived(applicableRows.length > 0 && selectedCount === 0);
+  const confirmDisabled = $derived(isLoading || (applicableRows.length > 0 && selectedCount === 0));
 
   const allApplicableSelected = $derived(
     applicableRows.length > 0 && selectedCount === applicableRows.length
@@ -139,6 +142,12 @@
 >
   {#snippet content()}
     <div class="preview-dialog-content">
+      {#if isLoading}
+        <div class="loading-state">
+          <CircularProgress style="height: 32px; width: 32px;" indeterminate />
+          <span>Loading defaults…</span>
+        </div>
+      {:else}
       <div class="summary-grid">
         <Card padded variant="outlined" class="summary-card">
           <div class="summary-label">DataType</div>
@@ -221,6 +230,7 @@
           </section>
         {/if}
       {/if}
+      {/if}
     </div>
   {/snippet}
 </OscdBaseDialog>
@@ -231,6 +241,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem 1rem;
+    font-size: var(--tg-font-size-small);
   }
 
   .summary-grid {
