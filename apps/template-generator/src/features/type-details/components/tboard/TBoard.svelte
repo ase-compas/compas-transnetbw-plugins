@@ -164,5 +164,15 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  @media (min-width: 1400px) {
+    .oscd-board {
+      flex-wrap: nowrap;
+      align-items: stretch;
+    }
   }
 </style>

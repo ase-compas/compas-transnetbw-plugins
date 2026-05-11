@@ -81,6 +81,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
   }
 
   .title-main {
@@ -101,7 +103,8 @@
     transition: visibility 0.2s ease;
     display: flex;
     align-items: center;
-    height: 70px;
+    min-height: 36px;
+    padding: 0.25rem 0;
   }
 
   .invisible {

@@ -196,3 +196,12 @@ button:focus {
   align-items: center;
   justify-content: center;
 }
+
+/* ─── Responsive font-size tokens for notebook viewports ─────────────────── */
+@media (max-width: 1400px) {
+  :root {
+    --tg-font-size-heading:    1.1rem;
+    --tg-font-size-value:      1rem;
+    --tg-font-size-subheading: 0.9375rem;
+  }
+}
