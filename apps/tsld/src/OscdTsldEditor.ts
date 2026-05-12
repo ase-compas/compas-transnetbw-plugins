@@ -1,9 +1,9 @@
-import {css, html, LitElement, TemplateResult} from 'lit';
+import {css, html, LitElement, type TemplateResult} from 'lit';
 import {property} from 'lit/decorators.js';
 import Cytoscape, {
-  ElementsDefinition,
-  NodeDefinition,
-  EdgeDefinition,
+  type ElementsDefinition,
+  type NodeDefinition,
+  type EdgeDefinition,
 } from 'cytoscape';
 import {
   circuitBreakerIcon,
@@ -58,13 +58,26 @@ export default class OscdTsldEditor extends LitElement {
     this.initializeCytoscape();
   }
 
+  protected override updated(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('doc')) {
+      this.initializeCytoscape();
+    }
+  }
+
   initializeCytoscape(): void {
+    const container = this.shadowRoot?.getElementById('cy');
+    if (!container || !this.doc) {
+      return;
+    }
+
+    this.cy?.destroy();
+
     const graph = this.createNodesEdges();
     const {nodes} = graph;
     const {edges} = graph;
 
     this.cy = Cytoscape({
-      container: this.shadowRoot?.getElementById('cy') as HTMLElement,
+      container: container as HTMLElement,
       elements: {
         nodes,
         edges,
@@ -169,16 +182,25 @@ export default class OscdTsldEditor extends LitElement {
   }
 
   createNodesEdges() {
+    const nodes: NodeDefinition[] = [];
+    const edges: EdgeDefinition[] = [];
+
+    if (!this.doc) {
+      return {nodes, edges};
+    }
+
     const substations = this.doc.querySelectorAll('Substation');
     const nodeListIED = this.doc.querySelectorAll('IED');
 
+    if (substations.length === 0) {
+      return {nodes, edges};
+    }
+
     const substationElement = substations.item(0);
     const nsAttribute = OscdTsldEditor.findCordAttribute(substationElement);
-    this.namespace = this.doc.lookupNamespaceURI(nsAttribute) as string;
-    const nms = this.namespace
-
-    const nodes: NodeDefinition[] = [];
-    const edges: EdgeDefinition[] = [];
+    this.namespace =
+      (nsAttribute && this.doc.lookupNamespaceURI(nsAttribute)) ?? '';
+    const nms = this.namespace || null;
 
     let offsetX = 0;
     let offsetY = 0;
@@ -842,7 +864,11 @@ export default class OscdTsldEditor extends LitElement {
     return (+baseX + +offsetX + +furthestIedX) * 50;
   }
 
-  static findCordAttribute(substationElement: Element) {
+  static findCordAttribute(substationElement: Element | null): string | null {
+    if (!substationElement) {
+      return null;
+    }
+
     const regex = /[se](xy|sld):x|x/y;
     const regexY = /[se](xy|sld):y|y/y;
     const matchx = Array.from(substationElement.attributes).find(i =>
@@ -853,10 +879,10 @@ export default class OscdTsldEditor extends LitElement {
     );
 
     if (matchx === undefined || matchy === undefined) {
-      throw new Error('one of the x/y attributes is undefined');
-    } else {
-      return matchx.name.split(':')[0];
+      return null;
     }
+
+    return matchx.name.split(':')[0];
   }
 
   override render(): TemplateResult {

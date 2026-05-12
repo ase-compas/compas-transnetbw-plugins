@@ -1,4 +1,4 @@
-import { html, svg, SVGTemplateResult, TemplateResult } from 'lit';
+import { html, svg, type SVGTemplateResult, type TemplateResult } from 'lit';
 
 export type iconType =
   | 'action'

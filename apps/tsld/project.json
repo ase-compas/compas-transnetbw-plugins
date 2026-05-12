@@ -21,6 +21,14 @@
         "command": "vite",
         "cwd": "apps/tsld/src"
       }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "vite preview",
+        "cwd": "apps/tsld"
+      }
     }
   }
 }
