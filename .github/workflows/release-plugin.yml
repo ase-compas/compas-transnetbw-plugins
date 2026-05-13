@@ -15,6 +15,7 @@ on:
           - location-viewer
           - template-generator
           - type-distributor
+          - tsld
       RELEASE_TYPE:
         description: 'Release type: MAJOR, MINOR, or PATCH'
         required: false
