@@ -1,8 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2017",
+    "composite": true,
+    "declaration": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "sourceMap": true,

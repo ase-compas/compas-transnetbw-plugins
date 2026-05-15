@@ -4,15 +4,15 @@
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2022",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": ["es2022", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
@@ -63,11 +63,7 @@
       "@oscd-transnet-plugins/oscd-services/toast": [
         "libs/oscd-services/src/toast/index.ts"
       ],
-      "@oscd-transnet-plugins/oscd-xml-utils": [
-        "libs/oscd-xml-utils/src/index.ts"
-      ],
-      "@oscd-transnet-plugins/shared": ["libs/shared/src/index.ts"],
-      "@oscd-transnet-plugins/tsld": ["apps/tsld/src/index.ts"]
+      "@oscd-transnet-plugins/shared": ["libs/shared/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

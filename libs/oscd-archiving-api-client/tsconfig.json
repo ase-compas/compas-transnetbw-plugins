@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "allowJs": false,
-    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "types": ["vite/client", "vitest"]
   },
