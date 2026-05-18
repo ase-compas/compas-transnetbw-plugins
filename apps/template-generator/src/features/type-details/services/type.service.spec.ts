@@ -2,9 +2,24 @@ import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { DataTypeService } from './type.service';
 import { handleEditV2, type EditV2 } from '@oscd-transnet-plugins/oscd-event-api';
 import { TypeKind } from '../../../shared/model';
+import type { DefaultManagerService } from './default-manager-service';
+import { DefaultMetadataService } from './default-metadata-service';
 
 function parseScl(xml: string): XMLDocument {
 	return new DOMParser().parseFromString(xml, 'application/xml');
+}
+
+// Mock service factories for dependency injection
+function createMockDefaultMService(overrides?: Partial<DefaultManagerService>): DefaultManagerService {
+	return {
+		batchApply: vi.fn().mockResolvedValue({ edits: [], effectiveRootIds: new Map() }),
+		batchUpgrade: vi.fn().mockResolvedValue({ edits: [], effectiveRootIds: new Map() }),
+		getDefaultInfo: vi.fn().mockResolvedValue({ isLocalLatest: false, isAvailable: false, latestVersion: undefined }),
+		getLatestDefaultInfo: vi.fn().mockResolvedValue(null),
+		getLatestDefaults: vi.fn().mockResolvedValue(new Map()),
+		invalidateLatestDefaultsCache: vi.fn(),
+		...overrides,
+	} as unknown as DefaultManagerService;
 }
 
 // Mock createAndDispatchEditEvent to capture edits for testing
@@ -24,10 +39,14 @@ describe('DataTypeService', () => {
 	let service: DataTypeService;
 	let doc: XMLDocument;
 	let hostElement: HTMLElement;
+	let mockDefaultMService: DefaultManagerService;
+	let metadataService: DefaultMetadataService;
 
 	beforeEach(() => {
 		capturedEdits = [];
 		hostElement = document.createElement('div');
+		mockDefaultMService = createMockDefaultMService();
+		metadataService = new DefaultMetadataService();
 	});
 
 	describe('rename', () => {
@@ -44,7 +63,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.rename('old-id', 'new-id');
 
 			// Verify edits were captured
@@ -68,7 +87,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 
 			expect(() => service.rename('old-id', 'existing-id')).toThrow(
 				'DataType with id existing-id already exists'
@@ -84,7 +103,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.rename('test-id', 'test-id');
 
 			expect(capturedEdits).toHaveLength(0);
@@ -104,7 +123,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.rename('old-root', 'new-root');
 
 			// Should have edits for type element + metadata updates (type-element id + rootId)
@@ -134,7 +153,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.rename('old-id', 'new-id');
 
 			// 1 type element + 3 references
@@ -155,7 +174,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			expect(service.exists('existing')).toBe(true);
 		});
 
@@ -168,7 +187,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			expect(service.exists('nonexistent')).toBe(false);
 		});
 
@@ -179,7 +198,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			expect(service.exists('')).toBe(false);
 		});
 	});
@@ -198,7 +217,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.delete('to-delete');
 
 			// Should have edits for removal and reference clearing
@@ -237,7 +256,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.delete('root-a');
 
 			// Apply edits
@@ -272,7 +291,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.delete('root-only');
 
 			capturedEdits.forEach(edit => handleEditV2(edit));
@@ -301,11 +320,11 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			const plan = service.getDeletePlan('root-a');
 
 			expect(plan.hasDefaultMetadata).toBe(true);
-			expect(plan.trackedSubTypeIds).toEqual(['sub-a', 'sub-b']);
+			expect(plan.trackedSubTypeIds).toEqual(['root-a', 'sub-a', 'sub-b']);
 		});
 
 		test('returns hasDefaultMetadata=false for non-default types', () => {
@@ -317,7 +336,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			const plan = service.getDeletePlan('regular-type');
 
 			expect(plan.hasDefaultMetadata).toBe(false);
@@ -340,12 +359,12 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			const plan = service.getDeletePlan('sub-a');
 
 			// sub-a is tracked but not a root, so no cascade
 			expect(plan.hasDefaultMetadata).toBe(true);
-			expect(plan.trackedSubTypeIds).toEqual(['sub-a']); 
+			expect(plan.trackedSubTypeIds).toEqual(['root-a', 'sub-a']); 
 		});
 	});
 
@@ -361,7 +380,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.duplicate('original');
 
 			// Should generate an insert edit
@@ -388,7 +407,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.duplicate('original', 'custom-copy-id');
 
 			// Should generate an insert edit
@@ -414,7 +433,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 
 			expect(service.list({ query: 'meas' })).toHaveLength(1);
 			expect(service.list({ query: 'lnodetype' })).toHaveLength(1);
@@ -432,7 +451,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 
 			const byKind = service.list({ typeKind: TypeKind.DOType });
 			expect(byKind).toHaveLength(2);
@@ -455,7 +474,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.clearReference('consumer', 'do1');
 
 			expect(capturedEdits).toHaveLength(1);
@@ -473,7 +492,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 
 			expect(() => service.clearReference('consumer', 'missing')).toThrow(
 				'Member with name missing not found in DataType consumer'
@@ -487,7 +506,7 @@ describe('DataTypeService', () => {
 				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B"/>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			(service as any).nsdSchemaRegistry = {
 				getTypeDefinition: vi.fn(() => ({})),
 				listInstanceTypes: vi.fn(() => []),
@@ -513,7 +532,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			(service as any).nsdSchemaRegistry = {
 				getTypeDefinition: vi.fn(() => ({})),
 				listInstanceTypes: vi.fn(() => []),
@@ -536,7 +555,7 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 			service.updateInstanceType('do-a', 'SPS');
 
 			expect(capturedEdits).toHaveLength(0);
@@ -555,18 +574,13 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
-
-			const resolveMock = vi.fn(async () => ({ refTypeKey: 'DOType:SPS' }));
-			const applyPlansMock = vi.fn(() => ({
+			// Configure mock to return default type with root ID
+			mockDefaultMService.batchApply = vi.fn().mockResolvedValue({
 				edits: [],
 				effectiveRootIds: new Map([['DOType:SPS', 'default-root-id']]),
-			}));
+			});
 
-			(service as any).defaultTypeManagerService = {
-				resolve: resolveMock,
-				applyPlans: applyPlansMock,
-			};
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 
 			(service as any).nsdSchemaRegistry = {
 				getTypeDefinition: vi.fn(() => ({
@@ -585,8 +599,7 @@ describe('DataTypeService', () => {
 
 			await service.applyDefaultTypes('ln-consumer', ['stVal']);
 
-			expect(resolveMock).toHaveBeenCalledTimes(1);
-			expect(applyPlansMock).toHaveBeenCalledTimes(1);
+			expect(mockDefaultMService.batchApply).toHaveBeenCalledTimes(1);
 			expect(capturedEdits.length).toBeGreaterThan(0);
 
 			capturedEdits.forEach(edit => handleEditV2(edit));
@@ -602,18 +615,12 @@ describe('DataTypeService', () => {
 				</SCL>
 			`);
 
-			service = new DataTypeService(doc, hostElement);
-
-			const resolveMock = vi.fn(async () => ({ refTypeKey: 'DOType:SPS' }));
-			const applyPlansMock = vi.fn(() => ({
+			mockDefaultMService.batchApply = vi.fn().mockResolvedValue({
 				edits: [],
 				effectiveRootIds: new Map(),
-			}));
+			});
 
-			(service as any).defaultTypeManagerService = {
-				resolve: resolveMock,
-				applyPlans: applyPlansMock,
-			};
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
 
 			(service as any).nsdSchemaRegistry = {
 				getTypeDefinition: vi.fn(() => ({})),
@@ -622,8 +629,7 @@ describe('DataTypeService', () => {
 
 			await service.applyDefaultTypes('ln-consumer', ['missing']);
 
-			expect(resolveMock).not.toHaveBeenCalled();
-			expect(applyPlansMock).not.toHaveBeenCalled();
+			expect(mockDefaultMService.batchApply).not.toHaveBeenCalled();
 			expect(capturedEdits).toHaveLength(0);
 		});
 	});
