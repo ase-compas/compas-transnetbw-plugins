@@ -1,28 +1,16 @@
 <script lang="ts">
   import CircularProgress from '@smui/circular-progress';
   import { OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
-  import type { ApplySingleDefaultTypePreview } from '../../services/type.service';
+  import type { DefaultStatus } from '../../../../shared/model';
 
   interface Props {
-    preview: ApplySingleDefaultTypePreview | null;
+    preview: DefaultStatus | null;
     loading: boolean;
     error: string;
     allowUseExistingDefault?: boolean;
   }
 
   let { preview = null, loading = false, error = '', allowUseExistingDefault = false }: Props = $props();
-
-  function getLatestVersion(preview: ApplySingleDefaultTypePreview): string {
-    let version = '-';
-
-    if (preview.plan.scenario === 'ADD_DB_DEFAULT' || preview.plan.scenario === 'UPGRADE_TO_DB_DEFAULT') {
-      version = preview.plan.dbBefore?.version ?? '-';
-    } else if (preview.plan.scenario === 'USE_LOCAL_DEFAULT') {
-      version = preview.plan.localBefore?.version ?? '-';
-    }
-
-    return version;
-  }
 </script>
 
 {#if loading}
@@ -39,12 +27,12 @@
 {#if preview && !error}
   <p class="latest-version-line">
     <span class="latest-version-label">Latest Version:</span>
-    <span class="latest-version-value">{getLatestVersion(preview)}</span>
+    <span class="latest-version-value">{preview.latestVersion ?? '-'}</span>
   </p>
 
-  {#if preview.plan.scenario === 'REMOVE_LOCAL_DEFAULT'}
+  {#if !preview.isAvailable}
     <OscdWarningBox message="No default exists for this type." />
-  {:else if preview.plan.scenario === 'USE_LOCAL_DEFAULT' && !allowUseExistingDefault}
+  {:else if preview.isLocalLatest && !allowUseExistingDefault}
     <OscdWarningBox message="Latest default is already loaded. A default type can only be added once." />
   {/if}
 {/if}

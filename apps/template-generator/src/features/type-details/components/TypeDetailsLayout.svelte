@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type Snippet } from 'svelte';
-  import { TypeKind, type ViewMode } from '../../../shared/model';
+  import { TypeKind, type DefaultTypeVersionStatus, type ViewMode } from '../../../shared/model';
   import TypeHeader from './ui/TypeHeader.svelte';
   import type { DataTypeService } from '../services/type.service';
   import type { DetailsConfig } from '../types';
@@ -12,16 +12,6 @@
     rootId: string;
   };
 
-  type HeaderDefaultTypeVersionStatus = {
-    currentVersion: string;
-    latestVersion: string;
-    latestSource: 'local' | 'db';
-    localLatestVersion: string | null;
-    dbLatestVersion: string | null;
-    hasUpdate: boolean;
-    isDeprecated: boolean;
-  };
-
   interface Props {
     loading: boolean;
     error: string | null;
@@ -29,7 +19,7 @@
     typeId: string;
     instanceType?: string;
     defaultTypeInfo?: HeaderDefaultTypeInfo;
-    defaultTypeVersionStatus?: HeaderDefaultTypeVersionStatus;
+    defaultTypeVersionStatus?: DefaultTypeVersionStatus;
     isEditMode: boolean;
     onModeChange: (mode: ViewMode) => void;
     onInstanceTypeChange?: (instanceType: string) => void;

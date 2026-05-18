@@ -1,4 +1,12 @@
-import type { DefaultTypeVersionStatus, LocalDefaultInfo } from "../features/type-details/services/default-type-manager-service";
+/**
+ * Flat UI model representing a type that has a default applied.
+ */
+export interface DefaultTypeInfo {
+    kind: TypeKind;
+    instance: string;
+    version: string;
+    rootId: string;
+}
 
 export enum TypeKind {
     LNodeType = 'LNodeType',
@@ -52,10 +60,21 @@ export interface SimpleDataType {
     typeKind: TypeKind;
     instanceType?: string;
     references: number;
-    isDefaultType?: boolean;
-    defaultTypeVersion?: string;
-    defaultTypeRootId?: string;
-    defaultTypeInstance?: string;
+    defaultTypeInfo?: DefaultTypeInfo;
+}
+
+/**
+ * Represents the latest status of a default type
+ */
+export interface DefaultStatus {
+    isLocalLatest: boolean;
+    isAvailable: boolean;
+    latestVersion?: string;
+}
+
+export interface DefaultTypeVersionStatus {
+    isCurrent: boolean;
+    latestVersion: string;
 }
 
 export interface DataTypeDetails {
@@ -64,7 +83,7 @@ export interface DataTypeDetails {
     typeKind: TypeKind;
     members: DataTypeMember[];
     private?: Record<string, string>;
-    defaultTypeInfo?: LocalDefaultInfo;
+    defaultTypeInfo?: DefaultTypeInfo;
     defaultTypeVersionStatus?: DefaultTypeVersionStatus;
 }
 

@@ -1,4 +1,4 @@
-import type { EditV2 } from "@oscd-transnet-plugins/oscd-event-api";
+import type { EditV2, SetAttributesV2 } from "@oscd-transnet-plugins/oscd-event-api";
 import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../constants";
 import { TypeKind, type SimpleDataType } from "../model";
 import { get as getPrivate } from "./private-scl.utils";
@@ -269,6 +269,26 @@ export function collectReachableTypeIds(doc: XMLDocument, rootId: string): Set<s
     }
 
     return reachable;
+}
+
+/**
+ * Builds edit events to replace all references using `type=oldTypeId` with `newTypeId`.
+ */
+export function buildReplaceTypeReferenceEdits(
+    doc: XMLDocument,
+    oldTypeId: string,
+    newTypeId: string,
+): SetAttributesV2[] {
+    if (!oldTypeId || !newTypeId || oldTypeId === newTypeId) {
+        return [];
+    }
+
+    const escapedOldTypeId = CSS.escape(oldTypeId);
+    return Array.from(doc.querySelectorAll(`[type="${escapedOldTypeId}"]`)).map((element) => ({
+        element,
+        attributes: { type: newTypeId },
+        attributesNS: {},
+    } as SetAttributesV2));
 }
 
 export function createEmptySCLDocument(headerId: string): XMLDocument {
