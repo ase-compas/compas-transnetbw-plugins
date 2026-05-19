@@ -15,6 +15,10 @@ interface IdSettingsStateLike {
     generateIdWithResult(typeKind: TypeKind, ctx: { instance: string }): { id?: string; message?: string };
 }
 
+export type AppliedDefaultUpgradeTarget = UpgradeInfo & {
+    rootId: string;
+};
+
 /**
  * Central service for all data type operations in the template generator.
  * Manages creating, deleting, renaming, and duplicating SCL data types, and
@@ -196,6 +200,35 @@ export class DataTypeService {
         });
 
         return newRootId;
+    }
+
+    /**
+     * Upgrades multiple applied defaults and rewrites references when root IDs change.
+     * Returns number of upgraded default version targets after deduplication.
+     */
+    async upgradeAppliedDefaultsBatch(targets: AppliedDefaultUpgradeTarget[]): Promise<number> {
+        if (!this.doc || targets.length === 0) {
+            return 0;
+        }
+
+        const uniqueUpgradeInfos = this.uniqueUpgradeInfos(
+            targets.map((target) => ({ key: target.key, version: target.version })),
+        );
+
+        const applyResult = await this.defaultManagerService.batchUpgrade(this.doc, uniqueUpgradeInfos);
+        const referenceEdits = this.buildAppliedDefaultsReferenceEdits(targets, applyResult.effectiveRootIds);
+        const allEdits = [...applyResult.edits, ...referenceEdits];
+
+        if (allEdits.length === 0) {
+            return 0;
+        }
+
+        createAndDispatchEditEvent(this.hostElement, allEdits, {
+            title: `Upgrade applied defaults (${uniqueUpgradeInfos.length})`,
+            createHistoryEntry: true,
+        });
+
+        return uniqueUpgradeInfos.length;
     }
 
     /**
@@ -905,6 +938,41 @@ export class DataTypeService {
         }
 
         return edits;
+    }
+
+    private buildAppliedDefaultsReferenceEdits(
+        targets: AppliedDefaultUpgradeTarget[],
+        effectiveRootIds: Map<string, string | null>,
+    ): EditV2[] {
+        const edits: EditV2[] = [];
+        const seen = new Set<string>();
+
+        for (const target of targets) {
+            const keyString = `${target.key.kind}:${target.key.instance}`;
+            const newRootId = effectiveRootIds.get(keyString);
+            if (!newRootId || newRootId === target.rootId) {
+                continue;
+            }
+
+            const dedupeKey = `${keyString}:${target.rootId}->${newRootId}`;
+            if (seen.has(dedupeKey)) {
+                continue;
+            }
+
+            seen.add(dedupeKey);
+            edits.push(...buildReplaceTypeReferenceEdits(this.doc, target.rootId, newRootId));
+        }
+
+        return edits;
+    }
+
+    private uniqueUpgradeInfos(upgrades: UpgradeInfo[]): UpgradeInfo[] {
+        const unique = new Map<string, UpgradeInfo>();
+        for (const upgrade of upgrades) {
+            unique.set(`${upgrade.key.kind}:${upgrade.key.instance}:${upgrade.version}`, upgrade);
+        }
+
+        return Array.from(unique.values());
     }
 
     private buildSetMemberTypeEdits(
