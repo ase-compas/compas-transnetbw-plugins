@@ -52,16 +52,20 @@
       </FormField>
     </div>
 
-    {#if validationEditor.ruleUi.mode === 'attribute'}
-      <p class="validation-form__hint">
+    <p class="validation-form__hint">
+      {#if validationEditor.ruleUi.mode === 'attribute'}
         Select the XML location where this rule should be applied.
-      </p>
+      {:else}
+        Select the element to check.
+      {/if}
+    </p>
 
+    {#if validationEditor.ruleUi.mode === 'attribute'}
       <XMLContextSelector bind:value={validationEditor.entry.context} />
-
       <PreviewBox label="XPath context preview" value={validationEditor.entry.context} />
     {:else}
-      <PreviewBox label="Auto-derived context" value='//SCL' />
+      <XMLContextSelector bind:value={validationEditor.ruleUi.elementPath} />
+      <PreviewBox label="Element to check" value={validationEditor.ruleUi.elementPath} />
     {/if}
   </section>
 </div>
@@ -70,7 +74,7 @@
   .validation-form {
     display: flex;
     flex-direction: column;
-    gap: 4rem;
+    gap: 2rem;
     padding: 1rem 0;
   }
 

@@ -10,6 +10,7 @@
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
   import { validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
+  import { lastNodeOfPath } from '../../xpathBuilder';
 
   interface Props {
     open: boolean;
@@ -38,15 +39,19 @@
 
   const isStepValid = $derived.by(() => {
     if (currentStep === 'basic') {
-      return !!validationEditor.entry.title?.trim();
+      const hasTitle = !!validationEditor.entry.title?.trim();
+      if (validationEditor.ruleUi.mode === 'element') {
+        return hasTitle && !!lastNodeOfPath(validationEditor.ruleUi.elementPath);
+      }
+      return hasTitle;
     }
     if (currentStep === 'rule-definition') {
       const hasMessage = !!validationEditor.ruleUi.message?.trim();
       if (validationEditor.ruleUi.mode === 'attribute') {
         return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
       }
-      return !!validationEditor.ruleUi.elementName?.trim() && hasMessage;
-    }
+        return !!lastNodeOfPath(validationEditor.ruleUi.elementPath) && hasMessage;
+      }
     return true;
   });
 

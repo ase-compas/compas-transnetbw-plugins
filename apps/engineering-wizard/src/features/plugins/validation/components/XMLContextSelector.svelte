@@ -98,8 +98,10 @@
     const cleanValue = v.replace(/^\/\/SCL(\/|$)/, '');
     if (!cleanValue) return [];
 
-    const parts = cleanValue.split('/').map((s) => s.trim()).filter(Boolean);
-    return parts.filter((p): p is NodeName => p in SCL_SCHEMA);
+    // Accept all path segments — the SCL schema is intentionally incomplete
+    // (IED/Communication sections are simplified skeletons), so filtering by
+    // schema presence would silently drop valid children like Address, GSE, etc.
+    return cleanValue.split('/').map((s) => s.trim()).filter(Boolean) as NodeName[];
   }
 
   let hydrated = $state(false);

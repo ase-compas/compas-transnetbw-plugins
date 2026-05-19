@@ -27,6 +27,7 @@ function defaultRuleUi(): RuleUiState {
     elementName: '',
     elementCount: 1,
     message: '',
+    elementPath: '',
   };
 }
 
@@ -43,8 +44,8 @@ export function initValidationEditor(
   if (existing) {
     validationEditor.entry = { ...existing };
     validationEditor.ruleUi = existing.ruleUi
-      ? restoreRuleUi(existing.ruleUi)
-      : parseAssertionToRuleUi(existing.assert, existing.message ?? '');
+      ? restoreRuleUi(existing.ruleUi, existing.context)
+      : parseAssertionToRuleUi(existing.assert, existing.message ?? '', existing.context);
   } else {
     validationEditor.entry = defaultEntry(processId, pluginId);
     validationEditor.ruleUi = defaultRuleUi();
@@ -55,7 +56,13 @@ export function initValidationEditor(
 // Restore ruleUi from a previously-persisted snapshot.
 // ---------------------------------------------------------------------------
 
-function restoreRuleUi(stored: Record<string, unknown>): RuleUiState {
+function restoreRuleUi(stored: Record<string, unknown>, existingContext?: string): RuleUiState {
+  const elementName = (stored.elementName as string) ?? '';
+  const storedPath  = (stored.elementPath as string) ?? '';
+  // Reconstruct elementPath for snapshots persisted before elementPath was introduced.
+  const elementPath = storedPath || (elementName
+    ? `${existingContext ?? '//SCL'}/${elementName}`
+    : '');
   return {
     mode: (stored.mode as RuleUiState['mode']) ?? 'attribute',
     condition: (stored.condition as RuleUiState['condition']) ?? 'notContains',
@@ -63,9 +70,10 @@ function restoreRuleUi(stored: Record<string, unknown>): RuleUiState {
     attribute: (stored.attribute as string) ?? '',
     elementCheckType:
       (stored.elementCheckType as RuleUiState['elementCheckType']) ?? 'exists',
-    elementName: (stored.elementName as string) ?? '',
+    elementName,
     elementCount: (stored.elementCount as number) ?? 1,
     message: (stored.message as string) ?? '',
+    elementPath,
   };
 }
 
@@ -82,9 +90,11 @@ const ATTR_PATTERNS: Array<[RegExp, ConditionKey]> = [
   [/^not\(normalize-space\((@\w+)\)\s*=\s*'([^']*)'\)$/,             'notEquals'  ],
   [/^starts-with\(normalize-space\((@\w+)\),\s*'([^']*)'\)$/,        'startsWith' ],
   [/^substring\(normalize-space\((@\w+)\),.+\)\s*=\s*'([^']*)'$/,    'endsWith'   ],
+  [/^matches\(normalize-space\((@\w+)\),\s*'([^']*)'\)$/,            'matches'    ],
+  [/^not\(matches\(normalize-space\((@\w+)\),\s*'([^']*)'\)\)$/,     'notMatches' ],
 ];
 
-function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
+function parseAssertionToRuleUi(assert: string, message: string, existingContext?: string): RuleUiState {
   const a = assert.trim();
 
   // Element check: count(El) op N
@@ -97,6 +107,9 @@ function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
       op === '=' && n === 0 ? 'notExists' :
       op === '='             ? 'exactly'  :
       op === '>='            ? 'atLeast'  : 'atMost';
+    // Reconstruct elementPath from stored context + element name (backwards compat).
+    const parentCtx = existingContext ?? '//SCL';
+    const elementPath = `${parentCtx}/${elementName}`;
     return {
       mode: 'element',
       condition: 'notContains',
@@ -106,6 +119,7 @@ function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
       elementName,
       elementCount: op === '>' ? 1 : n,
       message,
+      elementPath,
     };
   }
 
@@ -121,6 +135,7 @@ function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
         elementName: '',
         elementCount: 1,
         message,
+        elementPath: '',
       };
     }
   }

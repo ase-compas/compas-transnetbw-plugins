@@ -25,6 +25,7 @@
 
   const contextNode = $derived(lastNodeFromContext(context));
   const attrOptions = $derived(getElementAttrs(contextNode));
+  const isRegex = $derived(ruleUi.condition === 'matches' || ruleUi.condition === 'notMatches');
 
   // When the context node changes, clear the attribute if it is no longer valid.
   $effect(() => {
@@ -74,10 +75,16 @@
 
 <Textfield
   bind:value={ruleUi.specificText}
-  label="Specific text"
+  label={isRegex ? 'Pattern' : 'Specific text'}
   variant="outlined"
   class="rule-editor__full"
-/>
+>
+  {#if isRegex}
+    {#snippet helper()}
+      <HelperText>XPath <code>matches()</code> — use <code>^…$</code> to anchor the full value.</HelperText>
+    {/snippet}
+  {/if}
+</Textfield>
 
 <style>
   /* Groups the SMUI field + its helper-line sibling so the parent flex gap
