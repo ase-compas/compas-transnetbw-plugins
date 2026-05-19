@@ -7,7 +7,7 @@ import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../../../shared/constants";
 import { INSTANCE_DESCRIPTIONS } from "../../../assets/instance-descriptions";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import { defaultMService as bootstrapDefaultMService, defaultMetadataService as bootstrapDefaultMetadataService } from "../../../bootstrap";
-import type { ApplyResult, DefaultManagerService, UpgradeInfo } from "./default-manager-service";
+import type { ApplyResult, DefaultManagerService, LocalDefaultWithStatus, UpgradeInfo } from "./default-manager-service";
 import type { DefaultMetadataService } from "./default-metadata-service";
 import type { DefaultTypeKey } from "../../default-types/types";
 
@@ -152,20 +152,14 @@ export class DataTypeService {
      * @returns The version status of the default type, or null if no default type is associated.
      */
     async getDefaultTypeVersionStatusByTypeId(typeId: string): Promise<DefaultTypeVersionStatus | null> {
-        const defaultInfo = this.metadataService.getByTypeId(this.doc, typeId);
-        if (!defaultInfo) {
-            return null;
-        }
+        return this.defaultManagerService.getLocalDefaultVersionStatusByTypeId(this.doc, typeId);
+    }
 
-        const latestDefault = await this.defaultManagerService.getLatestDefaultInfo(defaultInfo.key);
-        if (!latestDefault) {
-            return null;
-        }
-
-        return {
-            isCurrent: defaultInfo.version === latestDefault.version,
-            latestVersion: latestDefault.version,
-        };
+    /**
+     * Lists all local defaults and enriches each with version status against latest remote default.
+     */
+    async listLocalDefaultsWithStatus(): Promise<LocalDefaultWithStatus[]> {
+        return this.defaultManagerService.listLocalDefaultsWithStatus(this.doc);
     }
 
     /**
@@ -226,7 +220,7 @@ export class DataTypeService {
     }
 
     async defaultStatus(key: DefaultTypeKey): Promise<DefaultStatus> {
-        return this.defaultManagerService.getDefaultInfo(this.doc, key);
+        return this.defaultManagerService.getDefaultStatusByKey(this.doc, key);
     }
 
 

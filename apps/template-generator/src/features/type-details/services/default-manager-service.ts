@@ -3,7 +3,7 @@ import type { DefaultTypeService } from "../../default-types/service/default-typ
 import type { DefaultTypeKey, DefaultType } from "../../default-types/types";
 import type { DefaultMetadataService, DefaultTypeMetadata } from "./default-metadata-service";
 import { listDataTypeElements, insertTypeElements } from "../../../shared/utils/scl.utils";
-import type { DefaultStatus } from "apps/template-generator/src/shared/model";
+import type { DefaultStatus, DefaultTypeVersionStatus } from "apps/template-generator/src/shared/model";
 
 const IMPORTED_DEFAULT_SUFFIX = "imported-default";
 const MAX_TYPE_ID_LENGTH = 64;
@@ -17,6 +17,12 @@ export type ApplyResult = {
     edits: EditV2[];
     effectiveRootIds: Map<string, string | null>;
 }
+
+export type LocalDefaultWithStatus = {
+    metadata: DefaultTypeMetadata;
+    status: 'current' | 'outdated' | 'unavailable';
+    latestVersion: string | null;
+};
 
 type PreparedDefaultImport = {
     key: DefaultTypeKey;
@@ -93,26 +99,6 @@ export class DefaultManagerService {
     }
 
     /**
-     * Gets the latest default type for a given key, using an internal cache.
-     * If the cache is empty or stale, it will be refreshed from the service.
-     * @param key The default type key (kind and instance)
-     * @returns The latest default type if found, undefined otherwise
-     */
-    async getLatestDefaultInfo(key: DefaultTypeKey): Promise<DefaultType | undefined> {
-        const cache = await this.getLatestDefaults();
-        const cacheKey = this.getKeyString(key);
-        return cache.get(cacheKey);
-    }
-
-    /**
-     * Invalidates the internal cache of latest defaults.
-     * Call this when defaults are uploaded or modified externally.
-     */
-    public invalidateLatestDefaultsCache(): void {
-        this.latestDefaultsCache = null;
-    }
-
-    /**
      * Fetches and caches the latest defaults from the service.
      * Returns a map keyed by "kind:instance" for fast lookups.
      * Uses internal cache to avoid repeated service calls.
@@ -137,7 +123,33 @@ export class DefaultManagerService {
         return cache;
     }
 
-    public async getDefaultInfo(doc: XMLDocument, key: DefaultTypeKey): Promise<DefaultStatus> {
+    /**
+     * Gets the latest default type for a given key, using an internal cache.
+     * If the cache is empty or stale, it will be refreshed from the service.
+     * @param key The default type key (kind and instance)
+     * @returns The latest default type if found, undefined otherwise
+     */
+    async getLatestDefaultInfo(key: DefaultTypeKey): Promise<DefaultType | undefined> {
+        const cache = await this.getLatestDefaults();
+        const cacheKey = this.getKeyString(key);
+        return cache.get(cacheKey);
+    }
+
+    /**
+     * Invalidates the internal cache of latest defaults.
+     * Call this when defaults are uploaded or modified externally.
+     */
+    public invalidateLatestDefaultsCache(): void {
+        this.latestDefaultsCache = null;
+    }
+
+    /**
+     * Gets the status of a default type by key, including availability and version information.
+     * @param doc The XML document to check for existing local metadata.
+     * @param key The default type key (kind and instance) to check.
+     * @returns The status of the default type, including availability and version information.
+     */
+    public async getDefaultStatusByKey(doc: XMLDocument, key: DefaultTypeKey): Promise<DefaultStatus> {
         const latestDefault = await this.getLatestDefaultInfo(key);
         const latestLocal = this.metadataService.getLatestByKey(doc, key);
 
@@ -155,6 +167,72 @@ export class DefaultManagerService {
             isLocalLatest,
             latestVersion: latestDefault?.version,
         }
+    }
+
+    /**
+     * Resolves local default version status for a key/version pair.
+     * Returns null when no latest default is available remotely.
+     */
+    public async getLocalDefaultVersionStatus(
+        key: DefaultTypeKey,
+        localVersion: string,
+    ): Promise<DefaultTypeVersionStatus | null> {
+        const latestDefault = await this.getLatestDefaultInfo(key);
+        if (!latestDefault) {
+            return null;
+        }
+
+        return {
+            isCurrent: localVersion === latestDefault.version,
+            latestVersion: latestDefault.version,
+        };
+    }
+
+    /**
+     * Resolves local default version status for a data type id.
+     * Returns null when no local metadata exists or no latest default is available remotely.
+     */
+    public async getLocalDefaultVersionStatusByTypeId(
+        doc: XMLDocument,
+        typeId: string,
+    ): Promise<DefaultTypeVersionStatus | null> {
+        const localMetadata = this.metadataService.getByTypeId(doc, typeId);
+        if (!localMetadata) {
+            return null;
+        }
+
+        return this.getLocalDefaultVersionStatus(localMetadata.key, localMetadata.version);
+    }
+
+    /**
+     * Lists all locally applied defaults and enriches each with remote version status.
+     */
+    public async listLocalDefaultsWithStatus(doc: XMLDocument): Promise<LocalDefaultWithStatus[]> {
+        const localDefaults = this.metadataService.getAll(doc);
+        if (localDefaults.length === 0) {
+            return [];
+        }
+
+        const latestDefaults = await this.getLatestDefaults();
+
+        return localDefaults.map(metadata => {
+            const keyString = this.getKeyString(metadata.key);
+            const latestVersion = latestDefaults.get(keyString)?.version ?? null;
+
+            if (!latestVersion) {
+                return {
+                    metadata,
+                    status: 'unavailable',
+                    latestVersion: null,
+                };
+            }
+
+            return {
+                metadata,
+                status: metadata.version === latestVersion ? 'current' : 'outdated',
+                latestVersion,
+            };
+        });
     }
 
     /**
