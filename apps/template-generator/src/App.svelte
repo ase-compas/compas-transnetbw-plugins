@@ -10,6 +10,7 @@
   import '../public/smui.css';
   import '../public/global.css';
   import DataTypesListView from './features/type-details/components/DataTypesListView.svelte';
+  import AppliedDefaultTypesListView from './features/type-details/components/AppliedDefaultTypesListView.svelte';
   import NavigationHeader from './shared/ui/NavigationHeader.svelte';
   import IdFormatSettings from './features/id-format-settings/IdFormatSettings.svelte';
   import { setIdSettingsState } from './features/id-format-settings/id-format-settings.state.svelte';
@@ -66,6 +67,8 @@
         <DataTypesListView service={sclService} docState={docState}/>
       {:else if activeTab === 'Default Types'}
         <DefaultTypeView />
+      {:else if activeTab === 'Applied Defaults'}
+        <AppliedDefaultTypesListView docState={docState} />
       {:else if activeTab === 'Settings'}
         <IdFormatSettings />
       {/if}
