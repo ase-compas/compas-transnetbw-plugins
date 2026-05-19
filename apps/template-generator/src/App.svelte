@@ -68,7 +68,7 @@
       {:else if activeTab === 'Default Types'}
         <DefaultTypeView />
       {:else if activeTab === 'Applied Defaults'}
-        <AppliedDefaultTypesListView docState={docState} />
+        <AppliedDefaultTypesListView docState={docState} service={sclService} />
       {:else if activeTab === 'Settings'}
         <IdFormatSettings />
       {/if}

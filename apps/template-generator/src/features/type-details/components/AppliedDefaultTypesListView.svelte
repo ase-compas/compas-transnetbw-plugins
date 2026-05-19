@@ -5,15 +5,22 @@
   import Button from '@smui/button';
   import CircularProgress from '@smui/circular-progress';
   import { OscdBox } from '@oscd-transnet-plugins/oscd-component';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import type {
+    AppliedDefaultUpgradeTarget,
+    DataTypeService,
+  } from '../services/type.service';
   import { ApplyDefaultsListState } from '../state/apply-defaults-list.state.svelte';
+  import type { AppliedDefaultVersionRow } from '../state/apply-defaults-list.state.svelte';
   import Switch from '@smui/switch';
   import FormField from '@smui/form-field';
 
   interface Props {
     docState: DocState;
+    service: DataTypeService;
   }
 
-  let { docState }: Props = $props();
+  let { docState, service }: Props = $props();
   const listState = new ApplyDefaultsListState();
 
   const upgradeAllButtonProps = $derived({
@@ -26,37 +33,78 @@
 
   const hasSelectedOutdated = $derived(listState.selectedOutdatedCount > 0);
 
-  function prepareUpgradeAllOutdated() {
-    const payload = listState.getAllOutdatedUpgradeInfos();
-    void payload;
+  function getOutdatedRows(): AppliedDefaultVersionRow[] {
+    return listState.groups.flatMap((group) =>
+      group.versions.filter((version) => version.selectable)
+    );
   }
 
-  function prepareUpgradeSelected() {
-    const payload = listState.getSelectedUpgradeInfos();
-    void payload;
+  function getSelectedOutdatedRows(): AppliedDefaultVersionRow[] {
+    return listState.groups.flatMap((group) =>
+      group.versions.filter((version) => version.selectable && version.checked)
+    );
   }
 
-  function prepareUpgradeGroup(groupId: string) {
+  function toUpgradeTargets(rows: AppliedDefaultVersionRow[]): AppliedDefaultUpgradeTarget[] {
+    return rows.map((row) => ({
+      key: row.key,
+      version: row.version,
+      rootId: row.rootId,
+    }));
+  }
+
+  async function runUpgradeBatch(sourceRows: AppliedDefaultVersionRow[]) {
+    if (!docState?.doc || sourceRows.length === 0) {
+      return;
+    }
+
+    const targets = toUpgradeTargets(sourceRows);
+
+    try {
+      const upgradedCount = await service.upgradeAppliedDefaultsBatch(targets);
+      if (upgradedCount === 0) {
+        toastService.info('Already up to date', 'No outdated defaults to upgrade.');
+        return;
+      }
+
+      toastService.success(
+        'Defaults upgraded',
+        `Upgraded ${upgradedCount} default version${upgradedCount === 1 ? '' : 's'}.`
+      );
+    } catch (error) {
+      console.error('Failed to upgrade applied defaults:', error);
+      toastService.error('Upgrade failed', 'Could not upgrade applied defaults. Please try again.');
+    }
+  }
+
+  async function prepareUpgradeAllOutdated() {
+    const rows = getOutdatedRows();
+    await runUpgradeBatch(rows);
+  }
+
+  async function prepareUpgradeSelected() {
+    const rows = getSelectedOutdatedRows();
+    await runUpgradeBatch(rows);
+  }
+
+  async function prepareUpgradeGroup(groupId: string) {
     const group = listState.groups.find((item) => item.id === groupId);
     if (!group) {
       return;
     }
 
-    const payload = group.versions
-      .filter((row) => row.selectable)
-      .map((row) => ({ key: row.key, version: row.version }));
-    void payload;
+    const rows = group.versions.filter((row) => row.selectable);
+    await runUpgradeBatch(rows);
   }
 
-  function prepareUpgradeVersion(versionId: string) {
+  async function prepareUpgradeVersion(versionId: string) {
     for (const group of listState.groups) {
       const version = group.versions.find((row) => row.id === versionId);
       if (!version) {
         continue;
       }
 
-      const payload = [{ key: version.key, version: version.version }];
-      void payload;
+      await runUpgradeBatch([version]);
       return;
     }
   }
