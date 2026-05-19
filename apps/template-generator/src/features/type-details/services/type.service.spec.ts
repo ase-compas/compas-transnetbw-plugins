@@ -633,4 +633,281 @@ describe('DataTypeService', () => {
 			expect(capturedEdits).toHaveLength(0);
 		});
 	});
+
+	describe('upgradeAppliedDefaultsBatch', () => {
+		test('returns 0 when targets array is empty', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates/>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([]);
+
+			expect(result).toBe(0);
+			expect(mockDefaultMService.batchUpgrade).not.toHaveBeenCalled();
+			expect(capturedEdits).toHaveLength(0);
+		});
+
+		test('returns 0 when doc is missing', async () => {
+			doc = null as any;
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'old-root',
+				},
+			]);
+
+			expect(result).toBe(0);
+			expect(mockDefaultMService.batchUpgrade).not.toHaveBeenCalled();
+		});
+
+		test('returns upgraded count and dispatches edits when upgrade is successful', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="old-root" cdc="SPS"/>
+						<LNodeType id="consumer" lnClass="LLN0">
+							<DO name="do1" type="old-root"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const mockUpgradeEdits = [
+				{
+					element: doc.querySelector('DOType'),
+					attributes: { id: 'new-root' },
+				} as any,
+			];
+
+			mockDefaultMService.batchUpgrade = vi.fn().mockResolvedValue({
+				edits: mockUpgradeEdits,
+				effectiveRootIds: new Map([['DOType:SPS', 'new-root']]),
+			});
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'old-root',
+				},
+			]);
+
+			expect(result).toBe(1);
+			expect(mockDefaultMService.batchUpgrade).toHaveBeenCalledTimes(1);
+			// Should have upgrade edits + reference rewrite edits
+			expect(capturedEdits.length).toBeGreaterThan(0);
+		});
+
+		test('includes reference rewrite edits when effective root ID differs from original', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="old-root" cdc="SPS"/>
+						<LNodeType id="consumer" lnClass="LLN0">
+							<DO name="do1" type="old-root"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const mockUpgradeEdits = [
+				{
+					element: doc.querySelector('DOType'),
+					attributes: { id: 'new-root' },
+				} as any,
+			];
+
+			mockDefaultMService.batchUpgrade = vi.fn().mockResolvedValue({
+				edits: mockUpgradeEdits,
+				effectiveRootIds: new Map([['DOType:SPS', 'new-root']]),
+			});
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'old-root',
+				},
+			]);
+
+			expect(result).toBe(1);
+			// Should have upgrade edits + reference rewrite edits
+			expect(capturedEdits.length).toBeGreaterThan(0);
+
+			capturedEdits.forEach(edit => handleEditV2(edit));
+			expect(doc.querySelector('LNodeType > DO')?.getAttribute('type')).toBe('new-root');
+		});
+
+		test('deduplicates targets by key and version', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="root1" cdc="SPS"/>
+						<DOType id="root2" cdc="SPS"/>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const mockUpgradeEdits = [
+				{
+					element: doc.querySelector('DOType[id="root1"]'),
+					attributes: { id: 'root-upgraded' },
+				} as any,
+			];
+
+			mockDefaultMService.batchUpgrade = vi.fn().mockResolvedValue({
+				edits: mockUpgradeEdits,
+				effectiveRootIds: new Map([['DOType:SPS', 'root-upgraded']]),
+			});
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'root1',
+				},
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'root2',
+				},
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'root1',
+				},
+			]);
+
+			expect(result).toBe(1);
+			// Should only call batchUpgrade once with deduplicated list
+			expect(mockDefaultMService.batchUpgrade).toHaveBeenCalledWith(
+				doc,
+				expect.arrayContaining([
+					{
+						key: { kind: TypeKind.DOType, instance: 'SPS' },
+						version: '1.0.0',
+					},
+				])
+			);
+		});
+
+		test('does not include reference rewrites when effective root ID matches original', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="same-root" cdc="SPS"/>
+						<LNodeType id="consumer" lnClass="LLN0">
+							<DO name="do1" type="same-root"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			const mockUpgradeEdits = [];
+
+			mockDefaultMService.batchUpgrade = vi.fn().mockResolvedValue({
+				edits: mockUpgradeEdits,
+				effectiveRootIds: new Map([['DOType:SPS', 'same-root']]),
+			});
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'same-root',
+				},
+			]);
+
+			expect(result).toBe(0);
+			expect(capturedEdits).toHaveLength(0);
+		});
+
+		test('handles multiple upgrades with mixed root ID changes', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="sps-old" cdc="SPS"/>
+						<DOType id="dps-old" cdc="DPS"/>
+						<LNodeType id="consumer" lnClass="LLN0">
+							<DO name="do1" type="sps-old"/>
+							<DO name="do2" type="dps-old"/>
+						</LNodeType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			mockDefaultMService.batchUpgrade = vi.fn().mockResolvedValue({
+				edits: [],
+				effectiveRootIds: new Map([
+					['DOType:SPS', 'sps-new'],
+					['DOType:DPS', 'dps-old'], // No change for this one
+				]),
+			});
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'sps-old',
+				},
+				{
+					key: { kind: TypeKind.DOType, instance: 'DPS' },
+					version: '2.0.0',
+					rootId: 'dps-old',
+				},
+			]);
+
+			expect(result).toBe(2);
+			// Should have one rewrite edit for SPS (changed) and none for DPS (unchanged)
+			expect(capturedEdits.length).toBeGreaterThan(0);
+
+			capturedEdits.forEach(edit => handleEditV2(edit));
+			expect(doc.querySelector('LNodeType > DO[name="do1"]')?.getAttribute('type')).toBe('sps-new');
+			expect(doc.querySelector('LNodeType > DO[name="do2"]')?.getAttribute('type')).toBe('dps-old');
+		});
+
+		test('returns 0 and does not dispatch when batchUpgrade produces no edits', async () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates/>
+				</SCL>
+			`);
+
+			mockDefaultMService.batchUpgrade = vi.fn().mockResolvedValue({
+				edits: [],
+				effectiveRootIds: new Map([['DOType:SPS', null]]),
+			});
+
+			service = new DataTypeService(doc, hostElement, metadataService, mockDefaultMService);
+
+			const result = await service.upgradeAppliedDefaultsBatch([
+				{
+					key: { kind: TypeKind.DOType, instance: 'SPS' },
+					version: '1.0.0',
+					rootId: 'old-root',
+				},
+			]);
+
+			expect(result).toBe(0);
+			expect(capturedEdits).toHaveLength(0);
+		});
+	});
 });
