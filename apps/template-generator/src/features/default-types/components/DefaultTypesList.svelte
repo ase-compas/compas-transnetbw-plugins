@@ -60,7 +60,6 @@
   {columns}
   loading={defaultTypesState.loading}
   emptyText="No default types found."
-  headerBg="rgba(0,0,0,0.1)"
   rowBg="#ffffff"
   hasActions
   onRowClick={(item) => onEditDefaultType(item.id)}
