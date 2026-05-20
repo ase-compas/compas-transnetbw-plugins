@@ -1,12 +1,12 @@
 <script lang="ts">
   import { DataTypeDetailsState } from '../state/type.state.svelte';
   import { onMount } from 'svelte';
-  import { openDialog, updateDialogProps, closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { TypeKind, type ViewMode } from '../../../shared/model';
   import { createDataTypeWorkflow } from '../type.workflows';
   import { openTypeDetailsDrawer } from '../type-details.drawer';
   import AddReferenceDialog from './dialogs/AddReferenceDialog.svelte';
-  import { DataTypeService, type ApplyDefaultTypesPreview } from '../services/type.service';
+  import { DataTypeService } from '../services/type.service';
   import TypeDetailsLayout from './TypeDetailsLayout.svelte';
   import TBoardTypeDetailsView from './TBoardTypeDetailsView.svelte';
   import EnumTypeDetails from './EnumTypeDetails.svelte';
@@ -14,12 +14,12 @@
   import TypeRenameDialog from './dialogs/TypeRenameDialog.svelte';
   import type { DocState } from 'apps/template-generator/src/shared/states/doc.state.svelte';
   import type { DetailsConfig } from '../types';
-  import ApplyDefaultPreviewConfirmDialog from './dialogs/ApplyDefaultPreviewConfirmDialog.svelte';
   import ConfirmCascadeDeleteDefaultTypeDialog from './dialogs/ConfirmCascadeDeleteDefaultTypeDialog.svelte';
   import SaveDefaultTypeDialog from '../../default-types/components/SaveDefaultTypeDialog.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { defaultTypeService } from '../../../bootstrap';
   import { collectReachableTypeIds, listDataTypeElements } from '../../../shared/utils/scl.utils';
+  import ApplyDefaultPreviewDialog from './dialogs/ApplyDefaultPreviewDialog.svelte';
 
   interface Props {
     typeId: string;
@@ -195,53 +195,51 @@
     };
   });
 
-  /**
-   * Filters the apply default preview to only include entries for the selected member names.
-   * @param preview The apply default types preview to filter.
-   * @param selectedNames The set of selected member names to include in the filtered preview.
-   * @returns A new apply default types preview containing only the entries for the selected member names.
-   */
-  function filterPreviewByMembers(
-    preview: ApplyDefaultTypesPreview,
-    selectedNames: Set<string>,
-  ): ApplyDefaultTypesPreview {
-    const filteredEntries = preview.entries
-      .map((entry) => ({ ...entry, memberNames: entry.memberNames.filter((n) => selectedNames.has(n)) }))
-      .filter((entry) => entry.memberNames.length > 0);
-    return { ...preview, entries: filteredEntries };
-  }
-
   async function applyDefaults(members: string[] | undefined = undefined) {
-    const configuredMemberNames = members && members.length > 0
+    const membersToApply = members && members.length > 0
       ? members
       : typeDetailsState.getConfiguredMemberNames();
-    const memberReferenceMap = typeDetailsState.getMemberReferenceMap();
 
-    const dialogResultPromise = openDialog(ApplyDefaultPreviewConfirmDialog, {
-      isLoading: true,
-      configuredMemberNames,
-      memberReferenceMap,
+    if (membersToApply.length === 0) {
+      return;
+    }
+
+    const dialogMembers = membersToApply.flatMap((memberName) => {
+      const member = typeDetailsState.getMember(memberName);
+      if (!member) {
+        return [];
+      }
+
+      return [{
+        name: memberName,
+        referenceId: member.reference,
+        type: { kind: member.refKind, instance: member.refInstance },
+      }];
     });
 
-    try {
-      const preview = await typeDetailsState.getApplyDefaultTypesPreview(members);
-      if (preview === null) {
-        closeDialog('cancel');
-        toastService.info('No defaults to apply', 'There are no default types to apply for the members of this type.');
-        return;
-      }
-      updateDialogProps({ isLoading: false, applyDefaultPreview: preview });
-      const result = await dialogResultPromise;
-      if (result.type === 'confirm') {
-        const selectedNames = new Set<string>((result.data?.selectedMemberNames as string[]) ?? []);
-        const filteredPreview = filterPreviewByMembers(preview, selectedNames);
-        typeDetailsState.applyDefaultTypesFromPreview(filteredPreview);
-      }
-    } catch (e) {
-      closeDialog('cancel');
-      console.error('Failed to get apply default types preview', e);
-      toastService.error('Apply default failed', 'Failed to get apply default types. Please try again.');
+    if (dialogMembers.length === 0) {
+      return;
     }
+
+    const result = await openDialog(ApplyDefaultPreviewDialog, {
+      members: dialogMembers,
+      dataTypeId: typeId,
+      doc: docState.doc
+    });
+
+    if (result.type !== 'confirm') {
+      return;
+    }
+
+    const selectedMemberNames: string[] = Array.isArray(result.data?.selectedMemberNames)
+      ? result.data.selectedMemberNames
+      : [];
+
+    if (selectedMemberNames.length === 0) {
+      return;
+    }
+
+    await service.applyDefaultTypes(typeId, selectedMemberNames);
   }
 
   async function updateDefaultTypeToLatest() {

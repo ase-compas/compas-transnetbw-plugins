@@ -7,9 +7,10 @@
     title?: string;
   }
 
-  const tabs = ['Data Types', 'Default Types', 'Settings'];
+  const tabs = ['Data Types', 'Applied Defaults', 'Default Types', 'Settings'];
   const iconByTab: Record<string, string> = {
     'Data Types': 'table_view',
+    'Applied Defaults': 'check',
     'Default Types': 'star',
     'Settings': 'settings',
   };

@@ -1,18 +1,16 @@
 <script lang="ts">
   import { OscdSwitch, OscdBox } from '@oscd-transnet-plugins/oscd-component';
   import Card from '@smui/card';
-  import type { ApplyScenario } from '../../services/default-type-manager-service';
 
   interface Props {
     memberName: string;
     refTypeLabel: string;
     referenceId: string | null;
     versionTo: string | null;
-    refTypeKey?: string;
-    scenario?: ApplyScenario;
     willApply: boolean;
     isSelected: boolean;
     existingReference: string | null;
+    currentVersion: string | null;
     onToggle: () => void;
   }
 
@@ -24,6 +22,7 @@
     willApply,
     isSelected,
     existingReference,
+    currentVersion,
     onToggle,
   }: Props = $props();
 </script>
@@ -53,7 +52,7 @@
     {#if willApply}
       <div>
         <div class="field-label">Reference ID</div>
-        <div class="field-value mono">{referenceId}</div>
+        <div class="field-value mono">{referenceId ?? '-'}</div>
       </div>
       <div>
         <div class="field-label">Reference Type</div>
@@ -78,12 +77,12 @@
       </div>
     {/if}
   </div>
-  {#if willApply && existingReference && isSelected}
+  {#if willApply && existingReference && currentVersion !== versionTo && isSelected}
     <div class="overwrite-box">
       <OscdBox
         type="warning"
         size="compact"
-        message="Overwrites current reference: {existingReference}"
+        message="Will overwrite current reference"
       />
     </div>
   {/if}

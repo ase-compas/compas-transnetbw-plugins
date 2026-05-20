@@ -1,56 +1,50 @@
 import type { EditV2, RemoveV2, SetAttributesV2 } from "@oscd-transnet-plugins/oscd-event-api";
 import { createAndDispatchEditEvent } from '@oscd-transnet-plugins/oscd-event-api';
-import { TypeKind, type DataTypeDetails, type DataTypeFilter, type DataTypeMember, type InstanceDetails, type SimpleDataType } from "../../../shared/model";
+import { TypeKind, type DefaultTypeVersionStatus, type DataTypeDetails, type DataTypeFilter, type DataTypeMember, type DefaultTypeInfo, type InstanceDetails, type SimpleDataType, type DefaultStatus } from "../../../shared/model";
 import { NsdSchemaRegistry, type NsdTypeDefinition } from "./nsd-schema-registry";
-import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, elementToSimpleDataType, createElementInDefaultNS, DATA_TYPE_KIND_ORDER, DATA_TYPE_TEMPLATES_TAG, findDataTypeTemplatesElement, findDataTypeInsertReferenceElement, insertTypeElements, collectReachableTypeIds, createEmptySCLDocument } from "../../../shared/utils/scl.utils";
+import { findDataTypeElement, listDataTypeElements, getDataTypeBaseInfo, elementToSimpleDataType, createElementInDefaultNS, DATA_TYPE_KIND_ORDER, DATA_TYPE_TEMPLATES_TAG, findDataTypeTemplatesElement, findDataTypeInsertReferenceElement, insertTypeElements, collectReachableTypeIds, createEmptySCLDocument, buildReplaceTypeReferenceEdits } from "../../../shared/utils/scl.utils";
 import { SCL_PRIVATE_TYPE_INSTANCE_TYPE } from "../../../shared/constants";
 import { INSTANCE_DESCRIPTIONS } from "../../../assets/instance-descriptions";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
-import { DefaultTypeManagerService, type ResolveDefaultPlan } from "./default-type-manager-service";
+import { defaultMService as bootstrapDefaultMService, defaultMetadataService as bootstrapDefaultMetadataService } from "../../../bootstrap";
+import type { ApplyResult, DefaultManagerService, LocalDefaultWithStatus, UpgradeInfo } from "./default-manager-service";
+import type { DefaultMetadataService } from "./default-metadata-service";
+import type { DefaultTypeKey } from "../../default-types/types";
 
 interface IdSettingsStateLike {
     generateIdWithResult(typeKind: TypeKind, ctx: { instance: string }): { id?: string; message?: string };
 }
 
-export interface ApplyDefaultTypesPreviewEntry {
-    refTypeKey: string;
-    refTypeKind: TypeKind;
-    objectType: string;
-    memberNames: string[];
-    plan: ResolveDefaultPlan;
-}
+export type AppliedDefaultUpgradeTarget = UpgradeInfo & {
+    rootId: string;
+};
 
-export interface ApplyDefaultTypesPreview {
-    dataTypeId: string;
-    entries: ApplyDefaultTypesPreviewEntry[];
-}
-
-export interface ApplySingleDefaultTypePreview {
-    refTypeKey: string;
-    refTypeKind: TypeKind;
-    objectType: string;
-    plan: ResolveDefaultPlan;
-}
-
-
-
+/**
+ * Central service for all data type operations in the template generator.
+ * Manages creating, deleting, renaming, and duplicating SCL data types, and
+ * coordinates applying and upgrading default types via DefaultManagerService.
+ * All mutating operations dispatch edit events through the host element.
+ */
 export class DataTypeService {
 
     private readonly nsdSchemaRegistry: NsdSchemaRegistry;
-    private readonly defaultTypeManagerService: DefaultTypeManagerService;
+    private readonly metadataService: DefaultMetadataService;
+    private readonly defaultManagerService: DefaultManagerService;
     private idSettingsState?: IdSettingsStateLike;
 
     constructor(
         private doc: XMLDocument,
         private readonly hostElement: HTMLElement,
+        metadataService?: DefaultMetadataService,
+        defaultManagerService?: DefaultManagerService,
     ) {
         this.nsdSchemaRegistry = new NsdSchemaRegistry();
-        this.defaultTypeManagerService = new DefaultTypeManagerService(doc);
+        this.metadataService = metadataService ?? bootstrapDefaultMetadataService;
+        this.defaultManagerService = defaultManagerService ?? bootstrapDefaultMService;
     }
 
     setDoc(doc: XMLDocument): void {
         this.doc = doc;
-        this.defaultTypeManagerService.setDocument(doc);
     }
 
     setIdSettingsState(state: IdSettingsStateLike): void {
@@ -75,7 +69,13 @@ export class DataTypeService {
         const element = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(element);
 
-        const defaultTypeInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(id) || undefined;
+        const metadata = this.metadataService.getByTypeId(this.doc, id) || undefined;
+        const defaultTypeInfo = metadata ? {
+            kind: metadata.key.kind,
+            instance: metadata.key.instance,
+            version: metadata.version,
+            rootId: metadata.rootId,
+        } : undefined;
 
         if (!instanceType) {
             return {
@@ -83,7 +83,7 @@ export class DataTypeService {
                 typeKind,
                 instanceType: '',
                 members: this.mapMembersFromElementWithoutNsd(element),
-                defaultTypeInfo: defaultTypeInfo,
+                defaultTypeInfo,
                 defaultTypeVersionStatus: undefined,
             };
         }
@@ -143,22 +143,58 @@ export class DataTypeService {
             typeKind,
             instanceType,
             members,
-            defaultTypeInfo: defaultTypeInfo,
+            defaultTypeInfo,
             defaultTypeVersionStatus: undefined,
         };
     }
 
-    async getDefaultTypeVersionStatusByTypeId(typeId: string) {
-        return this.defaultTypeManagerService.getVersionStatusByTypeId(typeId);
+    /**
+     * Gets the version status of the default type associated with the given type ID.
+     * If the type has no associated default type, null is returned.
+     * 
+     * @param typeId The ID of the type whose default type version status should be retrieved.
+     * @returns The version status of the default type, or null if no default type is associated.
+     */
+    async getDefaultTypeVersionStatusByTypeId(typeId: string): Promise<DefaultTypeVersionStatus | null> {
+        return this.defaultManagerService.getLocalDefaultVersionStatusByTypeId(this.doc, typeId);
     }
 
+    /**
+     * Lists all local defaults and enriches each with version status against latest remote default.
+     */
+    async listLocalDefaultsWithStatus(): Promise<LocalDefaultWithStatus[]> {
+        return this.defaultManagerService.listLocalDefaultsWithStatus(this.doc);
+    }
+
+    /**
+     * Upgrade the default type associated with the given type ID to the latest version.
+     * If the default type is already at the latest version, no changes are made.
+     * The function returns the new root ID of the default type if an upgrade was applied, 
+     * or null if no upgrade was necessary or if the type has no associated default type.
+     * 
+     * @param typeId The ID of the type whose default type should be upgraded.
+     * @returns The new root ID of the default type if an upgrade was applied, or null otherwise.
+     */
     async updateDefaultTypeToLatestByTypeId(typeId: string): Promise<string | null> {
-        const { edits, newRootId } = await this.defaultTypeManagerService.buildUpdateToLatestEditsByTypeId(typeId);
-        if (edits.length === 0) {
+        const defaultInfo = this.metadataService.getByTypeId(this.doc, typeId);
+        if(!defaultInfo) {
             return null;
         }
 
-        createAndDispatchEditEvent(this.hostElement, edits, {
+        const upgradeInfo: UpgradeInfo = {key: defaultInfo.key, version: defaultInfo.version};
+        const applyResult: ApplyResult = await this.defaultManagerService.batchUpgrade(this.doc, [upgradeInfo])
+        if (applyResult.edits.length === 0) {
+            return null;
+        }
+
+        const defualtKey = `${defaultInfo.key.kind}:${defaultInfo.key.instance}`;
+        const newRootId = applyResult.effectiveRootIds.get(defualtKey) ?? null;
+
+        const referenceEdits: EditV2[] = newRootId
+            ? buildReplaceTypeReferenceEdits(this.doc, defaultInfo.rootId, newRootId)
+            : [];
+
+        createAndDispatchEditEvent(this.hostElement, [...applyResult.edits, ...referenceEdits], {
             title: `Update default type to latest for ${typeId}`,
             createHistoryEntry: true,
         });
@@ -166,8 +202,46 @@ export class DataTypeService {
         return newRootId;
     }
 
+    /**
+     * Upgrades multiple applied defaults and rewrites references when root IDs change.
+     * Returns number of upgraded default version targets after deduplication.
+     */
+    async upgradeAppliedDefaultsBatch(targets: AppliedDefaultUpgradeTarget[]): Promise<number> {
+        if (!this.doc || targets.length === 0) {
+            return 0;
+        }
+
+        const uniqueUpgradeInfos = this.uniqueUpgradeInfos(
+            targets.map((target) => ({ key: target.key, version: target.version })),
+        );
+
+        const applyResult = await this.defaultManagerService.batchUpgrade(this.doc, uniqueUpgradeInfos);
+        const referenceEdits = this.buildAppliedDefaultsReferenceEdits(targets, applyResult.effectiveRootIds);
+        const allEdits = [...applyResult.edits, ...referenceEdits];
+
+        if (allEdits.length === 0) {
+            return 0;
+        }
+
+        createAndDispatchEditEvent(this.hostElement, allEdits, {
+            title: `Upgrade applied defaults (${uniqueUpgradeInfos.length})`,
+            createHistoryEntry: true,
+        });
+
+        return uniqueUpgradeInfos.length;
+    }
+
+    /**
+     * Detaches the default type associated with the given type ID.
+     * The type will be handels as normal datatype.
+     * 
+     * This function removes the metadata of the associated type.
+     * 
+     * @param typeId The ID of the type whose default type association should be removed.
+     */
     detachDefault(typeId: string): void {
-        const edits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(typeId);
+        const defaultMetadata = this.metadataService.getByTypeId(this.doc, typeId);
+        const edits = this.metadataService.delete(this.doc, defaultMetadata!.key, defaultMetadata!.version);
         if (edits.length === 0) {
             throw new Error(`No local default metadata found for type ${typeId}`);
         }
@@ -178,6 +252,11 @@ export class DataTypeService {
         });
     }
 
+    async defaultStatus(key: DefaultTypeKey): Promise<DefaultStatus> {
+        return this.defaultManagerService.getDefaultStatusByKey(this.doc, key);
+    }
+
+
     /**
      * Gets a delete plan for a type, including info about cascade deletions
      * if the type is a root of a local default group.
@@ -186,13 +265,12 @@ export class DataTypeService {
      *          and trackedSubTypeIds (array of sub-type IDs that will also be deleted)
      */
     getDeletePlan(typeId: string): { hasDefaultMetadata: boolean; trackedSubTypeIds: string[] } {
-        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(typeId);
+        const defaultInfo = this.metadataService.getByTypeId(this.doc, typeId);
 
         const hasDefaultMetadata = !!defaultInfo;
 
-        // If it is a root, get the sub-type IDs that will be deleted
         const trackedSubTypeIds = hasDefaultMetadata
-            ? this.defaultTypeManagerService.getTrackedSubTypeIdsByRootId(defaultInfo.rootId)
+            ? defaultInfo.subTypeIds
             : [];
 
         return {
@@ -225,12 +303,17 @@ export class DataTypeService {
 
     /**
      * Lists all simple data types, optionally filtered by type kind and instance type.
+     * Enriches results with default type information where applicable.
      * @param filter Optional filter criteria to narrow down the list of data types.
      * @returns An array of SimpleDataType objects that match the filter criteria.
      */
     list(filter?: DataTypeFilter): SimpleDataType[] {
         const elements = listDataTypeElements(this.doc);
-        return elements.map(el => elementToSimpleDataType(el)).filter(dt => {
+        return elements.map(el => {
+            const dt = elementToSimpleDataType(el);
+            this.enrichTypeWithDefaultInfoNoFilter(dt);
+            return dt;
+        }).filter(dt => {
             const normalizedQuery = filter?.query?.trim().toLowerCase();
             if (normalizedQuery) {
                 const normalizedId = (dt.id ?? '').toLowerCase();
@@ -312,24 +395,23 @@ export class DataTypeService {
     }
 
     /**
-     * Enriches a SimpleDataType with default type information.
-     * If the type is a default type root ID, adds isDefaultType and defaultTypeVersion.
-     * Filters out non-root default type IDs.
+     * Enriches a SimpleDataType with default type information from metadata.
+     * Filters out non-root default type IDs (only includes root IDs).
      * @param dt The SimpleDataType to enrich
      * @returns true if the type should be included, false if it should be filtered out (non-root default)
      */
     private enrichTypeWithDefaultInfo(dt: SimpleDataType): boolean {
-        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
-        if (defaultInfo) {
-            // Only include if it's the root ID of the default type
-            if (dt.id !== defaultInfo.rootId) {
-                return false; // Filter out non-root default type IDs
+        const metadata = this.metadataService.getByTypeId(this.doc, dt.id);
+        if (metadata) {
+            if (dt.id !== metadata.rootId) {
+                return false;
             }
-            // Add version info for the root ID
-            dt.isDefaultType = true;
-            dt.defaultTypeVersion = defaultInfo.version;
-            dt.defaultTypeRootId = defaultInfo.rootId;
-            dt.defaultTypeInstance = defaultInfo.instance;
+            dt.defaultTypeInfo = {
+                kind: metadata.key.kind,
+                instance: metadata.key.instance,
+                version: metadata.version,
+                rootId: metadata.rootId,
+            };
         }
         return true;
     }
@@ -340,12 +422,14 @@ export class DataTypeService {
      * @param dt The SimpleDataType to enrich
      */
     private enrichTypeWithDefaultInfoNoFilter(dt: SimpleDataType): void {
-        const defaultInfo = this.defaultTypeManagerService.getDefaultInfoByTypeId(dt.id);
-        if (defaultInfo) {
-            dt.isDefaultType = true;
-            dt.defaultTypeVersion = defaultInfo.version;
-            dt.defaultTypeRootId = defaultInfo.rootId;
-            dt.defaultTypeInstance = defaultInfo.instance;
+        const metadata = this.metadataService.getByTypeId(this.doc, dt.id);
+        if (metadata) {
+            dt.defaultTypeInfo = {
+                kind: metadata.key.kind,
+                instance: metadata.key.instance,
+                version: metadata.version,
+                rootId: metadata.rootId,
+            };
         }
     }
 
@@ -446,8 +530,11 @@ export class DataTypeService {
             }
 
             // Delete metadata for the default group
-            const metadataEdits = this.defaultTypeManagerService.buildDeleteLocalDefaultEditsByTypeId(id);
-            editEvents.push(...metadataEdits);
+            const metadata = this.metadataService.getByTypeId(this.doc, id);
+            if (metadata) {
+                const metadataEdits = this.metadataService.delete(this.doc, metadata.key, metadata.version);
+                editEvents.push(...metadataEdits);
+            }
         }
 
         // Clear references to the root type
@@ -496,17 +583,9 @@ export class DataTypeService {
         };
         editEvents.push(typeElementRenameEvent);
 
-        const refEls = this.doc.querySelectorAll(`[type="${id}"]`);
-        refEls.forEach(refEl => {
-            const edit: SetAttributesV2 = {
-                element: refEl,
-                attributes: { type: newId },
-                attributesNS: {},
-            };
-            editEvents.push(edit);
-        });
+        editEvents.push(...buildReplaceTypeReferenceEdits(this.doc, id, newId));
 
-        editEvents.push(...this.defaultTypeManagerService.buildRenameTypeIdEdits(id, newId));
+        editEvents.push(...this.metadataService.rename(this.doc, id, newId));
 
         createAndDispatchEditEvent(this.hostElement, editEvents, {
             title: `Rename DataType ${id} to ${newId}`,
@@ -768,36 +847,42 @@ export class DataTypeService {
      * @param memberNames The names of the members to apply default types to.
      */
     async applyDefaultTypes(id: string, memberNames: string[]): Promise<void> {
-        const preview = await this.getApplyDefaultTypesPreview(id, memberNames);
-        this.applyDefaultTypesFromPreview(preview);
+        const membersByRefType = this.getMembersByRefType(id, memberNames);
+        if (membersByRefType.size === 0) {
+            return;
+        }
+
+        const keys = Array.from(membersByRefType.values()).map(({ refTypeKind, objectType }) => ({
+            kind: refTypeKind,
+            instance: objectType,
+        }));
+
+        const { edits: defaultEdits, effectiveRootIds } = await this.defaultManagerService.batchApply(this.doc, keys);
+        const memberReferenceEdits = this.buildMemberReferenceEdits(id, membersByRefType, effectiveRootIds);
+        const allEdits = [...defaultEdits, ...memberReferenceEdits];
+
+        if (allEdits.length === 0) {
+            return;
+        }
+
+        createAndDispatchEditEvent(this.hostElement, allEdits, {
+            title: `Apply default types to members of DataType ${id}`,
+            createHistoryEntry: true,
+        });
     }
 
     /**
-     * Builds a default apply preview for a single target type (kind + instance)
-     * without binding it to member names.
+     * Resolves and applies a default for a single target type (kind + instance).
      */
-    async getApplySingleDefaultTypePreview(refTypeKind: TypeKind, objectType: string): Promise<ApplySingleDefaultTypePreview> {
-        const refTypeKey = `${refTypeKind}:${objectType}`;
-        const plan = await this.defaultTypeManagerService.resolve({ kind: refTypeKind, instance: objectType });
-
-        return {
-            refTypeKey,
-            refTypeKind,
-            objectType,
-            plan,
-        };
-    }
-
-    /**
-     * Applies a single-target default preview and returns the effective root ID.
-     */
-    applySingleDefaultTypeFromPreview(preview: ApplySingleDefaultTypePreview): string | null {
-        const { edits, effectiveRootIds } = this.defaultTypeManagerService.applyPlans([preview.plan]);
-        const effectiveRootId = effectiveRootIds.get(preview.refTypeKey) ?? null;
+    async applySingleDefaultType(kind: TypeKind, instance: string): Promise<string | null> {
+        const key = { kind: kind, instance: instance };
+        const keyString = `${kind}:${instance}`;
+        const { edits, effectiveRootIds } = await this.defaultManagerService.batchApply(this.doc, [key]);
+        const effectiveRootId = effectiveRootIds.get(keyString) ?? null;
 
         if (edits.length > 0) {
             createAndDispatchEditEvent(this.hostElement, edits, {
-                title: `Apply default type for ${preview.refTypeKind}/${preview.objectType}`,
+                title: `Apply default type for ${kind}/${instance}`,
                 createHistoryEntry: true,
             });
         }
@@ -806,108 +891,33 @@ export class DataTypeService {
     }
 
     /**
-     * Resolves and applies a default for a single target type (kind + instance).
+     * Looks up the latest available default version for a reference type.
      */
-    async applySingleDefaultType(refTypeKind: TypeKind, objectType: string): Promise<string | null> {
-        const preview = await this.getApplySingleDefaultTypePreview(refTypeKind, objectType);
-        return this.applySingleDefaultTypeFromPreview(preview);
+    async getLatestDefaultVersion(refTypeKind: TypeKind, objectType: string): Promise<string | null> {
+        const latest = await this.defaultManagerService.getLatestDefaultInfo({ kind: refTypeKind, instance: objectType });
+        return latest?.version ?? null;
     }
 
     /**
-     * Step 1 of default application workflow.
-     * Builds preview entries that can be shown to the user for confirmation.
+     * Returns cached latest defaults keyed by "kind:instance".
      */
-    async getApplyDefaultTypesPreview(id: string, memberNames: string[]): Promise<ApplyDefaultTypesPreview> {
-        const memberByRefType = this.getMembersByRefType(id, memberNames);
-        if (memberByRefType.size === 0) {
-            return { dataTypeId: id, entries: [] };
+    async getLatestDefaults(): Promise<Map<string, string>> {
+        const latestDefaults = await this.defaultManagerService.getLatestDefaults();
+        const latestVersionByKey = new Map<string, string>();
+
+        for (const [key, defaultType] of latestDefaults.entries()) {
+            latestVersionByKey.set(key, defaultType.version);
         }
 
-        const plansByRefType = await this.resolveDefaultTypePlans(memberByRefType);
-        const entries: ApplyDefaultTypesPreviewEntry[] = Array.from(memberByRefType.entries())
-            .map(([refTypeKey, memberInfo]) => {
-                const plan = plansByRefType.get(refTypeKey);
-                if (!plan) {
-                    return null;
-                }
-
-                return {
-                    refTypeKey,
-                    refTypeKind: memberInfo.refTypeKind,
-                    objectType: memberInfo.objectType,
-                    memberNames: [...memberInfo.memberNames],
-                    plan,
-                };
-            })
-            .filter((entry): entry is ApplyDefaultTypesPreviewEntry => !!entry);
-
-        return { dataTypeId: id, entries };
+        return latestVersionByKey;
     }
 
-    /**
-     * Step 2 of default application workflow.
-     * Applies a previously built preview.
-     */
-    applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
-        if (preview.entries.length === 0) {
-            return;
-        }
-
-        const members = new Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>();
-        const plans = new Map<string, ResolveDefaultPlan>();
-
-        preview.entries.forEach(entry => {
-            members.set(entry.refTypeKey, {
-                refTypeKind: entry.refTypeKind,
-                objectType: entry.objectType,
-                memberNames: [...entry.memberNames],
-            });
-            plans.set(entry.refTypeKey, entry.plan);
-        });
-
-        const edits = this.buildApplyDefaultEditsFromPlans(preview.dataTypeId, members, plans);
-        if (edits.length === 0) {
-            return;
-        }
-
-        createAndDispatchEditEvent(this.hostElement, edits, {
-            title: `Apply default types to members of DataType ${preview.dataTypeId}`,
-            createHistoryEntry: true,
-        });
-    }
-
-    /**
-     * Resolves default type plans for each reference type key.
-     * Returns a map keyed by reference type key (e.g., "DOType:Measurement").
-     */
-    private async resolveDefaultTypePlans(
-        memberByRefType: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
-    ): Promise<Map<string, ResolveDefaultPlan>> {
-        const plans = new Map<string, ResolveDefaultPlan>();
-
-        await Promise.all(
-            Array.from(memberByRefType.entries()).map(async ([refTypeKey, { refTypeKind, objectType }]) => {
-                const plan = await this.defaultTypeManagerService.resolve({ kind: refTypeKind, instance: objectType });
-                plans.set(refTypeKey, plan);
-            })
-        );
-
-        return plans;
-    }
-
-    private buildApplyDefaultEditsFromPlans(
+    private buildMemberReferenceEdits(
         id: string,
         members: Map<string, { refTypeKind: TypeKind; objectType: string; memberNames: string[] }>,
-        plans: Map<string, ResolveDefaultPlan>,
+        effectiveRootIds: Map<string, string | null>,
     ): EditV2[] {
-        const allEdits: EditV2[] = [];
-
-        // 1: Apply all plans in batch (type elements inserted once, respecting order)
-        const plansArray = Array.from(plans.values());
-        const { edits: planEdits, effectiveRootIds } = this.defaultTypeManagerService.applyPlans(plansArray);
-        allEdits.push(...planEdits);
-
-        // 2: Build and add member reference edits
+        const edits: EditV2[] = [];
         const parentElement = findDataTypeElement(this.doc, id);
         const { typeKind, instanceType } = getDataTypeBaseInfo(parentElement);
         const nsdDefinitions = instanceType ? this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType) : null;
@@ -923,11 +933,46 @@ export class DataTypeService {
                 if (!memberDefinition) {
                     continue;
                 }
-                allEdits.push(...this.buildSetMemberTypeEdits(parentElement, memberName, memberDefinition, effectiveRootId));
+                edits.push(...this.buildSetMemberTypeEdits(parentElement, memberName, memberDefinition, effectiveRootId));
             }
         }
 
-        return allEdits;
+        return edits;
+    }
+
+    private buildAppliedDefaultsReferenceEdits(
+        targets: AppliedDefaultUpgradeTarget[],
+        effectiveRootIds: Map<string, string | null>,
+    ): EditV2[] {
+        const edits: EditV2[] = [];
+        const seen = new Set<string>();
+
+        for (const target of targets) {
+            const keyString = `${target.key.kind}:${target.key.instance}`;
+            const newRootId = effectiveRootIds.get(keyString);
+            if (!newRootId || newRootId === target.rootId) {
+                continue;
+            }
+
+            const dedupeKey = `${keyString}:${target.rootId}->${newRootId}`;
+            if (seen.has(dedupeKey)) {
+                continue;
+            }
+
+            seen.add(dedupeKey);
+            edits.push(...buildReplaceTypeReferenceEdits(this.doc, target.rootId, newRootId));
+        }
+
+        return edits;
+    }
+
+    private uniqueUpgradeInfos(upgrades: UpgradeInfo[]): UpgradeInfo[] {
+        const unique = new Map<string, UpgradeInfo>();
+        for (const upgrade of upgrades) {
+            unique.set(`${upgrade.key.kind}:${upgrade.key.instance}:${upgrade.version}`, upgrade);
+        }
+
+        return Array.from(unique.values());
     }
 
     private buildSetMemberTypeEdits(
