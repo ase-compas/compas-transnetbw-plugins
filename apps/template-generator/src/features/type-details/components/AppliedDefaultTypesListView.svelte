@@ -63,17 +63,17 @@
     try {
       const upgradedCount = await service.upgradeAppliedDefaultsBatch(targets);
       if (upgradedCount === 0) {
-        toastService.info('Already up to date', 'No outdated defaults to upgrade.');
+        toastService.info('Already up to date', 'No outdated defaults to update.');
         return;
       }
 
       toastService.success(
-        'Defaults upgraded',
-        `Upgraded ${upgradedCount} default version${upgradedCount === 1 ? '' : 's'}.`
+        'Defaults updated',
+        `Updated ${upgradedCount} default version${upgradedCount === 1 ? '' : 's'}.`
       );
     } catch (error) {
-      console.error('Failed to upgrade applied defaults:', error);
-      toastService.error('Upgrade failed', 'Could not upgrade applied defaults. Please try again.');
+      console.error('Failed to update applied defaults:', error);
+      toastService.error('Update failed', 'Could not update applied defaults. Please try again.');
     }
   }
 
@@ -126,14 +126,14 @@
           {...upgradeAllButtonProps}
           onclick={prepareUpgradeAllOutdated}
         >
-          Upgrade All Outdated ({listState.outdatedVersionCount})
+          Update All Outdated ({listState.outdatedVersionCount})
         </Button>
         <Button
           variant={hasSelectedOutdated ? 'unelevated' : 'outlined'}
           {...upgradeSelectedButtonProps}
           onclick={prepareUpgradeSelected}
         >
-          Upgrade Selected ({listState.selectedOutdatedCount})
+          Update Selected ({listState.selectedOutdatedCount})
         </Button>
         <Button
           variant="outlined"
