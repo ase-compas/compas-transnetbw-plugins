@@ -1,21 +1,35 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
-  import { getElementContext } from '../../../validationRuleUi';
-  import { buildAssertionExpression } from '../../../xpathBuilder';
+  import { buildAssertionExpression, parentOfPath } from '../../../xpathBuilder';
   import { validationEditor } from '../../../validationEditorStore.svelte';
 
   import AttributeRuleEditor from '../../AttributeRuleEditor.svelte';
   import ElementRuleEditor from '../../ElementRuleEditor.svelte';
   import PreviewBox from '../../PreviewBox.svelte';
 
+  const rulePreview = $derived.by(() => {
+    const { mode, elementPath } = validationEditor.ruleUi;
+    const assert = validationEditor.entry.assert?.trim();
+
+    if (mode === 'element') {
+      if (!elementPath) return '';
+      return `Element:   ${elementPath}\nAssertion: ${assert || '—'}`;
+    }
+
+    const ctx = validationEditor.entry.context?.trim();
+    if (!ctx && !assert) return '';
+    return `Context:   ${ctx || '—'}\nAssertion: ${assert || '—'}`;
+  });
+
   $effect(() => {
     validationEditor.entry.message = validationEditor.ruleUi.message;
-    validationEditor.entry.assert = buildAssertionExpression(validationEditor.ruleUi);
 
-    if (validationEditor.ruleUi.mode === 'element' && validationEditor.ruleUi.elementName) {
-      validationEditor.entry.context = getElementContext(validationEditor.ruleUi.elementName);
+    if (validationEditor.ruleUi.mode === 'element') {
+      validationEditor.entry.context = parentOfPath(validationEditor.ruleUi.elementPath);
     }
+
+    validationEditor.entry.assert = buildAssertionExpression(validationEditor.ruleUi);
   });
 </script>
 
@@ -40,7 +54,7 @@
     </Textfield>
   </div>
 
-  <PreviewBox label="Live Code Preview" value={validationEditor.entry.assert} />
+  <PreviewBox label="Rule Preview" value={rulePreview} />
 </div>
 
 <style>

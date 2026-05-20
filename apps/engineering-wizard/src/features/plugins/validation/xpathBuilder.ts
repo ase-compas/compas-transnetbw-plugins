@@ -1,5 +1,22 @@
 import type { ElementCheckType, RuleUiState } from './validationRuleUi';
 
+/** Returns the last element name from a path like `//SCL/Substation/VoltageLevel` → `VoltageLevel`. */
+export function lastNodeOfPath(path: string): string {
+  const clean = (path ?? '').replace(/^\/\/SCL(\/|$)/, '');
+  if (!clean) return '';
+  const parts = clean.split('/').filter(Boolean);
+  return parts[parts.length - 1] ?? '';
+}
+
+/** Returns the parent path: `//SCL/Substation/VoltageLevel` → `//SCL/Substation`. */
+export function parentOfPath(path: string): string {
+  const clean = (path ?? '').replace(/^\/\/SCL(\/|$)/, '');
+  if (!clean) return '//SCL';
+  const parts = clean.split('/').filter(Boolean);
+  if (parts.length <= 1) return '//SCL';
+  return `//SCL/${parts.slice(0, -1).join('/')}`;
+}
+
 function toAttributeSelector(input: string | null | undefined): string | null {
   const raw = (input ?? '').trim();
   if (!raw) return null;
@@ -27,7 +44,9 @@ function buildAttributeAssertion(ui: RuleUiState): string {
   const expectedText = (ui.specificText ?? '').trim();
 
   if (!attr && !expectedText) return '';
-  if (attr && !expectedText) return valueExpr;
+  if (attr && !expectedText && ui.condition !== 'matches' && ui.condition !== 'notMatches') {
+    return valueExpr;
+  }
 
   const expectedLit = toXPathStringLiteral(expectedText);
 
@@ -44,13 +63,17 @@ function buildAttributeAssertion(ui: RuleUiState): string {
       return `starts-with(${valueExpr}, ${expectedLit})`;
     case 'endsWith':
       return `substring(${valueExpr}, string-length(${valueExpr}) - string-length(${expectedLit}) + 1) = ${expectedLit}`;
+    case 'matches':
+      return `matches(${valueExpr}, ${expectedLit})`;
+    case 'notMatches':
+      return `not(matches(${valueExpr}, ${expectedLit}))`;
     default:
       return '';
   }
 }
 
 function buildElementAssertion(ui: RuleUiState): string {
-  const el = (ui.elementName ?? '').trim();
+  const el = (ui.elementPath ? lastNodeOfPath(ui.elementPath) : (ui.elementName ?? '')).trim();
   if (!el) return '';
 
   const n = ui.elementCount ?? 1;

@@ -8,7 +8,9 @@ export type ConditionKey =
   | 'equals'
   | 'notEquals'
   | 'startsWith'
-  | 'endsWith';
+  | 'endsWith'
+  | 'matches'
+  | 'notMatches';
 
 export type RuleUiState = {
   mode: RuleMode;
@@ -19,6 +21,8 @@ export type RuleUiState = {
   elementName: string;
   elementCount: number;
   message: string;
+  /** Full element path selected by the user, e.g. `//SCL/Substation/VoltageLevel`. */
+  elementPath: string;
 };
 
 export const CONDITIONS = [
@@ -28,6 +32,8 @@ export const CONDITIONS = [
   { key: 'endsWith',    label: 'Ends with' },
   { key: 'equals',      label: 'Equals' },
   { key: 'notEquals',   label: 'Does not equal' },
+  { key: 'matches',     label: 'Matches (regex)' },
+  { key: 'notMatches',  label: 'Does not match (regex)' },
 ] as const;
 
 export const ELEMENT_CHECK_TYPES: { key: ElementCheckType; label: string; hasCount: boolean }[] = [
@@ -39,10 +45,4 @@ export const ELEMENT_CHECK_TYPES: { key: ElementCheckType; label: string; hasCou
 ];
 
 export { ALL_SCL_ELEMENTS as ELEMENT_OPTIONS } from './scl-schema';
-
-/** Returns `//SCL` as a safe default context for element-count checks. */
-export function getElementContext(_elementName: string): string {
-  return '//SCL';
-}
-
 

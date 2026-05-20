@@ -2,7 +2,7 @@
   import Select, { Option } from '@smui/select';
   import Textfield from '@smui/textfield';
 
-  import { ELEMENT_CHECK_TYPES, ELEMENT_OPTIONS, type RuleUiState } from '../validationRuleUi';
+  import { ELEMENT_CHECK_TYPES, type RuleUiState } from '../validationRuleUi';
 
   interface Props {
     ruleUi: RuleUiState;
@@ -15,57 +15,25 @@
   );
 </script>
 
-<div class="element-editor__section">
-  <div class="field-wrap">
-    <Select
-      bind:value={ruleUi.elementName}
-      label="Element"
+<div class="check-row">
+  <Select class="check-select" bind:value={ruleUi.elementCheckType} label="Check" variant="outlined">
+    {#each ELEMENT_CHECK_TYPES as t (t.key)}
+      <Option value={t.key}>{t.label}</Option>
+    {/each}
+  </Select>
+
+  {#if showCount}
+    <Textfield
+      type="number"
+      bind:value={ruleUi.elementCount}
+      label="Count"
       variant="outlined"
-      invalid={!ruleUi.elementName?.trim()}
-      helperText$validationMsg
-    >
-      {#each ELEMENT_OPTIONS as el}
-        <Option value={el}>{el}</Option>
-      {/each}
-      {#snippet helperText()}Element is required.{/snippet}
-    </Select>
-  </div>
-
-  <div class="check-row">
-    <Select class="check-select" bind:value={ruleUi.elementCheckType} label="Check" variant="outlined">
-      {#each ELEMENT_CHECK_TYPES as t (t.key)}
-        <Option value={t.key}>{t.label}</Option>
-      {/each}
-    </Select>
-
-    {#if showCount}
-      <Textfield
-        type="number"
-        bind:value={ruleUi.elementCount}
-        label="Count"
-        variant="outlined"
-        style="width: 120px; flex-shrink: 0"
-      />
-    {/if}
-  </div>
+      style="width: 120px; flex-shrink: 0"
+    />
+  {/if}
 </div>
 
 <style>
-  .element-editor__section {
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    border: 1px solid #b2c7cb;
-    border-radius: 5px;
-    gap: 1rem;
-  }
-
-  /* Groups field + helper-line so parent gap doesn't inflate spacing */
-  .field-wrap {
-    display: flex;
-    flex-direction: column;
-  }
-
   .check-row {
     display: flex;
     align-items: center;
