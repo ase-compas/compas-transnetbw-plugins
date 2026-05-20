@@ -128,7 +128,7 @@
 
 <OscdBasicDataTable
   {loading}
-  errorMsg={error}
+  errorMsg={error ? error : undefined}
   emptyText="No data types found."
   items={sortedDataTypes}
   hasActions
