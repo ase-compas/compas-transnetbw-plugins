@@ -12,7 +12,7 @@
     service: DataTypeService;
   }
 
-  const navigationTabs = ['LNode Types', 'DO Types', 'DA Types', 'Enum Types', 'All Types'];
+  const navigationTabs = ['All Types', 'LNode Types', 'DO Types', 'DA Types', 'Enum Types'];
 
   let {
     query = $bindable(''),
