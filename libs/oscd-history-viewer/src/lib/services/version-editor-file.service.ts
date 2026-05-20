@@ -70,12 +70,12 @@ export class VersionEditorFileService {
 
   private mapToDataResourceSearch(params: SearchParams): DataResourceSearch {
     return {
-      uuid: params.uuid || null,
-      type: params.type || null,
-      name: params.filename || null,
-      author: params.author || null,
-      from: params.from || null,
-      to: params.to || null,
+      uuid: params.uuid,
+      type: params.type,
+      name: params.filename,
+      author: params.author,
+      from: params.from,
+      to: params.to,
     };
   }
 

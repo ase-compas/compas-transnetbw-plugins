@@ -1,23 +1,19 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2017",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
+    "composite": true,
+    "declaration": true,
     "sourceMap": true,
     "types": ["svelte", "node", "vite/client"],
-    "strict": false,
-    "esModuleInterop": true,
+    "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "checkJs": true,
     "allowJs": true
   },
+  "files": [],
+  "include": [],
   "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
     {
       "path": "./tsconfig.spec.json"
     }

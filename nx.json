@@ -76,8 +76,7 @@
       "plugin": "@nx/jest/plugin",
       "options": {
         "targetName": "test"
-      },
-      "exclude": ["apps/io-center-e2e/**/*", "apps/tsld-e2e/**/*"]
+      }
     }
   ]
 }
