@@ -4,8 +4,6 @@
   import DataTypeFilter from '../../type-details/components/ui/DataTypeFilter.svelte';
   import { OscdButton, OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { DataTypeService } from '../../type-details/services/type.service';
-  // Note: DataTypeService is instantiated locally here. If this list grows to many instances,
-  // consider lifting the service to a shared context to avoid redundant re-instantiation.
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { untrack } from 'svelte';
 
