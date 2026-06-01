@@ -1,0 +1,60 @@
+{
+  "plugins": [
+    {
+      "name": "Archive Explorer",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/archive-explorer/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "Engineering Wizard",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/engineering-wizard/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "History Viewer",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/history-viewer/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "Location Manager",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/location-manager/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "Location Viewer",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/location-viewer/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "Template Generator",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/template-generator/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "TSLD",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/tsld/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    },
+    {
+      "name": "Type Distributor",
+      "src": "https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/type-distributor/index.js",
+      "kind": "editor",
+      "icon": "edit",
+      "description": ""
+    }
+  ]
+}
