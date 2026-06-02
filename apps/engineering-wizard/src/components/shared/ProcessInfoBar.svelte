@@ -94,7 +94,6 @@
     gap: 12px;
     align-items: flex-start;
     padding: 12px 0;
-    background: var(--white, #fff);
   }
 
   .field {
