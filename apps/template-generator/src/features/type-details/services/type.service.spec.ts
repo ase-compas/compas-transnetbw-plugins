@@ -482,14 +482,29 @@ describe('DataTypeService', () => {
 	});
 
 	describe('create', () => {
-		test('creates DataTypeTemplates when missing and inserts first type', () => {
+		test('creates DataTypeTemplates when missing, inserts first type, and adds mandatory children', () => {
 			doc = parseScl(`
 				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B"/>
 			`);
 
 			service = new DataTypeService(doc, hostElement);
 			(service as any).nsdSchemaRegistry = {
-				getTypeDefinition: vi.fn(() => ({})),
+				getTypeDefinition: vi.fn(() => ({
+					stVal: {
+						tagName: 'DO',
+						name: 'stVal',
+						requiresReference: true,
+						isMandatory: true,
+						attributes: {},
+					},
+					q: {
+						tagName: 'DO',
+						name: 'q',
+						requiresReference: false,
+						isMandatory: false,
+						attributes: {},
+					},
+				})),
 				listInstanceTypes: vi.fn(() => []),
 			};
 
@@ -500,6 +515,58 @@ describe('DataTypeService', () => {
 
 			expect(doc.querySelector('DataTypeTemplates > DOType[id="new-do"]')).not.toBeNull();
 			expect(doc.querySelector('DOType[id="new-do"]')?.getAttribute('cdc')).toBe('SPS');
+			expect(doc.querySelector('DOType[id="new-do"] > DO[name="stVal"]')).not.toBeNull();
+			expect(doc.querySelector('DOType[id="new-do"] > DO[name="stVal"]')?.getAttribute('type')).toBeNull();
+			expect(doc.querySelector('DOType[id="new-do"] > DO[name="q"]')).toBeNull();
+		});
+
+		test('creates DOType SPS with all mandatory objects as children', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates/>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({
+					stVal: {
+						tagName: 'DO',
+						name: 'stVal',
+						requiresReference: true,
+						refTypeKind: TypeKind.DOType,
+						objectType: 'SPS',
+						isMandatory: true,
+						attributes: {},
+					},
+					q: {
+						tagName: 'DO',
+						name: 'q',
+						requiresReference: false,
+						isMandatory: true,
+						attributes: {},
+					},
+					optionalDo: {
+						tagName: 'DO',
+						name: 'optionalDo',
+						requiresReference: false,
+						isMandatory: false,
+						attributes: {},
+					},
+				})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			service.create(TypeKind.DOType, 'SPS', 'do-sps');
+
+			expect(capturedEdits).toHaveLength(1);
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			expect(doc.querySelector('DOType[id="do-sps"]')?.getAttribute('cdc')).toBe('SPS');
+			expect(doc.querySelector('DOType[id="do-sps"] > DO[name="stVal"]')).not.toBeNull();
+			expect(doc.querySelector('DOType[id="do-sps"] > DO[name="stVal"]')?.getAttribute('type')).toBeNull();
+			expect(doc.querySelector('DOType[id="do-sps"] > DO[name="q"]')).not.toBeNull();
+			expect(doc.querySelector('DOType[id="do-sps"] > DO[name="optionalDo"]')).toBeNull();
 		});
 	});
 
