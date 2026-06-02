@@ -549,6 +549,8 @@ export class DataTypeService {
      *
      * If `DataTypeTemplates` does not exist, it is created first and inserted into
      * the SCL root element with the new type as its first child.
+     * 
+     * All mandatory objects of the data type are created as empty elements, but without references configured.
      *
      * If `DataTypeTemplates` already exists, the new type is inserted in kind order:
      * `LNodeType -> DOType -> DAType -> EnumType`.
@@ -566,6 +568,7 @@ export class DataTypeService {
         }
 
         const newTypeElement = this.createDataTypeElement(typeKind, instanceType, id);
+        this.appendMandatoryMembers(newTypeElement, typeKind, instanceType);
         const title = `Create DataType ${id}`;
 
         const dataTypeTemplates = findDataTypeTemplatesElement(this.doc);
@@ -584,6 +587,19 @@ export class DataTypeService {
             title,
             createHistoryEntry: true,
         });
+    }
+
+    private appendMandatoryMembers(typeElement: Element, typeKind: TypeKind, instanceType: string): void {
+        const nsdDefinitions = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
+        if (!nsdDefinitions) {
+            return;
+        }
+
+        Object.entries(nsdDefinitions)
+            .filter(([, definition]) => definition.isMandatory)
+            .forEach(([memberName, definition]) => {
+                typeElement.appendChild(this.createMemberElement(memberName, definition));
+            });
     }
 
     /**
