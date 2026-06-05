@@ -18525,6 +18525,7 @@ function WA(a, e) {
       get disabled() {
         return r();
       },
+      "aria-label": "Action Menu",
       children: (o, c) => {
         {
           let d = /* @__PURE__ */ z(() => n() === "text" || n() === "outlined" || n() === "default" ? "fill: var(--primary-base)" : "");
