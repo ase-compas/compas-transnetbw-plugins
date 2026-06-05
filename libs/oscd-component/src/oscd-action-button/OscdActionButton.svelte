@@ -17,6 +17,7 @@
     variant={variant}
     style={variant === 'default' ? 'background: white;' : '' }
     disabled={disabled}
+    aria-label="Action Menu"
   >
     <OscdMoreVertIcon svgStyles={variant === 'text' || variant === 'outlined' || variant === 'default' ? 'fill: var(--primary-base)' : ''}/>
   </Button>
