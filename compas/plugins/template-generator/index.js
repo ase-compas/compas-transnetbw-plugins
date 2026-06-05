@@ -49492,113 +49492,124 @@ function Cy(a, e) {
     o()({ targetItem: w }), O(null), M(y, null);
   }
   var T = ly();
-  Ft(T, 29, () => i(E), (g) => g.id, (g, N, w) => {
-    var L = cy(), F = V(L);
-    {
-      let R = /* @__PURE__ */ z(() => hm(i(N), s())), P = /* @__PURE__ */ z(() => ym(i(N), s())), G = /* @__PURE__ */ z(() => i(y) === i(N).id);
-      dy(F, {
-        get title() {
-          return i(N).title;
-        },
-        get subtitle() {
-          return i(N).subtitle;
-        },
-        get references() {
-          return i(N).references;
-        },
-        get badgeText() {
-          return i(N).badgeText;
-        },
-        get canEdit() {
-          return i(N).canEdit;
-        },
-        get canMark() {
-          return i(N).canMark;
-        },
-        get isDefaultType() {
-          return i(N).isDefaultType;
-        },
-        get defaultTypeVersion() {
-          return i(N).defaultTypeVersion;
-        },
-        get defaultTypeRootId() {
-          return i(N).defaultTypeRootId;
-        },
-        get defaultTypeInstance() {
-          return i(N).defaultTypeInstance;
-        },
-        get defaultTypeKind() {
-          return i(N).defaultTypeKind;
-        },
-        get selectionEnabled() {
-          return t();
-        },
-        get showSelectionIndicator() {
-          return n();
-        },
-        get canApplyDefaults() {
-          return i(N).canApplyDefaults;
-        },
-        get canUnlink() {
-          return i(N).canUnlink;
-        },
-        get canAddReference() {
-          return i(N).canAddReference;
-        },
-        get canClick() {
-          return i(N).canClick;
-        },
-        get isDragTarget() {
-          return i(R);
-        },
-        get canDrop() {
-          return i(P);
-        },
-        get canDrag() {
-          return e.itemsDraggable;
-        },
-        get isOver() {
-          return i(G);
-        },
-        get marked() {
-          return i(N).marked;
-        },
-        get isMandatory() {
-          return i(N).isMandatory;
-        },
-        get referencable() {
-          return i(N).referencable;
-        },
-        onMarked: (H) => d()({ itemId: i(N).id, item: i(N), marked: H }),
-        onSelectChange: () => l()({ item: i(N), itemId: i(N).id }),
-        onClick: () => I()({ itemId: i(N).id, item: i(N) }),
-        onEdit: () => _()({ itemId: i(N).id, item: i(N) }),
-        onApplyDefaults: () => D()({ itemId: i(N).id, item: i(N) }),
-        onUnlink: () => p()({ itemId: i(N).id, item: i(N) }),
-        onReferenceClick: (H) => C()({ item: i(N), itemId: i(N).id, reference: H }),
-        onAddReferenceClick: () => m()({ itemId: i(N).id, item: i(N) }),
-        onDefaultTypeClick: () => f()({ itemId: i(N).id, item: i(N) }),
-        get selected() {
-          return i(N).selected;
-        },
-        set selected(H) {
-          i(N).selected = H;
-        }
-      });
+  Ft(
+    T,
+    29,
+    () => i(
+      // disable arial so that child elements, e.g. Add Reference button, can be accessible
+      E
+    ),
+    (g) => g.id,
+    (g, N, w) => {
+      var L = cy(), F = V(L);
+      {
+        let R = /* @__PURE__ */ z(() => hm(i(N), s())), P = /* @__PURE__ */ z(() => ym(i(N), s())), G = /* @__PURE__ */ z(() => i(y) === i(N).id);
+        dy(F, {
+          get title() {
+            return i(N).title;
+          },
+          get subtitle() {
+            return i(N).subtitle;
+          },
+          get references() {
+            return i(N).references;
+          },
+          get badgeText() {
+            return i(N).badgeText;
+          },
+          get canEdit() {
+            return i(N).canEdit;
+          },
+          get canMark() {
+            return i(N).canMark;
+          },
+          get isDefaultType() {
+            return i(N).isDefaultType;
+          },
+          get defaultTypeVersion() {
+            return i(N).defaultTypeVersion;
+          },
+          get defaultTypeRootId() {
+            return i(N).defaultTypeRootId;
+          },
+          get defaultTypeInstance() {
+            return i(N).defaultTypeInstance;
+          },
+          get defaultTypeKind() {
+            return i(N).defaultTypeKind;
+          },
+          get selectionEnabled() {
+            return t();
+          },
+          get showSelectionIndicator() {
+            return n();
+          },
+          get canApplyDefaults() {
+            return i(N).canApplyDefaults;
+          },
+          get canUnlink() {
+            return i(N).canUnlink;
+          },
+          get canAddReference() {
+            return i(N).canAddReference;
+          },
+          get canClick() {
+            return i(N).canClick;
+          },
+          get isDragTarget() {
+            return i(R);
+          },
+          get canDrop() {
+            return i(P);
+          },
+          get canDrag() {
+            return e.itemsDraggable;
+          },
+          get isOver() {
+            return i(G);
+          },
+          get marked() {
+            return i(N).marked;
+          },
+          get isMandatory() {
+            return i(N).isMandatory;
+          },
+          get referencable() {
+            return i(N).referencable;
+          },
+          onMarked: (H) => d()({ itemId: i(N).id, item: i(N), marked: H }),
+          onSelectChange: () => l()({ item: i(N), itemId: i(N).id }),
+          onClick: () => I()({ itemId: i(N).id, item: i(N) }),
+          onEdit: () => _()({ itemId: i(N).id, item: i(N) }),
+          onApplyDefaults: () => D()({ itemId: i(N).id, item: i(N) }),
+          onUnlink: () => p()({ itemId: i(N).id, item: i(N) }),
+          onReferenceClick: (H) => C()({ item: i(N), itemId: i(N).id, reference: H }),
+          onAddReferenceClick: () => m()({ itemId: i(N).id, item: i(N) }),
+          onDefaultTypeClick: () => f()({ itemId: i(N).id, item: i(N) }),
+          get selected() {
+            return i(N).selected;
+          },
+          set selected(H) {
+            i(N).selected = H;
+          }
+        });
+      }
+      je(L, (R, P) => ca == null ? void 0 : ca(R, P), () => ({
+        items: [i(N)],
+        dragDisabled: !0,
+        dropAnimationDisabled: !0,
+        dropTargetStyle: {},
+        autoAriaDisabled: !0,
+        type: e.dragAndDropType
+      })), jt("consider", L, (R) => S(R, i(N).id)), jt("finalize", L, (R) => v(R, i(N).id)), Sl(L, () => jl, () => ({ duration: 400 })), A(g, L);
     }
-    je(L, (R, P) => ca == null ? void 0 : ca(R, P), () => ({
-      items: [i(N)],
-      dragDisabled: !0,
-      dropAnimationDisabled: !0,
-      dropTargetStyle: {},
-      type: e.dragAndDropType
-    })), jt("consider", L, (R) => S(R, i(N).id)), jt("finalize", L, (R) => v(R, i(N).id)), Sl(L, () => jl, () => ({ duration: 400 })), A(g, L);
-  }), je(T, (g, N) => ca == null ? void 0 : ca(g, N), () => ({
+  ), je(T, (g, N) => ca == null ? void 0 : ca(g, N), () => ({
     items: i(E),
     dragDisabled: !e.itemsDraggable,
     dropAnimationDisabled: !0,
     dropTargetStyle: {},
-    type: e.dragAndDropType
+    type: e.dragAndDropType,
+    autoAriaDisabled: !0
   })), jt("consider", T, (g) => b(g)), jt("finalize", T, (g) => h()), A(a, T), De();
 }
 var uy = /* @__PURE__ */ U('<span class="title-secondary svelte-bvl9n0"> </span>'), py = /* @__PURE__ */ U('<span class="action-icon svelte-bvl9n0" aria-hidden="true"><!></span> <!>', 1), my = /* @__PURE__ */ U('<div class="header-container svelte-bvl9n0"><div class="title-bar svelte-bvl9n0"><h3 class="title-main svelte-bvl9n0"> <!></h3> <div><!></div></div> <div class="search-container svelte-bvl9n0"><!></div></div>');
