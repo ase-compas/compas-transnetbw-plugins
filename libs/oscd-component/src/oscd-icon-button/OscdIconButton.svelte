@@ -6,13 +6,15 @@
     callback?: () => void;
     icon?: string;
     disabled?: boolean;
+    ariaLabel?: string;
   }
 
-  let { callback = () => {}, icon = '', disabled = false }: Props = $props();
+  let { callback = () => {}, icon = '', disabled = false, ariaLabel = undefined }: Props = $props();
 </script>
 
 <IconButton
   {disabled}
+  aria-label={ariaLabel}
   on:click={callback}
   style="margin-bottom: 0;"
 >

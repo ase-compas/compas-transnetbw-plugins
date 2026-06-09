@@ -1,7 +1,11 @@
 export interface RowAction {
-  name: string;
   icon: string;
-  tooltip?: string;
+  callback: (row: any) => void;
   disabled: (row: any) => boolean;
-  action: (row: any) => void;
+  tooltip?: string;
+  ariaLabel?: string;
+  name?: string;
+  action?: (row: any) => void;
+  iconComponent?: any;
+  iconStyles?: string;
 }
