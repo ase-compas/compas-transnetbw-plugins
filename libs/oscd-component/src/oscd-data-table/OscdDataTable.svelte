@@ -79,11 +79,11 @@
                   {#each rowActions as action}
                     {#if action.iconComponent}
                     <OscdTooltip content={action.tooltip} hoverDelay={500}>
-                      <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} />
+                      <OscdIconButton iconComponent={action.iconComponent} iconStyles={action.iconStyles} callback={() => action.callback(row)} disabled={action.disabled(row)} ariaLabel={action.ariaLabel} />
                     </OscdTooltip>
                     {:else}
                       <OscdTooltip content={action.tooltip} hoverDelay={500}>
-                        <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)}>
+                        <OscdButton class="button" variant="raised" callback={() => action.callback(row)} disabled={action.disabled(row)} ariaLabel={action.ariaLabel}>
                           {#if action.icon === "add"}
                             <OscdAddIcon svgStyles="margin: unset" />
                           {:else if action.icon === "cancel"}
