@@ -694,4 +694,151 @@ describe('DataTypeService', () => {
 			expect(capturedEdits).toHaveLength(0);
 		});
 	});
+
+	describe('getById - auto-repair mandatory members', () => {
+		test('auto-repairs missing mandatory members on getById', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="test-do" cdc="SPS">
+							<DO name="q" type=""/>
+						</DOType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({
+					stVal: {
+						tagName: 'DO',
+						name: 'stVal',
+						requiresReference: false,
+						isMandatory: true,
+						attributes: {},
+					},
+					q: {
+						tagName: 'DO',
+						name: 'q',
+						requiresReference: false,
+						isMandatory: true,
+						attributes: {},
+					},
+					optional: {
+						tagName: 'DO',
+						name: 'optional',
+						requiresReference: false,
+						isMandatory: false,
+						attributes: {},
+					},
+				})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			service.getById('test-do');
+
+			// Should have created edits for missing mandatory member 'stVal'
+			expect(capturedEdits.length).toBeGreaterThan(0);
+			expect(capturedEdits.some(edit => edit.node && (edit.node as Element).getAttribute?.('name') === 'stVal')).toBe(true);
+		});
+
+		test('does not repair when all mandatory members are present', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="test-do" cdc="SPS">
+							<DO name="stVal" type=""/>
+							<DO name="q" type=""/>
+						</DOType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({
+					stVal: {
+						tagName: 'DO',
+						name: 'stVal',
+						requiresReference: false,
+						isMandatory: true,
+						attributes: {},
+					},
+					q: {
+						tagName: 'DO',
+						name: 'q',
+						requiresReference: false,
+						isMandatory: true,
+						attributes: {},
+					},
+				})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			service.getById('test-do');
+
+			// No edits should be captured for auto-repair
+			expect(capturedEdits).toHaveLength(0);
+		});
+
+		test('does not repair when no NSD definitions exist', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DOType id="test-do" cdc="UnknownCDC">
+							<DO name="q" type=""/>
+						</DOType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => null), // No NSD definitions
+				listInstanceTypes: vi.fn(() => []),
+			};
+
+			service.getById('test-do');
+
+			// No edits for auto-repair when no NSD definitions
+			expect(capturedEdits).toHaveLength(0);
+		});
+
+		test('returns complete DataTypeDetails after auto-repair', () => {
+			doc = parseScl(`
+				<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+					<DataTypeTemplates>
+						<DAType id="test-da">
+							<Private type="compas:instance-type">Measured</Private>
+						</DAType>
+					</DataTypeTemplates>
+				</SCL>
+			`);
+
+			service = new DataTypeService(doc, hostElement);
+			(service as any).nsdSchemaRegistry = {
+				getTypeDefinition: vi.fn(() => ({
+					stVal: {
+						tagName: 'BDA',
+						name: 'stVal',
+						requiresReference: false,
+						isMandatory: true,
+						attributes: {},
+					},
+				})),
+				listInstanceTypes: vi.fn(() => []),
+			};
+			(service as any).defaultTypeManagerService = {
+				getDefaultInfoByTypeId: vi.fn(() => undefined),
+			};
+
+			const result = service.getById('test-da');
+
+			// Apply the repair edits
+			capturedEdits.forEach(edit => handleEditV2(edit));
+
+			// Verify structure is now complete
+			expect(doc.querySelector('DAType[id="test-da"] > BDA[name="stVal"]')).not.toBeNull();
+		});
+	});
 });
