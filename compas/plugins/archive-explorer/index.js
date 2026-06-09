@@ -4,7 +4,7 @@ var ul = (t) => {
 };
 var Pd = (t, e, n) => e in t ? Dd(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n;
 var bn = (t, e, n) => Pd(t, typeof e != "symbol" ? e + "" : e, n), qo = (t, e, n) => e.has(t) || ul("Cannot " + n);
-var re = (t, e, n) => (qo(t, e, "read from private field"), n ? n.call(t) : e.get(t)), tt = (t, e, n) => e.has(t) ? ul("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, n), He = (t, e, n, r) => (qo(t, e, "write to private field"), r ? r.call(t, n) : e.set(t, n), n), Wt = (t, e, n) => (qo(t, e, "access private method"), n);
+var re = (t, e, n) => (qo(t, e, "read from private field"), n ? n.call(t) : e.get(t)), tt = (t, e, n) => e.has(t) ? ul("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, n), Ue = (t, e, n, r) => (qo(t, e, "write to private field"), r ? r.call(t, n) : e.set(t, n), n), Wt = (t, e, n) => (qo(t, e, "access private method"), n);
 const Nt = Symbol(), Nd = "http://www.w3.org/1999/xhtml", Hd = "http://www.w3.org/2000/svg", Ud = "@attach", Tu = !1;
 var Oo = Array.isArray, kd = Array.prototype.indexOf, Hs = Array.from, uo = Object.defineProperty, Or = Object.getOwnPropertyDescriptor, wu = Object.getOwnPropertyDescriptors, Bd = Object.prototype, Fd = Array.prototype, Us = Object.getPrototypeOf, cl = Object.isExtensible;
 function Ti(t) {
@@ -276,13 +276,13 @@ const To = class To {
       var n = Vt;
       Wt(this, Rn, ms).call(this);
       var r = re(this, Ui), i = re(this, ti);
-      He(this, Ui, []), He(this, ti, []), He(this, ki, []), no = this, st = null, Vt = n, fl(r), fl(i), no = null, (a = re(this, Oa)) == null || a.resolve();
+      Ue(this, Ui, []), Ue(this, ti, []), Ue(this, ki, []), no = this, st = null, Vt = n, fl(r), fl(i), no = null, (a = re(this, Oa)) == null || a.resolve();
     } else
       Wt(this, Rn, ro).call(this, re(this, Ui)), Wt(this, Rn, ro).call(this, re(this, ti)), Wt(this, Rn, ro).call(this, re(this, ki));
     Vt = null;
     for (const o of re(this, Hi))
       Ia(o);
-    He(this, Hi, []);
+    Ue(this, Hi, []);
   }
   /**
    * Associate a change to a given source with the current
@@ -310,10 +310,10 @@ const To = class To {
         break;
   }
   increment() {
-    He(this, ei, re(this, ei) + 1);
+    Ue(this, ei, re(this, ei) + 1);
   }
   decrement() {
-    He(this, ei, re(this, ei) - 1);
+    Ue(this, ei, re(this, ei) - 1);
     for (const e of re(this, Ra))
       $t(e, En), ui(e);
     for (const e of re(this, Ma))
@@ -325,7 +325,7 @@ const To = class To {
     re(this, Ni).add(e);
   }
   settled() {
-    return (re(this, Oa) ?? He(this, Oa, Lu())).promise;
+    return (re(this, Oa) ?? Ue(this, Oa, Lu())).promise;
   }
   static ensure() {
     if (st === null) {
@@ -566,19 +566,19 @@ class vf {
     tt(this, wo, () => {
       re(this, Tr) && ji(re(this, Tr), re(this, ri));
     });
-    tt(this, Lo, df(() => (He(this, Tr, ci(re(this, ri))), () => {
-      He(this, Tr, null);
+    tt(this, Lo, df(() => (Ue(this, Tr, ci(re(this, ri))), () => {
+      Ue(this, Tr, null);
     })));
-    He(this, Tn, e), He(this, Xn, n), He(this, ni, r), this.parent = /** @type {Effect} */
-    Ge.b, He(this, kn, !!re(this, Xn).pending), He(this, Kn, Br(() => {
+    Ue(this, Tn, e), Ue(this, Xn, n), Ue(this, ni, r), this.parent = /** @type {Effect} */
+    Ge.b, Ue(this, kn, !!re(this, Xn).pending), Ue(this, Kn, Br(() => {
       Ge.b = this;
       {
         try {
-          He(this, wn, qt(() => r(re(this, Tn))));
+          Ue(this, wn, qt(() => r(re(this, Tn))));
         } catch (i) {
           this.error(i);
         }
-        re(this, xr) > 0 ? Wt(this, tn, ao).call(this) : He(this, kn, !1);
+        re(this, xr) > 0 ? Wt(this, tn, ao).call(this) : Ue(this, kn, !1);
       }
     }, ff));
   }
@@ -599,7 +599,7 @@ class vf {
    * @param {1 | -1} d
    */
   update_pending_count(e) {
-    Wt(this, tn, gs).call(this, e), He(this, ri, re(this, ri) + e), fs.add(re(this, wo));
+    Wt(this, tn, gs).call(this, e), Ue(this, ri, re(this, ri) + e), fs.add(re(this, wo));
   }
   get_effect_pending() {
     return re(this, Lo).call(this), s(
@@ -613,16 +613,16 @@ class vf {
     let r = re(this, Xn).failed;
     if (re(this, ii) || !n && !r)
       throw e;
-    re(this, wn) && (jt(re(this, wn)), He(this, wn, null)), re(this, cn) && (jt(re(this, cn)), He(this, cn, null)), re(this, Yn) && (jt(re(this, Yn)), He(this, Yn, null));
+    re(this, wn) && (jt(re(this, wn)), Ue(this, wn, null)), re(this, cn) && (jt(re(this, cn)), Ue(this, cn, null)), re(this, Yn) && (jt(re(this, Yn)), Ue(this, Yn, null));
     var i = !1, a = !1;
     const o = () => {
       if (i) {
         tf();
         return;
       }
-      i = !0, a && $d(), hr.ensure(), He(this, ri, 0), re(this, Yn) !== null && Mr(re(this, Yn), () => {
-        He(this, Yn, null);
-      }), He(this, kn, this.has_pending_snippet()), He(this, wn, Wt(this, tn, io).call(this, () => (He(this, ii, !1), qt(() => re(this, ni).call(this, re(this, Tn)))))), re(this, xr) > 0 ? Wt(this, tn, ao).call(this) : He(this, kn, !1);
+      i = !0, a && $d(), hr.ensure(), Ue(this, ri, 0), re(this, Yn) !== null && Mr(re(this, Yn), () => {
+        Ue(this, Yn, null);
+      }), Ue(this, kn, this.has_pending_snippet()), Ue(this, wn, Wt(this, tn, io).call(this, () => (Ue(this, ii, !1), qt(() => re(this, ni).call(this, re(this, Tn)))))), re(this, xr) > 0 ? Wt(this, tn, ao).call(this) : Ue(this, kn, !1);
     };
     var u = je;
     try {
@@ -633,8 +633,8 @@ class vf {
       fn(u);
     }
     r && vr(() => {
-      He(this, Yn, Wt(this, tn, io).call(this, () => {
-        He(this, ii, !0);
+      Ue(this, Yn, Wt(this, tn, io).call(this, () => {
+        Ue(this, ii, !0);
         try {
           return qt(() => {
             r(
@@ -650,7 +650,7 @@ class vf {
             re(this, Kn).parent
           ), null;
         } finally {
-          He(this, ii, !1);
+          Ue(this, ii, !1);
         }
       }));
     });
@@ -658,21 +658,21 @@ class vf {
 }
 kn = new WeakMap(), Tn = new WeakMap(), Ns = new WeakMap(), Xn = new WeakMap(), ni = new WeakMap(), Kn = new WeakMap(), wn = new WeakMap(), cn = new WeakMap(), Yn = new WeakMap(), Cr = new WeakMap(), ri = new WeakMap(), xr = new WeakMap(), ii = new WeakMap(), Tr = new WeakMap(), wo = new WeakMap(), Lo = new WeakMap(), tn = new WeakSet(), mf = function() {
   try {
-    He(this, wn, qt(() => re(this, ni).call(this, re(this, Tn))));
+    Ue(this, wn, qt(() => re(this, ni).call(this, re(this, Tn))));
   } catch (e) {
     this.error(e);
   }
-  He(this, kn, !1);
+  Ue(this, kn, !1);
 }, gf = function() {
   const e = re(this, Xn).pending;
-  e && (He(this, cn, qt(() => e(re(this, Tn)))), hr.enqueue(() => {
-    He(this, wn, Wt(this, tn, io).call(this, () => (hr.ensure(), qt(() => re(this, ni).call(this, re(this, Tn)))))), re(this, xr) > 0 ? Wt(this, tn, ao).call(this) : (Mr(
+  e && (Ue(this, cn, qt(() => e(re(this, Tn)))), hr.enqueue(() => {
+    Ue(this, wn, Wt(this, tn, io).call(this, () => (hr.ensure(), qt(() => re(this, ni).call(this, re(this, Tn)))))), re(this, xr) > 0 ? Wt(this, tn, ao).call(this) : (Mr(
       /** @type {Effect} */
       re(this, cn),
       () => {
-        He(this, cn, null);
+        Ue(this, cn, null);
       }
-    ), He(this, kn, !1));
+    ), Ue(this, kn, !1));
   }));
 }, /**
  * @param {() => Effect | null} fn
@@ -692,7 +692,7 @@ io = function(e) {
     /** @type {(anchor: Node) => void} */
     re(this, Xn).pending
   );
-  re(this, wn) !== null && (He(this, Cr, document.createDocumentFragment()), pf(re(this, wn), re(this, Cr))), re(this, cn) === null && He(this, cn, qt(() => e(re(this, Tn))));
+  re(this, wn) !== null && (Ue(this, Cr, document.createDocumentFragment()), pf(re(this, wn), re(this, Cr))), re(this, cn) === null && Ue(this, cn, qt(() => e(re(this, Tn))));
 }, /**
  * Updates the pending count associated with the currently visible pending snippet,
  * if any, such that we can replace the snippet with content once work is done
@@ -704,9 +704,9 @@ gs = function(e) {
     this.parent && Wt(n = this.parent, tn, gs).call(n, e);
     return;
   }
-  He(this, xr, re(this, xr) + e), re(this, xr) === 0 && (He(this, kn, !1), re(this, cn) && Mr(re(this, cn), () => {
-    He(this, cn, null);
-  }), re(this, Cr) && (re(this, Tn).before(re(this, Cr)), He(this, Cr, null)), vr(() => {
+  Ue(this, xr, re(this, xr) + e), re(this, xr) === 0 && (Ue(this, kn, !1), re(this, cn) && Mr(re(this, cn), () => {
+    Ue(this, cn, null);
+  }), re(this, Cr) && (re(this, Tn).before(re(this, Cr)), Ue(this, Cr, null)), vr(() => {
     hr.ensure().flush();
   }));
 };
@@ -2557,7 +2557,7 @@ function nh(t, e, n, r, i = !1, a = !1) {
   }
   return c;
 }
-function Ue(t, e, n = [], r = [], i, a = !1, o = !1) {
+function ke(t, e, n = [], r = [], i, a = !1, o = !1) {
   Vu(n, r, (u) => {
     var l = void 0, c = {}, d = t.nodeName === "SELECT", v = !1;
     if (Br(() => {
@@ -7619,7 +7619,7 @@ function jr(t, e) {
   {
     var v = (m) => {
       var h = Dm();
-      Ue(h, () => ({ ...i }));
+      ke(h, () => ({ ...i }));
       var g = se(h);
       Se(g, () => e.children ?? pe), Ee(h, (b) => o = b, () => o), Me(h, (b, y) => W == null ? void 0 : W(b, y), n), L(m, h);
     }, f = (m) => {
@@ -7628,12 +7628,12 @@ function jr(t, e) {
         var b = (S) => {
           var I = ne(), _ = Z(I);
           El(_, r, !1, (E, C) => {
-            Ee(E, (w) => o = w, () => o), Me(E, (w, x) => W == null ? void 0 : W(w, x), n), Ue(E, () => ({ ...i }));
+            Ee(E, (w) => o = w, () => o), Me(E, (w, x) => W == null ? void 0 : W(w, x), n), ke(E, () => ({ ...i }));
           }), L(S, I);
         }, y = (S) => {
           var I = ne(), _ = Z(I);
           El(_, r, !1, (E, C) => {
-            Ee(E, (T) => o = T, () => o), Me(E, (T, B) => W == null ? void 0 : W(T, B), n), Ue(E, () => ({ ...i }));
+            Ee(E, (T) => o = T, () => o), Me(E, (T, B) => W == null ? void 0 : W(T, B), n), ke(E, () => ({ ...i }));
             var w = ne(), x = Z(w);
             Se(x, () => e.children ?? pe), L(C, w);
           }), L(S, I);
@@ -7662,7 +7662,7 @@ function Nm(t, e) {
     return i;
   }
   var o = { getElement: a }, u = Pm();
-  Ue(u, () => ({ ...r }));
+  ke(u, () => ({ ...r }));
   var l = se(u);
   return Se(l, () => e.children ?? pe), Ee(u, (c) => i = c, () => i), Me(u, (c, d) => W == null ? void 0 : W(c, d), n), L(t, u), xe(o);
 }
@@ -7819,9 +7819,9 @@ function Qc(t, e) {
 function km(t, e) {
   Ce(e, !0);
   let n = p(e, "callback", 3, () => {
-  }), r = p(e, "disabled", 3, !1), i = p(e, "variant", 3, "default"), a = p(e, "isAbortAction", 3, !1), o = p(e, "backgroundColor", 3, void 0);
+  }), r = p(e, "disabled", 3, !1), i = p(e, "variant", 3, "default"), a = p(e, "isAbortAction", 3, !1), o = p(e, "backgroundColor", 3, void 0), u = p(e, "ariaLabel", 3, void 0);
   {
-    let u = /* @__PURE__ */ ge(() => a() ? "background-color: #ff3e00;" : "background-color: " + o());
+    let l = /* @__PURE__ */ ge(() => a() ? "background-color: #ff3e00;" : "background-color: " + o());
     Qc(t, {
       onclick: () => n()(),
       get variant() {
@@ -7830,12 +7830,15 @@ function km(t, e) {
       get disabled() {
         return r();
       },
-      get style() {
-        return s(u);
+      get "aria-label"() {
+        return u();
       },
-      children: (l, c) => {
-        var d = ne(), v = Z(d);
-        Se(v, () => e.children ?? pe), L(l, d);
+      get style() {
+        return s(l);
+      },
+      children: (c, d) => {
+        var v = ne(), f = Z(v);
+        Se(f, () => e.children ?? pe), L(c, v);
       },
       $$slots: { default: !0 }
     });
@@ -8159,24 +8162,27 @@ function jm(t, e) {
 }
 function Gm(t, e) {
   let n = p(e, "callback", 3, () => {
-  }), r = p(e, "icon", 3, ""), i = p(e, "disabled", 3, !1);
+  }), r = p(e, "icon", 3, ""), i = p(e, "disabled", 3, !1), a = p(e, "ariaLabel", 3, void 0);
   jm(t, {
     get disabled() {
       return i();
     },
+    get "aria-label"() {
+      return a();
+    },
     style: "margin-bottom: 0;",
     $$events: {
-      click(...a) {
-        var o;
-        (o = n()) == null || o.apply(this, a);
+      click(...o) {
+        var u;
+        (u = n()) == null || u.apply(this, o);
       }
     },
-    children: (a, o) => {
-      Os(a, {
+    children: (o, u) => {
+      Os(o, {
         class: "material-icons",
-        children: (u, l) => {
-          var c = Rt();
-          Oe(() => at(c, r())), L(u, c);
+        children: (l, c) => {
+          var d = Rt();
+          Oe(() => at(d, r())), L(l, d);
         },
         $$slots: { default: !0 }
       });
@@ -9116,7 +9122,7 @@ function yo(t, e) {
   {
     var A = (U) => {
       var q = ng();
-      Ue(q, (H, R) => ({ class: H, style: R, ...l }), [
+      ke(q, (H, R) => ({ class: H, style: R, ...l }), [
         () => De({
           "mdc-floating-label": !0,
           "mdc-floating-label--float-above": a(),
@@ -9130,7 +9136,7 @@ function yo(t, e) {
       Se(J, () => e.children ?? pe), Ee(q, (H) => c = H, () => c), Me(q, (H, R) => W == null ? void 0 : W(H, R), n), L(U, q);
     }, N = (U) => {
       var q = rg();
-      Ue(
+      ke(
         q,
         (H, R) => ({
           class: H,
@@ -9213,7 +9219,7 @@ function Jc(t, e) {
     return u;
   }
   var _ = { activate: b, deactivate: y, setRippleCenter: S, getElement: I }, E = ig();
-  return Ue(E, (C, w) => ({ class: C, style: w, ...o }), [
+  return ke(E, (C, w) => ({ class: C, style: w, ...o }), [
     () => De({
       "mdc-line-ripple": !0,
       "mdc-line-ripple--active": a(),
@@ -9281,7 +9287,7 @@ function $c(t, e) {
     return u;
   }
   var _ = { notch: y, closeNotch: S, getElement: I }, E = og();
-  Ue(E, (x) => ({ class: x, ...o }), [
+  ke(E, (x) => ({ class: x, ...o }), [
     () => De({
       "mdc-notched-outline": !0,
       "mdc-notched-outline--notched": i(),
@@ -9524,7 +9530,7 @@ function dg(t, e) {
     var N;
     _(A), (N = e.onchange) == null || N.call(e, A);
   };
-  return Ue(
+  return ke(
     M,
     (A) => ({
       class: A,
@@ -9589,7 +9595,7 @@ function hg(t, e) {
     var T;
     h(), (T = e.onchange) == null || T.call(e, x);
   };
-  return Ue(
+  return ke(
     C,
     (x) => ({
       class: x,
@@ -9698,11 +9704,11 @@ function Rs(t, e) {
           addClass: Pe,
           removeClass: Le,
           hasClass: ie,
-          registerTextFieldInteractionHandler: (te, Ne) => U.on(z(), te, Ne),
-          deregisterTextFieldInteractionHandler: (te, Ne) => U.off(z(), te, Ne),
+          registerTextFieldInteractionHandler: (te, He) => U.on(z(), te, He),
+          deregisterTextFieldInteractionHandler: (te, He) => U.off(z(), te, He),
           registerValidationAttributeChangeHandler: (te) => {
-            const Ne = (mt) => mt.map((kt) => kt.attributeName).filter((kt) => kt), dt = new MutationObserver((mt) => {
-              C() && te(Ne(mt));
+            const He = (mt) => mt.map((kt) => kt.attributeName).filter((kt) => kt), dt = new MutationObserver((mt) => {
+              C() && te(He(mt));
             }), bt = { attributes: !0 };
             return T() && dt.observe(T().getElement(), bt), dt;
           },
@@ -9714,30 +9720,30 @@ function Rs(t, e) {
             var te;
             return ((te = T()) == null ? void 0 : te.getElement()) ?? null;
           },
-          setInputAttr: (te, Ne) => {
+          setInputAttr: (te, He) => {
             var dt;
-            (dt = T()) == null || dt.addAttr(te, Ne);
+            (dt = T()) == null || dt.addAttr(te, He);
           },
           removeInputAttr: (te) => {
-            var Ne;
-            (Ne = T()) == null || Ne.removeAttr(te);
+            var He;
+            (He = T()) == null || He.removeAttr(te);
           },
           isFocused: () => {
             var te;
             return document.activeElement === ((te = T()) == null ? void 0 : te.getElement());
           },
-          registerInputInteractionHandler: (te, Ne) => {
+          registerInputInteractionHandler: (te, He) => {
             var bt;
             const dt = (bt = T()) == null ? void 0 : bt.getElement();
             if (dt) {
               const mt = n();
-              U.on(dt, te, Ne, typeof mt == "boolean" ? { capture: mt } : mt);
+              U.on(dt, te, He, typeof mt == "boolean" ? { capture: mt } : mt);
             }
           },
-          deregisterInputInteractionHandler: (te, Ne) => {
+          deregisterInputInteractionHandler: (te, He) => {
             var bt;
             const dt = (bt = T()) == null ? void 0 : bt.getElement();
-            dt && U.off(dt, te, Ne);
+            dt && U.off(dt, te, He);
           },
           // getLabelAdapterMethods_
           floatLabel: (te) => B() && B().float(te),
@@ -9804,7 +9810,7 @@ function Rs(t, e) {
     var Y;
     (Y = T()) == null || Y.focus();
   }
-  function ke() {
+  function Ne() {
     var Y;
     (Y = T()) == null || Y.blur();
   }
@@ -9817,11 +9823,11 @@ function Rs(t, e) {
   function z() {
     return A;
   }
-  var he = { focus: Ke, blur: ke, layout: k, getElement: z }, Re = yg(), Fe = Z(Re);
+  var he = { focus: Ke, blur: Ne, layout: k, getElement: z }, Re = yg(), Fe = Z(Re);
   {
     var ct = (Y) => {
       var te = bg();
-      Ue(te, (ze, Qe, $e) => ({ class: ze, style: Qe, for: void 0, ...$e }), [
+      ke(te, (ze, Qe, $e) => ({ class: ze, style: Qe, for: void 0, ...$e }), [
         () => De({
           "mdc-text-field": !0,
           "mdc-text-field--disabled": c(),
@@ -9841,7 +9847,7 @@ function Rs(t, e) {
         () => Object.entries(J).map(([ze, Qe]) => `${ze}: ${Qe};`).concat([u()]).join(" "),
         () => tr(P, ["input$", "label$", "ripple$", "outline$", "helperLine$"])
       ]);
-      var Ne = se(te);
+      var He = se(te);
       {
         var dt = (ze) => {
           var Qe = mg(), $e = Z(Qe);
@@ -9916,11 +9922,11 @@ function Rs(t, e) {
           }
           L(ze, Qe);
         };
-        ae(Ne, (ze) => {
+        ae(He, (ze) => {
           !v() && f() !== "outlined" && ze(dt);
         });
       }
-      var bt = Ie(Ne, 2);
+      var bt = Ie(He, 2);
       {
         var mt = (ze) => {
           {
@@ -10253,7 +10259,7 @@ function Rs(t, e) {
       })), Me(te, (ze, Qe) => W == null ? void 0 : W(ze, Qe), a), L(Y, te);
     }, pt = (Y) => {
       var te = _g();
-      Ue(te, (ht, Mt, It) => ({ class: ht, style: Mt, ...It }), [
+      ke(te, (ht, Mt, It) => ({ class: ht, style: Mt, ...It }), [
         () => De({
           "mdc-text-field": !0,
           "mdc-text-field--disabled": c(),
@@ -10271,17 +10277,17 @@ function Rs(t, e) {
         () => Object.entries(J).map(([ht, Mt]) => `${ht}: ${Mt};`).concat([u()]).join(" "),
         () => tr(P, ["input$", "label$", "ripple$", "outline$", "helperLine$"])
       ]);
-      var Ne = se(te);
+      var He = se(te);
       {
         var dt = (ht) => {
           var Mt = ne(), It = Z(Mt);
           Se(It, () => e.label ?? pe), L(ht, Mt);
         };
-        ae(Ne, (ht) => {
+        ae(He, (ht) => {
           typeof e.label != "string" && ht(dt);
         });
       }
-      var bt = Ie(Ne, 2);
+      var bt = Ie(He, 2);
       Za(bt, {
         key: "SMUI:textfield:icon:leading",
         value: !0,
@@ -10322,9 +10328,9 @@ function Rs(t, e) {
       {
         let te = /* @__PURE__ */ ge(() => it(P, "helperLine$"));
         sg(Y, nt(() => s(te), {
-          children: (Ne, dt) => {
+          children: (He, dt) => {
             var bt = ne(), mt = Z(bt);
-            Se(mt, () => e.helper ?? pe), L(Ne, bt);
+            Se(mt, () => e.helper ?? pe), L(He, bt);
           },
           $$slots: { default: !0 }
         }));
@@ -10385,7 +10391,7 @@ function Eg(t, e) {
     return d;
   }
   var B = { getElement: T }, K = Ig();
-  Ue(
+  ke(
     K,
     (N) => ({
       class: N,
@@ -12322,7 +12328,7 @@ function Vg(t, e) {
     var ee;
     s(_) && !c() && s(_).handleKeydown(F), (ee = e.onkeydown) == null || ee.call(e, F);
   };
-  Ue(
+  ke(
     be,
     (F, ee) => ({
       class: F,
@@ -12747,7 +12753,7 @@ function Gg(t, e) {
       throw new Error("Instance is undefined.");
     return s(P).setEnabled(le, ye);
   }
-  function ke() {
+  function Ne() {
     if (!s(P))
       throw new Error("Instance is undefined.");
     return s(P).isTypeaheadInProgress();
@@ -12772,7 +12778,7 @@ function Gg(t, e) {
   var Fe = {
     layout: We,
     setEnabled: Ke,
-    getTypeaheadInProgress: ke,
+    getTypeaheadInProgress: Ne,
     getSelectedIndex: k,
     getFocusedItemIndex: z,
     focusItemAtIndex: he,
@@ -12813,26 +12819,26 @@ function Gg(t, e) {
           () => K,
           {
             onkeydown: (te) => {
-              var Ne;
-              G(te), (Ne = e.onkeydown) == null || Ne.call(e, te);
+              var He;
+              G(te), (He = e.onkeydown) == null || He.call(e, te);
             },
             onfocusin: (te) => {
-              var Ne;
-              Ae(te), (Ne = e.onfocusin) == null || Ne.call(e, te);
+              var He;
+              Ae(te), (He = e.onfocusin) == null || He.call(e, te);
             },
             onfocusout: (te) => {
-              var Ne;
-              be(te), (Ne = e.onfocusout) == null || Ne.call(e, te);
+              var He;
+              be(te), (He = e.onfocusout) == null || He.call(e, te);
             },
             onclick: (te) => {
-              var Ne;
-              V(te), (Ne = e.onclick) == null || Ne.call(e, te);
+              var He;
+              V(te), (He = e.onclick) == null || He.call(e, te);
             },
             onSMUIAction: (te) => {
-              var Ne;
-              j(te), (Ne = e.onSMUIAction) == null || Ne.call(e, te);
+              var He;
+              j(te), (He = e.onSMUIAction) == null || He.call(e, te);
             },
-            children: (te, Ne) => {
+            children: (te, He) => {
               var dt = ne(), bt = Z(dt);
               Se(bt, () => e.children ?? pe), L(te, dt);
             },
@@ -13088,17 +13094,17 @@ function Xg(t, e) {
               G(Le), (We = e.onkeydown) == null || We.call(e, Le);
             },
             children: (Le, We) => {
-              var Ke = zg(), ke = Z(Ke);
+              var Ke = zg(), Ne = Z(Ke);
               {
                 var k = (he) => {
                   var Re = qg();
                   L(he, Re);
                 };
-                ae(ke, (he) => {
+                ae(Ne, (he) => {
                   c() && he(k);
                 });
               }
-              var z = Ie(ke);
+              var z = Ie(Ne);
               Se(z, () => e.children ?? pe), L(Le, Ke);
             },
             $$slots: { default: !0 }
@@ -13167,7 +13173,7 @@ function Zg(t, e) {
     return l;
   }
   var w = { getElement: C }, x = Yg();
-  Ue(
+  ke(
     x,
     (M) => ({
       class: M,
@@ -13249,7 +13255,7 @@ function tp(t, e) {
   o(S()) && S(!1);
   let J, H = /* @__PURE__ */ ve(void 0), R = ce({}), G = ce({}), Ae, be = ce({}), V = /* @__PURE__ */ ve(-1);
   const j = /* @__PURE__ */ ge(() => U.menu$id ?? E() + "-menu");
-  let F = /* @__PURE__ */ ve(void 0), ee = me("SMUI:addLayoutListener"), Q, fe = /* @__PURE__ */ ve(!1), we = ce({}), $ = /* @__PURE__ */ ve(void 0), ie = /* @__PURE__ */ ve(void 0), Pe = /* @__PURE__ */ ve(!1), Le, We = me("SMUI:select:context"), Ke, ke, k, z, he;
+  let F = /* @__PURE__ */ ve(void 0), ee = me("SMUI:addLayoutListener"), Q, fe = /* @__PURE__ */ ve(!1), we = ce({}), $ = /* @__PURE__ */ ve(void 0), ie = /* @__PURE__ */ ve(void 0), Pe = /* @__PURE__ */ ve(!1), Le, We = me("SMUI:select:context"), Ke, Ne, k, z, he;
   oe("SMUI:list:role", ""), oe("SMUI:list:nav", !1);
   const Re = en("");
   oe("SMUI:select:selectedText", Re);
@@ -13289,9 +13295,9 @@ function tp(t, e) {
   }), oe("SMUI:select:helper-text:id", (D) => {
     X(F, D, !0);
   }), oe("SMUI:select:helper-text:mount", (D) => {
-    ke = D;
+    Ne = D;
   }), oe("SMUI:select:helper-text:unmount", () => {
-    X(F, void 0), ke = void 0;
+    X(F, void 0), Ne = void 0;
   }), rt(() => (X(
     H,
     new kg(
@@ -13307,7 +13313,7 @@ function tp(t, e) {
         setSelectAnchorAttr: bt,
         removeSelectAnchorAttr: mt,
         addMenuClass: te,
-        removeMenuClass: Ne,
+        removeMenuClass: He,
         openMenu: () => {
           X(fe, !0);
         },
@@ -13359,7 +13365,7 @@ function tp(t, e) {
       },
       {
         get helperText() {
-          return ke;
+          return Ne;
         },
         get leadingIcon() {
           return Ke;
@@ -13388,7 +13394,7 @@ function tp(t, e) {
   function te(D) {
     we[D] || (we[D] = !0);
   }
-  function Ne(D) {
+  function He(D) {
     (!(D in we) || we[D]) && (we[D] = !1);
   }
   function dt(D) {
@@ -13436,7 +13442,7 @@ function tp(t, e) {
     layout: yi,
     getElement: Wn
   }, Qe = ep(), $e = Z(Qe);
-  Ue($e, (D, _e, ft) => ({ class: D, style: _e, ...ft }), [
+  ke($e, (D, _e, ft) => ({ class: D, style: _e, ...ft }), [
     () => De({
       "mdc-select": !0,
       "mdc-select--required": _(),
@@ -13471,7 +13477,7 @@ function tp(t, e) {
   {
     var gn = (D) => {
       var _e = Jg();
-      Ue(
+      ke(
         _e,
         (ft) => ({
           type: "hidden",
@@ -13503,7 +13509,7 @@ function tp(t, e) {
     var _e;
     s(H) && s(H).handleFocus(), Je(Wn(), "focus", D), (_e = e.anchor$onfocus) == null || _e.call(e, D);
   };
-  Ue(
+  ke(
     ot,
     (D, _e) => ({
       class: D,
@@ -13692,7 +13698,7 @@ function tp(t, e) {
   var ln = Ie(sn, 2);
   Se(ln, () => e.leadingIcon ?? pe);
   var Yt = Ie(ln, 2);
-  Ue(Yt, (D, _e) => ({ class: D, ..._e }), [
+  ke(Yt, (D, _e) => ({ class: D, ..._e }), [
     () => De({
       "mdc-select__selected-text-container": !0,
       [K()]: !0
@@ -13700,7 +13706,7 @@ function tp(t, e) {
     () => it(U, "selectedTextContainer$")
   ]);
   var qn = se(Yt);
-  Ue(
+  ke(
     qn,
     (D, _e) => ({
       id: E() + "-smui-selected-text",
@@ -13721,7 +13727,7 @@ function tp(t, e) {
   var Gr = se(qn);
   Me(qn, (D, _e) => W == null ? void 0 : W(D, _e), M), Me(Yt, (D, _e) => W == null ? void 0 : W(D, _e), B);
   var un = Ie(Yt, 2);
-  Ue(un, (D, _e) => ({ class: D, ..._e }), [
+  ke(un, (D, _e) => ({ class: D, ..._e }), [
     () => De({
       "mdc-select__dropdown-icon": !0,
       [A()]: !0
@@ -13985,7 +13991,7 @@ function op(t, e) {
     return d;
   }
   var f = { getElement: v }, m = ap();
-  Ue(m, (g) => ({ class: g, ...c }), [
+  ke(m, (g) => ({ class: g, ...c }), [
     () => De({
       "smui-paper": !0,
       "smui-paper--raised": i() === "raised",
@@ -15129,7 +15135,7 @@ function Kp(t, e) {
     var z;
     U(k), (z = e.onSMUIDataTableBodyCheckboxChange) == null || z.call(e, k);
   };
-  Ue(
+  ke(
     F,
     (k, z) => ({
       class: k,
@@ -15150,7 +15156,7 @@ function Kp(t, e) {
     ]
   );
   var $ = se(F);
-  Ue($, (k, z) => ({ class: k, ...z }), [
+  ke($, (k, z) => ({ class: k, ...z }), [
     () => De({
       "mdc-data-table__table-container": !0,
       [g()]: !0
@@ -15158,7 +15164,7 @@ function Kp(t, e) {
     () => it(S, "container$")
   ]);
   var ie = se($);
-  Ue(ie, (k, z) => ({ class: k, ...z }), [
+  ke(ie, (k, z) => ({ class: k, ...z }), [
     () => De({ "mdc-data-table__table": !0, [y()]: !0 }),
     () => it(S, "table$")
   ]);
@@ -15178,8 +15184,8 @@ function Kp(t, e) {
   }
   var Ke = Ie(Le, 2);
   Se(Ke, () => e.paginate ?? pe), Ee(F, (k) => I = k, () => I), Me(F, (k, z) => W == null ? void 0 : W(k, z), o), L(t, F);
-  var ke = xe(j);
-  return i(), ke;
+  var Ne = xe(j);
+  return i(), Ne;
 }
 var Yp = /* @__PURE__ */ de("<thead><!></thead>");
 function Zp(t, e) {
@@ -15226,7 +15232,7 @@ function Zp(t, e) {
     return i;
   }
   var h = { getElement: m }, g = Yp();
-  Ue(g, () => ({ ...r }));
+  ke(g, () => ({ ...r }));
   var b = se(g);
   return Se(b, () => e.children ?? pe), Ee(g, (y) => i = y, () => i), Me(g, (y, S) => W == null ? void 0 : W(y, S), n), L(t, g), xe(h);
 }
@@ -15269,7 +15275,7 @@ function Jp(t, e) {
     return a;
   }
   var f = { getElement: v }, m = Qp();
-  Ue(m, (g) => ({ class: g, ...i }), [
+  ke(m, (g) => ({ class: g, ...i }), [
     () => De({ "mdc-data-table__content": !0, [r()]: !0 })
   ]);
   var h = se(m);
@@ -15363,7 +15369,7 @@ function Ja(t, e) {
     var K;
     d ? I(B) : _(B), (K = e.onclick) == null || K.call(e, B);
   };
-  Ue(
+  ke(
     w,
     (B) => ({
       class: B,
@@ -15461,7 +15467,7 @@ function ha(t, e) {
         var F;
         d() && K(j), (F = e.onchange) == null || F.call(e, j);
       };
-      Ue(
+      ke(
         R,
         (j) => ({
           class: j,
@@ -15508,7 +15514,7 @@ function ha(t, e) {
         var V;
         d() && M(be), (V = e.onchange) == null || V.call(e, be);
       };
-      Ue(
+      ke(
         R,
         (be) => ({
           class: be,
@@ -15623,7 +15629,7 @@ function ad(t, e) {
     var G;
     s(m) && s(m).handleTransitionEnd(), (G = e.ontransitionend) == null || G.call(e, R);
   };
-  Ue(
+  ke(
     A,
     (R, G) => ({
       class: R,
@@ -15802,7 +15808,7 @@ function db(t, e) {
     return c;
   }
   var g = { getElement: h }, b = cb();
-  Ue(b, (_, E) => ({ class: _, ...E }), [
+  ke(b, (_, E) => ({ class: _, ...E }), [
     () => De({
       "mdc-form-field": !0,
       "mdc-form-field--align-end": i() === "end",
@@ -15814,7 +15820,7 @@ function db(t, e) {
   var y = se(b);
   Se(y, () => e.children ?? pe);
   var S = Ie(y, 2);
-  Ue(S, (_) => ({ for: o(), ..._ }), [() => it(l, "label$")]);
+  ke(S, (_) => ({ for: o(), ..._ }), [() => it(l, "label$")]);
   var I = se(S);
   return Se(I, () => e.label ?? pe), Ee(S, (_) => f = _, () => f), Me(S, (_, E) => W == null ? void 0 : W(_, E), u), Ee(b, (_) => c = _, () => c), Me(b, (_, E) => W == null ? void 0 : W(_, E), n), L(t, b), xe(g);
 }
@@ -16172,7 +16178,7 @@ function Db(t, e) {
     var ie;
     s(S) && s(S).handleAnimationEnd(), (ie = e.onanimationend) == null || ie.call(e, $);
   };
-  Ue(F, ($, ie, Pe) => ({ class: $, style: ie, ...Pe, onanimationend: ee }), [
+  ke(F, ($, ie, Pe) => ({ class: $, style: ie, ...Pe, onanimationend: ee }), [
     () => De({
       "mdc-checkbox": !0,
       "mdc-checkbox--disabled": u(),
@@ -16192,7 +16198,7 @@ function Db(t, e) {
     var ie;
     Je(V(), "focus", $), (ie = e.input$onfocus) == null || ie.call(e, $);
   };
-  return Ue(
+  return ke(
     Q,
     ($, ie, Pe, Le) => ({
       class: $,
@@ -17570,7 +17576,7 @@ function $b(t, e) {
     scrollTo: M,
     getElement: P
   }, A = Jb();
-  Ue(A, (V, j) => ({ class: V, ...j }), [
+  ke(A, (V, j) => ({ class: V, ...j }), [
     () => De({
       "mdc-tab-scroller": !0,
       "mdc-tab-scroller--align-start": a() === "start",
@@ -17597,7 +17603,7 @@ function $b(t, e) {
     var j;
     s(f) && s(f).handleInteraction(), (j = e.scrollArea$onkeydown) == null || j.call(e, V);
   };
-  Ue(
+  ke(
     N,
     (V, j, F) => ({
       class: V,
@@ -17623,7 +17629,7 @@ function $b(t, e) {
     var j;
     s(f) && s(f).handleTransitionEnd(V), (j = e.scrollContent$ontransitionend) == null || j.call(e, V);
   };
-  Ue(
+  ke(
     G,
     (V, j, F) => ({
       class: V,
@@ -17762,7 +17768,7 @@ function t_(t, e) {
     var A;
     s(m) && s(m).handleTabInteraction(O), (A = e.onSMUITabInteracted) == null || A.call(e, O);
   };
-  Ue(
+  ke(
     B,
     (O, A) => ({
       class: O,
@@ -17864,7 +17870,7 @@ function r_(t, e) {
     return d;
   }
   var B = { activate: C, deactivate: w, computeContentClientRect: x, getElement: T }, K = n_();
-  Ue(K, (O, A) => ({ class: O, ...A }), [
+  ke(K, (O, A) => ({ class: O, ...A }), [
     () => De({
       "mdc-tab-indicator": !0,
       "mdc-tab-indicator--active": i(),
@@ -17875,7 +17881,7 @@ function r_(t, e) {
     () => tr(c, ["content$"])
   ]);
   var M = se(K);
-  Ue(
+  ke(
     M,
     (O, A, N) => ({
       class: O,
@@ -18087,13 +18093,13 @@ function a_(t, e) {
             },
             children: (Pe, Le) => {
               var We = i_(), Ke = Z(We);
-              Ue(Ke, (Fe, ct) => ({ class: Fe, ...ct }), [
+              ke(Ke, (Fe, ct) => ({ class: Fe, ...ct }), [
                 () => De({ "mdc-tab__content": !0, [f()]: !0 }),
                 () => it(g, "content$")
               ]);
-              var ke = se(Ke);
-              Se(ke, () => e.children ?? pe);
-              var k = Ie(ke, 2);
+              var Ne = se(Ke);
+              Se(Ne, () => e.children ?? pe);
+              var k = Ie(Ne, 2);
               {
                 var z = (Fe) => {
                   n(Fe);
@@ -18299,7 +18305,7 @@ function E_(t, e) {
                         var ie = ne(), Pe = Z(ie);
                         {
                           var Le = (We) => {
-                            var Ke = ne(), ke = Z(Ke);
+                            var Ke = ne(), Ne = Z(Ke);
                             {
                               var k = (he) => {
                                 var Re = d_();
@@ -18321,7 +18327,7 @@ function E_(t, e) {
                                 }
                                 L(he, Re);
                               };
-                              ae(ke, (he) => {
+                              ae(Ne, (he) => {
                                 r() === "asc" ? he(k) : he(z, !1);
                               });
                             }
@@ -18364,7 +18370,7 @@ function E_(t, e) {
                             {
                               var ie = (We) => {
                                 var Ke = m_();
-                                Ke.__input = [v_, I], Oe(() => Dr(Ke, "placeholder", `${f()} ${s(be).headerName}`)), Ea(Ke, () => h[s(be).field], (ke) => h[s(be).field] = ke), L(We, Ke);
+                                Ke.__input = [v_, I], Oe(() => Dr(Ke, "placeholder", `${f()} ${s(be).headerName}`)), Ea(Ke, () => h[s(be).field], (Ne) => h[s(be).field] = Ne), L(We, Ke);
                               };
                               ae($, (We) => {
                                 s(be).filterType === "text" && We(ie);
@@ -18374,7 +18380,7 @@ function E_(t, e) {
                             {
                               var Le = (We) => {
                                 var Ke = p_();
-                                Ke.__input = [g_, I], Oe(() => Dr(Ke, "placeholder", `${f()} ${s(be).headerName}`)), Ea(Ke, () => h[s(be).field], (ke) => h[s(be).field] = ke), L(We, Ke);
+                                Ke.__input = [g_, I], Oe(() => Dr(Ke, "placeholder", `${f()} ${s(be).headerName}`)), Ea(Ke, () => h[s(be).field], (Ne) => h[s(be).field] = Ne), L(We, Ke);
                               };
                               ae(Pe, (We) => {
                                 s(be).filterType === "number" && We(Le);
@@ -18439,28 +18445,31 @@ function E_(t, e) {
                           ha(ie, {
                             children: (Pe, Le) => {
                               var We = y_();
-                              Ln(We, 21, v, Li, (Ke, ke) => {
+                              Ln(We, 21, v, Li, (Ke, Ne) => {
                                 var k = ne(), z = Z(k);
                                 {
                                   var he = (Fe) => {
                                     Io(Fe, {
                                       get content() {
-                                        return s(ke).tooltip;
+                                        return s(Ne).tooltip;
                                       },
                                       hoverDelay: 500,
                                       children: (ct, pt) => {
                                         {
-                                          let le = /* @__PURE__ */ ge(() => s(ke).disabled(s(G)));
+                                          let le = /* @__PURE__ */ ge(() => s(Ne).disabled(s(G)));
                                           Gm(ct, {
                                             get iconComponent() {
-                                              return s(ke).iconComponent;
+                                              return s(Ne).iconComponent;
                                             },
                                             get iconStyles() {
-                                              return s(ke).iconStyles;
+                                              return s(Ne).iconStyles;
                                             },
-                                            callback: () => s(ke).callback(s(G)),
+                                            callback: () => s(Ne).callback(s(G)),
                                             get disabled() {
                                               return s(le);
+                                            },
+                                            get ariaLabel() {
+                                              return s(Ne).ariaLabel;
                                             }
                                           });
                                         }
@@ -18470,21 +18479,24 @@ function E_(t, e) {
                                   }, Re = (Fe) => {
                                     Io(Fe, {
                                       get content() {
-                                        return s(ke).tooltip;
+                                        return s(Ne).tooltip;
                                       },
                                       hoverDelay: 500,
                                       children: (ct, pt) => {
                                         {
-                                          let le = /* @__PURE__ */ ge(() => s(ke).disabled(s(G)));
+                                          let le = /* @__PURE__ */ ge(() => s(Ne).disabled(s(G)));
                                           km(ct, {
                                             class: "button",
                                             variant: "raised",
-                                            callback: () => s(ke).callback(s(G)),
+                                            callback: () => s(Ne).callback(s(G)),
                                             get disabled() {
                                               return s(le);
                                             },
+                                            get ariaLabel() {
+                                              return s(Ne).ariaLabel;
+                                            },
                                             children: (ye, Y) => {
-                                              var te = ne(), Ne = Z(te);
+                                              var te = ne(), He = Z(te);
                                               {
                                                 var dt = (mt) => {
                                                   vp(mt, { svgStyles: "margin: unset" });
@@ -18529,7 +18541,7 @@ function E_(t, e) {
                                                                             ae(
                                                                               rr,
                                                                               (Ir) => {
-                                                                                s(ke).icon === "archive" ? Ir(na) : Ir(jo, !1);
+                                                                                s(Ne).icon === "archive" ? Ir(na) : Ir(jo, !1);
                                                                               },
                                                                               !0
                                                                             );
@@ -18539,7 +18551,7 @@ function E_(t, e) {
                                                                         ae(
                                                                           qn,
                                                                           (Gt) => {
-                                                                            s(ke).icon === "delete" ? Gt(Gr) : Gt(un, !1);
+                                                                            s(Ne).icon === "delete" ? Gt(Gr) : Gt(un, !1);
                                                                           },
                                                                           !0
                                                                         );
@@ -18549,7 +18561,7 @@ function E_(t, e) {
                                                                     ae(
                                                                       Pt,
                                                                       (ln) => {
-                                                                        s(ke).icon === "edit" ? ln(sn) : ln(Bt, !1);
+                                                                        s(Ne).icon === "edit" ? ln(sn) : ln(Bt, !1);
                                                                       },
                                                                       !0
                                                                     );
@@ -18559,7 +18571,7 @@ function E_(t, e) {
                                                                 ae(
                                                                   et,
                                                                   (Lt) => {
-                                                                    s(ke).icon === "remove" ? Lt(wt) : Lt(Hn, !1);
+                                                                    s(Ne).icon === "remove" ? Lt(wt) : Lt(Hn, !1);
                                                                   },
                                                                   !0
                                                                 );
@@ -18569,7 +18581,7 @@ function E_(t, e) {
                                                             ae(
                                                               Dt,
                                                               (ut) => {
-                                                                s(ke).icon === "find-in-page" ? ut(gn) : ut(ot, !1);
+                                                                s(Ne).icon === "find-in-page" ? ut(gn) : ut(ot, !1);
                                                               },
                                                               !0
                                                             );
@@ -18579,7 +18591,7 @@ function E_(t, e) {
                                                         ae(
                                                           yi,
                                                           (Qe) => {
-                                                            s(ke).icon === "download" ? Qe(Wn) : Qe(ze, !1);
+                                                            s(Ne).icon === "download" ? Qe(Wn) : Qe(ze, !1);
                                                           },
                                                           !0
                                                         );
@@ -18589,15 +18601,15 @@ function E_(t, e) {
                                                     ae(
                                                       yr,
                                                       (It) => {
-                                                        s(ke).icon === "cancel" ? It(ht) : It(Mt, !1);
+                                                        s(Ne).icon === "cancel" ? It(ht) : It(Mt, !1);
                                                       },
                                                       !0
                                                     );
                                                   }
                                                   L(mt, kt);
                                                 };
-                                                ae(Ne, (mt) => {
-                                                  s(ke).icon === "add" ? mt(dt) : mt(bt, !1);
+                                                ae(He, (mt) => {
+                                                  s(Ne).icon === "add" ? mt(dt) : mt(bt, !1);
                                                 });
                                               }
                                               L(ye, te);
@@ -18610,7 +18622,7 @@ function E_(t, e) {
                                     });
                                   };
                                   ae(z, (Fe) => {
-                                    s(ke).iconComponent ? Fe(he) : Fe(Re, !1);
+                                    s(Ne).iconComponent ? Fe(he) : Fe(Re, !1);
                                   });
                                 }
                                 L(Ke, k);
@@ -18629,7 +18641,7 @@ function E_(t, e) {
                             children: (Pe, Le) => {
                               var We = ne(), Ke = Z(We);
                               {
-                                var ke = (z) => {
+                                var Ne = (z) => {
                                   const he = /* @__PURE__ */ ge(() => s(ee).cellRenderer);
                                   var Re = ne(), Fe = Z(Re);
                                   pr(Fe, () => s(he), (ct, pt) => {
@@ -18671,7 +18683,7 @@ function E_(t, e) {
                                   L(z, he);
                                 };
                                 ae(Ke, (z) => {
-                                  s(ee).cellRenderer ? z(ke) : z(k, !1);
+                                  s(ee).cellRenderer ? z(Ne) : z(k, !1);
                                 });
                               }
                               L(Pe, We);
@@ -20818,7 +20830,7 @@ class cI extends HTMLElement {
     tt(this, Bi);
     bn(this, "_doc");
     bn(this, "_editCount");
-    He(this, Bi, /* @__PURE__ */ ve(ce({ doc: void 0, editCount: void 0 })));
+    Ue(this, Bi, /* @__PURE__ */ ve(ce({ doc: void 0, editCount: void 0 })));
   }
   get props() {
     return s(re(this, Bi));

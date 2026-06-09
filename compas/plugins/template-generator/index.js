@@ -4950,9 +4950,9 @@ function Zt(a, e) {
 function Xd(a, e) {
   _e(e, !0);
   let t = u(e, "callback", 3, () => {
-  }), n = u(e, "disabled", 3, !1), r = u(e, "variant", 3, "default"), s = u(e, "isAbortAction", 3, !1), o = u(e, "backgroundColor", 3, void 0);
+  }), n = u(e, "disabled", 3, !1), r = u(e, "variant", 3, "default"), s = u(e, "isAbortAction", 3, !1), o = u(e, "backgroundColor", 3, void 0), d = u(e, "ariaLabel", 3, void 0);
   {
-    let d = /* @__PURE__ */ z(() => s() ? "background-color: #ff3e00;" : "background-color: " + o());
+    let c = /* @__PURE__ */ z(() => s() ? "background-color: #ff3e00;" : "background-color: " + o());
     Zt(a, {
       onclick: () => t()(),
       get variant() {
@@ -4961,12 +4961,15 @@ function Xd(a, e) {
       get disabled() {
         return n();
       },
-      get style() {
-        return i(d);
+      get "aria-label"() {
+        return d();
       },
-      children: (c, l) => {
-        var C = pe(), m = Z(C);
-        Pe(m, () => e.children ?? Le), A(c, C);
+      get style() {
+        return i(c);
+      },
+      children: (l, C) => {
+        var m = pe(), p = Z(m);
+        Pe(p, () => e.children ?? Le), A(l, m);
       },
       $$slots: { default: !0 }
     });

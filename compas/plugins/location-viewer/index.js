@@ -4,7 +4,7 @@ var ol = (t) => {
 };
 var Td = (t, e, n) => e in t ? xd(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n;
 var ct = (t, e, n) => Td(t, typeof e != "symbol" ? e + "" : e, n), Vo = (t, e, n) => e.has(t) || ol("Cannot " + n);
-var ne = (t, e, n) => (Vo(t, e, "read from private field"), n ? n.call(t) : e.get(t)), tt = (t, e, n) => e.has(t) ? ol("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, n), He = (t, e, n, r) => (Vo(t, e, "write to private field"), r ? r.call(t, n) : e.set(t, n), n), qt = (t, e, n) => (Vo(t, e, "access private method"), n);
+var ne = (t, e, n) => (Vo(t, e, "read from private field"), n ? n.call(t) : e.get(t)), tt = (t, e, n) => e.has(t) ? ol("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, n), Ue = (t, e, n, r) => (Vo(t, e, "write to private field"), r ? r.call(t, n) : e.set(t, n), n), qt = (t, e, n) => (Vo(t, e, "access private method"), n);
 const Ht = Symbol(), wd = "http://www.w3.org/1999/xhtml", Ld = "http://www.w3.org/2000/svg", Od = "@attach", gu = !1;
 var To = Array.isArray, Rd = Array.prototype.indexOf, Ms = Array.from, oo = Object.defineProperty, Rr = Object.getOwnPropertyDescriptor, pu = Object.getOwnPropertyDescriptors, Md = Object.prototype, Dd = Array.prototype, Ds = Object.getPrototypeOf, sl = Object.isExtensible;
 function wi(t) {
@@ -276,13 +276,13 @@ const Ao = class Ao {
       var n = Gt;
       qt(this, Tn, cs).call(this);
       var r = ne(this, ki), i = ne(this, ni);
-      He(this, ki, []), He(this, ni, []), He(this, Bi, []), $a = this, ot = null, Gt = n, ul(r), ul(i), $a = null, (a = ne(this, wa)) == null || a.resolve();
+      Ue(this, ki, []), Ue(this, ni, []), Ue(this, Bi, []), $a = this, ot = null, Gt = n, ul(r), ul(i), $a = null, (a = ne(this, wa)) == null || a.resolve();
     } else
       qt(this, Tn, eo).call(this, ne(this, ki)), qt(this, Tn, eo).call(this, ne(this, ni)), qt(this, Tn, eo).call(this, ne(this, Bi));
     Gt = null;
     for (const o of ne(this, Ui))
       Aa(o);
-    He(this, Ui, []);
+    Ue(this, Ui, []);
   }
   /**
    * Associate a change to a given source with the current
@@ -310,10 +310,10 @@ const Ao = class Ao {
         break;
   }
   increment() {
-    He(this, ti, ne(this, ti) + 1);
+    Ue(this, ti, ne(this, ti) + 1);
   }
   decrement() {
-    He(this, ti, ne(this, ti) - 1);
+    Ue(this, ti, ne(this, ti) - 1);
     for (const e of ne(this, La))
       en(e, yn), di(e);
     for (const e of ne(this, Oa))
@@ -325,7 +325,7 @@ const Ao = class Ao {
     ne(this, Hi).add(e);
   }
   settled() {
-    return (ne(this, wa) ?? He(this, wa, bu())).promise;
+    return (ne(this, wa) ?? Ue(this, wa, bu())).promise;
   }
   static ensure() {
     if (ot === null) {
@@ -566,19 +566,19 @@ class sf {
     tt(this, Co, () => {
       ne(this, wr) && ji(ne(this, wr), ne(this, ii));
     });
-    tt(this, xo, rf(() => (He(this, wr, fi(ne(this, ii))), () => {
-      He(this, wr, null);
+    tt(this, xo, rf(() => (Ue(this, wr, fi(ne(this, ii))), () => {
+      Ue(this, wr, null);
     })));
-    He(this, An, e), He(this, Wn, n), He(this, ri, r), this.parent = /** @type {Effect} */
-    Ge.b, He(this, Dn, !!ne(this, Wn).pending), He(this, qn, Fr(() => {
+    Ue(this, An, e), Ue(this, Wn, n), Ue(this, ri, r), this.parent = /** @type {Effect} */
+    Ge.b, Ue(this, Dn, !!ne(this, Wn).pending), Ue(this, qn, Fr(() => {
       Ge.b = this;
       {
         try {
-          He(this, Cn, zt(() => r(ne(this, An))));
+          Ue(this, Cn, zt(() => r(ne(this, An))));
         } catch (i) {
           this.error(i);
         }
-        ne(this, Tr) > 0 ? qt(this, nn, no).call(this) : He(this, Dn, !1);
+        ne(this, Tr) > 0 ? qt(this, nn, no).call(this) : Ue(this, Dn, !1);
       }
     }, af));
   }
@@ -599,7 +599,7 @@ class sf {
    * @param {1 | -1} d
    */
   update_pending_count(e) {
-    qt(this, nn, ds).call(this, e), He(this, ii, ne(this, ii) + e), ss.add(ne(this, Co));
+    qt(this, nn, ds).call(this, e), Ue(this, ii, ne(this, ii) + e), ss.add(ne(this, Co));
   }
   get_effect_pending() {
     return ne(this, xo).call(this), s(
@@ -613,16 +613,16 @@ class sf {
     let r = ne(this, Wn).failed;
     if (ne(this, ai) || !n && !r)
       throw e;
-    ne(this, Cn) && (jt(ne(this, Cn)), He(this, Cn, null)), ne(this, dn) && (jt(ne(this, dn)), He(this, dn, null)), ne(this, zn) && (jt(ne(this, zn)), He(this, zn, null));
+    ne(this, Cn) && (jt(ne(this, Cn)), Ue(this, Cn, null)), ne(this, dn) && (jt(ne(this, dn)), Ue(this, dn, null)), ne(this, zn) && (jt(ne(this, zn)), Ue(this, zn, null));
     var i = !1, a = !1;
     const o = () => {
       if (i) {
         Kd();
         return;
       }
-      i = !0, a && zd(), vr.ensure(), He(this, ii, 0), ne(this, zn) !== null && Dr(ne(this, zn), () => {
-        He(this, zn, null);
-      }), He(this, Dn, this.has_pending_snippet()), He(this, Cn, qt(this, nn, to).call(this, () => (He(this, ai, !1), zt(() => ne(this, ri).call(this, ne(this, An)))))), ne(this, Tr) > 0 ? qt(this, nn, no).call(this) : He(this, Dn, !1);
+      i = !0, a && zd(), vr.ensure(), Ue(this, ii, 0), ne(this, zn) !== null && Dr(ne(this, zn), () => {
+        Ue(this, zn, null);
+      }), Ue(this, Dn, this.has_pending_snippet()), Ue(this, Cn, qt(this, nn, to).call(this, () => (Ue(this, ai, !1), zt(() => ne(this, ri).call(this, ne(this, An)))))), ne(this, Tr) > 0 ? qt(this, nn, no).call(this) : Ue(this, Dn, !1);
     };
     var u = Ve;
     try {
@@ -633,8 +633,8 @@ class sf {
       fn(u);
     }
     r && mr(() => {
-      He(this, zn, qt(this, nn, to).call(this, () => {
-        He(this, ai, !0);
+      Ue(this, zn, qt(this, nn, to).call(this, () => {
+        Ue(this, ai, !0);
         try {
           return zt(() => {
             r(
@@ -650,7 +650,7 @@ class sf {
             ne(this, qn).parent
           ), null;
         } finally {
-          He(this, ai, !1);
+          Ue(this, ai, !1);
         }
       }));
     });
@@ -658,21 +658,21 @@ class sf {
 }
 Dn = new WeakMap(), An = new WeakMap(), Rs = new WeakMap(), Wn = new WeakMap(), ri = new WeakMap(), qn = new WeakMap(), Cn = new WeakMap(), dn = new WeakMap(), zn = new WeakMap(), xr = new WeakMap(), ii = new WeakMap(), Tr = new WeakMap(), ai = new WeakMap(), wr = new WeakMap(), Co = new WeakMap(), xo = new WeakMap(), nn = new WeakSet(), lf = function() {
   try {
-    He(this, Cn, zt(() => ne(this, ri).call(this, ne(this, An))));
+    Ue(this, Cn, zt(() => ne(this, ri).call(this, ne(this, An))));
   } catch (e) {
     this.error(e);
   }
-  He(this, Dn, !1);
+  Ue(this, Dn, !1);
 }, uf = function() {
   const e = ne(this, Wn).pending;
-  e && (He(this, dn, zt(() => e(ne(this, An)))), vr.enqueue(() => {
-    He(this, Cn, qt(this, nn, to).call(this, () => (vr.ensure(), zt(() => ne(this, ri).call(this, ne(this, An)))))), ne(this, Tr) > 0 ? qt(this, nn, no).call(this) : (Dr(
+  e && (Ue(this, dn, zt(() => e(ne(this, An)))), vr.enqueue(() => {
+    Ue(this, Cn, qt(this, nn, to).call(this, () => (vr.ensure(), zt(() => ne(this, ri).call(this, ne(this, An)))))), ne(this, Tr) > 0 ? qt(this, nn, no).call(this) : (Dr(
       /** @type {Effect} */
       ne(this, dn),
       () => {
-        He(this, dn, null);
+        Ue(this, dn, null);
       }
-    ), He(this, Dn, !1));
+    ), Ue(this, Dn, !1));
   }));
 }, /**
  * @param {() => Effect | null} fn
@@ -692,7 +692,7 @@ to = function(e) {
     /** @type {(anchor: Node) => void} */
     ne(this, Wn).pending
   );
-  ne(this, Cn) !== null && (He(this, xr, document.createDocumentFragment()), cf(ne(this, Cn), ne(this, xr))), ne(this, dn) === null && He(this, dn, zt(() => e(ne(this, An))));
+  ne(this, Cn) !== null && (Ue(this, xr, document.createDocumentFragment()), cf(ne(this, Cn), ne(this, xr))), ne(this, dn) === null && Ue(this, dn, zt(() => e(ne(this, An))));
 }, /**
  * Updates the pending count associated with the currently visible pending snippet,
  * if any, such that we can replace the snippet with content once work is done
@@ -704,9 +704,9 @@ ds = function(e) {
     this.parent && qt(n = this.parent, nn, ds).call(n, e);
     return;
   }
-  He(this, Tr, ne(this, Tr) + e), ne(this, Tr) === 0 && (He(this, Dn, !1), ne(this, dn) && Dr(ne(this, dn), () => {
-    He(this, dn, null);
-  }), ne(this, xr) && (ne(this, An).before(ne(this, xr)), He(this, xr, null)), mr(() => {
+  Ue(this, Tr, ne(this, Tr) + e), ne(this, Tr) === 0 && (Ue(this, Dn, !1), ne(this, dn) && Dr(ne(this, dn), () => {
+    Ue(this, dn, null);
+  }), ne(this, xr) && (ne(this, An).before(ne(this, xr)), Ue(this, xr, null)), mr(() => {
     vr.ensure().flush();
   }));
 };
@@ -7858,9 +7858,9 @@ function Vc(t, e) {
 function Km(t, e) {
   xe(e, !0);
   let n = p(e, "callback", 3, () => {
-  }), r = p(e, "disabled", 3, !1), i = p(e, "variant", 3, "default"), a = p(e, "isAbortAction", 3, !1), o = p(e, "backgroundColor", 3, void 0);
+  }), r = p(e, "disabled", 3, !1), i = p(e, "variant", 3, "default"), a = p(e, "isAbortAction", 3, !1), o = p(e, "backgroundColor", 3, void 0), u = p(e, "ariaLabel", 3, void 0);
   {
-    let u = /* @__PURE__ */ fe(() => a() ? "background-color: #ff3e00;" : "background-color: " + o());
+    let l = /* @__PURE__ */ fe(() => a() ? "background-color: #ff3e00;" : "background-color: " + o());
     Vc(t, {
       onclick: () => n()(),
       get variant() {
@@ -7869,12 +7869,15 @@ function Km(t, e) {
       get disabled() {
         return r();
       },
-      get style() {
-        return s(u);
+      get "aria-label"() {
+        return u();
       },
-      children: (l, c) => {
-        var d = re(), v = Q(d);
-        Se(v, () => e.children ?? pe), L(l, d);
+      get style() {
+        return s(l);
+      },
+      children: (c, d) => {
+        var v = re(), f = Q(v);
+        Se(f, () => e.children ?? pe), L(c, v);
       },
       $$slots: { default: !0 }
     });
@@ -8198,24 +8201,27 @@ function Jm(t, e) {
 }
 function $m(t, e) {
   let n = p(e, "callback", 3, () => {
-  }), r = p(e, "icon", 3, ""), i = p(e, "disabled", 3, !1);
+  }), r = p(e, "icon", 3, ""), i = p(e, "disabled", 3, !1), a = p(e, "ariaLabel", 3, void 0);
   Jm(t, {
     get disabled() {
       return i();
     },
+    get "aria-label"() {
+      return a();
+    },
     style: "margin-bottom: 0;",
     $$events: {
-      click(...a) {
-        var o;
-        (o = n()) == null || o.apply(this, a);
+      click(...o) {
+        var u;
+        (u = n()) == null || u.apply(this, o);
       }
     },
-    children: (a, o) => {
-      As(a, {
+    children: (o, u) => {
+      As(o, {
         class: "material-icons",
-        children: (u, l) => {
-          var c = Mt();
-          Oe(() => st(c, r())), L(u, c);
+        children: (l, c) => {
+          var d = Mt();
+          Oe(() => st(d, r())), L(l, d);
         },
         $$slots: { default: !0 }
       });
@@ -9737,11 +9743,11 @@ function Cs(t, e) {
           addClass: Me,
           removeClass: Le,
           hasClass: ie,
-          registerTextFieldInteractionHandler: (te, Ne) => U.on(X(), te, Ne),
-          deregisterTextFieldInteractionHandler: (te, Ne) => U.off(X(), te, Ne),
+          registerTextFieldInteractionHandler: (te, He) => U.on(X(), te, He),
+          deregisterTextFieldInteractionHandler: (te, He) => U.off(X(), te, He),
           registerValidationAttributeChangeHandler: (te) => {
-            const Ne = (gt) => gt.map((Bt) => Bt.attributeName).filter((Bt) => Bt), ft = new MutationObserver((gt) => {
-              x() && te(Ne(gt));
+            const He = (gt) => gt.map((Bt) => Bt.attributeName).filter((Bt) => Bt), ft = new MutationObserver((gt) => {
+              x() && te(He(gt));
             }), _t = { attributes: !0 };
             return A() && ft.observe(A().getElement(), _t), ft;
           },
@@ -9753,30 +9759,30 @@ function Cs(t, e) {
             var te;
             return ((te = A()) == null ? void 0 : te.getElement()) ?? null;
           },
-          setInputAttr: (te, Ne) => {
+          setInputAttr: (te, He) => {
             var ft;
-            (ft = A()) == null || ft.addAttr(te, Ne);
+            (ft = A()) == null || ft.addAttr(te, He);
           },
           removeInputAttr: (te) => {
-            var Ne;
-            (Ne = A()) == null || Ne.removeAttr(te);
+            var He;
+            (He = A()) == null || He.removeAttr(te);
           },
           isFocused: () => {
             var te;
             return document.activeElement === ((te = A()) == null ? void 0 : te.getElement());
           },
-          registerInputInteractionHandler: (te, Ne) => {
+          registerInputInteractionHandler: (te, He) => {
             var _t;
             const ft = (_t = A()) == null ? void 0 : _t.getElement();
             if (ft) {
               const gt = n();
-              U.on(ft, te, Ne, typeof gt == "boolean" ? { capture: gt } : gt);
+              U.on(ft, te, He, typeof gt == "boolean" ? { capture: gt } : gt);
             }
           },
-          deregisterInputInteractionHandler: (te, Ne) => {
+          deregisterInputInteractionHandler: (te, He) => {
             var _t;
             const ft = (_t = A()) == null ? void 0 : _t.getElement();
-            ft && U.off(ft, te, Ne);
+            ft && U.off(ft, te, He);
           },
           // getLabelAdapterMethods_
           floatLabel: (te) => M() && M().float(te),
@@ -9843,7 +9849,7 @@ function Cs(t, e) {
     var Y;
     (Y = A()) == null || Y.focus();
   }
-  function Ue() {
+  function Ne() {
     var Y;
     (Y = A()) == null || Y.blur();
   }
@@ -9856,7 +9862,7 @@ function Cs(t, e) {
   function X() {
     return T;
   }
-  var de = { focus: Ke, blur: Ue, layout: N, getElement: X }, Re = Og(), Fe = Q(Re);
+  var de = { focus: Ke, blur: Ne, layout: N, getElement: X }, Re = Og(), Fe = Q(Re);
   {
     var dt = (Y) => {
       var te = wg();
@@ -9880,7 +9886,7 @@ function Cs(t, e) {
         () => Object.entries(J).map(([qe, Qe]) => `${qe}: ${Qe};`).concat([u()]).join(" "),
         () => Jn(j, ["input$", "label$", "ripple$", "outline$", "helperLine$"])
       ]);
-      var Ne = me(te);
+      var He = me(te);
       {
         var ft = (qe) => {
           var Qe = Cg(), $e = Q(Qe);
@@ -9955,11 +9961,11 @@ function Cs(t, e) {
           }
           L(qe, Qe);
         };
-        oe(Ne, (qe) => {
+        oe(He, (qe) => {
           !v() && f() !== "outlined" && qe(ft);
         });
       }
-      var _t = Ie(Ne, 2);
+      var _t = Ie(He, 2);
       {
         var gt = (qe) => {
           {
@@ -10310,17 +10316,17 @@ function Cs(t, e) {
         () => Object.entries(J).map(([vt, Dt]) => `${vt}: ${Dt};`).concat([u()]).join(" "),
         () => Jn(j, ["input$", "label$", "ripple$", "outline$", "helperLine$"])
       ]);
-      var Ne = me(te);
+      var He = me(te);
       {
         var ft = (vt) => {
           var Dt = re(), It = Q(Dt);
           Se(It, () => e.label ?? pe), L(vt, Dt);
         };
-        oe(Ne, (vt) => {
+        oe(He, (vt) => {
           typeof e.label != "string" && vt(ft);
         });
       }
-      var _t = Ie(Ne, 2);
+      var _t = Ie(He, 2);
       Xa(_t, {
         key: "SMUI:textfield:icon:leading",
         value: !0,
@@ -10361,9 +10367,9 @@ function Cs(t, e) {
       {
         let te = /* @__PURE__ */ fe(() => rt(j, "helperLine$"));
         pg(Y, nt(() => s(te), {
-          children: (Ne, ft) => {
+          children: (He, ft) => {
             var _t = re(), gt = Q(_t);
-            Se(gt, () => e.helper ?? pe), L(Ne, _t);
+            Se(gt, () => e.helper ?? pe), L(He, _t);
           },
           $$slots: { default: !0 }
         }));
@@ -12786,7 +12792,7 @@ function $g(t, e) {
       throw new Error("Instance is undefined.");
     return s(j).setEnabled(se, ye);
   }
-  function Ue() {
+  function Ne() {
     if (!s(j))
       throw new Error("Instance is undefined.");
     return s(j).isTypeaheadInProgress();
@@ -12811,7 +12817,7 @@ function $g(t, e) {
   var Fe = {
     layout: je,
     setEnabled: Ke,
-    getTypeaheadInProgress: Ue,
+    getTypeaheadInProgress: Ne,
     getSelectedIndex: N,
     getFocusedItemIndex: X,
     focusItemAtIndex: de,
@@ -12852,26 +12858,26 @@ function $g(t, e) {
           () => G,
           {
             onkeydown: (te) => {
-              var Ne;
-              W(te), (Ne = e.onkeydown) == null || Ne.call(e, te);
+              var He;
+              W(te), (He = e.onkeydown) == null || He.call(e, te);
             },
             onfocusin: (te) => {
-              var Ne;
-              Ae(te), (Ne = e.onfocusin) == null || Ne.call(e, te);
+              var He;
+              Ae(te), (He = e.onfocusin) == null || He.call(e, te);
             },
             onfocusout: (te) => {
-              var Ne;
-              _e(te), (Ne = e.onfocusout) == null || Ne.call(e, te);
+              var He;
+              _e(te), (He = e.onfocusout) == null || He.call(e, te);
             },
             onclick: (te) => {
-              var Ne;
-              F(te), (Ne = e.onclick) == null || Ne.call(e, te);
+              var He;
+              F(te), (He = e.onclick) == null || He.call(e, te);
             },
             onSMUIAction: (te) => {
-              var Ne;
-              V(te), (Ne = e.onSMUIAction) == null || Ne.call(e, te);
+              var He;
+              V(te), (He = e.onSMUIAction) == null || He.call(e, te);
             },
-            children: (te, Ne) => {
+            children: (te, He) => {
               var ft = re(), _t = Q(ft);
               Se(_t, () => e.children ?? pe), L(te, ft);
             },
@@ -13127,17 +13133,17 @@ function rp(t, e) {
               W(Le), (je = e.onkeydown) == null || je.call(e, Le);
             },
             children: (Le, je) => {
-              var Ke = np(), Ue = Q(Ke);
+              var Ke = np(), Ne = Q(Ke);
               {
                 var N = (de) => {
                   var Re = tp();
                   L(de, Re);
                 };
-                oe(Ue, (de) => {
+                oe(Ne, (de) => {
                   c() && de(N);
                 });
               }
-              var X = Ie(Ue);
+              var X = Ie(Ne);
               Se(X, () => e.children ?? pe), L(Le, Ke);
             },
             $$slots: { default: !0 }
@@ -13288,7 +13294,7 @@ function dp(t, e) {
   o(S()) && S(!1);
   let J, P = /* @__PURE__ */ ve(void 0), R = ue({}), W = ue({}), Ae, _e = ue({}), F = /* @__PURE__ */ ve(-1);
   const V = /* @__PURE__ */ fe(() => U.menu$id ?? E() + "-menu");
-  let B = /* @__PURE__ */ ve(void 0), ee = he("SMUI:addLayoutListener"), Z, ce = /* @__PURE__ */ ve(!1), we = ue({}), $ = /* @__PURE__ */ ve(void 0), ie = /* @__PURE__ */ ve(void 0), Me = /* @__PURE__ */ ve(!1), Le, je = he("SMUI:select:context"), Ke, Ue, N, X, de;
+  let B = /* @__PURE__ */ ve(void 0), ee = he("SMUI:addLayoutListener"), Z, ce = /* @__PURE__ */ ve(!1), we = ue({}), $ = /* @__PURE__ */ ve(void 0), ie = /* @__PURE__ */ ve(void 0), Me = /* @__PURE__ */ ve(!1), Le, je = he("SMUI:select:context"), Ke, Ne, N, X, de;
   ae("SMUI:list:role", ""), ae("SMUI:list:nav", !1);
   const Re = tn("");
   ae("SMUI:select:selectedText", Re);
@@ -13328,9 +13334,9 @@ function dp(t, e) {
   }), ae("SMUI:select:helper-text:id", (D) => {
     K(B, D, !0);
   }), ae("SMUI:select:helper-text:mount", (D) => {
-    Ue = D;
+    Ne = D;
   }), ae("SMUI:select:helper-text:unmount", () => {
-    K(B, void 0), Ue = void 0;
+    K(B, void 0), Ne = void 0;
   }), it(() => (K(
     P,
     new Kg(
@@ -13346,7 +13352,7 @@ function dp(t, e) {
         setSelectAnchorAttr: _t,
         removeSelectAnchorAttr: gt,
         addMenuClass: te,
-        removeMenuClass: Ne,
+        removeMenuClass: He,
         openMenu: () => {
           K(ce, !0);
         },
@@ -13398,7 +13404,7 @@ function dp(t, e) {
       },
       {
         get helperText() {
-          return Ue;
+          return Ne;
         },
         get leadingIcon() {
           return Ke;
@@ -13427,7 +13433,7 @@ function dp(t, e) {
   function te(D) {
     we[D] || (we[D] = !0);
   }
-  function Ne(D) {
+  function He(D) {
     (!(D in we) || we[D]) && (we[D] = !1);
   }
   function ft(D) {
@@ -15167,8 +15173,8 @@ function tb(t, e) {
   }
   var Ke = Ie(Le, 2);
   Se(Ke, () => e.paginate ?? pe), Ee(B, (N) => I = N, () => I), De(B, (N, X) => q == null ? void 0 : q(N, X), o), L(t, B);
-  var Ue = Te(V);
-  return i(), Ue;
+  var Ne = Te(V);
+  return i(), Ne;
 }
 var nb = /* @__PURE__ */ be("<thead><!></thead>");
 function rb(t, e) {
@@ -18080,9 +18086,9 @@ function h_(t, e) {
                 () => Pe({ "mdc-tab__content": !0, [f()]: !0 }),
                 () => rt(g, "content$")
               ]);
-              var Ue = me(Ke);
-              Se(Ue, () => e.children ?? pe);
-              var N = Ie(Ue, 2);
+              var Ne = me(Ke);
+              Se(Ne, () => e.children ?? pe);
+              var N = Ie(Ne, 2);
               {
                 var X = (Fe) => {
                   n(Fe);
@@ -18288,7 +18294,7 @@ function O_(t, e) {
                         var ie = re(), Me = Q(ie);
                         {
                           var Le = (je) => {
-                            var Ke = re(), Ue = Q(Ke);
+                            var Ke = re(), Ne = Q(Ke);
                             {
                               var N = (de) => {
                                 var Re = __();
@@ -18310,7 +18316,7 @@ function O_(t, e) {
                                 }
                                 L(de, Re);
                               };
-                              oe(Ue, (de) => {
+                              oe(Ne, (de) => {
                                 r() === "asc" ? de(N) : de(X, !1);
                               });
                             }
@@ -18353,7 +18359,7 @@ function O_(t, e) {
                             {
                               var ie = (je) => {
                                 var Ke = S_();
-                                Ke.__input = [E_, I], Oe(() => Pr(Ke, "placeholder", `${f()} ${s(_e).headerName}`)), Ca(Ke, () => h[s(_e).field], (Ue) => h[s(_e).field] = Ue), L(je, Ke);
+                                Ke.__input = [E_, I], Oe(() => Pr(Ke, "placeholder", `${f()} ${s(_e).headerName}`)), Ca(Ke, () => h[s(_e).field], (Ne) => h[s(_e).field] = Ne), L(je, Ke);
                               };
                               oe($, (je) => {
                                 s(_e).filterType === "text" && je(ie);
@@ -18363,7 +18369,7 @@ function O_(t, e) {
                             {
                               var Le = (je) => {
                                 var Ke = C_();
-                                Ke.__input = [A_, I], Oe(() => Pr(Ke, "placeholder", `${f()} ${s(_e).headerName}`)), Ca(Ke, () => h[s(_e).field], (Ue) => h[s(_e).field] = Ue), L(je, Ke);
+                                Ke.__input = [A_, I], Oe(() => Pr(Ke, "placeholder", `${f()} ${s(_e).headerName}`)), Ca(Ke, () => h[s(_e).field], (Ne) => h[s(_e).field] = Ne), L(je, Ke);
                               };
                               oe(Me, (je) => {
                                 s(_e).filterType === "number" && je(Le);
@@ -18428,28 +18434,31 @@ function O_(t, e) {
                           va(ie, {
                             children: (Me, Le) => {
                               var je = w_();
-                              Hn(je, 21, v, Oi, (Ke, Ue) => {
+                              Hn(je, 21, v, Oi, (Ke, Ne) => {
                                 var N = re(), X = Q(N);
                                 {
                                   var de = (Fe) => {
                                     _o(Fe, {
                                       get content() {
-                                        return s(Ue).tooltip;
+                                        return s(Ne).tooltip;
                                       },
                                       hoverDelay: 500,
                                       children: (dt, bt) => {
                                         {
-                                          let se = /* @__PURE__ */ fe(() => s(Ue).disabled(s(W)));
+                                          let se = /* @__PURE__ */ fe(() => s(Ne).disabled(s(W)));
                                           $m(dt, {
                                             get iconComponent() {
-                                              return s(Ue).iconComponent;
+                                              return s(Ne).iconComponent;
                                             },
                                             get iconStyles() {
-                                              return s(Ue).iconStyles;
+                                              return s(Ne).iconStyles;
                                             },
-                                            callback: () => s(Ue).callback(s(W)),
+                                            callback: () => s(Ne).callback(s(W)),
                                             get disabled() {
                                               return s(se);
+                                            },
+                                            get ariaLabel() {
+                                              return s(Ne).ariaLabel;
                                             }
                                           });
                                         }
@@ -18459,21 +18468,24 @@ function O_(t, e) {
                                   }, Re = (Fe) => {
                                     _o(Fe, {
                                       get content() {
-                                        return s(Ue).tooltip;
+                                        return s(Ne).tooltip;
                                       },
                                       hoverDelay: 500,
                                       children: (dt, bt) => {
                                         {
-                                          let se = /* @__PURE__ */ fe(() => s(Ue).disabled(s(W)));
+                                          let se = /* @__PURE__ */ fe(() => s(Ne).disabled(s(W)));
                                           Km(dt, {
                                             class: "button",
                                             variant: "raised",
-                                            callback: () => s(Ue).callback(s(W)),
+                                            callback: () => s(Ne).callback(s(W)),
                                             get disabled() {
                                               return s(se);
                                             },
+                                            get ariaLabel() {
+                                              return s(Ne).ariaLabel;
+                                            },
                                             children: (ye, Y) => {
-                                              var te = re(), Ne = Q(te);
+                                              var te = re(), He = Q(te);
                                               {
                                                 var ft = (gt) => {
                                                   Ep(gt, { svgStyles: "margin: unset" });
@@ -18518,7 +18530,7 @@ function O_(t, e) {
                                                                             oe(
                                                                               tr,
                                                                               (Er) => {
-                                                                                s(Ue).icon === "archive" ? Er(ra) : Er(ko, !1);
+                                                                                s(Ne).icon === "archive" ? Er(ra) : Er(ko, !1);
                                                                               },
                                                                               !0
                                                                             );
@@ -18528,7 +18540,7 @@ function O_(t, e) {
                                                                         oe(
                                                                           Gn,
                                                                           (Wt) => {
-                                                                            s(Ue).icon === "delete" ? Wt(qr) : Wt(cn, !1);
+                                                                            s(Ne).icon === "delete" ? Wt(qr) : Wt(cn, !1);
                                                                           },
                                                                           !0
                                                                         );
@@ -18538,7 +18550,7 @@ function O_(t, e) {
                                                                     oe(
                                                                       Nt,
                                                                       (un) => {
-                                                                        s(Ue).icon === "edit" ? un(ln) : un(Ft, !1);
+                                                                        s(Ne).icon === "edit" ? un(ln) : un(Ft, !1);
                                                                       },
                                                                       !0
                                                                     );
@@ -18548,7 +18560,7 @@ function O_(t, e) {
                                                                 oe(
                                                                   et,
                                                                   (Ot) => {
-                                                                    s(Ue).icon === "remove" ? Ot(Lt) : Ot(Rn, !1);
+                                                                    s(Ne).icon === "remove" ? Ot(Lt) : Ot(Rn, !1);
                                                                   },
                                                                   !0
                                                                 );
@@ -18558,7 +18570,7 @@ function O_(t, e) {
                                                             oe(
                                                               Pt,
                                                               (ut) => {
-                                                                s(Ue).icon === "find-in-page" ? ut(mn) : ut(at, !1);
+                                                                s(Ne).icon === "find-in-page" ? ut(mn) : ut(at, !1);
                                                               },
                                                               !0
                                                             );
@@ -18568,7 +18580,7 @@ function O_(t, e) {
                                                         oe(
                                                           yi,
                                                           (Qe) => {
-                                                            s(Ue).icon === "download" ? Qe(Vn) : Qe(qe, !1);
+                                                            s(Ne).icon === "download" ? Qe(Vn) : Qe(qe, !1);
                                                           },
                                                           !0
                                                         );
@@ -18578,15 +18590,15 @@ function O_(t, e) {
                                                     oe(
                                                       Ir,
                                                       (It) => {
-                                                        s(Ue).icon === "cancel" ? It(vt) : It(Dt, !1);
+                                                        s(Ne).icon === "cancel" ? It(vt) : It(Dt, !1);
                                                       },
                                                       !0
                                                     );
                                                   }
                                                   L(gt, Bt);
                                                 };
-                                                oe(Ne, (gt) => {
-                                                  s(Ue).icon === "add" ? gt(ft) : gt(_t, !1);
+                                                oe(He, (gt) => {
+                                                  s(Ne).icon === "add" ? gt(ft) : gt(_t, !1);
                                                 });
                                               }
                                               L(ye, te);
@@ -18599,7 +18611,7 @@ function O_(t, e) {
                                     });
                                   };
                                   oe(X, (Fe) => {
-                                    s(Ue).iconComponent ? Fe(de) : Fe(Re, !1);
+                                    s(Ne).iconComponent ? Fe(de) : Fe(Re, !1);
                                   });
                                 }
                                 L(Ke, N);
@@ -18618,7 +18630,7 @@ function O_(t, e) {
                             children: (Me, Le) => {
                               var je = re(), Ke = Q(je);
                               {
-                                var Ue = (X) => {
+                                var Ne = (X) => {
                                   const de = /* @__PURE__ */ fe(() => s(ee).cellRenderer);
                                   var Re = re(), Fe = Q(Re);
                                   _r(Fe, () => s(de), (dt, bt) => {
@@ -18660,7 +18672,7 @@ function O_(t, e) {
                                   L(X, de);
                                 };
                                 oe(Ke, (X) => {
-                                  s(ee).cellRenderer ? X(Ue) : X(N, !1);
+                                  s(ee).cellRenderer ? X(Ne) : X(N, !1);
                                 });
                               }
                               L(Me, je);
@@ -20598,7 +20610,7 @@ class hI extends HTMLElement {
     tt(this, Fi);
     ct(this, "_doc");
     ct(this, "_editCount");
-    He(this, Fi, /* @__PURE__ */ ve(ue({ doc: void 0, editCount: void 0 })));
+    Ue(this, Fi, /* @__PURE__ */ ve(ue({ doc: void 0, editCount: void 0 })));
   }
   get props() {
     return s(ne(this, Fi));

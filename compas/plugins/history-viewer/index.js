@@ -7904,9 +7904,9 @@ function Ji(t, e) {
 function Ps(t, e) {
   we(e, !0);
   let n = v(e, "callback", 3, () => {
-  }), r = v(e, "disabled", 3, !1), i = v(e, "variant", 3, "default"), a = v(e, "isAbortAction", 3, !1), o = v(e, "backgroundColor", 3, void 0);
+  }), r = v(e, "disabled", 3, !1), i = v(e, "variant", 3, "default"), a = v(e, "isAbortAction", 3, !1), o = v(e, "backgroundColor", 3, void 0), u = v(e, "ariaLabel", 3, void 0);
   {
-    let u = /* @__PURE__ */ fe(() => a() ? "background-color: #ff3e00;" : "background-color: " + o());
+    let l = /* @__PURE__ */ fe(() => a() ? "background-color: #ff3e00;" : "background-color: " + o());
     Ji(t, {
       onclick: () => n()(),
       get variant() {
@@ -7915,12 +7915,15 @@ function Ps(t, e) {
       get disabled() {
         return r();
       },
-      get style() {
-        return s(u);
+      get "aria-label"() {
+        return u();
       },
-      children: (l, c) => {
-        var d = ie(), m = Y(d);
-        Ae(m, () => e.children ?? pe), T(l, d);
+      get style() {
+        return s(l);
+      },
+      children: (c, d) => {
+        var m = ie(), f = Y(m);
+        Ae(f, () => e.children ?? pe), T(c, m);
       },
       $$slots: { default: !0 }
     });
@@ -8244,24 +8247,27 @@ function ig(t, e) {
 }
 function ag(t, e) {
   let n = v(e, "callback", 3, () => {
-  }), r = v(e, "icon", 3, ""), i = v(e, "disabled", 3, !1);
+  }), r = v(e, "icon", 3, ""), i = v(e, "disabled", 3, !1), a = v(e, "ariaLabel", 3, void 0);
   ig(t, {
     get disabled() {
       return i();
     },
+    get "aria-label"() {
+      return a();
+    },
     style: "margin-bottom: 0;",
     $$events: {
-      click(...a) {
-        var o;
-        (o = n()) == null || o.apply(this, a);
+      click(...o) {
+        var u;
+        (u = n()) == null || u.apply(this, o);
       }
     },
-    children: (a, o) => {
-      Ms(a, {
+    children: (o, u) => {
+      Ms(o, {
         class: "material-icons",
-        children: (u, l) => {
-          var c = vt();
-          xe(() => ze(c, r())), T(u, c);
+        children: (l, c) => {
+          var d = vt();
+          xe(() => ze(d, r())), T(l, d);
         },
         $$slots: { default: !0 }
       });
@@ -19865,6 +19871,9 @@ function yu(t, e) {
                                             callback: () => s(Me).callback(s(j)),
                                             get disabled() {
                                               return s(me);
+                                            },
+                                            get ariaLabel() {
+                                              return s(Me).ariaLabel;
                                             }
                                           });
                                         }
@@ -19886,6 +19895,9 @@ function yu(t, e) {
                                             callback: () => s(Me).callback(s(j)),
                                             get disabled() {
                                               return s(me);
+                                            },
+                                            get ariaLabel() {
+                                              return s(Me).ariaLabel;
                                             },
                                             children: (F, B) => {
                                               var ae = ie(), Be = Y(ae);
