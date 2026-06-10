@@ -74,11 +74,11 @@
   );
 
   function buildBannerText(): string {
-    const base = `A process “${runningProcName}” has already been started`;
+    const base = `A process "${runningProcName}" has already been started`;
 
     const parts = [
       docName ? ` for the ${docName}` : '',
-      lastSelectedPluginName ? ` at “${lastSelectedPluginName}”` : '',
+      lastSelectedPluginName ? ` at "${lastSelectedPluginName}"` : '',
     ];
 
     return `${base}${parts.join('')}. Would you like to continue where you left off?`;
@@ -218,6 +218,7 @@
 
   .actions-cell {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
   }
 
