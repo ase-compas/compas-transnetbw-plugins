@@ -21686,38 +21686,44 @@ function k0(t, e) {
       icon: "edit",
       tooltip: "Open",
       callback: (w) => R(w),
-      disabled: (w) => !w.available
+      disabled: (w) => !w.available,
+      ariaLabel: "edit"
     },
     {
       icon: "find-in-page",
       tooltip: "View History",
       callback: (w) => V(w),
-      disabled: () => !1
+      disabled: () => !1,
+      ariaLabel: "history"
     },
     {
       icon: "download",
       tooltip: "Download",
       callback: (w) => $(w),
-      disabled: (w) => !w.available
+      disabled: (w) => !w.available,
+      ariaLabel: "download"
     },
     {
       icon: "delete",
       tooltip: "Delete",
       callback: (w) => L(w),
-      disabled: () => !1
+      disabled: () => !1,
+      ariaLabel: "delete"
     },
     {
       icon: "archive",
       tooltip: "Archive",
       callback: (w) => k(w),
-      disabled: () => !1
+      disabled: () => !1,
+      ariaLabel: "archive"
     }
   ], E = [
     {
       icon: "download",
       tooltip: "Download",
       callback: (w) => $(w),
-      disabled: (w) => !w.available
+      disabled: (w) => !w.available,
+      ariaLabel: "download"
     }
   ];
   let _;
