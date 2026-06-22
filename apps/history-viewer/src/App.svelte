@@ -123,15 +123,15 @@
   ]);
 
   const rowActions: any[] = [
-    { icon: 'edit', tooltip: 'Open', callback: (row) => openDoc(row), disabled: (row) => !row.available },
-    { icon: 'find-in-page', tooltip: 'View History', callback: (row) => openHistoryDialog(row), disabled: () => false },
-    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
-    { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false },
-    { icon: 'archive', tooltip: 'Archive', callback: (row) => archiveFile(row), disabled: () => false },
+    { icon: 'edit', tooltip: 'Open', callback: (row) => openDoc(row), disabled: (row) => !row.available, ariaLabel: 'edit' },
+    { icon: 'find-in-page', tooltip: 'View History', callback: (row) => openHistoryDialog(row), disabled: () => false, ariaLabel: 'history' },
+    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available, ariaLabel: 'download' },
+    { icon: 'delete', tooltip: 'Delete', callback: (row) => deleteFile(row), disabled: () => false, ariaLabel: 'delete' },
+    { icon: 'archive', tooltip: 'Archive', callback: (row) => archiveFile(row), disabled: () => false, ariaLabel: 'archive' },
   ];
 
   const historyRowActions: any[] = [
-    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available },
+    { icon: 'download', tooltip: 'Download', callback: (row) => downloadBlob(row), disabled: (row) => !row.available, ariaLabel: 'download' },
   ];
 
   // --- Data loading ---------------------------------------------------------
