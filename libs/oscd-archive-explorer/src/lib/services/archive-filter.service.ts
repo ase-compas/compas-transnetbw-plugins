@@ -55,13 +55,14 @@ export class ArchiveFilterService {
       this.locationService.listLocations().pipe(
         take(1),
         tap((locations) => {
-          const locationIdToNameMap = new Map<string, string>();
+          // Archive search uses location.key for grouping and filtering
+          const locationKeyToNameMap = new Map<string, string>();
 
           locations.forEach((location) => {
-            locationIdToNameMap.set(location.uuid, location.name);
+            locationKeyToNameMap.set(location.key, location.name);
           });
 
-          this.archiveExplorerLocationStore.updateData(locationIdToNameMap);
+          this.archiveExplorerLocationStore.updateData(locationKeyToNameMap);
         }),
         map((locations) => {
           return [
@@ -75,7 +76,7 @@ export class ArchiveFilterService {
                 validatorFn: () => true,
                 options:
                   locations?.map((location) => ({
-                    value: location.uuid,
+                    value: location.key,
                     label: location.name,
                   })) || [],
               },
@@ -91,6 +92,7 @@ export class ArchiveFilterService {
     return [
       {
         id: 2,
+        key: 'uuid',
         label: 'UUID',
         inputType: {
           id: 1,
@@ -102,6 +104,7 @@ export class ArchiveFilterService {
       },
       {
         id: 4,
+        key: 'approver',
         label: 'Approver',
         inputType: {
           id: 1,
@@ -113,6 +116,7 @@ export class ArchiveFilterService {
       },
       {
         id: 3,
+        key: 'type',
         label: 'Type',
         inputType: {
           id: 2,
@@ -131,35 +135,6 @@ export class ArchiveFilterService {
         },
         allowedOperations: ['='],
       },
-      // {
-      //   id: 4,
-      //   label: 'Type',
-      //   inputType: {
-      //     id: 2,
-      //     type: 'select',
-      //     validatorFn: () => true,
-      //     options: [
-      //       { value: 'Schütz', label: 'Schütz' },
-      //       { value: 'Leittechnik', label: 'Leittechnik' },
-      //     ],
-      //   },
-      //   allowedOperations: ['='],
-      // },
-      // {
-      //   id: 5,
-      //   label: 'Voltage',
-      //   inputType: {
-      //     id: 2,
-      //     type: 'select',
-      //     validatorFn: () => true,
-      //     options: [
-      //       { value: '380', label: '380' },
-      //       { value: '220', label: '220' },
-      //       { value: '110', label: '110' },
-      //     ],
-      //   },
-      //   allowedOperations: ['='],
-      // },
     ];
   }
 }

@@ -74,13 +74,14 @@
   );
 
   // Fetch locations and store as Observable
+  // Archive search uses location.key for grouping and filtering
   const locations$ = locationService.listLocations().pipe(
     map(locs => {
-      const locMap = new Map(locs.map(l => [l.uuid, l.name]));
+      const locMap = new Map(locs.map(l => [l.key, l.name]));
       // Update filter options
       const locFilter = filterDefinitions.find(f => f.key === 'location');
       if (locFilter) {
-        locFilter.options = locs.map(loc => ({ value: loc.uuid, label: loc.name }));
+        locFilter.options = locs.map(loc => ({ value: loc.key, label: loc.name }));
       }
       locations = locMap;
       return locMap;
@@ -94,14 +95,20 @@
   );
 
 
+  function getLocationTitle(locationKey: string): string {
+    // Resolve location key to name; fallback to key or 'Unknown'
+    if (!locationKey) return 'Unknown';
+    return locations.get(locationKey) ?? locationKey ?? 'Unknown';
+  }
+
   function convertFilterToSearchParams(filters: FilterDefinition[], text: string): SearchParams {
     const searchParams: SearchParams = {
-      uuid: null,
-      type: null,
-      name: null,
-      location: null,
-      from: null,
-      to: null
+      uuid: undefined,
+      type: undefined,
+      name: undefined,
+      location: undefined,
+      from: undefined,
+      to: undefined
     };
 
     // Map filter values to searchParams
@@ -208,11 +215,11 @@
     {:else}
       {#if searchResults.size}
         {#each searchResults as result, index (result)}
-          <!-- result[0] => UUID of the location -->
+          <!-- result[0] => location key of the location -->
           <!-- result[1] => ArchiveSearchResult[] -->
           <OscdExpansionPanel
             open={true}
-            title={locations.get(result[0]) ?? 'Unknown'}
+            title={getLocationTitle(result[0])}
           >
             {#snippet content()}
               <span>

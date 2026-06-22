@@ -24,7 +24,10 @@ export class LocationStore {
     this.#data.set(data);
   }
 
-  public getLocationNameByUuid(uuid: string) {
-    return get(this.#data).get(uuid);
+  /**
+   * Get location name by key.
+   */
+  public getLocationNameByKey(key: string) {
+    return get(this.#data).get(key);
   }
 }
