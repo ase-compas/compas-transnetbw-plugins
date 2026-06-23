@@ -2,7 +2,7 @@
   import { OscdSwitch } from '@oscd-transnet-plugins/oscd-component';
   import Button from '@smui/button';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { TypeKind } from '../../../../shared/model';
+  import { TypeKind, type DefaultTypeVersionStatus } from '../../../../shared/model';
   import ChooseInstanceTypeDialog from '../dialogs/ChooseInstanceTypeDialog.svelte';
   import ConfirmDetachDefaultTypeDialog from '../dialogs/ConfirmDetachDefaultTypeDialog.svelte';
   import SetDefaultButton from './SetDefaultButton.svelte';
@@ -19,22 +19,12 @@
     rootId: string;
   };
 
-  type HeaderDefaultTypeVersionStatus = {
-    currentVersion: string;
-    latestVersion: string;
-    latestSource: 'local' | 'db';
-    localLatestVersion: string | null;
-    dbLatestVersion: string | null;
-    hasUpdate: boolean;
-    isDeprecated: boolean;
-  };
-
   interface Props {
     type: TypeKind;
     typeId: string;
     instanceType?: string | null;
     defaultTypeInfo?: HeaderDefaultTypeInfo | null;
-    defaultTypeVersionStatus?: HeaderDefaultTypeVersionStatus | null;
+    defaultTypeVersionStatus?: DefaultTypeVersionStatus | null;
     isEditMode?: boolean;
     toggleEditModeSwitchDisabled?: boolean;
     showSetAsDefault?: boolean;
