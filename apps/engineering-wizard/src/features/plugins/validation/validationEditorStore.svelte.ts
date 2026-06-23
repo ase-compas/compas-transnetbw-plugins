@@ -28,6 +28,8 @@ function defaultRuleUi(): RuleUiState {
     elementCount: 1,
     message: '',
     elementPath: '',
+    expertMode: false,
+    expertXPath: '',
   };
 }
 
@@ -74,6 +76,8 @@ function restoreRuleUi(stored: Record<string, unknown>, existingContext?: string
     elementCount: (stored.elementCount as number) ?? 1,
     message: (stored.message as string) ?? '',
     elementPath,
+    expertMode: (stored.expertMode as boolean) ?? false,
+    expertXPath: (stored.expertXPath as string) ?? '',
   };
 }
 
@@ -94,7 +98,7 @@ const ATTR_PATTERNS: Array<[RegExp, ConditionKey]> = [
   [/^not\(matches\(normalize-space\((@\w+)\),\s*'([^']*)'\)\)$/,     'notMatches' ],
 ];
 
-function parseAssertionToRuleUi(assert: string, message: string, existingContext?: string): RuleUiState {
+export function parseAssertionToRuleUi(assert: string, message: string, existingContext?: string): RuleUiState {
   const a = assert.trim();
 
   // Element check: count(El) op N
@@ -120,6 +124,8 @@ function parseAssertionToRuleUi(assert: string, message: string, existingContext
       elementCount: op === '>' ? 1 : n,
       message,
       elementPath,
+      expertMode: false,
+      expertXPath: '',
     };
   }
 
@@ -136,9 +142,22 @@ function parseAssertionToRuleUi(assert: string, message: string, existingContext
         elementCount: 1,
         message,
         elementPath: '',
+        expertMode: false,
+        expertXPath: '',
       };
     }
   }
 
   return { ...defaultRuleUi(), message };
+}
+
+/**
+ * Returns true if the given XPath assertion string can be round-tripped back
+ * into the form builder UI (i.e. it matches a known pattern).
+ * An empty string is considered parseable (reverts to default UI state).
+ */
+export function isExpertXPathParseable(xpath: string, message: string, context?: string): boolean {
+  if (!xpath.trim()) return true;
+  const state = parseAssertionToRuleUi(xpath, message, context);
+  return state.attribute !== '' || state.elementName !== '';
 }

@@ -27,10 +27,10 @@
   const attrOptions = $derived(getElementAttrs(contextNode));
   const isRegex = $derived(ruleUi.condition === 'matches' || ruleUi.condition === 'notMatches');
 
-  // When the context node changes, clear the attribute if it is no longer valid.
+  // When the context node changes, auto-select the first valid attribute.
   $effect(() => {
-    if (ruleUi.attribute && !attrOptions.includes(ruleUi.attribute)) {
-      ruleUi.attribute = '';
+    if (attrOptions.length > 0 && (!ruleUi.attribute || !attrOptions.includes(ruleUi.attribute))) {
+      ruleUi.attribute = attrOptions[0];
     }
   });
 </script>
@@ -44,7 +44,6 @@
       invalid={!ruleUi.attribute?.trim()}
       helperText$validationMsg
     >
-      <Option value="">Select attribute</Option>
       {#each attrOptions as attr (attr)}
         <Option value={attr}>{attr}</Option>
       {/each}
