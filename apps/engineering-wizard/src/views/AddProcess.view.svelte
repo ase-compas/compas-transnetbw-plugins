@@ -8,8 +8,8 @@
   import ProcessInfoBar from '../components/shared/ProcessInfoBar.svelte';
   import ProcessPluginEditor from '../features/processes/components/ProcessPluginEditor.svelte';
   import { engineeringProcessEditing, engineeringProcesses } from '../features/processes/stores.svelte';
-  import { addProcess } from '../features/processes/mutations.svelte';
-  import { saveProcess } from '../features/processes/repository.svelte';
+  import { addProcess, removeProcess } from '../features/processes/mutations.svelte';
+  import { saveProcess, saveProcessLocally } from '../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import {
     addPluginToGroups,
@@ -79,7 +79,26 @@
       toastService.success('Process saved', `"${created.name}" was saved to the database.`);
       handleSaved(created);
     } catch {
-      toastService.error('Save failed', `"${created.name}" was added locally but could not be saved to the database.`);
+      const localResult = await openDialog(OscdConfirmDialog, {
+        title: 'Backend unavailable',
+        message: `"${created.name}" could not be saved to the database. Would you like to save it locally instead? It will be available next time you open the Engineering Wizard and can be synced to the database when the backend is back online.`,
+        confirmActionText: 'Save locally',
+        cancelActionText: 'Discard',
+      });
+
+      if (localResult?.type === 'confirm') {
+        try {
+          saveProcessLocally(created);
+          toastService.success('Saved locally', `"${created.name}" was saved to local storage.`);
+          handleSaved(created);
+        } catch {
+          removeProcess(created.id);
+          toastService.error('Save failed', `"${created.name}" could not be saved locally either.`);
+        }
+      } else {
+        removeProcess(created.id);
+      }
+      return;
     } finally {
       saving = false;
     }

@@ -8,6 +8,11 @@ import { parseProcessesXml, parseXmlString } from './xml-parser';
 import { processService } from '../../bootstrap';
 import type { VersionBump } from './process.service';
 import { updateProcessMetadata } from './mutations.svelte';
+import {
+  saveLocal,
+  loadAllLocal,
+  removeLocal,
+} from './process-local-storage.service';
 
 function mergeById(primary: Process[], secondary: Process[]): Process[] {
   const byId = new Map<string, Process>();
@@ -52,6 +57,15 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
       // Backend unavailable — continue with the static baseline.
     }
 
+    // 3. Merge in any offline drafts saved while the backend was unavailable.
+    //    Offline drafts win over both static baseline and backend data, because
+    //    they represent pending edits the user explicitly chose to keep.
+    //    Drafts are only removed after a successful backend save (see saveProcess).
+    const localDrafts = loadAllLocal();
+    if (localDrafts.length > 0) {
+      processes = mergeById(processes, localDrafts);
+    }
+
     engineeringProcesses.processes = processes;
     return processes;
   } catch (err) {
@@ -78,6 +92,9 @@ export async function saveProcess(
     );
 
     updateProcessMetadata(process.id, { version });
+
+    // Clean up any offline draft now that the backend has the authoritative copy.
+    removeLocal(process.id);
   } catch (err) {
     engineeringProcessesStatus.saveError =
       err instanceof Error ? err.message : 'Failed to save process.';
@@ -85,4 +102,20 @@ export async function saveProcess(
   } finally {
     engineeringProcessesStatus.saving = false;
   }
+}
+
+/**
+ * Saves a process to localStorage as an offline draft.
+ * Applies the optional version bump (same semantics as a backend save) and
+ * updates the in-memory store so the UI reflects the new version immediately.
+ * Returns the exact snapshot that was persisted so callers can use it as the
+ * new change-detection baseline.
+ */
+export function saveProcessLocally(
+  process: Process,
+  versionBump?: VersionBump,
+): Process {
+  const saved = saveLocal($state.snapshot(process) as Process, versionBump);
+  updateProcessMetadata(process.id, { version: saved.version });
+  return saved;
 }

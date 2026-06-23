@@ -18,7 +18,7 @@
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
-  import { saveProcess } from '../../features/processes/repository.svelte';
+  import { saveProcess, saveProcessLocally } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, Process, XPathValidation, VersionBump } from '@oscd-transnet-plugins/shared';
   import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -120,8 +120,30 @@
         await saveProcess(proc, bump);
         toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
       } catch {
-        toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
-        return;
+        saving = false;
+        const localResult = await openDialog(OscdConfirmDialog, {
+          title: 'Backend unavailable',
+          message: `"${proc.name}" could not be saved to the database. Would you like to save it locally instead? It will be available next time you open the Engineering Wizard and can be synced to the database when the backend is back online.`,
+          confirmActionText: 'Save locally',
+          cancelActionText: 'Keep editing',
+        });
+
+        if (localResult?.type === 'confirm') {
+          try {
+            const savedSnapshot = saveProcessLocally(proc, bump);
+            // Sync the change-detection baseline to the persisted snapshot so
+            // hasChanges() returns false and a second version-bump dialog is not
+            // triggered if the user clicks Done again before leaving edit mode.
+            entrySnapshot = JSON.stringify(savedSnapshot);
+            toastService.success('Saved locally', `"${proc.name}" was saved to local storage.`);
+          } catch {
+            toastService.error('Save failed', `"${proc.name}" could not be saved locally either.`);
+            return;
+          }
+        } else {
+          // User wants to keep editing — stay in edit mode.
+          return;
+        }
       } finally {
         saving = false;
       }
