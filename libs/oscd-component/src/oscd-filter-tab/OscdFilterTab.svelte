@@ -1,10 +1,11 @@
 <script lang="ts">
 
   import type { FilterDefinition } from '../oscd-filter-builder/types';
-  import { OscdFilterBuilder, OscdInput } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdFilterBuilder, OscdSearchInput } from '@oscd-transnet-plugins/oscd-component';
 
-  import  TabBar from '@smui/tab-bar';
+  import TabBar from '@smui/tab-bar';
   import Tab, { Label } from '@smui/tab';
+  
 
 
   interface Props {
@@ -48,14 +49,13 @@
 
 <div class="filter-tab">
   {#if !searchDisabled}
-    <OscdInput
+    <OscdSearchInput
       bind:value={searchText}
-      oninput={() => onSearchInput()}
-      icon="search"
+      onInput={onSearchInput}
       label={searchLabel}
       placeholder={searchPlaceholder}
-      variant="outlined"
-      styles="background: var(--oscd-base2,#fff); max-width: 650px;"/>
+      style="max-width: 650px;"
+    />
   {/if}
 
 
