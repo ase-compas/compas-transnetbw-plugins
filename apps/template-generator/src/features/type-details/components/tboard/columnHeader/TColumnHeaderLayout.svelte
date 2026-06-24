@@ -29,11 +29,7 @@
     onAction = () => {},
   }: Props = $props();
 
-  const isWandStarsIcon = $derived(
-    actionIcon === 'wand-stars' ||
-      actionIcon === 'wand_stars' ||
-      actionLabel === 'Apply All Default Types'
-  );
+  const isWandStarsIcon = $derived(actionIcon === 'wand-stars');
 </script>
 
 <div class="header-container">

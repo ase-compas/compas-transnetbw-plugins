@@ -130,7 +130,7 @@
 
   .type-id-row {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 0.5rem;
   }
 
