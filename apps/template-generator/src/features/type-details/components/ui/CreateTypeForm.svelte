@@ -2,16 +2,11 @@
   import { onMount } from 'svelte';
   import Radio from '@smui/radio';
   import FormField from '@smui/form-field';
-  import { OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
   import InstanceAutocomplete from './InstanceAutocomplete.svelte';
-  import type { InstanceDetails, TypeKind } from '../../../../shared/model';
+  import type { DefaultStatus, InstanceDetails, TypeKind } from '../../../../shared/model';
   import TypeIdInput from './TypeIdInput.svelte';
   import DefaultTypePreview from './DefaultTypePreview.svelte';
-  import type {
-    ApplySingleDefaultTypePreview,
-    DataTypeService,
-  } from '../../services/type.service';
-  import type { ApplyScenario } from '../../services/default-type-manager-service';
+  import type { DataTypeService } from '../../services/type.service';
 
   export type CreateTypeFormMode = 'create' | 'load-default';
 
@@ -20,7 +15,6 @@
     instanceType?: string;
     mode: CreateTypeFormMode;
     createFromDefault: boolean;
-    defaultScenario?: ApplyScenario;
     valid: boolean;
   }
 
@@ -68,28 +62,23 @@
   let isTypeIdValid = $state<boolean>(false);
   let generateFeedback = $state<string>('');
 
-  let loadDefaultPreview = $state<ApplySingleDefaultTypePreview | null>(null);
+  let loadDefaultStatus = $state<DefaultStatus | null>(null);
   let loadDefaultError = $state<string>('');
   let loadingDefaultPreview = $state<boolean>(false);
-  let loadDefaultRequestId = 0;
 
   let loading = $state<boolean>(false);
 
   let createFromDefault = $derived<boolean>(mode === 'load-default');
   let canApplyLoadDefault = $derived.by(() => {
-    if (!loadDefaultPreview?.plan) {
-      return false;
-    }
-
-    if (loadDefaultPreview.plan.scenario === 'REMOVE_LOCAL_DEFAULT') {
-      return false;
-    }
-
-    if (!allowUseExistingDefault && loadDefaultPreview.plan.scenario === 'USE_LOCAL_DEFAULT') {
-      return false;
-    }
-
-    return true;
+      if (!loadDefaultStatus) {
+        return false;
+      }
+  
+      if (loadDefaultStatus.isLocalLatest && !allowUseExistingDefault) {
+        return false;
+      }
+  
+      return loadDefaultStatus.isAvailable;
   });
 
   let isFormValid = $derived.by(() => {
@@ -104,20 +93,11 @@
     return !loadingDefaultPreview && canApplyLoadDefault;
   });
 
-  let effectiveId = $derived.by(() => {
-    if (mode === 'load-default') {
-      return loadDefaultPreview?.plan.effectiveRootId ?? '';
-    }
-
-    return typeId;
-  });
-
   const formEvent = $derived<CreateTypeFormSubmitDetails>({
-    id: effectiveId,
+    id: typeId,
     instanceType: selectedInstance?.instance,
     mode,
     createFromDefault,
-    defaultScenario: loadDefaultPreview?.plan.scenario,
     valid: isFormValid,
   });
 
@@ -184,7 +164,7 @@
     if(!!selectedInstance && showCreateFromDefaultOption && mode === 'load-default') {
       fetchDefaultPreviewData(details.instance);
     } else {
-      loadDefaultPreview = null;
+      loadDefaultStatus = null;
       loadDefaultError = '';
       loadingDefaultPreview = false;
     }
@@ -192,14 +172,14 @@
 
   async function fetchDefaultPreviewData(instance: string) {
     loadDefaultError = '';
-    loadDefaultPreview = null;
+    loadDefaultStatus = null;
     loadingDefaultPreview = true;
 
     try {
-      const preview = await service.getApplySingleDefaultTypePreview(typeKind, instance);
-      loadDefaultPreview = preview;
+      const status = await service.defaultStatus({kind: typeKind, instance : instance});
+      loadDefaultStatus = status;
     } catch (error) {
-      loadDefaultError = error instanceof Error ? error.message : String(error);
+      loadDefaultError = "Could not check default type status. Please try again.";
     } finally {
       loadingDefaultPreview = false;
     }
@@ -263,7 +243,7 @@
       />
     {:else}
       <DefaultTypePreview
-        preview={loadDefaultPreview}
+        preview={loadDefaultStatus}
         loading={loadingDefaultPreview}
         error={loadDefaultError}
         {allowUseExistingDefault}

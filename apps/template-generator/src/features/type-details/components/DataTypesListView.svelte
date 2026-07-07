@@ -18,6 +18,7 @@
   import DataTypeFilter from './ui/DataTypeFilter.svelte';
   import { getIdSettingsState } from '../../id-format-settings/id-format-settings.state.svelte';
   import { DocState } from '../../../shared/states/doc.state.svelte';
+  import { defaultMService } from '../../../bootstrap';
 
   interface Props {
     service: DataTypeService;
@@ -115,6 +116,7 @@
 
   onMount(() => {
     idSettingsState.load();
+    defaultMService.invalidateLatestDefaultsCache();
   });
 </script>
 
