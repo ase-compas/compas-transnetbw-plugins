@@ -2,8 +2,10 @@
   import SearchInput from '../components/shared/SearchInput.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
 
-  import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdBasicDataTable, OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
+  import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
   import Button, { Label, Icon } from '@smui/button';
 
@@ -12,18 +14,39 @@
     engineeringProcessesStatus,
     runningEngineeringProcess
   } from '../features/processes/stores.svelte';
+  import { deleteProcess } from '../features/processes/repository.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
     handleView: (process: Process) => void;
     handleEdit: (process: Process) => void;
     handleAddNew: () => void;
+    handleDeleted?: (process: Process) => void;
     docName?: string;
   }
 
   type ProcessRow = Process & { displayName: string; validationCount: number };
 
-  const { handleStart, handleView, handleEdit, handleAddNew, docName }: Props = $props();
+  const { handleStart, handleView, handleEdit, handleAddNew, handleDeleted, docName }: Props = $props();
+
+  async function handleDeleteClick(item: Process) {
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Delete process',
+      message: `Are you sure you want to delete the process "${item.name || item.id}"? This action cannot be undone.`,
+      confirmActionText: 'Delete',
+      confirmActionColor: 'danger',
+    });
+
+    if (result?.type !== 'confirm') return;
+
+    try {
+      await deleteProcess(item);
+      toastService.success('Process deleted', `"${item.name || item.id}" was deleted.`);
+      handleDeleted?.(item);
+    } catch {
+      toastService.error('Delete failed', `"${item.name || item.id}" could not be deleted.`);
+    }
+  }
 
   let searchQuery = $state('');
 
@@ -147,7 +170,7 @@
             variant="unelevated"
             aria-label="Continue process"
             onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
           >
             <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
             <Label>Continue</Label>
@@ -158,12 +181,21 @@
             variant="unelevated"
             aria-label="Start process"
             onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
           >
             <Icon><OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" /></Icon>
             <Label>Start</Label>
           </Button>
         {/if}
+        <button
+          type="button"
+          class="delete-process-button"
+          aria-label="Delete process"
+          title="Delete process"
+          onclick={(e) => { e.stopPropagation(); handleDeleteClick(item); }}
+        >
+          <OscdDeleteIcon svgStyles="fill: #FF203A; width: 18px; height: 18px;" />
+        </button>
       </div>
     {/snippet}
   </OscdBasicDataTable>
@@ -218,7 +250,34 @@
 
   .actions-cell {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .delete-process-button {
+    box-sizing: border-box;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .delete-process-button:hover {
+    background-color: #f2f2f2;
+  }
+
+  .delete-process-button:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 2px;
   }
 
   .process-banner span {
