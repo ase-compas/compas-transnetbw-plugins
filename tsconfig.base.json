@@ -48,6 +48,7 @@
       "@oscd-transnet-plugins/oscd-location-viewer": [
         "libs/oscd-location-viewer/src/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-router": ["libs/oscd-router/src/index.ts"],
       "@oscd-transnet-plugins/oscd-services/alert": [
         "libs/oscd-services/src/alert/index.ts"
       ],
