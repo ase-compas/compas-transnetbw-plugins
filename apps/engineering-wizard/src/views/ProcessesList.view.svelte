@@ -22,12 +22,13 @@
     handleEdit: (process: Process) => void;
     handleAddNew: () => void;
     handleDeleted?: (process: Process) => void;
+    handleViewAllRules?: () => void;
     docName?: string;
   }
 
   type ProcessRow = Process & { displayName: string; validationCount: number };
 
-  const { handleStart, handleView, handleEdit, handleAddNew, handleDeleted, docName }: Props = $props();
+  const { handleStart, handleView, handleEdit, handleAddNew, handleDeleted, handleViewAllRules, docName }: Props = $props();
 
   async function handleDeleteClick(item: Process) {
     const result = await openDialog(OscdConfirmDialog, {
@@ -123,6 +124,14 @@
     <h1 class="processes__header">Processes</h1>
     <div class="process-toolbar__right">
       <SearchInput bind:value={searchQuery} label="Search Processes" />
+      <Button
+        variant="raised"
+        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        onclick={handleViewAllRules}
+        aria-label="View all rules"
+      >
+        All Rules
+      </Button>
       <Button
         variant="raised"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
