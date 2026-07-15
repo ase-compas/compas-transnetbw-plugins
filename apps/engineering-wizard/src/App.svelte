@@ -19,6 +19,7 @@
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
   import { documentStore } from './documentStore.svelte';
+  import { createRouter, RouterView } from '@oscd-transnet-plugins/oscd-router';
 
   import 'svelte-material-ui/bare.css';
   import "../public/material-icon.css"
@@ -52,8 +53,17 @@
     host
   }: Props = $props();
 
-  let isCreatingProcess = $state(false);
-  let isShowingValidationRules = $state(false);
+  type WizardRoute = 'list' | 'add' | 'edit' | 'rules';
+
+  const router = createRouter<WizardRoute>(
+    [
+      { name: 'list', component: ProcessesListView },
+      { name: 'add', component: AddProcessView },
+      { name: 'edit', component: ProcessEditView },
+      { name: 'rules', component: ValidationRulesListView },
+    ],
+    'list',
+  );
 
   function restoreWorkflowState(document: XMLDocument | undefined) {
     if (!document) return;
@@ -130,51 +140,32 @@
   function handleEdit(process: Process) {
     engineeringProcessEditing.isEditing = true;
     selectedEngineeringProcess.process = process;
+    void router.navigate('edit');
   }
 
   function addNewProcess() {
-    engineeringProcessEditing.isEditing = false;
     selectedEngineeringProcess.process = null;
-    isCreatingProcess = true;
-  }
-
-  function cancelCreate() {
-    engineeringProcessEditing.isEditing = false;
-    isCreatingProcess = false;
-  }
-
-  function handleCreated(_proc: Process) {
-    isCreatingProcess = false;
+    void router.navigate('add');
   }
 
   function showValidationRules() {
-    isShowingValidationRules = true;
-  }
-
-  function closeValidationRules() {
-    isShowingValidationRules = false;
-  }
-</script>
+    void router.navigate('rules');
+  }</script>
 
 <DialogHost />
 
 <div class="app-root">
-  {#if isShowingValidationRules}
-    <ValidationRulesListView onBack={closeValidationRules} />
-  {:else if isCreatingProcess}
-    <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-  {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
-    <ProcessEditView />
-  {:else}
-    <ProcessesListView
-      handleView={handleEdit}
-      handleEdit={handleEdit}
-      handleStart={startProcess}
-      handleAddNew={addNewProcess}
-      handleViewAllRules={showValidationRules}
-      docName={docName}
-    />
-  {/if}
+  <RouterView
+    {router}
+    props={{
+      docName,
+      handleView: handleEdit,
+      handleEdit,
+      handleStart: startProcess,
+      handleAddNew: addNewProcess,
+      handleViewAllRules: showValidationRules,
+    }}
+  />
 </div>
 <OscdToastHost />
 <style>

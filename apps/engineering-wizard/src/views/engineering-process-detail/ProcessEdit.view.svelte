@@ -24,6 +24,13 @@
   import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
 
+  interface Props {
+    /** Auto-provided by the router: returns to the previous route. Called once editing has fully ended. */
+    onExit: () => void;
+  }
+
+  let { onExit }: Props = $props();
+
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
   let currentStepIndex = $state(0);
@@ -91,6 +98,7 @@
   function leaveEditMode() {
     engineeringProcessEditing.isEditing = false;
     selectedEngineeringProcess.process = null;
+    onExit();
   }
 
   async function exitEditing() {

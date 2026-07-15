@@ -8,10 +8,11 @@
   import { engineeringProcesses, engineeringProcessesStatus } from '../features/processes/stores.svelte';
 
   interface Props {
-    onBack: () => void;
+    /** Auto-provided by the router: returns to the previous route. */
+    onExit: () => void;
   }
 
-  const { onBack }: Props = $props();
+  const { onExit }: Props = $props();
 
   interface ValidationRuleRow extends XPathValidation {
     processName: string;
@@ -68,7 +69,7 @@
         type="button"
         variant="unelevated"
         aria-label="Go back"
-        onclick={onBack}
+        onclick={onExit}
         style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
       >
         <Icon><OscdArrowBackIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
