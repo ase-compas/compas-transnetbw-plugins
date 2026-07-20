@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { OscdBaseDialog, OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdConfirmDialog, OscdWarningBox } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     open?: boolean;
@@ -15,16 +14,13 @@
   }: Props = $props();
 </script>
 
-<OscdBaseDialog
+<OscdConfirmDialog
   title="Delete Type"
   confirmActionText="Delete All"
   cancelActionText="Cancel"
   maxWidth="760px"
   height="auto"
   bind:open
-  onConfirm={() => closeDialog('confirm')}
-  onCancel={() => closeDialog('cancel')}
-  onClose={() => closeDialog('exit')}
 >
   {#snippet content()}
     <div class="content">
@@ -39,7 +35,7 @@
       <OscdWarningBox message="This action cannot be undone." />
     </div>
   {/snippet}
-</OscdBaseDialog>
+</OscdConfirmDialog>
 
 <style>
   .content {
