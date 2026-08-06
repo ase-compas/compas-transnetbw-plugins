@@ -14,20 +14,19 @@
   import ToggleSwitch from '../../ToggleSwitch.svelte';
 
   const rulePreview = $derived.by(() => {
-    const { mode, elementPath, expertMode, expertXPath } = validationEditor.ruleUi;
+    const { mode, elementName, expertMode, expertXPath } = validationEditor.ruleUi;
     const assert = validationEditor.entry.assert?.trim();
+    const ctx = validationEditor.entry.context?.trim();
 
     if (expertMode) {
-      const ctx = validationEditor.entry.context?.trim();
       return `Context:   ${ctx || '—'}\nAssertion: ${expertXPath || '—'}`;
     }
 
     if (mode === 'element') {
-      if (!elementPath) return '';
-      return `Element:   ${elementPath}\nAssertion: ${assert || '—'}`;
+      if (!elementName) return '';
+      return `Context:   ${ctx || '—'}\nElement:   ${elementName}\nAssertion: ${assert || '—'}`;
     }
 
-    const ctx = validationEditor.entry.context?.trim();
     if (!ctx && !assert) return '';
     return `Context:   ${ctx || '—'}\nAssertion: ${assert || '—'}`;
   });
@@ -44,12 +43,8 @@
   function exitExpertMode() {
     const xpath = validationEditor.ruleUi.expertXPath.trim();
     // Preserve expertXPath in memory — user can switch back without losing their work.
-    if (isExpertXPathParseable(xpath, validationEditor.ruleUi.message, validationEditor.entry.context)) {
-      const parsed = parseAssertionToRuleUi(
-        xpath,
-        validationEditor.ruleUi.message,
-        validationEditor.entry.context,
-      );
+    if (isExpertXPathParseable(xpath, validationEditor.ruleUi.message)) {
+      const parsed = parseAssertionToRuleUi(xpath, validationEditor.ruleUi.message);
       // Keep expertXPath so toggling back to expert mode restores their input
       validationEditor.ruleUi = {
         ...parsed,
@@ -103,7 +98,7 @@
   {:else if validationEditor.ruleUi.mode === 'attribute'}
     <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
   {:else}
-    <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} />
+    <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
   {/if}
 
   <div class="field-wrap">

@@ -10,7 +10,7 @@
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
   import { validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
-  import { buildAssertionExpression, lastNodeOfPath, parentOfPath } from '../../xpathBuilder';
+  import { buildAssertionExpression } from '../../xpathBuilder';
 
   interface Props {
     open: boolean;
@@ -38,9 +38,6 @@
     if (validationEditor.ruleUi.expertMode) {
       validationEditor.entry.assert = validationEditor.ruleUi.expertXPath;
     } else {
-      if (validationEditor.ruleUi.mode === 'element') {
-        validationEditor.entry.context = parentOfPath(validationEditor.ruleUi.elementPath);
-      }
       validationEditor.entry.assert = buildAssertionExpression(validationEditor.ruleUi);
     }
   });
@@ -54,11 +51,6 @@
   const isStepValid = $derived.by(() => {
     if (currentStep === 'basic') {
       const hasTitle = !!validationEditor.entry.title?.trim();
-      // In expert mode the assertion is written on page 2, so elementPath is irrelevant here.
-      if (validationEditor.ruleUi.expertMode) return hasTitle;
-      if (validationEditor.ruleUi.mode === 'element') {
-        return hasTitle && !!lastNodeOfPath(validationEditor.ruleUi.elementPath);
-      }
       return hasTitle;
     }
     if (currentStep === 'rule-definition') {
@@ -69,7 +61,7 @@
       if (validationEditor.ruleUi.mode === 'attribute') {
         return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
       }
-      return !!lastNodeOfPath(validationEditor.ruleUi.elementPath) && hasMessage;
+      return !!validationEditor.ruleUi.elementName?.trim() && hasMessage;
     }
     return true;
   });

@@ -8,6 +8,8 @@
     type RuleUiState,
   } from '../validationRuleUi';
   import { getElementAttrs } from '../scl-schema';
+  import { lastNodeFromContext } from '../xpathBuilder';
+  import SchemaNameField from './SchemaNameField.svelte';
 
   interface Props {
     ruleUi: RuleUiState;
@@ -17,53 +19,18 @@
 
   let { ruleUi = $bindable(), context = '//SCL' }: Props = $props();
 
-  /** Extract the last element name from the context path. */
-  function lastNodeFromContext(ctx: string): string {
-    const parts = ctx.replace(/^\/\//, '').split('/').filter(Boolean);
-    return parts[parts.length - 1] ?? 'SCL';
-  }
-
   const contextNode = $derived(lastNodeFromContext(context));
   const attrOptions = $derived(getElementAttrs(contextNode));
   const isRegex = $derived(ruleUi.condition === 'matches' || ruleUi.condition === 'notMatches');
-
-  // When the context node changes, auto-select the first valid attribute.
-  $effect(() => {
-    if (attrOptions.length > 0 && (!ruleUi.attribute || !attrOptions.includes(ruleUi.attribute))) {
-      ruleUi.attribute = attrOptions[0];
-    }
-  });
 </script>
 
-{#if attrOptions.length > 0}
-  <div class="field-wrap">
-    <Select
-      bind:value={ruleUi.attribute}
-      label="Attribute"
-      variant="outlined"
-      invalid={!ruleUi.attribute?.trim()}
-      helperText$validationMsg
-    >
-      {#each attrOptions as attr (attr)}
-        <Option value={attr}>{attr}</Option>
-      {/each}
-      {#snippet helperText()}Attribute is required.{/snippet}
-    </Select>
-  </div>
-{:else}
-  <div class="field-wrap">
-    <Textfield
-      bind:value={ruleUi.attribute}
-      label="Attribute"
-      variant="outlined"
-      placeholder="@name"
-      invalid={!ruleUi.attribute?.trim()}
-      class="rule-editor__full"
-    >
-      {#snippet helper()}<HelperText validationMsg>Attribute is required.</HelperText>{/snippet}
-    </Textfield>
-  </div>
-{/if}
+<SchemaNameField
+  bind:value={ruleUi.attribute}
+  options={attrOptions}
+  label="Attribute"
+  placeholder="@name"
+  requiredMessage="Attribute is required."
+/>
 
 <Select bind:value={ruleUi.condition} label="Condition" variant="outlined">
   <Option value="" disabled selected>Condition</Option>
@@ -84,14 +51,4 @@
     {/snippet}
   {/if}
 </Textfield>
-
-<style>
-  /* Groups the SMUI field + its helper-line sibling so the parent flex gap
-     doesn't insert extra space between the input and its helper text. */
-  .field-wrap {
-    display: flex;
-    flex-direction: column;
-  }
-</style>
-
 

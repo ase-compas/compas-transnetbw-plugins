@@ -21,8 +21,6 @@ export type RuleUiState = {
   elementName: string;
   elementCount: number;
   message: string;
-  /** Full element path selected by the user, e.g. `//SCL/Substation/VoltageLevel`. */
-  elementPath: string;
   /** When true, the user writes a raw XPath assertion instead of using the form builder. */
   expertMode: boolean;
   /** The raw XPath assertion typed by the user in expert mode. */

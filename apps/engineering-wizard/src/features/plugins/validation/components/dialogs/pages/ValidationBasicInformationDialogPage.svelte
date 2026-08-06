@@ -46,18 +46,13 @@
   <div class="form-block">
     <p class="form-block__label">
       {#if validationEditor.ruleUi.mode === 'attribute'}
-        Select the XML location where this rule should be applied.
+        Select the node this rule checks.
       {:else}
-        Select the element to check.
+        Select the parent node — you'll pick which child element to check next.
       {/if}
     </p>
-    {#if validationEditor.ruleUi.mode === 'attribute'}
-      <XMLContextSelector bind:value={validationEditor.entry.context} />
-      <PreviewBox label="XPath context preview" value={validationEditor.entry.context} />
-    {:else}
-      <XMLContextSelector bind:value={validationEditor.ruleUi.elementPath} />
-      <PreviewBox label="Element to check" value={validationEditor.ruleUi.elementPath} />
-    {/if}
+    <XMLContextSelector bind:value={validationEditor.entry.context} />
+    <PreviewBox label="XPath context preview" value={validationEditor.entry.context} />
   </div>
 </div>
 
