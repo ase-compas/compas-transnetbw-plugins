@@ -4,85 +4,63 @@
   import Radio from '@smui/radio';
   import FormField from '@smui/form-field';
   import XMLContextSelector from '../../XMLContextSelector.svelte';
-  import PreviewBox from '../../PreviewBox.svelte';
+  import FormBlock from '../../FormBlock.svelte';
+  import FormBlockGroup from '../../FormBlockGroup.svelte';
   import { validationEditor } from '../../../validationEditorStore.svelte';
+
+  const isTitleEmpty = $derived(!validationEditor.entry.title?.trim());
 </script>
 
+{#snippet ruleNameHelper()}
+  <HelperText validationMsg>Rule Name is required.</HelperText>
+{/snippet}
+
 <div class="validation-form">
-  <!-- Block 1: identity — name + description -->
-  <div class="form-block">
-    <p class="form-block__intro">
-      Provide a clear name and description to identify this validation rule.
-    </p>
+  <FormBlock label="Provide a clear name and description to identify this validation rule.">
     <Textfield
       variant="outlined"
       label="Rule Name"
       placeholder="Rule Name"
       style="width: 100%"
       bind:value={validationEditor.entry.title}
-      invalid={!validationEditor.entry.title?.trim()}
-    >
-      {#snippet helper()}<HelperText validationMsg>Rule Name is required.</HelperText>{/snippet}
-    </Textfield>
+      invalid={isTitleEmpty}
+      helper={isTitleEmpty ? ruleNameHelper : undefined}
+    />
     <Textfield textarea bind:value={validationEditor.entry.description} label="Description" />
-  </div>
+  </FormBlock>
 
-  <!-- Block 2: check type -->
-  <div class="form-block">
-    <p class="form-block__label">What kind of check does this rule perform?</p>
-    <div class="mode-radio-group">
-      <FormField>
-        <Radio bind:group={validationEditor.ruleUi.mode} value="attribute" touch />
-        {#snippet label()}Attribute check{/snippet}
-      </FormField>
-      <FormField>
-        <Radio bind:group={validationEditor.ruleUi.mode} value="element" touch />
-        {#snippet label()}Element check{/snippet}
-      </FormField>
-    </div>
-  </div>
+  <FormBlockGroup>
+    <FormBlock bold label="What kind of check does this rule perform?">
+      <div class="mode-radio-group">
+        <FormField>
+          <Radio bind:group={validationEditor.ruleUi.mode} value="attribute" touch />
+          {#snippet label()}Attribute check{/snippet}
+        </FormField>
+        <FormField>
+          <Radio bind:group={validationEditor.ruleUi.mode} value="element" touch />
+          {#snippet label()}Element check{/snippet}
+        </FormField>
+      </div>
+    </FormBlock>
 
-  <!-- Block 3: location selector + preview -->
-  <div class="form-block">
-    <p class="form-block__label">
-      {#if validationEditor.ruleUi.mode === 'attribute'}
-        Select the node this rule checks.
-      {:else}
-        Select the parent node — you'll pick which child element to check next.
-      {/if}
-    </p>
-    <XMLContextSelector bind:value={validationEditor.entry.context} />
-    <PreviewBox label="XPath context preview" value={validationEditor.entry.context} />
-  </div>
+    <FormBlock
+      bold
+      label={validationEditor.ruleUi.mode === 'attribute'
+        ? 'Select the node this rule checks.'
+        : "Select the parent node — you'll pick which child element to check next."}
+    >
+      <XMLContextSelector bind:value={validationEditor.entry.context} />
+    </FormBlock>
+  </FormBlockGroup>
 </div>
 
 <style>
-  /* 2rem between the 3 top-level blocks */
+  /* 2rem between the top-level blocks */
   .validation-form {
     display: flex;
     flex-direction: column;
     gap: 2rem;
     padding: 1rem 0;
-  }
-
-  /* 0.75rem between every item inside a block */
-  .form-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .form-block__intro {
-    margin: 0;
-    font-size: var(--ew-font-size-body);
-    color: var(--base01);
-  }
-
-  .form-block__label {
-    margin: 0;
-    font-size: var(--ew-font-size-body);
-    font-weight: var(--ew-font-weight-medium);
-    color: var(--base00);
   }
 
   .mode-radio-group {

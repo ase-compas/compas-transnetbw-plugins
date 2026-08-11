@@ -13,6 +13,8 @@
 
   let { value = $bindable(), options, label, placeholder, requiredMessage }: Props = $props();
 
+  const isEmpty = $derived(!value?.trim());
+
   $effect(() => {
     if (options.length > 0 && (!value || !options.includes(value))) {
       value = options[0];
@@ -20,13 +22,22 @@
   });
 </script>
 
+{#snippet requiredHelperText()}{requiredMessage}{/snippet}
+{#snippet requiredHelper()}<HelperText validationMsg>{requiredMessage}</HelperText>{/snippet}
+
 {#if options.length > 0}
   <div class="field-wrap">
-    <Select bind:value label={label} variant="outlined" invalid={!value?.trim()} helperText$validationMsg>
+    <Select
+      bind:value
+      label={label}
+      variant="outlined"
+      invalid={isEmpty}
+      helperText$validationMsg
+      helperText={isEmpty ? requiredHelperText : undefined}
+    >
       {#each options as opt (opt)}
         <Option value={opt}>{opt}</Option>
       {/each}
-      {#snippet helperText()}{requiredMessage}{/snippet}
     </Select>
   </div>
 {:else}
@@ -36,11 +47,10 @@
       label={label}
       variant="outlined"
       placeholder={placeholder}
-      invalid={!value?.trim()}
+      invalid={isEmpty}
       class="rule-editor__full"
-    >
-      {#snippet helper()}<HelperText validationMsg>{requiredMessage}</HelperText>{/snippet}
-    </Textfield>
+      helper={isEmpty ? requiredHelper : undefined}
+    />
   </div>
 {/if}
 

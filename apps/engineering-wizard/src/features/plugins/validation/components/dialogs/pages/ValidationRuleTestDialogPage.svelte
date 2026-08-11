@@ -22,6 +22,7 @@
   }
   import { validationEditor } from '../../../validationEditorStore.svelte';
   import XmlViewer from '../../XmlViewer.svelte';
+  import FormBlock from '../../FormBlock.svelte';
 
   const xmlContent = $derived(
     documentStore.doc ? xmlSerializer.serializeToString(documentStore.doc) : '',
@@ -56,9 +57,9 @@
 </script>
 
 <div class="test-validate">
-  <p class="test-validate__hint">
-    The loaded XML document is displayed below. Run the validation to test your rule against it.
-  </p>
+  <FormBlock
+    label="The loaded XML document is displayed below. Run the validation to test your rule against it."
+  />
 
   {#if xmlContent.trim()}
     <XmlViewer value={xmlContent} {highlightLines} />
@@ -122,10 +123,6 @@
     padding: 1rem 0;
     font-family: var(--ew-font-family, 'Inter', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
-  }
-
-  .test-validate__hint {
-    margin: 0;
   }
 
   .test-validate__no-doc {

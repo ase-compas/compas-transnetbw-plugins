@@ -9,9 +9,14 @@
   } from '../../../validationEditorStore.svelte';
 
   import AttributeRuleEditor from '../../AttributeRuleEditor.svelte';
+  import AttributeCheckFields from '../../AttributeCheckFields.svelte';
   import ElementRuleEditor from '../../ElementRuleEditor.svelte';
+  import ElementCheckFields from '../../ElementCheckFields.svelte';
   import PreviewBox from '../../PreviewBox.svelte';
   import ToggleSwitch from '../../ToggleSwitch.svelte';
+  import FormBlock from '../../FormBlock.svelte';
+
+  const isMessageEmpty = $derived(!validationEditor.ruleUi.message?.trim());
 
   const rulePreview = $derived.by(() => {
     const { mode, elementName, expertMode, expertXPath } = validationEditor.ruleUi;
@@ -67,51 +72,62 @@
   }
 </script>
 
+{#snippet errorMessageHelper()}
+  <HelperText validationMsg>Error Message is required.</HelperText>
+{/snippet}
+
 <div class="rule-editor">
-  <div class="rule-editor__header">
-    <p class="rule-info">Define what the rule checks and the message shown if it fails</p>
+  <FormBlock label="Define what the rule checks">
+    {#snippet aside()}
+      <div class="expert-toggle-row">
+        <span class="expert-toggle-row__label">Expert mode</span>
+        <ToggleSwitch checked={validationEditor.ruleUi.expertMode} onclick={handleExpertClick} />
+      </div>
+    {/snippet}
 
-    <div class="expert-toggle-row">
-      <span class="expert-toggle-row__label">Expert mode</span>
-      <ToggleSwitch checked={validationEditor.ruleUi.expertMode} onclick={handleExpertClick} />
-    </div>
-  </div>
+    {#if validationEditor.ruleUi.expertMode}
+      <div class="expert-editor">
+        <label class="expert-editor__label" for="expert-xpath-input">
+          XPath assertion
+          <span class="expert-editor__hint">
+            Written relative to the context node selected on the previous page.
+            Example: <code>normalize-space(@name) = 'Bay1'</code>
+          </span>
+        </label>
+        <textarea
+          id="expert-xpath-input"
+          class="expert-editor__textarea"
+          bind:value={validationEditor.ruleUi.expertXPath}
+          placeholder="e.g. normalize-space(@name) = 'Bay1'"
+          rows="4"
+          spellcheck="false"
+        ></textarea>
+      </div>
+    {:else if validationEditor.ruleUi.mode === 'attribute'}
+      <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
+    {:else}
+      <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
+    {/if}
+  </FormBlock>
 
-  {#if validationEditor.ruleUi.expertMode}
-    <div class="expert-editor">
-      <label class="expert-editor__label" for="expert-xpath-input">
-        XPath assertion
-        <span class="expert-editor__hint">
-          Written relative to the context node selected on the previous page.
-          Example: <code>normalize-space(@name) = 'Bay1'</code>
-        </span>
-      </label>
-      <textarea
-        id="expert-xpath-input"
-        class="expert-editor__textarea"
-        bind:value={validationEditor.ruleUi.expertXPath}
-        placeholder="e.g. normalize-space(@name) = 'Bay1'"
-        rows="4"
-        spellcheck="false"
-      ></textarea>
-    </div>
-  {:else if validationEditor.ruleUi.mode === 'attribute'}
-    <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
-  {:else}
-    <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
-  {/if}
+  <FormBlock bold label="Define the message to be shown if the rule fails">
+    {#if !validationEditor.ruleUi.expertMode}
+      {#if validationEditor.ruleUi.mode === 'attribute'}
+        <AttributeCheckFields bind:ruleUi={validationEditor.ruleUi} />
+      {:else}
+        <ElementCheckFields bind:ruleUi={validationEditor.ruleUi} />
+      {/if}
+    {/if}
 
-  <div class="field-wrap">
     <Textfield
       textarea
       bind:value={validationEditor.ruleUi.message}
       label="Error Message"
       variant="outlined"
-      invalid={!validationEditor.ruleUi.message?.trim()}
-    >
-      {#snippet helper()}<HelperText validationMsg>Error Message is required.</HelperText>{/snippet}
-    </Textfield>
-  </div>
+      invalid={isMessageEmpty}
+      helper={isMessageEmpty ? errorMessageHelper : undefined}
+    />
+  </FormBlock>
 
   <PreviewBox label="Rule Preview" value={rulePreview} />
 </div>
@@ -121,19 +137,7 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 0;
-    gap: 1.5rem;
-  }
-
-  .rule-editor__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .rule-info {
-    margin: 0;
-    flex: 1;
+    gap: 2rem;
   }
 
   .expert-toggle-row {
@@ -149,11 +153,6 @@
     color: var(--base01);
     user-select: none;
     line-height: 1;
-  }
-
-  .field-wrap {
-    display: flex;
-    flex-direction: column;
   }
 
   /* Expert mode textarea */
