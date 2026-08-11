@@ -11,12 +11,12 @@
   let passedRules = $derived(rules.filter((r) => r.passed));
   let count = $derived(failedRules.length);
 
-  let open = $state(false);
-  let unseen = $state(false);
-  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+  let hovering = $state(false);
+  let pinned = $state(false);
+  let open = $derived(hovering || pinned);
 
-  // Set unseen when count changes (skip first mount). Only tracks `count` —
-  // `active` is read via untrack so switching plugin doesn't re-trigger this.
+  let unseen = $state(false);
+
   let firstRun = true;
   $effect(() => {
     count;
@@ -24,32 +24,47 @@
     if (untrack(() => active)) unseen = true;
   });
 
-  // Cancel any pending hide timer when the component is destroyed.
-  $effect(() => () => clearTimeout(hideTimer));
+  $effect(() => {
+    if (!active) pinned = false;
+  });
 
-  function show() {
-    clearTimeout(hideTimer);
-    hideTimer = undefined;
+  function onEnter() {
     unseen = false;
-    open = true;
+    hovering = true;
   }
 
-  function hide() {
-    hideTimer = setTimeout(() => { open = false; }, 150);
+  function onLeave() {
+    hovering = false;
+  }
+
+  function togglePin() {
+    pinned = !pinned;
   }
 </script>
 
-<div class="wrapper">
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="badge" class:badge--unseen={unseen && active} onmouseenter={show} onmouseleave={hide}>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="wrapper" onmouseenter={onEnter} onmouseleave={onLeave}>
+  <span class="badge" class:badge--unseen={unseen && active}>
     {#key `${count}-${unseen && active}`}<span class="badge-count">{count}</span>{/key}
   </span>
 
+  {#if pinned}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div class="backdrop" onclick={() => (pinned = false)}></div>
+  {/if}
+
   {#if open}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="panel" onmouseenter={show} onmouseleave={hide}>
+    <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Validation rules</span>
+        <button
+          type="button"
+          class="pin-btn"
+          class:pin-btn--active={pinned}
+          onclick={togglePin}
+        >
+          {pinned ? 'Unpin' : 'Pin'}
+        </button>
       </div>
       <div class="section-header section-header--failed">
         <span>{count} rule{count === 1 ? '' : 's'} failed</span>
@@ -102,6 +117,13 @@
     right: 0;
     height: 12px;
     pointer-events: auto;
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    background: transparent;
   }
 
   .badge {
@@ -177,6 +199,21 @@
     top: 0;
     background: var(--white);
     z-index: 1;
+  }
+
+  .pin-btn {
+    padding: 2px 8px;
+    border: 1px solid var(--base3);
+    border-radius: 4px;
+    background: none;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .pin-btn--active {
+    background: var(--primary-base);
+    color: var(--white);
+    border-color: var(--primary-base);
   }
 
   .panel-title {
