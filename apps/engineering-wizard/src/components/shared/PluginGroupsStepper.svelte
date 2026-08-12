@@ -102,21 +102,20 @@
 
       {#if groupIndex === resolvedGroupIndex}
         {#each visiblePluginChips(group.plugins) as chip}
-          <div class="validation-groups__plugin" class:active={chip.pluginIndex === resolvedPluginIndex}>
-            <button
-              type="button"
-              class="validation-groups__plugin-btn"
-              onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
-            >
-              {chip.plugin.name}
-            </button>
+          <button
+            type="button"
+            class="validation-groups__plugin"
+            class:active={chip.pluginIndex === resolvedPluginIndex}
+            onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
+          >
+            <span>{chip.plugin.name}</span>
             {#if failureCount(chip.plugin.id) > 0}
               <ValidationBadgePopover
                 rules={validationStatuses[chip.plugin.id] ?? []}
                 active={chip.pluginIndex === selectedPluginIndex}
               />
             {/if}
-          </div>
+          </button>
         {/each}
       {/if}
     </div>
@@ -181,6 +180,10 @@
     align-items: center;
     justify-content: center;
 
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    font-weight: var(--ew-font-weight-medium, 500);
+    color: var(--primary-base);
     padding: 6px 0.5rem;
     min-height: 36px;
     background-color: white;
@@ -188,29 +191,14 @@
 
     width: fit-content;
     min-width: 2rem;
+    cursor: pointer;
 
     margin: 0;
+    border: none;
     overflow: visible;
   }
 
   .validation-groups__plugin.active {
     background-color: #d9d800;
   }
-
-  .validation-groups__plugin-btn {
-    appearance: none;
-    -webkit-appearance: none;
-    font-family: var(--ew-font-family, 'Roboto', sans-serif);
-    font-size: var(--ew-font-size-body, 0.875rem);
-    font-weight: var(--ew-font-weight-medium, 500);
-    color: var(--primary-base);
-    line-height: normal;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-    min-width: 0;
-  }
-
 </style>
