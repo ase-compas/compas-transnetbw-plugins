@@ -3,6 +3,7 @@ import { getPluginsForProcess } from '../features/processes/selectors';
 import { validateWithContent, describeValidationError, type ValidationResult } from './validationService';
 import { documentStore } from '../documentStore.svelte';
 import { beginPluginValidation, completePluginValidation, type RuleResult } from './validationStatusStore.svelte';
+import { WORKFLOW_STATE_PRIVATE_TYPES } from '../features/workflow/document-state';
 import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
 
 const VALIDATION_DEBOUNCE_MS = 1000;
@@ -11,13 +12,18 @@ const xmlSerializer = new XMLSerializer();
 
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
+let lastValidatedKey: string | null = null;
+
+let isRunning = false;
+let rerunRequested = false;
+
 /**
  * Schedules a debounced validation run.
  * Call this whenever an `oscd-edit-v2` event is received.
  */
 export function scheduleEditValidation(): void {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => runEditValidation(), VALIDATION_DEBOUNCE_MS);
+  debounceTimer = setTimeout(() => void runEditValidation(), VALIDATION_DEBOUNCE_MS);
 }
 
 /**
@@ -28,18 +34,47 @@ export function cancelPendingValidation(): void {
 }
 
 async function runEditValidation(): Promise<void> {
+  if (isRunning) {
+    rerunRequested = true;
+    return;
+  }
+
+  isRunning = true;
+  try {
+    await validateIfChanged();
+  } finally {
+    isRunning = false;
+    if (rerunRequested) {
+      rerunRequested = false;
+      void runEditValidation();
+    }
+  }
+}
+
+async function validateIfChanged(): Promise<void> {
   const { process } = runningEngineeringProcess;
   if (!process) return;
 
   const doc = documentStore.doc;
   if (!doc) return;
 
-  const sclContent = xmlSerializer.serializeToString(doc);
+  const sclContent = xmlSerializer.serializeToString(stripWorkflowBookkeeping(doc));
+  const key = `${process.id}:${sclContent}`;
+  if (key === lastValidatedKey) return;
+  lastValidatedKey = key;
+
   const allPlugins = getPluginsForProcess(process);
 
   await Promise.allSettled(
     allPlugins.map((plugin) => validatePlugin(plugin, process.id, sclContent)),
   );
+}
+
+function stripWorkflowBookkeeping(doc: XMLDocument): XMLDocument {
+  const clone = doc.cloneNode(true) as XMLDocument;
+  const selector = WORKFLOW_STATE_PRIVATE_TYPES.map((type) => `:scope > Private[type="${type}"]`).join(', ');
+  clone.documentElement.querySelectorAll(selector).forEach((el) => el.remove());
+  return clone;
 }
 
 function toRuleResult(rule: XPathValidation, result: PromiseSettledResult<ValidationResult>): RuleResult {

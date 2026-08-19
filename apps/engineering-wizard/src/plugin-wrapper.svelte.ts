@@ -27,6 +27,8 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   private _props: PluginProps;
 
+  private _lastValidatedEditCount = -1;
+
   constructor() {
     super();
 
@@ -86,7 +88,10 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   set editCount(newCount: number) {
     this._props.editCount = newCount;
-    if (newCount >= 0) scheduleEditValidation();
+    if (newCount >= 0 && newCount !== this._lastValidatedEditCount) {
+      this._lastValidatedEditCount = newCount;
+      scheduleEditValidation();
+    }
   }
 
   set docId(v: string) {
