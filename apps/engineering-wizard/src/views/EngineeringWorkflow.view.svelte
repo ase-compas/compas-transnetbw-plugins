@@ -2,15 +2,17 @@
   import { onMount } from 'svelte';
   import type { ViewPlugin } from '../features/workflow/viewPlugin';
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
+  import ExternalPluginView from '../features/workflow/components/plugins/ExternalPluginView.svelte';
   import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
-  import WorkflowActions from '../components/shared/WorkflowActions.svelte';  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
-  import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
+  import WorkflowActions from '../components/shared/WorkflowActions.svelte';
+  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import { preloadAllPlugins } from '../features/workflow/external-elements';
   import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { enterFullscreenView } from '../features/workflow/layout.svelte';
   import { runningEngineeringProcess } from '../features/processes/stores.svelte';
-  import { pluginValidationStatuses, validationKey } from '../services/validationStatusStore.svelte';
+  import { getPluginValidationView, type PluginValidationView } from '../services/validationStatusStore.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -50,15 +52,12 @@
 
   let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
 
-  // Project composite-keyed validation statuses into a pluginId-keyed map for the stepper
-  let processValidationStatuses = $derived.by(() => {
+  let pluginValidationViews = $derived.by(() => {
     const processId = runningEngineeringProcess.process?.id;
-    if (!processId) return {};
-    const result: Record<string, typeof pluginValidationStatuses.statuses[string]> = {};
+    if (!processId) return {} as Record<string, PluginValidationView>;
+    const result: Record<string, PluginValidationView> = {};
     for (const plugin of plugins) {
-      const key = validationKey(processId, plugin.id);
-      const status = pluginValidationStatuses.statuses[key];
-      if (status) result[plugin.id] = status;
+      result[plugin.id] = getPluginValidationView(processId, plugin);
     }
     return result;
   });
@@ -78,12 +77,13 @@
     return { groupIndex: null, pluginIndex: null };
   }
 
-  async function onSelectPlugin(plugin?: ViewPlugin) {
+  // Selecting a plugin is now purely a state switch — loading (and any failure/retry) of
+  // external plugins is handled reactively by <ExternalPluginView>, keyed off `selectedPlugin`.
+  function onSelectPlugin(plugin?: ViewPlugin) {
     if (!plugin) return;
 
     if (selectedPlugin?.id === plugin.id) return;
 
-    await ensureCustomElementDefined(plugin);
     selectedPlugin = plugin;
 
     const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
@@ -110,22 +110,12 @@
     else if (nextIndexUnbounded >= plugins.length) nextIndex = plugins.length - 1;
 
     if (nextIndex !== currentIndex) {
-      void onSelectPlugin(plugins[nextIndex]);
+      onSelectPlugin(plugins[nextIndex]);
     }
   }
 
   const nextPlugin = () => advance(1);
   const previousPlugin = () => advance(-1);
-
-  function setProps(node: HTMLElement, props: Record<string, unknown>) {
-    Object.assign(node, props);
-
-    return {
-      update(newProps: Record<string, unknown>) {
-        Object.assign(node, newProps);
-      },
-    };
-  }
 
   onMount(() => {
     if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
@@ -145,7 +135,7 @@
       const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(initialPlugin.id);
       selectedGroupIndex = groupIndex;
       selectedPluginIndex = pluginIndex;
-      void onSelectPlugin(initialPlugin);
+      onSelectPlugin(initialPlugin);
     }
 
     return enterFullscreenView();
@@ -166,7 +156,7 @@
     expandedGroupBorderColor="white"
     bind:selectedGroupIndex
     bind:selectedPluginIndex
-    validationStatuses={processValidationStatuses}
+    validationViews={pluginValidationViews}
   />
 
   <WorkflowActions
@@ -194,9 +184,17 @@
         {oscdApi}
       />
     {:else}
-      <svelte:element
-        this={selectedPlugin.id}
-        use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
+      <ExternalPluginView
+        plugin={selectedPlugin}
+        {doc}
+        {editCount}
+        {docs}
+        {nsdoc}
+        {docName}
+        {docId}
+        {locale}
+        {oscdApi}
+        {host}
       />
     {/if}
   </div>

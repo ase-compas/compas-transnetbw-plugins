@@ -21,6 +21,7 @@ export { default as OscdArrowUpIcon } from './oscd-arrow-up-icon/OscdArrowUpIcon
 export { default as OscdArrowDownIcon } from './oscd-arrow-down-icon/OscdArrowDownIcon.svelte';
 export { default as OscdWandStarsIcon } from './oscd-wand-stars-icon/OscdWandStarsIcon.svelte';
 export { default as OscdLinkOffIcon } from './oscd-link-off-icon/OscdLinkOffItem.svelte'
+export { default as OscdCloudOffIcon } from './oscd-cloud-off-icon/OscdCloudOffItem.svelte'
 export { default as OscdLockIcon } from './oscd-lock-icon/OscdLockIcon.svelte'
 export {default as OscdCallMadeIcon} from './oscd-call-made-icon/OscdCallMadeIcon.svelte'
 export {default as OscdCloseIcon} from './oscd-close-icon/OscdCloseIcon.svelte'

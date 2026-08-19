@@ -1,4 +1,5 @@
 import type { ViewPlugin } from './viewPlugin';
+import { describePluginLoadError, setPluginLoadState } from './plugin-load-status.svelte';
 
 const inFlight = new Map<string, Promise<void>>();
 
@@ -22,38 +23,46 @@ export async function ensureCustomElementDefined(
   const tag = plugin.id;
   assertValidCustomElementName(tag);
 
-  if (isDefined(tag)) return;
+  if (isDefined(tag)) {
+    setPluginLoadState(tag, { status: 'loaded' });
+    return;
+  }
 
   const existing = inFlight.get(tag);
   if (existing) return existing;
 
+  setPluginLoadState(tag, { status: 'loading' });
+
   const p = (async () => {
-    // Plugins may be served from external origins (e.g. GitHub Pages CDN).
-    // Trust is delegated to the backend that supplies the plugin registry.
-    const mod = await import(/* @vite-ignore */ plugin.src);
-    const ctor = (mod?.default ?? mod?.element) as
-      | CustomElementConstructor
-      | undefined;
+    try {
+      const mod = await import(/* @vite-ignore */ plugin.src);
+      const ctor = (mod?.default ?? mod?.element) as
+        | CustomElementConstructor
+        | undefined;
 
-    if (!ctor) {
-      throw new Error(
-        `Plugin "${plugin.id}" did not export a custom element constructor.`,
-      );
-    }
-
-    // Wrap => always a fresh constructor
-    const Base = ctor as unknown as { new (): HTMLElement };
-    const Wrapped: CustomElementConstructor = class extends Base {};
-
-    if (!isDefined(tag)) {
-      try {
-        customElements.define(tag, Wrapped);
-      } catch (e) {
-        if (!isDefined(tag)) throw e; // tolerate races
+      if (!ctor) {
+        throw new Error(
+          `Plugin "${plugin.id}" did not export a custom element constructor.`,
+        );
       }
-    }
 
-    await customElements.whenDefined(tag);
+      const Base = ctor as unknown as { new (): HTMLElement };
+      const Wrapped: CustomElementConstructor = class extends Base {};
+
+      if (!isDefined(tag)) {
+        try {
+          customElements.define(tag, Wrapped);
+        } catch (e) {
+          if (!isDefined(tag)) throw e; // tolerate races
+        }
+      }
+
+      await customElements.whenDefined(tag);
+      setPluginLoadState(tag, { status: 'loaded' });
+    } catch (e) {
+      setPluginLoadState(tag, { status: 'error', error: describePluginLoadError(e) });
+      throw e;
+    }
   })().finally(() => {
     inFlight.delete(tag);
   });

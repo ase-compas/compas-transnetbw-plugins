@@ -1,14 +1,12 @@
 import { runningEngineeringProcess } from '../features/processes/stores.svelte';
 import { getPluginsForProcess } from '../features/processes/selectors';
-import { validateWithContent } from './validationService';
+import { validateWithContent, describeValidationError, type ValidationResult } from './validationService';
 import { documentStore } from '../documentStore.svelte';
-import { setPluginValidationStatus, type RuleResult } from './validationStatusStore.svelte';
+import { beginPluginValidation, completePluginValidation, type RuleResult } from './validationStatusStore.svelte';
 import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
 
 const VALIDATION_DEBOUNCE_MS = 1000;
 
-// Performance note: serialization runs on every edit event (after debounce).
-// Consider gating behind an isDirty flag if this becomes a bottleneck.
 const xmlSerializer = new XMLSerializer();
 
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -44,6 +42,20 @@ async function runEditValidation(): Promise<void> {
   );
 }
 
+function toRuleResult(rule: XPathValidation, result: PromiseSettledResult<ValidationResult>): RuleResult {
+  const base = {
+    title: rule.title,
+    description: rule.description,
+    context: rule.context,
+    assertion: rule.assert,
+  };
+
+  if (result.status === 'rejected') {
+    return { ...base, passed: false, errors: [], rejected: true, rejectReason: describeValidationError(result.reason) };
+  }
+  return { ...base, passed: result.value.valid, errors: result.value.errors, rejected: false };
+}
+
 async function validatePlugin(
   plugin: Plugin,
   processId: string,
@@ -54,27 +66,21 @@ async function validatePlugin(
   );
 
   if (validations.length === 0) {
-    setPluginValidationStatus(processId, plugin.id, []);
+    completePluginValidation(processId, plugin.id, []);
     return;
   }
 
-  const results = await Promise.allSettled(
-    validations.map((rule) => validateWithContent(rule, sclContent)),
-  );
+  beginPluginValidation(processId, plugin.id);
 
-  const ruleResults: RuleResult[] = results.map((result, i) => {
-    const rule = validations[i];
-    const base = {
-      title: rule.title,
-      description: rule.description,
-      context: rule.context,
-      assertion: rule.assert,
-    };
-    if (result.status === 'rejected') {
-      return { ...base, passed: false, errors: [], rejected: true, rejectReason: String(result.reason) };
-    }
-    return { ...base, passed: result.value.valid, errors: result.value.errors, rejected: false };
-  });
+  try {
+    const results = await Promise.allSettled(
+      validations.map((rule) => validateWithContent(rule, sclContent)),
+    );
+    const ruleResults = results.map((result, i) => toRuleResult(validations[i], result));
 
-  setPluginValidationStatus(processId, plugin.id, ruleResults);
+    completePluginValidation(processId, plugin.id, ruleResults);
+  } catch (e) {
+    completePluginValidation(processId, plugin.id, []);
+    throw e;
+  }
 }

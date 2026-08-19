@@ -230,6 +230,7 @@
           selectPlugin={onSelectPlugin}
           bind:selectedGroupIndex
           bind:selectedPluginIndex
+          showValidationStatus={false}
         />
         <Button
           variant="raised"
