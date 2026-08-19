@@ -15,6 +15,15 @@ function assertValidCustomElementName(tag: string) {
   }
 }
 
+const ALLOWED_SRC_PROTOCOLS = new Set(['http:', 'https:']);
+
+function assertSafePluginSrc(src: string) {
+  const resolved = new URL(src, window.location.origin);
+  if (!ALLOWED_SRC_PROTOCOLS.has(resolved.protocol)) {
+    throw new Error(`Refusing to load plugin from unsupported URL scheme "${resolved.protocol}".`);
+  }
+}
+
 export async function ensureCustomElementDefined(
   plugin: ViewPlugin,
 ): Promise<void> {
@@ -35,6 +44,7 @@ export async function ensureCustomElementDefined(
 
   const p = (async () => {
     try {
+      assertSafePluginSrc(plugin.src);
       const mod = await import(/* @vite-ignore */ plugin.src);
       const ctor = (mod?.default ?? mod?.element) as
         | CustomElementConstructor
