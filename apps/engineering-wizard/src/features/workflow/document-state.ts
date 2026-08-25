@@ -55,7 +55,8 @@ function upsertPrivate(
   }
 
   if (existing) {
-    edits.push(buildSetTextContent(existing, text));
+    const current = (existing.textContent ?? '').trim();
+    if (current !== text) edits.push(buildSetTextContent(existing, text));
   } else {
     const header = findHeader(doc);
     edits.push(buildInsert(root(doc), createPrivate(doc, type, text), header));
