@@ -5,19 +5,11 @@
   import ValidationRuleItem from './ValidationRuleItem.svelte';
   import Spinner from './Spinner.svelte';
 
-  const DEFAULT_VIEW: PluginValidationView = {
-    state: 'loading',
-    rules: [],
-    failedRules: [],
-    passedRules: [],
-    erroredRules: [],
-  };
-
   interface Props {
-    view?: PluginValidationView;
+    view: PluginValidationView;
     active?: boolean;
   }
-  let { view = DEFAULT_VIEW, active = false }: Props = $props();
+  let { view, active = false }: Props = $props();
 
   let failedCount = $derived(view.failedRules.length);
   let passedCount = $derived(view.passedRules.length);
