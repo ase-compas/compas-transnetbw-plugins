@@ -52,8 +52,9 @@ export function getPluginValidationView(processId: string, plugin: Plugin): Plug
   const failedRules = rules.filter((r) => !r.passed && !r.rejected);
   const passedRules = rules.filter((r) => r.passed);
 
-  // Loading covers both "never evaluated yet" and "currently re-validating".
-  const loading = hasValidations && (entry.status === 'idle' || entry.status === 'loading');
+  // Spinner only before the first result. Re-validation keeps the previous
+  // pass/fail/error; `begin()` already preserves `entry.data`.
+  const loading = hasValidations && entry.data === undefined;
 
   let state: PluginValidationState;
   if (!hasValidations) state = 'no-validations';
