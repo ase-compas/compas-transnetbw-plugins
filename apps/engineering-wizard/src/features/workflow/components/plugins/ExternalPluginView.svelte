@@ -28,6 +28,7 @@
 
   $effect(() => {
     plugin.id;
+    plugin.src;
     load();
   });
 

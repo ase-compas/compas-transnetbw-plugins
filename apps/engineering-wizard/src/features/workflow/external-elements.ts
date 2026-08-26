@@ -1,5 +1,5 @@
 import type { ViewPlugin } from './viewPlugin';
-import { describePluginLoadError, setPluginLoadState } from './plugin-load-status.svelte';
+import { describePluginLoadError, getPluginLoadState, setPluginLoadState } from './plugin-load-status.svelte';
 
 const inFlight = new Map<string, Promise<void>>();
 
@@ -17,11 +17,23 @@ function assertValidCustomElementName(tag: string) {
 
 const ALLOWED_SRC_PROTOCOLS = new Set(['http:', 'https:']);
 
-function assertSafePluginSrc(src: string) {
-  const resolved = new URL(src, window.location.origin);
+function assertSafePluginSrc(src: string): URL {
+  let resolved: URL;
+  try {
+    resolved = new URL(src, window.location.origin);
+  } catch {
+    throw new Error(`Invalid plugin URL "${src}".`);
+  }
   if (!ALLOWED_SRC_PROTOCOLS.has(resolved.protocol)) {
     throw new Error(`Refusing to load plugin from unsupported URL scheme "${resolved.protocol}".`);
   }
+  return resolved;
+}
+
+function cacheBustedHref(url: URL): string {
+  const next = new URL(url.href);
+  next.searchParams.set('retry', String(Date.now()));
+  return next.href;
 }
 
 export async function ensureCustomElementDefined(
@@ -40,12 +52,14 @@ export async function ensureCustomElementDefined(
   const existing = inFlight.get(tag);
   if (existing) return existing;
 
+  const retry = getPluginLoadState(tag).status === 'error';
   setPluginLoadState(tag, { status: 'loading' });
 
   const p = (async () => {
     try {
-      assertSafePluginSrc(plugin.src);
-      const mod = await import(/* @vite-ignore */ plugin.src);
+      const srcUrl = assertSafePluginSrc(plugin.src);
+      const href = retry ? cacheBustedHref(srcUrl) : srcUrl.href;
+      const mod = await import(/* @vite-ignore */ href);
       const ctor = (mod?.default ?? mod?.element) as
         | CustomElementConstructor
         | undefined;
