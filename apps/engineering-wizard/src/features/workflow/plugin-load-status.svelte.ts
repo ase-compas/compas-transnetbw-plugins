@@ -1,4 +1,3 @@
-import { createKeyedAsyncStore } from '../../utils/keyed-async-store.svelte';
 import { describeNetworkError } from '../../utils/network-error';
 
 export type PluginLoadStatus = 'idle' | 'loading' | 'loaded' | 'error';
@@ -8,21 +7,16 @@ export interface PluginLoadState {
   error?: string;
 }
 
-const store = createKeyedAsyncStore<void>();
+const IDLE: PluginLoadState = { status: 'idle' };
+
+const states = $state<Record<string, PluginLoadState>>({});
 
 export function getPluginLoadState(pluginId: string): PluginLoadState {
-  const entry = store.get(pluginId);
-  return {
-    status: entry.status === 'success' ? 'loaded' : entry.status,
-    error: entry.error,
-  };
+  return states[pluginId] ?? IDLE;
 }
 
 export function setPluginLoadState(pluginId: string, state: PluginLoadState): void {
-  if (state.status === 'loading') store.begin(pluginId);
-  else if (state.status === 'loaded') store.succeed(pluginId, undefined);
-  else if (state.status === 'error') store.fail(pluginId, state.error ?? 'Failed to load the plugin.');
-  // 'idle' is the store's default for unseen keys; no explicit reset is needed.
+  states[pluginId] = state;
 }
 
 export function describePluginLoadError(error: unknown): string {

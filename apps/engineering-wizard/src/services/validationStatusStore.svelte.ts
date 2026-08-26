@@ -1,6 +1,5 @@
 import type { Plugin } from '@oscd-transnet-plugins/shared';
 import type { ValidationError } from './validationService';
-import { createKeyedAsyncStore } from '../utils/keyed-async-store.svelte';
 
 export type { ValidationError };
 
@@ -26,35 +25,27 @@ export interface PluginValidationView {
   erroredRules: RuleResult[];
 }
 
-/** Internal, low-level state: one entry per "processId:pluginId" pair. */
-const store = createKeyedAsyncStore<RuleResult[]>();
+/** One result list per "processId:pluginId". Missing key = not yet validated. */
+const results = $state<Record<string, RuleResult[]>>({});
 
 function key(processId: string, pluginId: string): string {
   return `${processId}:${pluginId}`;
 }
 
-/** Call when a validation run starts for a plugin. */
-export function beginPluginValidation(processId: string, pluginId: string): void {
-  store.begin(key(processId, pluginId));
-}
-
-/** Call when a validation run finishes (successfully or not) with its results. */
 export function completePluginValidation(processId: string, pluginId: string, rules: RuleResult[]): void {
-  store.succeed(key(processId, pluginId), rules);
+  results[key(processId, pluginId)] = rules;
 }
 
 export function getPluginValidationView(processId: string, plugin: Plugin): PluginValidationView {
   const hasValidations = (plugin.validations ?? []).some((v) => v.processId === processId);
-  const entry = store.get(key(processId, plugin.id));
-  const rules = entry.data ?? [];
+  const rules = results[key(processId, plugin.id)];
 
-  const erroredRules = rules.filter((r) => r.rejected);
-  const failedRules = rules.filter((r) => !r.passed && !r.rejected);
-  const passedRules = rules.filter((r) => r.passed);
+  const list = rules ?? [];
+  const erroredRules = list.filter((r) => r.rejected);
+  const failedRules = list.filter((r) => !r.passed && !r.rejected);
+  const passedRules = list.filter((r) => r.passed);
 
-  // Spinner only before the first result. Re-validation keeps the previous
-  // pass/fail/error; `begin()` already preserves `entry.data`.
-  const loading = hasValidations && entry.data === undefined;
+  const loading = hasValidations && rules === undefined;
 
   let state: PluginValidationState;
   if (!hasValidations) state = 'no-validations';
@@ -63,5 +54,5 @@ export function getPluginValidationView(processId: string, plugin: Plugin): Plug
   else if (erroredRules.length > 0) state = 'error';
   else state = 'passed';
 
-  return { state, rules, failedRules, passedRules, erroredRules };
+  return { state, rules: list, failedRules, passedRules, erroredRules };
 }

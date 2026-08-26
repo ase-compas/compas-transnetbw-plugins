@@ -2,7 +2,7 @@ import { runningEngineeringProcess } from '../features/processes/stores.svelte';
 import { getPluginsForProcess } from '../features/processes/selectors';
 import { validateWithContent, describeValidationError, type ValidationResult } from './validationService';
 import { documentStore } from '../documentStore.svelte';
-import { beginPluginValidation, completePluginValidation, type RuleResult } from './validationStatusStore.svelte';
+import { completePluginValidation, type RuleResult } from './validationStatusStore.svelte';
 import { WORKFLOW_STATE_PRIVATE_TYPES } from '../features/workflow/document-state';
 import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
 
@@ -106,8 +106,6 @@ async function validatePlugin(
     completePluginValidation(processId, plugin.id, []);
     return true;
   }
-
-  beginPluginValidation(processId, plugin.id);
 
   const results = await Promise.allSettled(
     validations.map((rule) => validateWithContent(rule, sclContent)),
