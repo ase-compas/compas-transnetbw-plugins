@@ -1,5 +1,3 @@
-import type { XPathValidation } from './XPathValidation';
-
 export type PluginType = 'internal' | 'external';
 
 export type Plugin = {
@@ -8,5 +6,4 @@ export type Plugin = {
   src?: string;
   sourceUrl?: string;
   type: PluginType;
-  validations?: XPathValidation[];
 };
