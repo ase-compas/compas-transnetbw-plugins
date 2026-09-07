@@ -1,0 +1,46 @@
+/* Theme contract for @oscd-transnet-plugins/ui-validation-manager.
+ *
+ * Declares every CSS custom property the library reads but does not
+ * define itself. Hosts install it with:
+ *
+ *     import '@oscd-transnet-plugins/ui-validation-manager/theme.css';
+ *
+ * A host that ships its own tokens (e.g. the Engineering Wizard defines
+ * --primary-base, --base0..3, --ew-font-*) shadows the defaults below
+ * automatically - every rule is `var(--token, <default>)`.
+ *
+ * Selector strategy: `:root, :host` covers both regular pages and shadow
+ * roots. Shadow-DOM children inherit from the host element, not from the
+ * ShadowRoot node, so `:root` alone would not reach shadow DOM descendants.
+ */
+
+:root,
+:host {
+  /* Rule-editor palette. Names match the Engineering Wizard's own tokens
+   * so its theme keeps winning for free; other hosts get the slate
+   * fallbacks below. */
+  --primary-base: var(--primary-base, #37474f);
+  --white: var(--white, #ffffff);
+  --base0: var(--base0, #90a4ae);
+  --base00: var(--base00, #37474f);
+  --base01: var(--base01, #607d8b);
+  --base03: var(--base03, #263238);
+  --base1: var(--base1, #b0bec5);
+  --base2: var(--base2, #cfd8dc);
+  --base3: var(--base3, #eceff1);
+
+  /* Typography. Falls back to Inter (SCL Quality Guard's brand font)
+   * with a Roboto fallback for hosts that ship it. */
+  --ew-font-family: var(--ew-font-family, var(--tg-font-family, 'Inter', 'Roboto', sans-serif));
+  --ew-font-size-body: var(--ew-font-size-body, var(--tg-font-size-body, 0.875rem));
+  --ew-font-size-small: var(--ew-font-size-small, var(--tg-font-size-small, 0.75rem));
+  --ew-font-weight-medium: var(--ew-font-weight-medium, var(--tg-font-weight-medium, 500));
+  --ew-font-weight-normal: var(--ew-font-weight-normal, var(--tg-font-weight-normal, 400));
+
+  /* Modal accent. ModalShell uses it for the dialog header + close
+   * button; RuleEditorWizard forwards it into Back/Next. Inherits from
+   * --primary-base so the modal always agrees with the rule-editor
+   * primary colour. */
+  --vlm-accent: var(--vlm-accent, var(--primary-base, #37474f));
+  --vlm-on-accent: var(--vlm-on-accent, var(--white, #ffffff));
+}

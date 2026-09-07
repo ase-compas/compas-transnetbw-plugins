@@ -1,0 +1,27 @@
+{
+  "name": "ui-validation-manager",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/validation-manager/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "command": "eslint libs/ui/validation-manager/**/*.{ts,svelte,spec.ts}"
+    },
+    "check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "svelte-check",
+        "cwd": "libs/ui/validation-manager"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "configFile": "libs/ui/validation-manager/vitest.config.ts",
+        "reportsDirectory": "../../../coverage/libs/ui/validation-manager"
+      }
+    }
+  }
+}
