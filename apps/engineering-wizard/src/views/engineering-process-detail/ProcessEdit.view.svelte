@@ -8,20 +8,19 @@
     selectedEngineeringProcess
   } from '../../features/processes/stores.svelte';
   import { enterFullscreenView } from '../../features/workflow/layout.svelte';
-  import Button from '@smui/button';
-  import ProcessValidationView from './ProcessValidation.view.svelte';
   import ProcessDefinitionView from './ProcessDefinition.view.svelte';
   import ProcessInfoBar from '../../components/shared/ProcessInfoBar.svelte';
   import PluginGroupsStepper from '../../components/shared/PluginGroupsStepper.svelte';
   import type { EditorStepIds } from '../../features/processes/editor/types';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import AddNewValidationDialog
-    from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
-  import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
+  import { updateProcessMetadata } from '../../features/processes/mutations.svelte';
+  import { validationLibraryService } from '../../bootstrap';
+  import { ENGINEERING_WIZARD_POLICY_NAME } from '../../features/plugins/validation/library/naming';
+  import RuleSetAssignmentEditor from '../../features/plugins/validation/components/RuleSetAssignmentEditor.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import type { Plugin, Process, XPathValidation, VersionBump } from '@oscd-transnet-plugins/shared';
-  import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
+  import type { Plugin, Process, VersionBump } from '@oscd-transnet-plugins/shared';
+  import { OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
@@ -142,53 +141,18 @@
     selectedPluginId = plugin.id;
   }
 
-
-  async function handleAddValidationClick() {
-    const proc = selectedEngineeringProcess.process;
-    const pl = selectedPlugin;
-    if (!pl || !proc) return;
-
-    const result = await openDialog(AddNewValidationDialog, { plugin: pl, process: proc });
-
-    if (result?.type === 'confirm') {
-      addValidationToPluginInProcess(proc.id, pl.id, result.data);
-    }
-  }
-
-  async function handleEditValidationClick(entry: XPathValidation, index: number) {
-    const proc = selectedEngineeringProcess.process;
-    const pl = selectedPlugin;
-    if (!pl || !proc) return;
-
-    const result = await openDialog(AddNewValidationDialog, {
-      plugin: pl,
-      process: proc,
-      initialValidation: { ...entry },
-    });
-
-    if (result?.type === 'confirm') {
-      updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
-    }
-  }
-
-  async function handleDeleteValidationClick(entry: XPathValidation, index: number) {
-    const proc = selectedEngineeringProcess.process;
-    const pl = selectedPlugin;
-    if (!pl || !proc) return;
-
-    const result = await openDialog(OscdConfirmDialog, {
-      title: 'Remove validation',
-      message: `Are you sure you want to remove "${entry.title}"? This cannot be undone.`,
-      confirmActionText: 'Remove',
-      confirmActionColor: 'danger',
-    });
-
-    if (result?.type !== 'confirm') return;
-
-    removeValidationFromPluginInProcess(proc.id, pl.id, index);
-  }
-
+  /**
+   * Fixed identity of the one policy the whole Engineering Wizard consumes —
+   * see `naming.ts`. It is not derived from the running process: every
+   * process shares the same policy, only scoped per plugin (rule pack).
+   */
+  const policyName = ENGINEERING_WIZARD_POLICY_NAME;
+  const policyMeta = {
+    title: 'Engineering Wizard validation policy',
+    description: 'Rules the Engineering Wizard runs, across all processes.',
+  };
 </script>
+
 <div class="edit-view">
   <div class="stepper">
     <WorkflowTitle onClick={exitEditing} />
@@ -232,21 +196,18 @@
           bind:selectedPluginIndex
           showValidationStatus={false}
         />
-        <Button
-          variant="raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-          onclick={handleAddValidationClick}
-          disabled={!selectedEngineeringProcess.process || !selectedPlugin}
-          aria-label="Add validation"
-        >
-          Add new validation
-        </Button>
       </div>
-      <ProcessValidationView
-        {selectedPlugin}
-        onEditEntry={handleEditValidationClick}
-        onDeleteEntry={handleDeleteValidationClick}
-      />
+      {#if selectedPlugin}
+        <RuleSetAssignmentEditor
+          service={validationLibraryService}
+          {policyName}
+          {policyMeta}
+          pluginId={selectedPlugin.id}
+          pluginName={selectedPlugin.name}
+        />
+      {:else}
+        <p class="validator-hint">Select a plugin above to manage its validations.</p>
+      {/if}
     {/if}
   </div>
 </div>
@@ -286,7 +247,8 @@
     padding-bottom: 12px;
   }
 
-  .header :global(button) {
-    margin-left: auto;
+  .validator-hint {
+    color: #666;
+    font-size: 0.9rem;
   }
 </style>

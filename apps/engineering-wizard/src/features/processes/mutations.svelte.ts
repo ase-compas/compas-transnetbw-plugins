@@ -3,7 +3,6 @@ import type {
   Plugin,
   PluginGroup,
   Process,
-  XPathValidation,
 } from '@oscd-transnet-plugins/shared';
 import {
   corePlugins,
@@ -18,37 +17,6 @@ import {
 
 function getProcess(procId: string): Process | undefined {
   return engineeringProcesses.processes.find((p) => p.id === procId);
-}
-
-function findPlugin(procId: string, pluginId: string): Plugin | undefined {
-  return getProcess(procId)
-    ?.pluginGroups?.flatMap((g) => g.plugins ?? [])
-    .find((pl) => pl.id === pluginId);
-}
-
-/**
- * Returns the validations for a specific plugin scoped to a process,
- * together with their original indices in the raw validations array.
- */
-function getFilteredValidations(
-  validations: XPathValidation[],
-  procId: string,
-  pluginId: string,
-): { validation: XPathValidation; rawIndex: number }[] {
-  return validations
-    .map((v, rawIndex) => ({ validation: v, rawIndex }))
-    .filter(({ validation: v }) => v.processId === procId && v.pluginId === pluginId);
-}
-
-function mutatePluginValidations(
-  procId: string,
-  pluginId: string,
-  fn: (validations: XPathValidation[]) => void,
-): void {
-  const plugin = findPlugin(procId, pluginId);
-  if (!plugin) return;
-  plugin.validations ??= [];
-  fn(plugin.validations);
 }
 
 // ---------------------------------------------------------------------------
@@ -120,43 +88,6 @@ export function removeAllPluginsFromProcess(procId: string): void {
   const process = getProcess(procId);
   if (!process) return;
   process.pluginGroups = [];
-}
-
-// ---------------------------------------------------------------------------
-// Validation mutations
-// ---------------------------------------------------------------------------
-
-export function addValidationToPluginInProcess(
-  procId: string,
-  pluginId: string,
-  validation: XPathValidation,
-): void {
-  mutatePluginValidations(procId, pluginId, (v) => v.push(validation));
-}
-
-export function removeValidationFromPluginInProcess(
-  procId: string,
-  pluginId: string,
-  entryIndex: number,
-): void {
-  mutatePluginValidations(procId, pluginId, (validations) => {
-    const filtered = getFilteredValidations(validations, procId, pluginId);
-    const entry = filtered[entryIndex];
-    if (entry) validations.splice(entry.rawIndex, 1);
-  });
-}
-
-export function updateValidationInPluginInProcess(
-  procId: string,
-  pluginId: string,
-  entryIndex: number,
-  validation: XPathValidation,
-): void {
-  mutatePluginValidations(procId, pluginId, (validations) => {
-    const filtered = getFilteredValidations(validations, procId, pluginId);
-    const entry = filtered[entryIndex];
-    if (entry) validations[entry.rawIndex] = validation;
-  });
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 <script lang="ts">
   import ProcessesListView from './views/ProcessesList.view.svelte';
   import ProcessEditView from './views/engineering-process-detail/ProcessEdit.view.svelte';
+  import ValidationRuleLibraryView from './views/ValidationRuleLibrary.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
   import { type Process } from '@oscd-transnet-plugins/shared';
@@ -52,6 +53,7 @@
   }: Props = $props();
 
   let isCreatingProcess = $state(false);
+  let isManagingValidationRules = $state(false);
 
   function restoreWorkflowState(document: XMLDocument | undefined) {
     if (!document) return;
@@ -144,6 +146,14 @@
   function handleCreated(_proc: Process) {
     isCreatingProcess = false;
   }
+
+  function openValidationRuleLibrary() {
+    isManagingValidationRules = true;
+  }
+
+  function closeValidationRuleLibrary() {
+    isManagingValidationRules = false;
+  }
 </script>
 
 <DialogHost />
@@ -151,6 +161,8 @@
 <div class="app-root">
   {#if isCreatingProcess}
     <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
+  {:else if isManagingValidationRules}
+    <ValidationRuleLibraryView onClose={closeValidationRuleLibrary} />
   {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
     <ProcessEditView />
   {:else}
@@ -159,6 +171,7 @@
       handleEdit={handleEdit}
       handleStart={startProcess}
       handleAddNew={addNewProcess}
+      handleManageValidationRules={openValidationRuleLibrary}
       docName={docName}
     />
   {/if}

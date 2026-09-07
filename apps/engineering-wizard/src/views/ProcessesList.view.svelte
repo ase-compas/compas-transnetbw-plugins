@@ -18,12 +18,13 @@
     handleView: (process: Process) => void;
     handleEdit: (process: Process) => void;
     handleAddNew: () => void;
+    handleManageValidationRules: () => void;
     docName?: string;
   }
 
-  type ProcessRow = Process & { displayName: string; validationCount: number };
+  type ProcessRow = Process & { displayName: string };
 
-  const { handleStart, handleView, handleEdit, handleAddNew, docName }: Props = $props();
+  const { handleStart, handleView, handleEdit, handleAddNew, handleManageValidationRules, docName }: Props = $props();
 
   let searchQuery = $state('');
 
@@ -33,9 +34,6 @@
     processes.map((p) => ({
       ...p,
       displayName: p.name || p.id,
-      validationCount: (p.pluginGroups ?? [])
-        .flatMap((g) => g.plugins ?? [])
-        .reduce((sum, plugin) => sum + (plugin.validations?.length ?? 0), 0),
     }))
   );
 
@@ -49,9 +47,8 @@
 
   const columns = [
     { key: 'displayName', header: 'Name', bold: true, width: '15%' },
-    { key: 'description', header: 'Description', width: '50%' },
-    { key: 'version', header: 'Version', width: '10%' },
-    { key: 'validationCount', header: 'Validations', width: '15%' },
+    { key: 'description', header: 'Description', width: '65%' },
+    { key: 'version', header: 'Version', width: '20%' },
   ] as const;
 
   const runningProc = $derived(runningEngineeringProcess.process);
@@ -100,6 +97,15 @@
     <h1 class="processes__header">Processes</h1>
     <div class="process-toolbar__right">
       <SearchInput bind:value={searchQuery} label="Search Processes" />
+      <Button
+        type="button"
+        variant="unelevated"
+        style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+        onclick={handleManageValidationRules}
+        aria-label="Manage validation rules"
+      >
+        Manage validation rules
+      </Button>
       <Button
         variant="raised"
         style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
