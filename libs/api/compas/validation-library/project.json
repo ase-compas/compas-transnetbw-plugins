@@ -1,0 +1,56 @@
+{
+  "name": "api-compas-validation-library",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/compas/validation-library/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": [
+          "openapi-generator-cli generate -g typescript-fetch -i docs/validation-library.yaml --additional-properties \"hideGenerationTimestamp=true,withInterfaces=true,withSeparateModelsAndApi=true\" --output libs/api/compas/validation-library/src/generated"
+        ],
+        "parallel": false
+      },
+      "inputs": [
+        "{workspaceRoot}/docs/validation-library.yaml",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{projectRoot}/src/generated"]
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "dependsOn": ["generate"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/api/compas/validation-library",
+        "main": "libs/api/compas/validation-library/src/index.ts",
+        "tsConfig": "libs/api/compas/validation-library/tsconfig.lib.json",
+        "assets": ["libs/api/compas/validation-library/*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "dependsOn": ["generate"],
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../../../coverage/libs/api/compas/validation-library"
+      }
+    },
+    "lint": {
+      "command": "eslint libs/api/compas/validation-library/{src/lib,tools}/**/*.ts"
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["generate"],
+      "options": {
+        "cwd": "libs/api/compas/validation-library",
+        "commands": ["vite-node tools/seed.ts"],
+        "parallel": false
+      }
+    }
+  }
+}

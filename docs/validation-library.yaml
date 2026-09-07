@@ -1,0 +1,1115 @@
+openapi: 3.0.3
+info:
+  title: CoMPAS Validation Library API
+  description: |
+    Typed contract for the **CoMPAS Validation Library**: a reusable, versioned
+    catalogue of SCL validation rules that is shared by multiple CoMPAS plugins
+    (currently `engineering-wizard` and `scl-quality-guard`).
+
+    # Domain model
+
+    The library is built from three layers:
+
+    | Layer | Resource type | Purpose |
+    |---|---|---|
+    | `ValidationRule` | `validation_rule` | A single, atomic, executable check. |
+    | `ValidationRuleSet` | `validation_ruleset` | A named bundle that *references* rules. Contains no rule logic itself. |
+    | `ValidationPolicy` | `validation_policy` | Binds rule sets to a context and may override severities. |
+
+    A **policy** is the unit a plugin consumes:
+
+    * `engineering-wizard` resolves exactly **one**, fixed policy for the whole
+      plugin installation — it is not bound to any single process. Rule sets
+      still cover multiple plugins/processes (`appliesTo.pluginIds`), so
+      different plugins keep their own rule packs within that one policy.
+    * `scl-quality-guard` may resolve **several** policies and merges the results.
+
+    # Storage binding
+
+    All three layers are persisted as *plugin custom resources* through the
+    existing endpoints of the CoMPAS SCL Data Service
+    (see `plugins-custom-resources.yaml`). This specification is a **typed view**
+    over those generic endpoints:
+
+    * the transport is unchanged (`multipart/form-data` upload, JSON content),
+    * `content` is transferred as a **string** and must be parsed by the client,
+    * the JSON document inside `content` conforms to `ValidationRuleContent`,
+      `ValidationRuleSetContent` or `ValidationPolicyContent` respectively,
+    * `data-compatibility-version` mirrors the `schemaVersion` of that document.
+
+    ## Identity and references
+
+    Resources reference each other by the **functional key** `name` plus
+    `version` — never by `id`. The `id` is a database generated UUID that is new
+    for every published version and is not known to the author at write time.
+
+    ## Immutability and lifecycle
+
+    The underlying store has no update operation. Publishing a change means
+    uploading a **new semantic version** of the same `name`. Published versions
+    are therefore immutable, which makes a validation run reproducible.
+
+    Consequently the lifecycle is *create / read / delete*:
+
+    * **Create or change** — `POST /plugins/resources` with either an explicit
+      `version` or a `nextVersionType` (`major` / `minor` / `patch`).
+    * **Read** — latest version, or a pinned version (see below).
+    * **Delete** — only *all* versions of a `name`. Deleting a single version is
+      not supported by the store.
+
+    ## Resolving a pinned version
+
+    The store exposes no "get by type, name and version" operation. To resolve a
+    pinned reference a client must:
+
+    1. `GET /plugins/resources?type={type}&name={name}` and page through the
+       result to find the entry whose `version` matches the reference, then
+    2. `GET /plugins/resources/{id}` to fetch that entry including its content.
+
+    Unpinned references (`version: "latest"`) resolve in a single call via the
+    `/{name}/latest` operations.
+
+    # Resolution algorithm
+
+    Turning a policy into the flat list of executable rules that is handed to the
+    CoMPAS Validation Service:
+
+    1. Fetch the `ValidationPolicyContent`.
+    2. For every entry in `ruleSets`, resolve `ref` to a `ValidationRuleSetContent`.
+    3. For every entry in that rule set's `rules`, resolve it to a `ValidationRuleContent`.
+    4. Apply the binding's `overrides`:
+       * `enabled: false` removes the rule from the run,
+       * `severity` replaces the rule's `defaultSeverity`.
+    5. Apply `appliesTo` to filter by execution context (for example the plugin
+       that is currently active in the Engineering Wizard).
+    6. Emit one `ResolvedValidationRule` per surviving rule.
+
+    Rules are identified by `name`, which is unique per rule set after
+    resolution. If two rule sets in the same policy contribute the same rule
+    `name` at different versions, this is a **conflict** and the client must
+    report it rather than silently pick one.
+
+    # Relationship to the CoMPAS Validation Service
+
+    `ResolvedValidationRule` is the hand-over format towards
+    `POST /api/v1/validate` of the CoMPAS Validation Service. The validation
+    service must echo `name` back as `ValidationError.ruleName` and honour
+    `severity`, otherwise rule identity is lost in the reported results.
+  version: 1.0.0
+  contact:
+    name: CoMPAS Community
+  license:
+    name: Apache License Version 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://compas-scl-data-service
+    description: CoMPAS SCL Data Service
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: validation-rules
+    description: CRUD access to atomic validation rules
+  - name: validation-rulesets
+    description: CRUD access to validation rule sets
+  - name: validation-policies
+    description: CRUD access to validation policies
+  - name: validation-library-common
+    description: Operations shared by all validation library resource types
+
+paths:
+  # ---------------------------------------------------------------------------
+  # Rules
+  # ---------------------------------------------------------------------------
+  /plugins/resources/validation_rule/latest:
+    get:
+      tags:
+        - validation-rules
+      summary: List validation rules
+      description: |
+        Returns the latest version of every validation rule. The `content` of the
+        entries is **not** included; use `getLatestValidationRule` or
+        `getValidationLibraryResourceById` to obtain a rule body.
+      operationId: listLatestValidationRules
+      responses:
+        '200':
+          description: Rules retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValidationLibraryEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/validation_rule/{name}/latest:
+    get:
+      tags:
+        - validation-rules
+      summary: Get the latest version of a validation rule
+      description: |
+        Returns the newest published version of the rule, including its content.
+        The `content` string parses into a `ValidationRuleContent`.
+      operationId: getLatestValidationRule
+      parameters:
+        - $ref: '#/components/parameters/ResourceName'
+      responses:
+        '200':
+          description: Rule retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationLibraryEntryWithContent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/validation_rule/{name}:
+    delete:
+      tags:
+        - validation-rules
+      summary: Delete a validation rule
+      description: |
+        Deletes **all versions** of the rule. Deleting a single version is not
+        supported.
+
+        This operation does not perform a referential integrity check: rule sets
+        referencing the deleted rule will fail to resolve afterwards. Clients
+        should warn the user before deleting a referenced rule.
+      operationId: deleteValidationRule
+      parameters:
+        - $ref: '#/components/parameters/ResourceName'
+      responses:
+        '204':
+          description: Rule deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Rule sets
+  # ---------------------------------------------------------------------------
+  /plugins/resources/validation_ruleset/latest:
+    get:
+      tags:
+        - validation-rulesets
+      summary: List validation rule sets
+      description: Returns the latest version of every rule set, without content.
+      operationId: listLatestValidationRuleSets
+      responses:
+        '200':
+          description: Rule sets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValidationLibraryEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/validation_ruleset/{name}/latest:
+    get:
+      tags:
+        - validation-rulesets
+      summary: Get the latest version of a validation rule set
+      description: |
+        The `content` string parses into a `ValidationRuleSetContent`.
+      operationId: getLatestValidationRuleSet
+      parameters:
+        - $ref: '#/components/parameters/ResourceName'
+      responses:
+        '200':
+          description: Rule set retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationLibraryEntryWithContent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/validation_ruleset/{name}:
+    delete:
+      tags:
+        - validation-rulesets
+      summary: Delete a validation rule set
+      description: Deletes **all versions** of the rule set.
+      operationId: deleteValidationRuleSet
+      parameters:
+        - $ref: '#/components/parameters/ResourceName'
+      responses:
+        '204':
+          description: Rule set deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Policies
+  # ---------------------------------------------------------------------------
+  /plugins/resources/validation_policy/latest:
+    get:
+      tags:
+        - validation-policies
+      summary: List validation policies
+      description: Returns the latest version of every policy, without content.
+      operationId: listLatestValidationPolicies
+      responses:
+        '200':
+          description: Policies retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValidationLibraryEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/validation_policy/{name}/latest:
+    get:
+      tags:
+        - validation-policies
+      summary: Get the latest version of a validation policy
+      description: |
+        The `content` string parses into a `ValidationPolicyContent`.
+      operationId: getLatestValidationPolicy
+      parameters:
+        - $ref: '#/components/parameters/ResourceName'
+      responses:
+        '200':
+          description: Policy retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationLibraryEntryWithContent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/validation_policy/{name}:
+    delete:
+      tags:
+        - validation-policies
+      summary: Delete a validation policy
+      description: Deletes **all versions** of the policy.
+      operationId: deleteValidationPolicy
+      parameters:
+        - $ref: '#/components/parameters/ResourceName'
+      responses:
+        '204':
+          description: Policy deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Shared operations
+  # ---------------------------------------------------------------------------
+  /plugins/resources:
+    get:
+      tags:
+        - validation-library-common
+      summary: List versions of validation library resources
+      description: |
+        Paged access to the version history. This is the first step when
+        resolving a **pinned** reference: filter by `type` and `name`, page
+        through the result to locate the wanted `version`, then fetch the entry
+        by its `id`.
+      operationId: listValidationLibraryVersions
+      parameters:
+        - name: type
+          in: query
+          required: true
+          description: Validation library resource type
+          schema:
+            $ref: '#/components/schemas/ValidationLibraryResourceType'
+        - name: name
+          in: query
+          description: Filter by name (contains search)
+          schema:
+            type: string
+        - name: uploadedAfter
+          in: query
+          description: Filter by upload date (ISO 8601 format)
+          schema:
+            type: string
+            format: date-time
+        - name: uploadedBefore
+          in: query
+          description: Filter by upload date (ISO 8601 format)
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          description: Page number for pagination (0-indexed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Entries retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedValidationLibraryEntryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - validation-library-common
+      summary: Publish a new version of a validation library resource
+      description: |
+        Publishes a rule, rule set or policy. Because the store is immutable,
+        this is used both for creating a resource and for changing it.
+
+        Supply either an explicit `version` **or** a `nextVersionType`. The
+        `content` part carries the serialised `ValidationRuleContent`,
+        `ValidationRuleSetContent` or `ValidationPolicyContent` and must match
+        the declared `type`. The `name` part must equal the `name` inside the
+        content document.
+
+        `data-compatibility-version` must equal the `schemaVersion` of the
+        content document.
+      operationId: publishValidationLibraryResource
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - type
+                - name
+                - content-type
+                - content
+                - data-compatibility-version
+              properties:
+                type:
+                  $ref: '#/components/schemas/ValidationLibraryResourceType'
+                name:
+                  type: string
+                  description: |
+                    Functional key of the resource. Must equal the `name` field
+                    of the content document.
+                  example: "substation-name-prefix"
+                description:
+                  type: string
+                  description: Optional description shown in resource listings
+                  example: "Ensures all Substation names start with \"tbw\""
+                content-type:
+                  type: string
+                  description: Content type of the uploaded document
+                  enum:
+                    - application/json
+                  example: "application/json"
+                content:
+                  type: string
+                  format: binary
+                  description: The serialised JSON content document
+                version:
+                  $ref: '#/components/schemas/SemanticVersion'
+                nextVersionType:
+                  type: string
+                  description: |
+                    Automatic version increment. Mutually exclusive with
+                    `version`; exactly one of the two must be supplied.
+                  enum:
+                    - major
+                    - minor
+                    - patch
+                data-compatibility-version:
+                  $ref: '#/components/schemas/SemanticVersion'
+            encoding:
+              content:
+                contentType: application/json
+      responses:
+        '201':
+          description: Resource published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishValidationLibraryResourceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Conflict - this name and version already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: "DUPLICATE_VERSION"
+                message: "Data with name 'substation-name-prefix' and version '1.2.3' already exists"
+        '413':
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Unsupported media type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plugins/resources/{id}:
+    get:
+      tags:
+        - validation-library-common
+      summary: Get a validation library resource by id
+      description: |
+        Fetches one specific published version including its content. Used as
+        the second step when resolving a pinned reference.
+      operationId: getValidationLibraryResourceById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the published version
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Resource retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationLibraryEntryWithContent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT bearer token as used by the CoMPAS SCL Data Service. Roles are read
+        from the `resource_access/scl-data-service/roles` claim.
+
+        The existing plugin custom resource roles apply unchanged, so no new
+        authorisation configuration is required for the validation library:
+
+        | Operation | Required role |
+        |---|---|
+        | `GET` | `PLUGINS_RESOURCES_READ` |
+        | `POST` | `PLUGINS_RESOURCES_CREATE` |
+        | `DELETE` | `PLUGINS_RESOURCES_DELETE` |
+
+        Note that these roles are not specific to the validation library: a
+        principal holding `PLUGINS_RESOURCES_DELETE` may delete any plugin
+        custom resource, including Engineering Wizard processes. Introducing
+        dedicated roles would require a change to the SCL Data Service.
+
+  parameters:
+    ResourceName:
+      name: name
+      in: path
+      required: true
+      description: Functional key of the resource
+      schema:
+        type: string
+      example: "substation-name-prefix"
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # -------------------------------------------------------------------------
+    # Primitives
+    # -------------------------------------------------------------------------
+    SemanticVersion:
+      type: string
+      description: Semantic version (semver format)
+      pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+      example: "1.2.3"
+
+    VersionSelector:
+      type: string
+      description: |
+        Either a pinned semantic version or the literal `latest`.
+
+        Pinning makes a validation run reproducible and is recommended wherever
+        a stable result matters (for example inside a running Engineering Wizard
+        process). `latest` keeps a consumer automatically up to date and is
+        appropriate for continuous background validation.
+      pattern: '^(latest|(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$'
+      example: "1.2.3"
+
+    ResourceName:
+      type: string
+      description: |
+        Functional key of a validation library resource. Stable across versions
+        and used for all cross references. Lower kebab-case.
+      pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+      maxLength: 128
+      example: "substation-name-prefix"
+
+    ValidationLibraryResourceType:
+      type: string
+      description: Custom resource type under which the document is stored
+      enum:
+        - validation_rule
+        - validation_ruleset
+        - validation_policy
+      example: "validation_rule"
+
+    SeverityLevel:
+      type: string
+      description: |
+        Severity of a finding. Mirrors the severity values of the CoMPAS
+        Validation Service so no translation is needed.
+      enum:
+        - ERROR
+        - WARNING
+        - INFO
+      example: "ERROR"
+
+    ResourceRef:
+      type: object
+      description: Reference to another validation library resource
+      required:
+        - name
+        - version
+      properties:
+        name:
+          $ref: '#/components/schemas/ResourceName'
+        version:
+          $ref: '#/components/schemas/VersionSelector'
+
+    # -------------------------------------------------------------------------
+    # Storage envelope
+    # -------------------------------------------------------------------------
+    ValidationLibraryEntry:
+      type: object
+      description: |
+        Metadata of one published version, as returned by the SCL Data Service
+        plugin custom resource endpoints.
+      required:
+        - id
+        - type
+        - tenant
+        - name
+        - contentType
+        - version
+        - dataCompatibilityVersion
+        - uploadedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: |
+            Database identifier of this specific published version. Not stable
+            across versions and never used for cross references.
+        type:
+          $ref: '#/components/schemas/ValidationLibraryResourceType'
+        tenant:
+          type: string
+          description: Tenant identifier. Validation library resources are tenant scoped.
+        name:
+          $ref: '#/components/schemas/ResourceName'
+        description:
+          type: string
+          description: Optional description
+        contentType:
+          type: string
+          enum:
+            - application/json
+        version:
+          $ref: '#/components/schemas/SemanticVersion'
+        dataCompatibilityVersion:
+          allOf:
+            - $ref: '#/components/schemas/SemanticVersion'
+          description: Schema version of the content document
+        uploadedAt:
+          type: string
+          format: date-time
+          description: Timestamp when this version was published
+
+    ValidationLibraryEntryWithContent:
+      allOf:
+        - $ref: '#/components/schemas/ValidationLibraryEntry'
+        - type: object
+          required:
+            - content
+          properties:
+            content:
+              type: string
+              description: |
+                The serialised JSON content document. Clients must parse this
+                string into `ValidationRuleContent`, `ValidationRuleSetContent`
+                or `ValidationPolicyContent`, selected by the `type` field of
+                the entry.
+
+    PagedValidationLibraryEntryResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationLibraryEntry'
+        totalElements:
+          type: integer
+          description: Total number of entries
+        totalPages:
+          type: integer
+          description: Total number of pages
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Page size
+
+    PublishValidationLibraryResourceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/ValidationLibraryResourceType'
+        tenant:
+          type: string
+        name:
+          $ref: '#/components/schemas/ResourceName'
+        version:
+          $ref: '#/components/schemas/SemanticVersion'
+        uploadedAt:
+          type: string
+          format: date-time
+
+    # -------------------------------------------------------------------------
+    # Layer 1 - the atomic rule
+    # -------------------------------------------------------------------------
+    ValidationRuleKind:
+      type: string
+      description: |
+        Execution technique of a rule. Only `XPATH` is supported by the CoMPAS
+        Validation Service today; the discriminated `definition` allows further
+        techniques to be added without a breaking change.
+      enum:
+        - XPATH
+      example: "XPATH"
+
+    XPathRuleDefinition:
+      type: object
+      description: Definition of an `XPATH` rule.
+      required:
+        - context
+        - assertion
+      properties:
+        context:
+          type: string
+          description: |
+            XPath expression selecting the nodes the rule applies to. Evaluated
+            against the document root.
+          example: "SCL"
+        assertion:
+          type: string
+          description: |
+            XPath expression evaluated against each context node. The rule passes
+            when the effective boolean value is true.
+          example: "count(//Substation[not(starts-with(@name, 'tbw'))]) = 0"
+
+    ValidationRuleContent:
+      type: object
+      description: |
+        Content document stored under resource type `validation_rule`.
+
+        A rule is deliberately free of any binding to a plugin, process or
+        policy. Where a rule applies is decided by the policy that includes it,
+        which is what makes a rule reusable across processes.
+      required:
+        - schemaVersion
+        - name
+        - title
+        - kind
+        - defaultSeverity
+        - definition
+      properties:
+        schemaVersion:
+          allOf:
+            - $ref: '#/components/schemas/SemanticVersion'
+          description: Version of this content schema. Must match `data-compatibility-version`.
+        name:
+          $ref: '#/components/schemas/ResourceName'
+        title:
+          type: string
+          description: Human readable name shown in the UI
+          example: "Substation Name Prefix"
+        description:
+          type: string
+          description: Explanation of what the rule checks and why
+          example: "Ensures all Substation names start with \"tbw\""
+        kind:
+          $ref: '#/components/schemas/ValidationRuleKind'
+        defaultSeverity:
+          allOf:
+            - $ref: '#/components/schemas/SeverityLevel'
+          description: |
+            Severity used when no policy override applies.
+        message:
+          type: string
+          description: |
+            Message reported when the rule fails. Falls back to `title` when absent.
+          example: "All Substation names must start with \"tbw\""
+        tags:
+          type: array
+          description: Free form labels used for filtering and grouping in the library UI
+          items:
+            type: string
+          example: ["naming", "substation"]
+        definition:
+          description: |
+            Technique specific rule body, selected by `kind`.
+
+            Only `XPathRuleDefinition` exists today. When a second technique is
+            added this property becomes a `oneOf` union, which is a breaking
+            change for generated clients and therefore requires a `major`
+            increment of `schemaVersion`. A single member `oneOf` is
+            deliberately *not* used here because the OpenAPI generator emits
+            uncompilable TypeScript for it.
+          allOf:
+            - $ref: '#/components/schemas/XPathRuleDefinition'
+        ui:
+          type: object
+          description: |
+            Opaque editor state persisted by the rule builder so a rule can be
+            reopened in the visual editor. Never interpreted during validation.
+          additionalProperties: true
+
+    # -------------------------------------------------------------------------
+    # Layer 2 - the rule set
+    # -------------------------------------------------------------------------
+    ValidationRuleSetContent:
+      type: object
+      description: |
+        Content document stored under resource type `validation_ruleset`.
+
+        A rule set is pure composition: it bundles rules by reference and holds
+        no rule logic of its own. Rule sets are shared, so the same set can be
+        used by several policies.
+      required:
+        - schemaVersion
+        - name
+        - title
+        - rules
+      properties:
+        schemaVersion:
+          allOf:
+            - $ref: '#/components/schemas/SemanticVersion'
+          description: Version of this content schema
+        name:
+          $ref: '#/components/schemas/ResourceName'
+        title:
+          type: string
+          example: "TBW Naming Conventions"
+        description:
+          type: string
+          example: "Naming rules that apply to all TBW substation projects"
+        tags:
+          type: array
+          items:
+            type: string
+        rules:
+          type: array
+          description: |
+            References to the rules in this set. A rule `name` must not appear
+            more than once.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ResourceRef'
+
+    # -------------------------------------------------------------------------
+    # Layer 3 - the policy
+    # -------------------------------------------------------------------------
+    PolicyScope:
+      type: object
+      description: |
+        Restricts where a rule set binding is active. An empty or absent scope
+        means the binding always applies.
+
+        This is what replaces the former `processId` / `pluginId` fields that
+        used to live inside a rule itself. Keeping the binding here rather than
+        on the rule is what allows one rule to be reused in many contexts.
+      properties:
+        pluginIds:
+          type: array
+          description: |
+            Identifiers of the plugins for which this binding is active. Used by
+            the Engineering Wizard to decide which rules run for the currently
+            selected plugin.
+          items:
+            type: string
+          example: ["substation-editor"]
+        sclFileTypes:
+          type: array
+          description: SCL file types for which this binding is active
+          items:
+            type: string
+            enum:
+              - ICD
+              - SCD
+              - SSD
+              - CID
+              - IID
+              - SED
+          example: ["SCD"]
+
+    RuleOverride:
+      type: object
+      description: |
+        Policy level adjustment of a single rule contributed by the referenced
+        rule set. Lets the same rule be reused at a different severity, or be
+        switched off, without duplicating it.
+      required:
+        - rule
+      properties:
+        rule:
+          allOf:
+            - $ref: '#/components/schemas/ResourceName'
+          description: Name of the rule this override applies to
+        enabled:
+          type: boolean
+          description: |
+            When false the rule is excluded from the validation run.
+          default: true
+        severity:
+          allOf:
+            - $ref: '#/components/schemas/SeverityLevel'
+          description: |
+            Replaces the rule's `defaultSeverity`. Absent means keep the default.
+
+    PolicyRuleSetBinding:
+      type: object
+      description: Inclusion of one rule set into a policy
+      required:
+        - ref
+      properties:
+        ref:
+          $ref: '#/components/schemas/ResourceRef'
+        appliesTo:
+          $ref: '#/components/schemas/PolicyScope'
+        overrides:
+          type: array
+          description: |
+            Per rule adjustments. A `rule` that is not contributed by the
+            referenced rule set is a configuration error and must be reported.
+          items:
+            $ref: '#/components/schemas/RuleOverride'
+
+    ValidationPolicyContent:
+      type: object
+      description: |
+        Content document stored under resource type `validation_policy`.
+
+        A policy is the unit that plugins consume. There is intentionally no
+        separate "process policy" type: a policy referenced by an Engineering
+        Wizard process is an ordinary policy, the process merely points at it.
+      required:
+        - schemaVersion
+        - name
+        - title
+        - ruleSets
+      properties:
+        schemaVersion:
+          allOf:
+            - $ref: '#/components/schemas/SemanticVersion'
+          description: Version of this content schema
+        name:
+          $ref: '#/components/schemas/ResourceName'
+        title:
+          type: string
+          example: "TBW Default Policy"
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        ruleSets:
+          type: array
+          description: Rule sets included in this policy
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PolicyRuleSetBinding'
+
+    # -------------------------------------------------------------------------
+    # Resolution output
+    # -------------------------------------------------------------------------
+    ResolvedValidationRule:
+      type: object
+      description: |
+        One executable rule after a policy has been fully resolved and all
+        overrides have been applied. This is the hand-over format towards the
+        CoMPAS Validation Service and the format a plugin caches locally.
+      required:
+        - name
+        - version
+        - title
+        - kind
+        - severity
+        - definition
+      properties:
+        name:
+          allOf:
+            - $ref: '#/components/schemas/ResourceName'
+          description: |
+            Rule identity. The validation service must report this value as
+            `ValidationError.ruleName` so a finding can be traced back to its
+            rule.
+        version:
+          allOf:
+            - $ref: '#/components/schemas/SemanticVersion'
+          description: The concrete rule version that was resolved
+        title:
+          type: string
+        message:
+          type: string
+        kind:
+          $ref: '#/components/schemas/ValidationRuleKind'
+        severity:
+          allOf:
+            - $ref: '#/components/schemas/SeverityLevel'
+          description: |
+            Effective severity, that is the policy override if present and the
+            rule's `defaultSeverity` otherwise.
+        definition:
+          description: |
+            Technique specific rule body, selected by `kind`. See
+            `ValidationRuleContent.definition`.
+          allOf:
+            - $ref: '#/components/schemas/XPathRuleDefinition'
+        origin:
+          $ref: '#/components/schemas/ResolvedRuleOrigin'
+
+    ResolvedRuleOrigin:
+      type: object
+      description: |
+        Provenance of a resolved rule. Lets the UI explain to a user why a rule
+        ran and where to change it.
+      required:
+        - policy
+        - ruleSet
+      properties:
+        policy:
+          $ref: '#/components/schemas/ResourceRef'
+        ruleSet:
+          $ref: '#/components/schemas/ResourceRef'
+
+    ResolvedValidationPolicy:
+      type: object
+      description: Result of resolving one policy into executable rules
+      required:
+        - policy
+        - rules
+      properties:
+        policy:
+          $ref: '#/components/schemas/ResourceRef'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResolvedValidationRule'
+        problems:
+          type: array
+          description: |
+            Problems found while resolving, for example a reference that could
+            not be found or a rule contributed twice at different versions.
+            A non empty list means the validation run is incomplete and must be
+            surfaced to the user rather than silently ignored.
+          items:
+            $ref: '#/components/schemas/ResolutionProblem'
+
+    ResolutionProblem:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine readable problem code
+          enum:
+            - RULESET_NOT_FOUND
+            - RULE_NOT_FOUND
+            - VERSION_NOT_FOUND
+            - DUPLICATE_RULE
+            - UNKNOWN_OVERRIDE
+            - UNSUPPORTED_SCHEMA_VERSION
+            - UNSUPPORTED_RULE_KIND
+        message:
+          type: string
+          description: Human readable explanation
+        ref:
+          $ref: '#/components/schemas/ResourceRef'
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
