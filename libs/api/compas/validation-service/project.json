@@ -1,0 +1,29 @@
+{
+  "name": "api-compas-validation-service",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/compas/validation-service/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/api/compas/validation-service",
+        "main": "libs/api/compas/validation-service/src/index.ts",
+        "tsConfig": "libs/api/compas/validation-service/tsconfig.lib.json",
+        "assets": ["libs/api/compas/validation-service/*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../../../coverage/libs/api/compas/validation-service"
+      }
+    },
+    "lint": {
+      "command": "eslint libs/api/compas/validation-service/src/**/*.ts"
+    }
+  }
+}
