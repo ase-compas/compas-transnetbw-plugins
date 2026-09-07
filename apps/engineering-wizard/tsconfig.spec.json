@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
+    "declaration": true,
     "outDir": "../../dist/out-tsc",
     "types": [
       "vitest/globals",
@@ -22,6 +23,8 @@
     "src/**/*.spec.js",
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "src/features/processes/pluginGroupOps.ts",
+    "../../libs/shared/src/**/*.ts"
   ]
 }

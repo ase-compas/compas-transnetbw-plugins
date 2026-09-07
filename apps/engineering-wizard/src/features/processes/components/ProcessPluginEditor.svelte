@@ -26,11 +26,6 @@
   let searchTerm = $state('');
   let filteredPlugins = $derived(getFilteredCorePlugins(searchTerm));
 
-  let addedPluginIds = $derived(
-    new Set(pluginGroups.flatMap((g) => g.plugins ?? []).map((p) => p.id))
-  );
-  let availablePlugins = $derived(filteredPlugins.filter((p) => !addedPluginIds.has(p.id)));
-
   let selectedGroupTitle = $state<string | null>(null);
 </script>
 
@@ -50,7 +45,7 @@
   </div>
 
   <PluginExternalPanel
-    plugins={availablePlugins}
+    plugins={filteredPlugins}
     bind:searchTerm
     {selectedGroupTitle}
     onAddPlugin={(plugin) => onAddPlugin(plugin, selectedGroupTitle ?? undefined)}
@@ -100,4 +95,3 @@
     text-align: center;
   }
 </style>
-
