@@ -1,15 +1,21 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
   import { OscdListItem, OscdPanel } from '@oscd-transnet-plugins/oscd-component';
   import { OscdArrowSouthIcon, OscdAddCircleIcon, OscdAddIcon, OscdDragIndicatorIcon, OscdEditIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddPluginGroupDialog from '../dialogs/AddPluginGroupDialog.svelte';
   import EditPluginGroupsDialog from '../dialogs/EditPluginGroupsDialog.svelte';
-  import { dragHandle, dragHandleZone, TRIGGERS } from 'svelte-dnd-action';
+  import {
+    dragHandle,
+    dragHandleZone,
+    SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    TRIGGERS,
+  } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import StepCircle from '../steppers/StepCircle.svelte';
   import { engineeringProcessEditing } from '../../stores.svelte';
+  import { createPluginInstance } from '../../pluginGroupOps';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -17,6 +23,13 @@
     groupIndex: number;
     pluginIndex: number;
   };
+
+  type PluginDndItem = Plugin & Record<string, unknown>;
+
+  type PluginDndEvent = CustomEvent<{
+    items: PluginDndItem[];
+    info: { id: string; trigger: string };
+  }>;
 
   interface Props {
     pluginGroups?: PluginGroup[];
@@ -41,6 +54,8 @@
     onAddGroup = () => {},
     onUpdateGroups = (updatedGroups: PluginGroup[]) => {}
   }: Props = $props();
+
+  const pendingDropIndexes = new Map<string, number>();
 
   async function addGroup() {
     const result = await openDialog(AddPluginGroupDialog, {groups: pluginGroups.length})
@@ -77,21 +92,43 @@
     selectedGroupTitle = selectedGroupTitle === group.title ? null : group.title;
   }
 
-  function handleSort(e, group) {
+  function handleSort(e: PluginDndEvent, group: PluginGroup) {
+    const pendingDropIndex = e.detail.items.findIndex(
+      (item) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME],
+    );
+    if (pendingDropIndex === -1) {
+      pendingDropIndexes.delete(group.title);
+    } else {
+      pendingDropIndexes.set(group.title, pendingDropIndex);
+    }
+
     const updatedGroups = pluginGroups.map((g) =>
-      g === group ? { ...g, plugins: e.detail.items } : g,
+      g.title === group.title ? { ...g, plugins: e.detail.items } : g,
     );
     onUpdateGroups(updatedGroups);
   }
 
-  function handleFinalize(e, group) {
+  function handleFinalize(e: PluginDndEvent, group: PluginGroup) {
+    let items = e.detail.items;
     if(e.detail.info.trigger === TRIGGERS.DROPPED_OUTSIDE_OF_ANY) {
-     // discard plugin from configuration
-     group.plugins = e.detail.items.filter(item => e.detail.info.id !== item.id);
-    } else {
-      group.plugins = e.detail.items;
+      // Discard plugin from configuration.
+      items = items.filter(item => e.detail.info.id !== item.id);
+    } else if (e.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE) {
+      const existingPlugins = new Set(pluginGroups.flatMap((g) => g.plugins ?? []));
+      const pendingDropIndex = pendingDropIndexes.get(group.title)
+        ?? items.findIndex((item) => !existingPlugins.has(item));
+      const droppedPlugin = pendingDropIndex === undefined ? undefined : items[pendingDropIndex];
+      if (droppedPlugin) {
+        const instance = createPluginInstance(pluginGroups, droppedPlugin);
+        items = items.map((item, index) => index === pendingDropIndex ? instance : item);
+      }
     }
-    onUpdateGroups(pluginGroups)
+    pendingDropIndexes.delete(group.title);
+
+    const updatedGroups = pluginGroups.map((g) =>
+      g.title === group.title ? { ...g, plugins: items } : g,
+    );
+    onUpdateGroups(updatedGroups);
   }
 </script>
 
@@ -390,4 +427,3 @@
     flex-shrink: 0;
   }
 </style>
-

@@ -6,37 +6,67 @@
 
 import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
 
+export function createPluginInstance(
+  groups: PluginGroup[],
+  plugin: Plugin,
+): Plugin {
+  const existingIds = new Set(
+    groups.flatMap((group) => (group.plugins ?? []).map((item) => item.id)),
+  );
+
+  let id = plugin.id;
+  let suffix = 2;
+  while (existingIds.has(id)) {
+    id = `${plugin.id}-${suffix}`;
+    suffix += 1;
+  }
+
+  const instance: Plugin = { ...plugin, id };
+  if (plugin.validations) {
+    instance.validations = plugin.validations.map((validation) => ({
+      ...validation,
+      pluginId: id,
+    }));
+  }
+  return instance;
+}
+
 export function addPluginToGroups(
   groups: PluginGroup[],
   plugin: Plugin,
   groupTitle = 'Ungrouped',
 ): PluginGroup[] {
-  // Prevent duplicates — a plugin (by id) should only appear once in a process.
-  const alreadyExists = groups.some((g) =>
-    (g.plugins ?? []).some((p) => p.id === plugin.id),
-  );
-  if (alreadyExists) return groups;
-
   const title = groupTitle.trim() || 'Ungrouped';
+  const instance = createPluginInstance(groups, plugin);
   const existing = groups.find((g) => g.title === title);
   if (existing) {
     return groups.map((g) =>
-      g.title === title ? { ...g, plugins: [...(g.plugins ?? []), plugin] } : g,
+      g.title === title
+        ? { ...g, plugins: [...(g.plugins ?? []), instance] }
+        : g,
     );
   }
-  return [...groups, { title, plugins: [plugin] }];
+  return [...groups, { title, plugins: [instance] }];
 }
 
-export function removePluginFromGroups(groups: PluginGroup[], pluginId: string): PluginGroup[] {
+export function removePluginFromGroups(
+  groups: PluginGroup[],
+  pluginId: string,
+): PluginGroup[] {
   // Empty groups are intentionally kept so users don't lose their group structure.
-  return groups.map((g) => ({ ...g, plugins: (g.plugins ?? []).filter((p) => p.id !== pluginId) }));
+  return groups.map((g) => ({
+    ...g,
+    plugins: (g.plugins ?? []).filter((p) => p.id !== pluginId),
+  }));
 }
 
 /**
  * Clears all plugins from every group, but preserves the groups themselves (titles intact).
  * Use this instead of `removeAllPluginsFromProcess` when the group structure should remain.
  */
-export function removeAllPluginsFromGroups(groups: PluginGroup[]): PluginGroup[] {
+export function removeAllPluginsFromGroups(
+  groups: PluginGroup[],
+): PluginGroup[] {
   return groups.map((g) => ({ ...g, plugins: [] }));
 }
 
@@ -53,4 +83,3 @@ export function addGroupToGroups(
   next.splice(Math.max(0, position - 1), 0, newGroup);
   return next;
 }
-
