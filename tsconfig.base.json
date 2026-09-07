@@ -20,6 +20,12 @@
       "@oscd-transnet-plugins/api-compas-custom-resource": [
         "libs/api/compas/custom-resource/src/index.ts"
       ],
+      "@oscd-transnet-plugins/api-compas-validation-library": [
+        "libs/api/compas/validation-library/src/index.ts"
+      ],
+      "@oscd-transnet-plugins/api-compas-validation-service": [
+        "libs/api/compas/validation-service/src/index.ts"
+      ],
       "@oscd-transnet-plugins/oscd-archive-explorer": [
         "libs/oscd-archive-explorer/src/index.ts"
       ],
@@ -29,6 +35,7 @@
       "@oscd-transnet-plugins/oscd-component": [
         "libs/oscd-component/src/index.ts"
       ],
+      "@oscd-transnet-plugins/oscd-component/*": ["libs/oscd-component/*"],
       "@oscd-transnet-plugins/oscd-event-api": [
         "libs/oscd-event-api/src/index.ts"
       ],
@@ -63,7 +70,10 @@
       "@oscd-transnet-plugins/oscd-services/toast": [
         "libs/oscd-services/src/toast/index.ts"
       ],
-      "@oscd-transnet-plugins/shared": ["libs/shared/src/index.ts"]
+      "@oscd-transnet-plugins/shared": ["libs/shared/src/index.ts"],
+      "@oscd-transnet-plugins/ui-validation-manager": [
+        "libs/ui/validation-manager/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
