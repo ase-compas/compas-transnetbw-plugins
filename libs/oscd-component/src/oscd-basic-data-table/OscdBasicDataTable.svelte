@@ -76,7 +76,7 @@
     rowsPerPageOptions = [10, 25, 50, 100],
     paginationLabel = 'Rows Per Page',
     showFirstLastPageButtons = true,
-    rowHoverBg = '#D9D800'
+    rowHoverBg = 'rgba(217, 216, 0, 0.1)'
   }: Props = $props();
 
   let showActions = $derived(hasActions || !!actions);
@@ -292,7 +292,7 @@
   }
 
   :global(.mdc-data-table__row.oscd-basic-table__row--clickable:hover > .mdc-data-table__cell) {
-    background-color: var(--oscd-basic-table-row-hover-bg, #D9D800) !important;
+    background-color: var(--oscd-basic-table-row-hover-bg, rgba(217, 216, 0, 0.1)) !important;
   }
 
   :global(.mdc-data-table__row.oscd-basic-table__row--clickable:focus-visible > .mdc-data-table__cell) {

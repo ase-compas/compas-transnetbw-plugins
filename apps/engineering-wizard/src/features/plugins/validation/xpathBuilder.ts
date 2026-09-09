@@ -1,20 +1,9 @@
 import type { ElementCheckType, RuleUiState } from './validationRuleUi';
 
-/** Returns the last element name from a path like `//SCL/Substation/VoltageLevel` → `VoltageLevel`. */
-export function lastNodeOfPath(path: string): string {
-  const clean = (path ?? '').replace(/^\/\/SCL(\/|$)/, '');
-  if (!clean) return '';
-  const parts = clean.split('/').filter(Boolean);
-  return parts[parts.length - 1] ?? '';
-}
-
-/** Returns the parent path: `//SCL/Substation/VoltageLevel` → `//SCL/Substation`. */
-export function parentOfPath(path: string): string {
-  const clean = (path ?? '').replace(/^\/\/SCL(\/|$)/, '');
-  if (!clean) return '//SCL';
-  const parts = clean.split('/').filter(Boolean);
-  if (parts.length <= 1) return '//SCL';
-  return `//SCL/${parts.slice(0, -1).join('/')}`;
+/** Extract the last element name from an XPath context path, e.g. `//SCL/Substation/VoltageLevel` → `VoltageLevel`. */
+export function lastNodeFromContext(ctx: string): string {
+  const parts = (ctx ?? '').replace(/^\/\//, '').split('/').filter(Boolean);
+  return parts[parts.length - 1] ?? 'SCL';
 }
 
 function toAttributeSelector(input: string | null | undefined): string | null {
@@ -73,7 +62,7 @@ function buildAttributeAssertion(ui: RuleUiState): string {
 }
 
 function buildElementAssertion(ui: RuleUiState): string {
-  const el = (ui.elementPath ? lastNodeOfPath(ui.elementPath) : (ui.elementName ?? '')).trim();
+  const el = (ui.elementName ?? '').trim();
   if (!el) return '';
 
   const n = ui.elementCount ?? 1;
