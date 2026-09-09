@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginGroup, Plugin } from '@oscd-transnet-plugins/shared';
-  import type { RuleResult } from '../../services/validationStatusStore.svelte';
+  import type { PluginValidationView } from '../../services/validationStatusStore.svelte';
   import ValidationBadgePopover from './ValidationBadgePopover.svelte';
 
   type PluginChip = { type: 'plugin'; plugin: Plugin; pluginIndex: number };
@@ -12,7 +12,7 @@
     expandedGroupBackground?: string;
     expandedGroupBorderColor?: string;
     selectPlugin?: (plugin: Plugin) => void;
-    validationStatuses?: Record<string, RuleResult[]>;
+    validationViews?: Record<string, PluginValidationView>;
   }
 
   let {
@@ -22,7 +22,7 @@
     expandedGroupBackground = 'var(--primary-base)',
     expandedGroupBorderColor = 'var(--primary-base)',
     selectPlugin,
-    validationStatuses = {},
+    validationViews = {},
   }: Props = $props();
 
   // Normalize the incoming indices into valid, clamped values without mutating state.
@@ -76,10 +76,6 @@
     if (plugin) selectPlugin?.(plugin);
   }
 
-  function failureCount(pluginId: string): number {
-    return (validationStatuses[pluginId] ?? []).filter((r) => !r.passed).length;
-  }
-
   /** Returns all plugin chips for the group — no truncation. */
   function visiblePluginChips(plugins: Plugin[]): PluginChip[] {
     return plugins.map((plugin, i) => ({ type: 'plugin' as const, plugin, pluginIndex: i }));
@@ -102,6 +98,7 @@
 
       {#if groupIndex === resolvedGroupIndex}
         {#each visiblePluginChips(group.plugins) as chip}
+          {@const view = validationViews[chip.plugin.id]}
           <button
             type="button"
             class="validation-groups__plugin"
@@ -109,11 +106,8 @@
             onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
           >
             <span>{chip.plugin.name}</span>
-            {#if failureCount(chip.plugin.id) > 0}
-              <ValidationBadgePopover
-                rules={validationStatuses[chip.plugin.id] ?? []}
-                active={chip.pluginIndex === selectedPluginIndex}
-              />
+            {#if view}
+              <ValidationBadgePopover {view} active={chip.pluginIndex === selectedPluginIndex} />
             {/if}
           </button>
         {/each}

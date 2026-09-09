@@ -15,10 +15,13 @@
 <details
   class="item"
   class:item--passed={passed}
+  class:item--error={rule.rejected}
   ontoggle={(e) => (expanded = e.currentTarget.open)}
 >
   <summary class="summary">
-    <span class="title">{rule.title}</span>
+    <span class="title">
+      {rule.title}
+    </span>
     {#if expanded}
       <OscdArrowUpIcon svgStyles={`fill: var(--primary-base);`} />
     {:else}
@@ -27,6 +30,12 @@
   </summary>
 
   <div class="body">
+    {#if rule.rejected}
+      <div class="field field--error">
+        <span class="label">Status</span>
+        <span class="reason">Could not be validated{rule.rejectReason ? `: ${rule.rejectReason}` : '.'}</span>
+      </div>
+    {/if}
     {#if rule.description}
       <p>{rule.description}</p>
     {/if}
@@ -56,6 +65,15 @@
     background: var(--base2);
   }
 
+  .item--error {
+    background: #f2f2f2;
+  }
+
+  .item--error .title,
+  .item--error .body p {
+    color: var(--base1, #93a1a1);
+  }
+
   .summary {
     display: flex;
     align-items: center;
@@ -69,6 +87,9 @@
   .summary::-webkit-details-marker { display: none; }
 
   .title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
@@ -97,6 +118,12 @@
     display: flex;
     align-items: baseline;
     gap: 8px;
+  }
+
+  .field--error .reason {
+    font-family: var(--ew-font-family, 'Roboto', sans-serif);
+    font-size: var(--ew-font-size-body, 0.875rem);
+    color: var(--base1, #93a1a1);
   }
 
   .label {

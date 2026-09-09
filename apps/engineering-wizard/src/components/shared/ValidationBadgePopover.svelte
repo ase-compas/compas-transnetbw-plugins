@@ -1,76 +1,131 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-  import type { RuleResult } from '../../services/validationStatusStore.svelte';
-  import { OscdWarningIcon, OscdCheckIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import type { PluginValidationView } from '../../services/validationStatusStore.svelte';
+  import { OscdWarningIcon, OscdCheckIcon, OscdCloudOffIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ValidationRuleItem from './ValidationRuleItem.svelte';
+  import Spinner from './Spinner.svelte';
 
-  interface Props { rules: RuleResult[]; active?: boolean; }
-  let { rules, active = false }: Props = $props();
+  interface Props {
+    view: PluginValidationView;
+    active?: boolean;
+  }
+  let { view, active = false }: Props = $props();
 
-  let failedRules = $derived(rules.filter((r) => !r.passed));
-  let passedRules = $derived(rules.filter((r) => r.passed));
-  let count = $derived(failedRules.length);
+  let failedCount = $derived(view.failedRules.length);
+  let passedCount = $derived(view.passedRules.length);
+  let erroredCount = $derived(view.erroredRules.length);
 
-  let open = $state(false);
+  let hovering = $state(false);
+  let pinned = $state(false);
+  let open = $derived(hovering || pinned);
+
   let unseen = $state(false);
-  let hideTimer: ReturnType<typeof setTimeout> | undefined;
-
-  // Set unseen when count changes (skip first mount). Only tracks `count` —
-  // `active` is read via untrack so switching plugin doesn't re-trigger this.
   let firstRun = true;
   $effect(() => {
-    count;
+    failedCount;
+    erroredCount;
     if (firstRun) { firstRun = false; return; }
-    if (untrack(() => active)) unseen = true;
+    if (!untrack(() => active)) unseen = true;
   });
 
-  // Cancel any pending hide timer when the component is destroyed.
-  $effect(() => () => clearTimeout(hideTimer));
+  $effect(() => {
+    if (active) unseen = false;
+    else pinned = false;
+  });
 
-  function show() {
-    clearTimeout(hideTimer);
-    hideTimer = undefined;
+  function onEnter() {
     unseen = false;
-    open = true;
+    hovering = true;
   }
 
-  function hide() {
-    hideTimer = setTimeout(() => { open = false; }, 150);
+  function onLeave() {
+    hovering = false;
+  }
+
+  function togglePin() {
+    pinned = !pinned;
   }
 </script>
 
-<div class="wrapper">
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="badge" class:badge--unseen={unseen && active} onmouseenter={show} onmouseleave={hide}>
-    {#key `${count}-${unseen && active}`}<span class="badge-count">{count}</span>{/key}
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="wrapper" onmouseenter={onEnter} onmouseleave={onLeave}>
+  <span
+    class="badge"
+    class:badge--unseen={unseen}
+    class:badge--ok={view.state === 'passed' || view.state === 'no-validations'}
+    class:badge--loading={view.state === 'loading'}
+    class:badge--error={view.state === 'error'}
+  >
+    {#if view.state === 'loading'}
+      <Spinner size="10px" color="var(--primary-base)" trackColor="rgba(0, 0, 0, 0.15)" />
+    {:else if view.state === 'error'}
+      <OscdCloudOffIcon svgStyles="fill: var(--white); width: 11px; height: 11px;" />
+    {:else}
+      {#key `${failedCount}-${unseen}`}<span class="badge-count">{failedCount}</span>{/key}
+    {/if}
   </span>
 
+  {#if pinned}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div class="backdrop" onclick={() => (pinned = false)}></div>
+  {/if}
+
   {#if open}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="panel" onmouseenter={show} onmouseleave={hide}>
+    <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Validation rules</span>
+        <button type="button" class="pin-btn" class:pin-btn--active={pinned} onclick={togglePin}>
+          {pinned ? 'Unpin' : 'Pin'}
+        </button>
       </div>
-      <div class="section-header section-header--failed">
-        <span>{count} rule{count === 1 ? '' : 's'} failed</span>
-        <OscdWarningIcon fill="var(--red)" size="16px" />
-      </div>
-      <ul class="rule-list">
-        {#each failedRules as rule}
-          <li><ValidationRuleItem {rule} /></li>
-        {/each}
-      </ul>
 
-      {#if passedRules.length > 0}
-        <div class="section-header section-header--passed">
-          <span>{passedRules.length} rule{passedRules.length === 1 ? '' : 's'} passed</span>
-          <OscdCheckIcon svgStyles="fill: var(--primary-base);" />
+      {#if view.state === 'no-validations'}
+        <div class="section-header section-header--empty">
+          <span>No validations configured for this plugin.</span>
         </div>
-        <ul class="rule-list">
-          {#each passedRules as rule}
-            <li><ValidationRuleItem {rule} passed /></li>
-          {/each}
-        </ul>
+      {:else}
+        {#if view.state === 'loading'}
+          <div class="section-header section-header--running">
+            <Spinner size="12px" color="var(--primary-base)" />
+            <span>Validating…</span>
+          </div>
+        {/if}
+
+        {#if erroredCount > 0}
+          <div class="section-header section-header--error">
+            <span>{erroredCount} rule{erroredCount === 1 ? '' : 's'} could not be validated</span>
+            <OscdCloudOffIcon svgStyles="fill: var(--base1, #93a1a1); width: 16px; height: 16px;" />
+          </div>
+          <ul class="rule-list">
+            {#each view.erroredRules as rule}
+              <li><ValidationRuleItem {rule} /></li>
+            {/each}
+          </ul>
+        {/if}
+
+        {#if failedCount > 0}
+          <div class="section-header section-header--failed">
+            <span>{failedCount} rule{failedCount === 1 ? '' : 's'} failed</span>
+            <OscdWarningIcon fill="var(--red)" size="16px" />
+          </div>
+          <ul class="rule-list">
+            {#each view.failedRules as rule}
+              <li><ValidationRuleItem {rule} /></li>
+            {/each}
+          </ul>
+        {/if}
+
+        {#if passedCount > 0}
+          <div class="section-header section-header--passed">
+            <span>{passedCount} rule{passedCount === 1 ? '' : 's'} passed</span>
+            <OscdCheckIcon svgStyles="fill: var(--primary-base);" />
+          </div>
+          <ul class="rule-list">
+            {#each view.passedRules as rule}
+              <li><ValidationRuleItem {rule} passed /></li>
+            {/each}
+          </ul>
+        {/if}
       {/if}
     </div>
   {/if}
@@ -104,6 +159,13 @@
     pointer-events: auto;
   }
 
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    background: transparent;
+  }
+
   .badge {
     display: inline-flex;
     align-items: center;
@@ -119,6 +181,18 @@
     line-height: 1;
     box-sizing: border-box;
     cursor: default;
+  }
+
+  .badge--ok {
+    background-color: var(--oscd-status-success, #4CAF50);
+  }
+
+  .badge--loading {
+    background-color: var(--base3, #DAE3E6);
+  }
+
+  .badge--error {
+    background-color: var(--oscd-status-warning, #FF9800);
   }
 
   .badge-count {
@@ -179,6 +253,21 @@
     z-index: 1;
   }
 
+  .pin-btn {
+    padding: 2px 8px;
+    border: 1px solid var(--base3);
+    border-radius: 4px;
+    background: none;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .pin-btn--active {
+    background: var(--primary-base);
+    color: var(--white);
+    border-color: var(--primary-base);
+  }
+
   .panel-title {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
@@ -198,6 +287,9 @@
 
   .section-header--failed { color: var(--red); }
   .section-header--passed { color: var(--primary-base); }
+  .section-header--empty { color: var(--base1, #93a1a1); }
+  .section-header--running { color: var(--primary-base); }
+  .section-header--error { color: var(--base1, #93a1a1); }
 
   .rule-list {
     list-style: none;
