@@ -13,7 +13,6 @@
     expandedGroupBorderColor?: string;
     selectPlugin?: (plugin: Plugin) => void;
     validationViews?: Record<string, PluginValidationView>;
-    showValidationStatus?: boolean;
   }
 
   let {
@@ -24,7 +23,6 @@
     expandedGroupBorderColor = 'var(--primary-base)',
     selectPlugin,
     validationViews = {},
-    showValidationStatus = true,
   }: Props = $props();
 
   // Normalize the incoming indices into valid, clamped values without mutating state.
@@ -100,6 +98,7 @@
 
       {#if groupIndex === resolvedGroupIndex}
         {#each visiblePluginChips(group.plugins) as chip}
+          {@const view = validationViews[chip.plugin.id]}
           <button
             type="button"
             class="validation-groups__plugin"
@@ -107,11 +106,8 @@
             onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
           >
             <span>{chip.plugin.name}</span>
-            {#if showValidationStatus}
-              <ValidationBadgePopover
-                view={validationViews[chip.plugin.id]}
-                active={chip.pluginIndex === selectedPluginIndex}
-              />
+            {#if view}
+              <ValidationBadgePopover {view} active={chip.pluginIndex === selectedPluginIndex} />
             {/if}
           </button>
         {/each}

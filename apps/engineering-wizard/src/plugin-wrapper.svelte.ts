@@ -29,6 +29,8 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   private _lastValidatedEditCount = -1;
 
+  private _onOnline = () => scheduleEditValidation();
+
   constructor() {
     super();
 
@@ -43,6 +45,8 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   connectedCallback() {
+    window.addEventListener('online', this._onOnline);
+
     if (this.shadowRoot) return;
 
     this.attachShadow({ mode: 'open' });
@@ -69,6 +73,7 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   disconnectedCallback() {
+    window.removeEventListener('online', this._onOnline);
     cancelPendingValidation();
   }
 

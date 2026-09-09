@@ -2,7 +2,7 @@ import { runningEngineeringProcess } from '../features/processes/stores.svelte';
 import { getPluginsForProcess } from '../features/processes/selectors';
 import { validateWithContent, describeValidationError, type ValidationResult } from './validationService';
 import { documentStore } from '../documentStore.svelte';
-import { beginPluginValidation, completePluginValidation, type RuleResult } from './validationStatusStore.svelte';
+import { completePluginValidation, type RuleResult } from './validationStatusStore.svelte';
 import { WORKFLOW_STATE_PRIVATE_TYPES } from '../features/workflow/document-state';
 import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
 
@@ -61,13 +61,15 @@ async function validateIfChanged(): Promise<void> {
   const sclContent = xmlSerializer.serializeToString(stripWorkflowBookkeeping(doc));
   const key = `${process.id}:${sclContent}`;
   if (key === lastValidatedKey) return;
-  lastValidatedKey = key;
 
   const allPlugins = getPluginsForProcess(process);
 
-  await Promise.allSettled(
+  const results = await Promise.allSettled(
     allPlugins.map((plugin) => validatePlugin(plugin, process.id, sclContent)),
   );
+
+  const allExecuted = results.every((r) => r.status === 'fulfilled' && r.value);
+  if (allExecuted) lastValidatedKey = key;
 }
 
 function stripWorkflowBookkeeping(doc: XMLDocument): XMLDocument {
@@ -95,27 +97,21 @@ async function validatePlugin(
   plugin: Plugin,
   processId: string,
   sclContent: string,
-): Promise<void> {
+): Promise<boolean> {
   const validations: XPathValidation[] = (plugin.validations ?? []).filter(
     (v) => v.processId === processId,
   );
 
   if (validations.length === 0) {
     completePluginValidation(processId, plugin.id, []);
-    return;
+    return true;
   }
 
-  beginPluginValidation(processId, plugin.id);
+  const results = await Promise.allSettled(
+    validations.map((rule) => validateWithContent(rule, sclContent)),
+  );
+  const ruleResults = results.map((result, i) => toRuleResult(validations[i], result));
 
-  try {
-    const results = await Promise.allSettled(
-      validations.map((rule) => validateWithContent(rule, sclContent)),
-    );
-    const ruleResults = results.map((result, i) => toRuleResult(validations[i], result));
-
-    completePluginValidation(processId, plugin.id, ruleResults);
-  } catch (e) {
-    completePluginValidation(processId, plugin.id, []);
-    throw e;
-  }
+  completePluginValidation(processId, plugin.id, ruleResults);
+  return ruleResults.every((r) => !r.rejected);
 }
