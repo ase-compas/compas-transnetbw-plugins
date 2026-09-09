@@ -27,7 +27,8 @@ function defaultRuleUi(): RuleUiState {
     elementName: '',
     elementCount: 1,
     message: '',
-    elementPath: '',
+    expertMode: false,
+    expertXPath: '',
   };
 }
 
@@ -44,8 +45,8 @@ export function initValidationEditor(
   if (existing) {
     validationEditor.entry = { ...existing };
     validationEditor.ruleUi = existing.ruleUi
-      ? restoreRuleUi(existing.ruleUi, existing.context)
-      : parseAssertionToRuleUi(existing.assert, existing.message ?? '', existing.context);
+      ? restoreRuleUi(existing.ruleUi)
+      : parseAssertionToRuleUi(existing.assert, existing.message ?? '');
   } else {
     validationEditor.entry = defaultEntry(processId, pluginId);
     validationEditor.ruleUi = defaultRuleUi();
@@ -56,13 +57,7 @@ export function initValidationEditor(
 // Restore ruleUi from a previously-persisted snapshot.
 // ---------------------------------------------------------------------------
 
-function restoreRuleUi(stored: Record<string, unknown>, existingContext?: string): RuleUiState {
-  const elementName = (stored.elementName as string) ?? '';
-  const storedPath  = (stored.elementPath as string) ?? '';
-  // Reconstruct elementPath for snapshots persisted before elementPath was introduced.
-  const elementPath = storedPath || (elementName
-    ? `${existingContext ?? '//SCL'}/${elementName}`
-    : '');
+function restoreRuleUi(stored: Record<string, unknown>): RuleUiState {
   return {
     mode: (stored.mode as RuleUiState['mode']) ?? 'attribute',
     condition: (stored.condition as RuleUiState['condition']) ?? 'notContains',
@@ -70,10 +65,11 @@ function restoreRuleUi(stored: Record<string, unknown>, existingContext?: string
     attribute: (stored.attribute as string) ?? '',
     elementCheckType:
       (stored.elementCheckType as RuleUiState['elementCheckType']) ?? 'exists',
-    elementName,
+    elementName: (stored.elementName as string) ?? '',
     elementCount: (stored.elementCount as number) ?? 1,
     message: (stored.message as string) ?? '',
-    elementPath,
+    expertMode: (stored.expertMode as boolean) ?? false,
+    expertXPath: (stored.expertXPath as string) ?? '',
   };
 }
 
@@ -94,7 +90,7 @@ const ATTR_PATTERNS: Array<[RegExp, ConditionKey]> = [
   [/^not\(matches\(normalize-space\((@\w+)\),\s*'([^']*)'\)\)$/,     'notMatches' ],
 ];
 
-function parseAssertionToRuleUi(assert: string, message: string, existingContext?: string): RuleUiState {
+export function parseAssertionToRuleUi(assert: string, message: string): RuleUiState {
   const a = assert.trim();
 
   // Element check: count(El) op N
@@ -107,9 +103,6 @@ function parseAssertionToRuleUi(assert: string, message: string, existingContext
       op === '=' && n === 0 ? 'notExists' :
       op === '='             ? 'exactly'  :
       op === '>='            ? 'atLeast'  : 'atMost';
-    // Reconstruct elementPath from stored context + element name (backwards compat).
-    const parentCtx = existingContext ?? '//SCL';
-    const elementPath = `${parentCtx}/${elementName}`;
     return {
       mode: 'element',
       condition: 'notContains',
@@ -119,7 +112,8 @@ function parseAssertionToRuleUi(assert: string, message: string, existingContext
       elementName,
       elementCount: op === '>' ? 1 : n,
       message,
-      elementPath,
+      expertMode: false,
+      expertXPath: '',
     };
   }
 
@@ -135,10 +129,22 @@ function parseAssertionToRuleUi(assert: string, message: string, existingContext
         elementName: '',
         elementCount: 1,
         message,
-        elementPath: '',
+        expertMode: false,
+        expertXPath: '',
       };
     }
   }
 
   return { ...defaultRuleUi(), message };
+}
+
+/**
+ * Returns true if the given XPath assertion string can be round-tripped back
+ * into the form builder UI (i.e. it matches a known pattern).
+ * An empty string is considered parseable (reverts to default UI state).
+ */
+export function isExpertXPathParseable(xpath: string, message: string): boolean {
+  if (!xpath.trim()) return true;
+  const state = parseAssertionToRuleUi(xpath, message);
+  return state.attribute !== '' || state.elementName !== '';
 }
