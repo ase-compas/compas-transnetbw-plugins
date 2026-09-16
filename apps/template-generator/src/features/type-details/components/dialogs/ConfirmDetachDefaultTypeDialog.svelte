@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-  import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
+  import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
 
   interface Props {
     open?: boolean;
@@ -17,15 +16,12 @@
   }: Props = $props();
 </script>
 
-<OscdBaseDialog
+<OscdConfirmDialog
   title="Customize Default"
   confirmActionText="Customize"
   maxWidth="760px"
   height="auto"
   bind:open
-  onConfirm={() => closeDialog('confirm')}
-  onCancel={() => closeDialog('cancel')}
-  onClose={() => closeDialog('exit')}
 >
   {#snippet content()}
     <div class="content">
@@ -37,7 +33,7 @@
       </p>
     </div>
   {/snippet}
-</OscdBaseDialog>
+</OscdConfirmDialog>
 
 <style>
   .content {

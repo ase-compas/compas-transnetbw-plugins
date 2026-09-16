@@ -11,6 +11,12 @@ import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
     confirmActionColor?: 'primary' | 'danger';
     cancelActionText?: string;
     color?: string;
+    width?: string;
+    maxWidth?: string;
+    height?: string;
+    maxHeight?: string;
+    /** Optional custom body. When provided, replaces the default centered `message` text. */
+    content?: import('svelte').Snippet;
   }
 
   let {
@@ -20,7 +26,12 @@ import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
     confirmActionText = 'OK',
     confirmActionColor = 'primary',
     cancelActionText = 'Cancel',
-    color = 'var(--mdc-theme-primary, #ff3e00)'
+    color = 'var(--mdc-theme-primary, #ff3e00)',
+    width = '100%',
+    maxWidth = '500px',
+    height = 'auto',
+    maxHeight = 'auto',
+    content
   }: Props = $props();
 
 function handleConfirm() {
@@ -42,17 +53,22 @@ function handleCancel() {
   onConfirm={() => handleConfirm()}
   onCancel={() => handleCancel()}
   onClose={() => closeDialog('cancel')}
-  width="100%"
-  maxWidth="500px"
-  height="auto"
-  maxHeight="auto"
->
-  {#snippet content()}
+  {width}
+  {maxWidth}
+  {height}
+  {maxHeight}
+  content={dialogContent}
+/>
+
+{#snippet dialogContent()}
+  {#if content}
+    {@render content()}
+  {:else}
     <div class="oscd-confirm-dialog__content">
       {message}
     </div>
-  {/snippet}
-</OscdBaseDialog>
+  {/if}
+{/snippet}
 
 
 <style>
