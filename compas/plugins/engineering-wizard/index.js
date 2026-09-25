@@ -33166,7 +33166,7 @@ function MD(i, e) {
   }
   let n = w(e, "editCount", 19, () => -1), r = w(e, "plugins", 19, () => []), s = null, a = null, o = "";
   function l(c) {
-    c.doc = e.doc, c.editCount = n(), c.plugins = r(), c.nsdoc = e.nsdoc, c.docName = e.docName, c.docId = e.docId, c.docs = e.docs, c.locale = e.locale, e.oscdApi && (c.oscdApi = e.oscdApi);
+    c.doc = e.doc, c.editCount = n(), c.docVersion = n(), c.plugins = r(), c.nsdoc = e.nsdoc, c.docName = e.docName, c.docId = e.docId, c.docs = e.docs, c.locale = e.locale, e.oscdApi && (c.oscdApi = e.oscdApi);
   }
   Se(() => {
     var f;
@@ -33465,6 +33465,7 @@ function jD(i, e) {
             Ne(F, (Y, H) => v == null ? void 0 : v(Y, H), () => ({
               doc: e.doc,
               editCount: t(),
+              docVersion: t(),
               docs: e.docs,
               nsdoc: e.nsdoc,
               docName: e.docName,
