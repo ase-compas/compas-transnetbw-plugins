@@ -92,4 +92,16 @@
   });
 </script>
 
-<div bind:this={container}></div>
+<div class="plugin-host" bind:this={container}></div>
+
+<style>
+  /*
+   * DOM mount point for the plugin element. height: 100% keeps the percentage
+   * chain intact: :host { height: 100% } only resolves when this parent has a
+   * definite height. height: auto would collapse it to the plugin content.
+   * It is a similar Problem as with https://github.com/com-pas/open-scd/issues/173
+   */
+  .plugin-host {
+    height: 100%;
+  }
+</style>
