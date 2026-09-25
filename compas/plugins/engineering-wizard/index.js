@@ -33155,7 +33155,7 @@ function LD(i, e) {
   }
   E(i, O), pe();
 }
-var RD = /* @__PURE__ */ V("<div></div>");
+var RD = /* @__PURE__ */ V('<div class="plugin-host svelte-1b6gqwj"></div>');
 function MD(i, e) {
   ge(e, !0);
   function t(c) {
