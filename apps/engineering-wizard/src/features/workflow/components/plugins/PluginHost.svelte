@@ -58,6 +58,7 @@
   function syncProps(target: any) {
     target.doc = doc;
     target.editCount = editCount;
+    target.docVersion = editCount;
     target.plugins = plugins;
     target.nsdoc = nsdoc;
     target.docName = docName;

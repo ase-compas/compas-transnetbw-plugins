@@ -196,7 +196,7 @@
     {:else}
       <svelte:element
         this={selectedPlugin.id}
-        use:setProps={{ doc, editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
+        use:setProps={{ doc, editCount, docVersion: editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
       />
     {/if}
   </div>
