@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-  import type { PluginValidationView } from '../../services/validationStatusStore.svelte';
+  import type { PluginValidationView } from '../../services/validationCoordinator.svelte';
   import { OscdWarningIcon, OscdCheckIcon, OscdCloudOffIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ValidationRuleItem from './ValidationRuleItem.svelte';
   import Spinner from './Spinner.svelte';

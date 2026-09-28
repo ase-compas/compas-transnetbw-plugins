@@ -26,6 +26,12 @@
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
+  interface Props {
+    onReturnToList: () => Promise<void>;
+  }
+
+  const { onReturnToList }: Props = $props();
+
   let currentStepIndex = $state(0);
   let currentStepId = $derived(STEP_IDS[currentStepIndex] ?? STEP_IDS[0]);
   let isAtFirstStep = $derived(currentStepIndex === 0);
@@ -93,6 +99,11 @@
     selectedEngineeringProcess.process = null;
   }
 
+  async function returnToProcessList() {
+    await onReturnToList();
+    leaveEditMode();
+  }
+
   async function exitEditing() {
     const proc = selectedEngineeringProcess.process;
     if (proc && hasChanges()) {
@@ -102,7 +113,7 @@
       if (result?.type !== 'confirm') return;
       restoreSnapshot();
     }
-    leaveEditMode();
+    await returnToProcessList();
   }
 
   /** Called by the Done button — skips the "save or discard?" prompt, goes straight to version bump. */
@@ -126,7 +137,7 @@
         saving = false;
       }
     }
-    leaveEditMode();
+    await returnToProcessList();
   }
 
   function handleStepSelect(stepId: EditorStepIds) {

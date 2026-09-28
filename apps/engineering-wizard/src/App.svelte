@@ -4,10 +4,13 @@
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
   import { type Process } from '@oscd-transnet-plugins/shared';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
   import { OscdDiscardChangesDialog, OscdToastHost } from '@oscd-transnet-plugins/oscd-component';
-  import { loadEngineeringProcesses } from './features/processes/repository.svelte';
+  import {
+    loadEngineeringProcesses,
+    refreshEngineeringProcesses,
+  } from './features/processes/repository.svelte';
   import { readEngineeringWorkflowState, writeEngineeringWorkflowState } from './features/workflow/document-state';
   import {
     engineeringProcessEditing,
@@ -17,7 +20,8 @@
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
-  import { documentStore } from './documentStore.svelte';
+  import { documentStore, updateDocumentStore } from './documentStore.svelte';
+  import { validationCoordinator } from './services/validationCoordinator.svelte';
 
   import 'svelte-material-ui/bare.css';
   import "../public/material-icon.css"
@@ -115,19 +119,44 @@
     selectedEngineeringProcess.process = process;
 
     if (!selectedEngineeringProcess.process) return;
+    if (doc) {
+      validationCoordinator.runNow(selectedEngineeringProcess.process, doc);
+    }
     const viewPlugins = getPluginsForProcess(selectedEngineeringProcess.process);
     await openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
+    if (doc && host) {
+      writeEngineeringWorkflowState(doc, host, {
+        lastPluginId: runningEngineeringProcess.lastSelectedPluginId,
+      });
+    }
     selectedEngineeringProcess.process = null;
   }
 
   $effect(() => {
     updateDialogProps({ editCount, doc });
-    documentStore.doc = doc ?? null;
+    updateDocumentStore(doc ?? null, editCount);
+  });
+
+  $effect(() => {
+    documentStore.revision;
+    const document = documentStore.doc;
+    untrack(() => {
+      validationCoordinator.request(runningEngineeringProcess.process, document);
+    });
   });
 
   function handleEdit(process: Process) {
     engineeringProcessEditing.isEditing = true;
     selectedEngineeringProcess.process = process;
+  }
+
+  async function refreshProcesses() {
+    try {
+      await refreshEngineeringProcesses();
+      restoreWorkflowState(doc);
+    } catch {
+      // Status is already tracked in engineeringProcessesStatus.error
+    }
   }
 
   function addNewProcess() {
@@ -136,12 +165,14 @@
     isCreatingProcess = true;
   }
 
-  function cancelCreate() {
+  async function cancelCreate() {
     engineeringProcessEditing.isEditing = false;
+    await refreshProcesses();
     isCreatingProcess = false;
   }
 
-  function handleCreated(_proc: Process) {
+  async function handleCreated(_proc: Process) {
+    await refreshProcesses();
     isCreatingProcess = false;
   }
 </script>
@@ -152,7 +183,7 @@
   {#if isCreatingProcess}
     <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
   {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
-    <ProcessEditView />
+    <ProcessEditView onReturnToList={refreshProcesses} />
   {:else}
     <ProcessesListView
       handleView={handleEdit}

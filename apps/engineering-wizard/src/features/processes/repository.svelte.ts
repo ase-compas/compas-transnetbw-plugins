@@ -1,4 +1,4 @@
-import type { Process } from '@oscd-transnet-plugins/shared';
+import { compareVersions, type Process } from '@oscd-transnet-plugins/shared';
 import { PROCESSES_SOURCE_URL } from './config';
 import {
   engineeringProcesses,
@@ -9,6 +9,8 @@ import { processService } from '../../bootstrap';
 import type { VersionBump } from './process.service';
 import { updateProcessMetadata } from './mutations.svelte';
 
+const recentlySavedProcesses = new Map<string, Process>();
+
 function mergeById(primary: Process[], secondary: Process[]): Process[] {
   const byId = new Map<string, Process>();
   for (const p of primary) byId.set(p.id, p);
@@ -16,7 +18,27 @@ function mergeById(primary: Process[], secondary: Process[]): Process[] {
   return Array.from(byId.values());
 }
 
-export async function loadEngineeringProcesses(): Promise<Process[]> {
+function preserveRecentlySavedProcesses(processes: Process[]): Process[] {
+  const byId = new Map(processes.map((process) => [process.id, process]));
+
+  for (const [processId, localProcess] of recentlySavedProcesses) {
+    const remoteProcess = byId.get(processId);
+    if (
+      !remoteProcess ||
+      compareVersions(localProcess.version, remoteProcess.version) > 0
+    ) {
+      byId.set(processId, localProcess);
+    } else {
+      recentlySavedProcesses.delete(processId);
+    }
+  }
+
+  return Array.from(byId.values());
+}
+
+async function loadEngineeringProcessesFromSources(
+  allowBackendFallback: boolean,
+): Promise<Process[]> {
   engineeringProcessesStatus.loading = true;
   engineeringProcessesStatus.error = '';
 
@@ -48,10 +70,11 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
         );
         processes = mergeById(processes, backendProcesses);
       }
-    } catch {
-      // Backend unavailable — continue with the static baseline.
+    } catch (error) {
+      if (!allowBackendFallback) throw error;
     }
 
+    processes = preserveRecentlySavedProcesses(processes);
     engineeringProcesses.processes = processes;
     return processes;
   } catch (err) {
@@ -63,6 +86,13 @@ export async function loadEngineeringProcesses(): Promise<Process[]> {
   }
 }
 
+export function loadEngineeringProcesses(): Promise<Process[]> {
+  return loadEngineeringProcessesFromSources(true);
+}
+
+export function refreshEngineeringProcesses(): Promise<Process[]> {
+  return loadEngineeringProcessesFromSources(false);
+}
 
 export async function saveProcess(
   process: Process,
@@ -72,12 +102,17 @@ export async function saveProcess(
   engineeringProcessesStatus.saveError = '';
 
   try {
+    const processSnapshot = $state.snapshot(process) as Process;
     const { version } = await processService.save(
-      $state.snapshot(process) as Process,
+      processSnapshot,
       versionBump,
     );
 
     updateProcessMetadata(process.id, { version });
+    recentlySavedProcesses.set(process.id, {
+      ...processSnapshot,
+      version,
+    });
   } catch (err) {
     engineeringProcessesStatus.saveError =
       err instanceof Error ? err.message : 'Failed to save process.';

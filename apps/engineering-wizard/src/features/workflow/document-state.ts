@@ -5,6 +5,7 @@ import {
   dispatchEditEvent,
 } from '@oscd-transnet-plugins/oscd-event-api';
 import type { EditV2 } from '@oscd-transnet-plugins/oscd-event-api';
+import { markWorkflowStateEdit } from '../../documentStore.svelte';
 
 const PRIVATE_NS_PREFIX = 'compas';
 export const PRIVATE_WORKFLOW_PROCESS_ID = `${PRIVATE_NS_PREFIX}:workflowProcessId`;
@@ -91,5 +92,8 @@ export function writeEngineeringWorkflowState(
       patch.lastPluginId,
     );
 
-  return edits.length ? dispatchEditEvent(host, edits) : false;
+  if (edits.length === 0) return false;
+
+  markWorkflowStateEdit();
+  return dispatchEditEvent(host, edits);
 }

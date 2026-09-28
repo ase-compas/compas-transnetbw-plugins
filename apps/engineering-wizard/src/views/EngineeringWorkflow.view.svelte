@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import type { Plugin } from '@oscd-transnet-plugins/shared';
   import type { ViewPlugin } from '../features/workflow/viewPlugin';
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
   import ExternalPluginView from '../features/workflow/components/plugins/ExternalPluginView.svelte';
@@ -8,11 +9,14 @@
   import WorkflowActions from '../components/shared/WorkflowActions.svelte';
   import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
   import { preloadAllPlugins } from '../features/workflow/external-elements';
-  import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
+  import { readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { enterFullscreenView } from '../features/workflow/layout.svelte';
   import { runningEngineeringProcess } from '../features/processes/stores.svelte';
-  import { getPluginValidationView, type PluginValidationView } from '../services/validationStatusStore.svelte';
+  import {
+    validationCoordinator,
+    type PluginValidationView,
+  } from '../services/validationCoordinator.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -57,7 +61,7 @@
     if (!processId) return {} as Record<string, PluginValidationView>;
     const result: Record<string, PluginValidationView> = {};
     for (const plugin of plugins) {
-      result[plugin.id] = getPluginValidationView(processId, plugin);
+      result[plugin.id] = validationCoordinator.getPluginView(processId, plugin);
     }
     return result;
   });
@@ -79,24 +83,21 @@
 
   // Selecting a plugin is now purely a state switch — loading (and any failure/retry) of
   // external plugins is handled reactively by <ExternalPluginView>, keyed off `selectedPlugin`.
-  function onSelectPlugin(plugin?: ViewPlugin) {
+  function onSelectPlugin(plugin?: Plugin) {
     if (!plugin) return;
 
-    if (selectedPlugin?.id === plugin.id) return;
+    const viewPlugin = plugins.find((candidate) => candidate.id === plugin.id);
+    if (!viewPlugin) return;
 
-    selectedPlugin = plugin;
+    if (selectedPlugin?.id === viewPlugin.id) return;
 
-    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
+    selectedPlugin = viewPlugin;
+
+    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(viewPlugin.id);
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
-    try {
-      if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
-    } catch (e) {
-      console.warn('[EngineeringWizard] Failed to persist plugin selection:', e);
-    }
-
-    setLastSelectedPluginId(plugin.id);
+    setLastSelectedPluginId(viewPlugin.id);
   }
 
   function advance(step: number) {
@@ -157,6 +158,7 @@
     bind:selectedGroupIndex
     bind:selectedPluginIndex
     validationViews={pluginValidationViews}
+    autoSelect={false}
   />
 
   <WorkflowActions

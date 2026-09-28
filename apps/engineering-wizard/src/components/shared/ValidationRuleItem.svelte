@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { RuleResult } from '../../services/validationStatusStore.svelte';
+  import type { RuleResult } from '../../services/validationCoordinator.svelte';
   import { OscdArrowDownIcon, OscdArrowUpIcon } from '@oscd-transnet-plugins/oscd-icons';
 
   interface Props {

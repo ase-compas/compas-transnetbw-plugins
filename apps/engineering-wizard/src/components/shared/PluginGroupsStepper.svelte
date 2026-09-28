@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginGroup, Plugin } from '@oscd-transnet-plugins/shared';
-  import type { PluginValidationView } from '../../services/validationStatusStore.svelte';
+  import type { PluginValidationView } from '../../services/validationCoordinator.svelte';
   import ValidationBadgePopover from './ValidationBadgePopover.svelte';
 
   type PluginChip = { type: 'plugin'; plugin: Plugin; pluginIndex: number };
@@ -13,6 +13,7 @@
     expandedGroupBorderColor?: string;
     selectPlugin?: (plugin: Plugin) => void;
     validationViews?: Record<string, PluginValidationView>;
+    autoSelect?: boolean;
   }
 
   let {
@@ -23,6 +24,7 @@
     expandedGroupBorderColor = 'var(--primary-base)',
     selectPlugin,
     validationViews = {},
+    autoSelect = true,
   }: Props = $props();
 
   // Normalize the incoming indices into valid, clamped values without mutating state.
@@ -58,7 +60,7 @@
   // Notify the parent whenever the resolved selection changes.
   $effect(() => {
     const plugin = resolvedPlugin;
-    if (plugin) selectPlugin?.(plugin);
+    if (autoSelect && plugin) selectPlugin?.(plugin);
   });
 
   function onSelectGroup(groupIndex: number) {

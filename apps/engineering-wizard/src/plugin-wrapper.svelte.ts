@@ -3,10 +3,7 @@ import * as pkg from '../package.json';
 import { mount } from 'svelte';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
-import {
-  cancelPendingValidation,
-  scheduleEditValidation,
-} from './services/editValidationHandler';
+import { validationCoordinator } from './services/validationCoordinator.svelte';
 
 interface PluginProps {
   doc?: XMLDocument;
@@ -27,9 +24,7 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   private _props: PluginProps;
 
-  private _lastValidatedEditCount = -1;
-
-  private _onOnline = () => scheduleEditValidation();
+  private _onOnline = () => validationCoordinator.retryFailed();
 
   constructor() {
     super();
@@ -74,7 +69,7 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   disconnectedCallback() {
     window.removeEventListener('online', this._onOnline);
-    cancelPendingValidation();
+    validationCoordinator.cancel();
   }
 
   set doc(newDoc: XMLDocument) {
@@ -93,10 +88,6 @@ export default class NewOSCDPlugin extends HTMLElement {
 
   set editCount(newCount: number) {
     this._props.editCount = newCount;
-    if (newCount >= 0 && newCount !== this._lastValidatedEditCount) {
-      this._lastValidatedEditCount = newCount;
-      scheduleEditValidation();
-    }
   }
 
   set docId(v: string) {
