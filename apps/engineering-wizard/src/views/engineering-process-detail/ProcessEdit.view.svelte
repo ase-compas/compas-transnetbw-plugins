@@ -17,6 +17,8 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
+  import ValidationJsonTransferActions
+    from '../../features/plugins/validation/components/ValidationJsonTransferActions.svelte';
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
@@ -242,15 +244,21 @@
           bind:selectedGroupIndex
           bind:selectedPluginIndex
         />
-        <Button
-          variant="raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-          onclick={handleAddValidationClick}
-          disabled={!selectedEngineeringProcess.process || !selectedPlugin}
-          aria-label="Add validation"
-        >
-          Add new validation
-        </Button>
+        <div class="validation-actions">
+          <ValidationJsonTransferActions
+            process={selectedEngineeringProcess.process}
+            plugin={selectedPlugin}
+          />
+          <Button
+            variant="raised"
+            style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+            onclick={handleAddValidationClick}
+            disabled={!selectedEngineeringProcess.process || !selectedPlugin}
+            aria-label="Add validation"
+          >
+            Add new validation
+          </Button>
+        </div>
       </div>
       <ProcessValidationView
         {selectedPlugin}
@@ -296,7 +304,11 @@
     padding-bottom: 12px;
   }
 
-  .header :global(button) {
+  .validation-actions {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
+
 </style>
