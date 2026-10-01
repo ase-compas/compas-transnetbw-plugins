@@ -67,6 +67,8 @@
     const group = pluginGroups[groupIndex];
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = group?.plugins?.length ? 0 : null;
+    const plugin = group?.plugins?.[0];
+    if (plugin) selectPlugin?.(plugin);
   }
 
   function onSelectPlugin(groupIndex: number, pluginIndex: number) {

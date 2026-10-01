@@ -265,8 +265,6 @@
 {/snippet}
 
 <style>
-  /* Header */
-
   .plugin-list__header {
     display: flex;
     align-items: center;
@@ -288,8 +286,6 @@
     align-items: center;
   }
 
-  /* Body */
-
   .plugin-list__body {
     display: flex;
     flex-direction: column;
@@ -310,8 +306,6 @@
     flex: 1;
   }
 
-  /* Group header as button */
-
   .plugin-list__group-header {
     display: flex;
     align-items: center;
@@ -329,8 +323,6 @@
     outline: 2px solid rgba(255, 255, 255, 0.8);
     outline-offset: 2px;
   }
-
-  /* Group plugins section */
 
   .plugin-list__group-plugins-section {
     display: flex;
@@ -401,8 +393,6 @@
     display: flex;
     align-items: center;
   }
-
-  /* Footer / edit controls */
 
   .plugin-list__footer {
     display: flex;
