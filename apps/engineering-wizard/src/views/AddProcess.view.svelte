@@ -64,22 +64,23 @@
       procId = suggested;
     }
 
-    const created = addProcess({
+    const draft: Process = {
       id: resolvedId,
       version: '1.0.0',
       name: name.trim(),
       description: description.trim(),
       pluginGroups: $state.snapshot(pluginGroups) as PluginGroup[],
-    });
+    };
 
-    engineeringProcessEditing.isEditing = false;
     saving = true;
     try {
-      await saveProcess(created);
+      const version = await saveProcess(draft);
+      const created = addProcess({ ...draft, version });
+      engineeringProcessEditing.isEditing = false;
       toastService.success('Process saved', `"${created.name}" was saved to the database.`);
       handleSaved(created);
     } catch {
-      toastService.error('Save failed', `"${created.name}" was added locally but could not be saved to the database.`);
+      toastService.error('Save failed', `"${draft.name}" could not be saved to the database.`);
     } finally {
       saving = false;
     }
@@ -181,4 +182,3 @@
     gap: 12px;
   }
 </style>
-

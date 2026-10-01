@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Select, { Option } from '@smui/select';
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
+  import ValidationSelectField from './ValidationSelectField.svelte';
 
   interface Props {
     value: string;
@@ -14,6 +14,9 @@
   let { value = $bindable(), options, label, placeholder, requiredMessage }: Props = $props();
 
   const isEmpty = $derived(!value?.trim());
+  const selectOptions = $derived(
+    options.map((option) => ({ value: option, label: option })),
+  );
 
   $effect(() => {
     if (options.length > 0 && (!value || !options.includes(value))) {
@@ -22,23 +25,17 @@
   });
 </script>
 
-{#snippet requiredHelperText()}{requiredMessage}{/snippet}
 {#snippet requiredHelper()}<HelperText validationMsg>{requiredMessage}</HelperText>{/snippet}
 
 {#if options.length > 0}
   <div class="field-wrap">
-    <Select
+    <ValidationSelectField
       bind:value
       label={label}
-      variant="outlined"
-      invalid={isEmpty}
-      helperText$validationMsg
-      helperText={isEmpty ? requiredHelperText : undefined}
-    >
-      {#each options as opt (opt)}
-        <Option value={opt}>{opt}</Option>
-      {/each}
-    </Select>
+      options={selectOptions}
+      placeholder={placeholder}
+      invalidMessage={isEmpty ? requiredMessage : undefined}
+    />
   </div>
 {:else}
   <div class="field-wrap">

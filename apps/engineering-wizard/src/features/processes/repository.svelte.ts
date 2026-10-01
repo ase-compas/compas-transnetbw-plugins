@@ -97,7 +97,7 @@ export function refreshEngineeringProcesses(): Promise<Process[]> {
 export async function saveProcess(
   process: Process,
   versionBump?: VersionBump,
-): Promise<void> {
+): Promise<string> {
   engineeringProcessesStatus.saving = true;
   engineeringProcessesStatus.saveError = '';
 
@@ -113,6 +113,7 @@ export async function saveProcess(
       ...processSnapshot,
       version,
     });
+    return version;
   } catch (err) {
     engineeringProcessesStatus.saveError =
       err instanceof Error ? err.message : 'Failed to save process.';

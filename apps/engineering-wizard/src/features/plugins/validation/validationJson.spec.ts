@@ -42,6 +42,16 @@ describe('validationJson', () => {
     });
   });
 
+  it('imports legacy validations without an error message', () => {
+    const [imported] = parseValidationImport(
+      [{ ...validation, message: undefined }],
+      'target-process',
+      'target-plugin',
+    );
+
+    expect(imported.message).toBe('');
+  });
+
   it('rejects invalid JSON and unsupported export versions', () => {
     expect(() => parseValidationImportJson('{', 'process', 'plugin'))
       .toThrow('The selected file does not contain valid JSON.');

@@ -59,7 +59,7 @@ function toValidation(
     description: readOptionalString(value, 'description'),
     context: readRequiredString(value, 'context', index),
     assert: readRequiredString(value, 'assert', index),
-    message: readRequiredString(value, 'message', index),
+    message: readOptionalString(value, 'message'),
     processId,
     pluginId,
   };

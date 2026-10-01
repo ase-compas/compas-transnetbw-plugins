@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Select, { Option } from '@smui/select';
   import Textfield from '@smui/textfield';
 
   import { ELEMENT_CHECK_TYPES, type RuleUiState } from '../validationRuleUi';
+  import ValidationSelectField from './ValidationSelectField.svelte';
 
   interface Props {
     ruleUi: RuleUiState;
@@ -16,11 +16,15 @@
 </script>
 
 <div class="check-row">
-  <Select class="check-select" bind:value={ruleUi.elementCheckType} label="Check" variant="outlined">
-    {#each ELEMENT_CHECK_TYPES as t (t.key)}
-      <Option value={t.key}>{t.label}</Option>
-    {/each}
-  </Select>
+  <ValidationSelectField
+    class="check-select"
+    bind:value={ruleUi.elementCheckType}
+    label="Check"
+    options={ELEMENT_CHECK_TYPES.map((check) => ({
+      value: check.key,
+      label: check.label,
+    }))}
+  />
 
   {#if showCount}
     <Textfield
