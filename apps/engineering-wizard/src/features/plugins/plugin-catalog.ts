@@ -32,6 +32,7 @@ function resolved(plugin: Plugin, hostPlugin: HostPlugin): ViewPlugin {
   return {
     ...plugin,
     catalogId: getHostPluginCatalogId(hostPlugin),
+    icon: hostPlugin.icon ?? plugin.icon,
     sourceUrl: plugin.sourceUrl ?? plugin.src,
     src: hostPlugin.src,
     tag:

@@ -14,8 +14,9 @@
   } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import StepCircle from '../steppers/StepCircle.svelte';
-  import { engineeringProcessEditing } from '../../stores.svelte';
+  import { corePlugins, engineeringProcessEditing } from '../../stores.svelte';
   import { createPluginInstance } from '../../pluginGroupOps';
+  import { resolveWorkflowPlugin } from '../../../plugins/plugin-catalog';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -90,6 +91,10 @@
 
   function toggleGroupSelection(group: PluginGroup) {
     selectedGroupTitle = selectedGroupTitle === group.title ? null : group.title;
+  }
+
+  function getPluginIcon(plugin: Plugin): string | undefined {
+    return resolveWorkflowPlugin(plugin, corePlugins.plugins).icon;
   }
 
   function handleSort(e: PluginDndEvent, group: PluginGroup) {
@@ -186,6 +191,7 @@
             onfinalize={(e) => handleFinalize(e, group)}
           >
             {#each group.plugins as plugin, pluginIndex (plugin.id)}
+              {@const icon = getPluginIcon(plugin)}
               <div
                 data-id={plugin.id}
                 animate:flip={{duration: 100}}
@@ -200,6 +206,9 @@
                       </div>
                     {/if}
 
+                      {#if icon}
+                        <span class="material-icons plugin-list__item-icon" aria-hidden="true">{icon}</span>
+                      {/if}
                       <span class="plugin-list__item-name">{plugin.name}</span>
                     </div>
 
@@ -374,6 +383,12 @@
     font-weight: 600;
     color: var(--primary-base);
     user-select: none;
+  }
+
+  .plugin-list__item-icon {
+    color: var(--primary-base);
+    font-size: 20px;
+    flex-shrink: 0;
   }
 
   .plugin-list__item-action {

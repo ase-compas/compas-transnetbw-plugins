@@ -2,7 +2,6 @@
   import { closeDialog } from "@oscd-transnet-plugins/oscd-services/dialog";
   import OscdBaseDialog from "libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte";
   import OscdInput from "libs/oscd-component/src/oscd-input/OscdInput.svelte";
-  import OscdSelect from "libs/oscd-component/src/oscd-select/OscdSelect.svelte";
 
   interface Props { open: boolean; groups: number; }
 
@@ -30,6 +29,8 @@
     title="Add Groups"
     confirmActionText="Add"
     maxWidth="600px"
+    height="auto"
+    maxHeight="80vh"
     bind:open
     onConfirm={addGroup}
     onCancel={cancel}
@@ -46,13 +47,14 @@
                 required
                 />
 
-            <OscdSelect
-                data={groupPositions}
-                label="Position"
-                variant="outlined"
-                bind:value={position}
-                required
-            />
+            <label class="position-field">
+                <span>Position</span>
+                <select bind:value={position} required>
+                    {#each groupPositions as option}
+                        <option value={option.value}>{option.label}</option>
+                    {/each}
+                </select>
+            </label>
         </div>
     {/snippet}
 </OscdBaseDialog>
@@ -64,6 +66,31 @@
         flex-direction: column;
         gap: 1rem;
     }
+
+    .position-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        color: var(--base01);
+        font-family: var(--ew-font-family, 'Inter', sans-serif);
+        font-size: var(--ew-font-size-small, 0.75rem);
+    }
+
+    .position-field select {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 3.5rem;
+        padding: 0 0.75rem;
+        border: 1px solid #b2c7cb;
+        border-radius: 4px;
+        background: var(--white);
+        color: var(--base03);
+        font: inherit;
+        font-size: 1rem;
+    }
+
+    .position-field select:focus {
+        border-color: var(--primary-base);
+        outline: 1px solid var(--primary-base);
+    }
 </style>
-
-

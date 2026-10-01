@@ -8,6 +8,7 @@ import {
 const hostPlugin = (overrides: Partial<CoMPASPlugin> = {}): CoMPASPlugin => ({
   active: false,
   activeByDefault: false,
+  icon: 'developer_board',
   kind: 'editor',
   name: 'IED',
   requiresDoc: true,
@@ -36,6 +37,7 @@ describe('plugin catalog', () => {
       resolveWorkflowPlugin(processPlugin(), [hostPlugin()]),
     ).toMatchObject({
       catalogId: 'editor:ied',
+      icon: 'developer_board',
       sourceUrl: '/plugins/src/editors/IED.js',
       src: '/external-plugins/IedEditor.js',
       tag: expect.stringMatching(/^oscd-plugin[a-f0-9]{16}$/),

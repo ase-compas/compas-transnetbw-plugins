@@ -10,6 +10,7 @@ export function getFilteredCorePlugins(searchTerm: string): Plugin[] {
   const allPlugins = (corePlugins.plugins ?? []).map((p) => ({
     id: derivePluginId(p.src, p.name),
     catalogId: getHostPluginCatalogId(p),
+    icon: p.icon,
     name: p.name,
     src: p.src,
     type: 'internal' as const,

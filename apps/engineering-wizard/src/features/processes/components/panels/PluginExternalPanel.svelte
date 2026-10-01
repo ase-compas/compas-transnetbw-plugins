@@ -119,6 +119,9 @@
                 <OscdDragIndicatorIcon />
               </div>
 
+              {#if plugin.icon}
+                <span class="material-icons plugin-icon" aria-hidden="true">{plugin.icon}</span>
+              {/if}
               <p class="plugin-name">{plugin.name}</p>
             </div>
 
@@ -194,6 +197,12 @@
     pointer-events: none;
   }
 
+  .plugin-icon {
+    color: var(--primary-base);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
   .plugin-add-btn {
     display: inline-flex;
     align-items: center;
@@ -220,4 +229,3 @@
     opacity: 0.45;
   }
 </style>
-
