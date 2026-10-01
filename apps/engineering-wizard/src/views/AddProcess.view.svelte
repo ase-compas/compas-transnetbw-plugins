@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import Button from '@smui/button';
   import CircularProgress from '@smui/circular-progress';
-  import type { PluginGroup, Process } from '@oscd-transnet-plugins/shared';
+  import type { PluginGroup } from '@oscd-transnet-plugins/shared';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
   import ProcessInfoBar from '../components/shared/ProcessInfoBar.svelte';
@@ -19,11 +19,11 @@
   } from '../features/processes/pluginGroupOps';
 
   interface Props {
-    handleCancel: () => void;
-    handleSaved: (process: Process) => void;
+    /** Auto-provided by the router: returns to the previous route. Called after save or cancel. */
+    onExit: () => void;
   }
 
-  let { handleCancel, handleSaved }: Props = $props();
+  let { onExit }: Props = $props();
 
   let name = $state('');
   let nameInvalid = $derived(name.trim().length === 0);
@@ -77,7 +77,7 @@
     try {
       await saveProcess(created);
       toastService.success('Process saved', `"${created.name}" was saved to the database.`);
-      handleSaved(created);
+      onExit();
     } catch {
       toastService.error('Save failed', `"${created.name}" was added locally but could not be saved to the database.`);
     } finally {
@@ -87,7 +87,7 @@
 
   function cancel() {
     engineeringProcessEditing.isEditing = false;
-    handleCancel();
+    onExit();
   }
 
   onMount(() => { engineeringProcessEditing.isEditing = true; });

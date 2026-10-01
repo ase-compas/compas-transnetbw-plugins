@@ -3,6 +3,7 @@
   import ProcessEditView from './views/engineering-process-detail/ProcessEdit.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
   import AddProcessView from './views/AddProcess.view.svelte';
+  import ValidationRulesListView from './views/ValidationRulesList.view.svelte';
   import { type Process } from '@oscd-transnet-plugins/shared';
   import { onMount } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
@@ -18,6 +19,7 @@
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
   import { documentStore } from './documentStore.svelte';
+  import { createRouter, RouterView } from '@oscd-transnet-plugins/oscd-router';
 
   import 'svelte-material-ui/bare.css';
   import "../public/material-icon.css"
@@ -51,7 +53,17 @@
     host
   }: Props = $props();
 
-  let isCreatingProcess = $state(false);
+  type WizardRoute = 'list' | 'add' | 'edit' | 'rules';
+
+  const router = createRouter<WizardRoute>(
+    [
+      { name: 'list', component: ProcessesListView },
+      { name: 'add', component: AddProcessView },
+      { name: 'edit', component: ProcessEditView },
+      { name: 'rules', component: ValidationRulesListView },
+    ],
+    'list',
+  );
 
   function restoreWorkflowState(document: XMLDocument | undefined) {
     if (!document) return;
@@ -128,40 +140,32 @@
   function handleEdit(process: Process) {
     engineeringProcessEditing.isEditing = true;
     selectedEngineeringProcess.process = process;
+    void router.navigate('edit');
   }
 
   function addNewProcess() {
-    engineeringProcessEditing.isEditing = false;
     selectedEngineeringProcess.process = null;
-    isCreatingProcess = true;
+    void router.navigate('add');
   }
 
-  function cancelCreate() {
-    engineeringProcessEditing.isEditing = false;
-    isCreatingProcess = false;
-  }
-
-  function handleCreated(_proc: Process) {
-    isCreatingProcess = false;
-  }
-</script>
+  function showValidationRules() {
+    void router.navigate('rules');
+  }</script>
 
 <DialogHost />
 
 <div class="app-root">
-  {#if isCreatingProcess}
-    <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-  {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
-    <ProcessEditView />
-  {:else}
-    <ProcessesListView
-      handleView={handleEdit}
-      handleEdit={handleEdit}
-      handleStart={startProcess}
-      handleAddNew={addNewProcess}
-      docName={docName}
-    />
-  {/if}
+  <RouterView
+    {router}
+    props={{
+      docName,
+      handleView: handleEdit,
+      handleEdit,
+      handleStart: startProcess,
+      handleAddNew: addNewProcess,
+      handleViewAllRules: showValidationRules,
+    }}
+  />
 </div>
 <OscdToastHost />
 <style>
