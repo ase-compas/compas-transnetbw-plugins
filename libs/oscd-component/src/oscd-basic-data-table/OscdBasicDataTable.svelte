@@ -285,6 +285,7 @@
 
   :global(td.oscd-basic-table__actions-cell) {
     white-space: nowrap;
+    vertical-align: middle;
   }
 
   :global(.mdc-data-table__row.oscd-basic-table__row--clickable > .mdc-data-table__cell) {

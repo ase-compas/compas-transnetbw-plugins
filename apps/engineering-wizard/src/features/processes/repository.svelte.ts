@@ -7,7 +7,7 @@ import {
 import { parseProcessesXml, parseXmlString } from './xml-parser';
 import { processService } from '../../bootstrap';
 import type { VersionBump } from './process.service';
-import { updateProcessMetadata } from './mutations.svelte';
+import { updateProcessMetadata, removeProcess } from './mutations.svelte';
 
 const recentlySavedProcesses = new Map<string, Process>();
 
@@ -120,5 +120,18 @@ export async function saveProcess(
     throw err;
   } finally {
     engineeringProcessesStatus.saving = false;
+  }
+}
+
+export async function deleteProcess(process: Process): Promise<void> {
+  engineeringProcessesStatus.saveError = '';
+
+  try {
+    await processService.delete(process.id);
+    removeProcess(process.id);
+  } catch (err) {
+    engineeringProcessesStatus.saveError =
+      err instanceof Error ? err.message : 'Failed to delete process.';
+    throw err;
   }
 }
