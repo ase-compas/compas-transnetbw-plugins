@@ -65,8 +65,8 @@
   });
 
   const rowActions = [
-    { icon: 'edit', callback: (row) => update(row), disabled: () => false },
-    { icon: 'delete', callback: (row) => remove(row), disabled: () => false }
+    { icon: 'edit', callback: (row) => update(row), disabled: () => false, ariaLabel: 'Edit location' },
+    { icon: 'delete', callback: (row) => remove(row), disabled: () => false, ariaLabel: 'Delete location' }
   ];
 
   function update(row: Location) {

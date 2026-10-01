@@ -113,7 +113,7 @@
     dropAnimationDisabled: true,
     dropTargetStyle: {},
     type: dragAndDropType,
-
+    autoAriaDisabled: true // disable arial so that child elements, e.g. Add Reference button, can be accessible
   }}
   onconsider={e => handleListConsider(e)}
   onfinalize={e => handleListFinalize(e)}
@@ -124,7 +124,8 @@
                items: [item],
                dragDisabled: true,
                dropAnimationDisabled: true,
-              dropTargetStyle: {},
+               dropTargetStyle: {},
+               autoAriaDisabled: true, // disable arial so that child elements, e.g. Add Reference button, can be accessible
               type: dragAndDropType
              }}
          onconsider={e => handleDropConsider(e, item.id)}

@@ -102,6 +102,18 @@ export class DataTypeService {
             };
         }
 
+        // Auto-repair: detect and create missing mandatory members
+        const missingMandatoryMembers = this.detectMissingMandatoryMembers(element, nsdDefs);
+        if (missingMandatoryMembers.length > 0) {
+            const autoRepairEdits = this.buildAutoRepairEditsForMissingMembers(element, missingMandatoryMembers, nsdDefs);
+            if (autoRepairEdits.length > 0) {
+                createAndDispatchEditEvent(this.hostElement, autoRepairEdits, {
+                    title: `Auto-repair: Add missing mandatory members to ${id}`,
+                    createHistoryEntry: false, // Silent repair, don't clutter undo history
+                });
+            }
+        }
+
         // Enrich DataType members with info from NSD definitions
         // Build children array by iterating over all NSD definitions (records)
         const members = Object.values(nsdDefs).map(def => {
@@ -549,6 +561,8 @@ export class DataTypeService {
      *
      * If `DataTypeTemplates` does not exist, it is created first and inserted into
      * the SCL root element with the new type as its first child.
+     * 
+     * All mandatory objects of the data type are created as empty elements, but without references configured.
      *
      * If `DataTypeTemplates` already exists, the new type is inserted in kind order:
      * `LNodeType -> DOType -> DAType -> EnumType`.
@@ -566,6 +580,7 @@ export class DataTypeService {
         }
 
         const newTypeElement = this.createDataTypeElement(typeKind, instanceType, id);
+        this.appendMandatoryMembers(newTypeElement, typeKind, instanceType);
         const title = `Create DataType ${id}`;
 
         const dataTypeTemplates = findDataTypeTemplatesElement(this.doc);
@@ -584,6 +599,19 @@ export class DataTypeService {
             title,
             createHistoryEntry: true,
         });
+    }
+
+    private appendMandatoryMembers(typeElement: Element, typeKind: TypeKind, instanceType: string): void {
+        const nsdDefinitions = this.nsdSchemaRegistry.getTypeDefinition(typeKind, instanceType);
+        if (!nsdDefinitions) {
+            return;
+        }
+
+        Object.entries(nsdDefinitions)
+            .filter(([, definition]) => definition.isMandatory)
+            .forEach(([memberName, definition]) => {
+                typeElement.appendChild(this.createMemberElement(memberName, definition));
+            });
     }
 
     /**
@@ -1036,6 +1064,62 @@ export class DataTypeService {
                 `Expected ${expectedTypeKind} with instance type ${expectedInstanceType}`
             );
         }
+    }
+
+    /**
+     * Detects mandatory members defined in NSD that are missing from the actual element.
+     * Returns an array of member names that are mandatory but not configured in the element.
+     * @param element The DataType element to check
+     * @param nsdDefs The NSD definitions for this element's type
+     * @returns Array of missing mandatory member names
+     */
+    private detectMissingMandatoryMembers(
+        element: Element,
+        nsdDefs: Record<string, NsdTypeDefinition>,
+    ): string[] {
+        const missingMembers: string[] = [];
+
+        Object.entries(nsdDefs).forEach(([memberName, memberDef]) => {
+            if (!memberDef.isMandatory) {
+                return; // Skip non-mandatory members
+            }
+
+            const configuredElement = this.findConfiguredMemberElement(element, memberDef);
+            if (!configuredElement) {
+                missingMembers.push(memberName);
+            }
+        });
+
+        return missingMembers;
+    }
+
+    /**
+     * Builds edit events to create missing mandatory members.
+     * Each missing member is created as an empty element (without type references).
+     * @param element The parent DataType element
+     * @param missingMemberNames Names of mandatory members to create
+     * @param nsdDefs NSD definitions for member properties
+     * @returns Array of EditV2 events to create the missing members
+     */
+    private buildAutoRepairEditsForMissingMembers(
+        element: Element,
+        missingMemberNames: string[],
+        nsdDefs: Record<string, NsdTypeDefinition>,
+    ): EditV2[] {
+        const edits: EditV2[] = [];
+        missingMemberNames.forEach(memberName => {
+            const memberDef = nsdDefs[memberName];
+            if (!memberDef) {
+                return;
+            }
+            const newMemberElement = this.createMemberElement(memberName, memberDef);
+            edits.push({
+                parent: element,
+                node: newMemberElement,
+                reference: null,
+            });
+        });
+        return edits;
     }
 
     private getMemberContext(id: string, memberName: string): { element: Element, memberDefinition: NsdTypeDefinition } {
