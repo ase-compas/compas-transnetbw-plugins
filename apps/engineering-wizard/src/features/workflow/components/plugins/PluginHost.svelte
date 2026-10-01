@@ -60,6 +60,7 @@
   }
 </script>
 
+<div class="plugin-host">
 {#if loadState.status === 'error'}
   <PluginLoadError
     message={loadState.error}
@@ -71,6 +72,31 @@
 {:else}
   <svelte:element
     this={tag}
-    use:setProps={{ doc, editCount, plugins, nsdoc, docName, docId, docs, locale, oscdApi, host }}
+    use:setProps={{
+      doc,
+      editCount,
+      docVersion: editCount,
+      plugins,
+      nsdoc,
+      docName,
+      docId,
+      docs,
+      locale,
+      oscdApi,
+      host,
+    }}
   />
 {/if}
+</div>
+
+<style>
+  /*
+   * DOM mount point for the plugin element. height: 100% keeps the percentage
+   * chain intact: :host { height: 100% } only resolves when this parent has a
+   * definite height. height: auto would collapse it to the plugin content.
+   * It is a similar Problem as with https://github.com/com-pas/open-scd/issues/173
+   */
+  .plugin-host {
+    height: 100%;
+  }
+</style>
