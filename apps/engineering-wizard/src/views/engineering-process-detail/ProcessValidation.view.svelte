@@ -63,16 +63,16 @@
       <div class="actions-cell">
         <button
           type="button"
-          class="icon-button"
+          class="action-btn action-btn--run"
           title="Run validation"
           aria-label="Run validation"
           onclick={() => handleValidate(item)}
         >
-          <OscdPlayCircleIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" />
+          <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
         </button>
         <button
           type="button"
-          class="icon-button"
+          class="action-btn action-btn--edit"
           title="Edit"
           aria-label="Edit validation"
           onclick={() => {
@@ -80,11 +80,11 @@
             onEditEntry?.(item, index);
           }}
         >
-          <OscdEditIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" />
+          <OscdEditIcon svgStyles="fill: var(--primary-base)" />
         </button>
         <button
           type="button"
-          class="icon-button"
+          class="action-btn action-btn--delete"
           title="Remove"
           aria-label="Remove validation"
           onclick={() => {
@@ -92,7 +92,7 @@
             onDeleteEntry?.(item, index);
           }}
         >
-          <OscdDeleteIcon svgStyles="fill: #FF203A; width: 18px; height: 18px;" />
+          <OscdDeleteIcon svgStyles="fill: var(--red)" />
         </button>
       </div>
     {/snippet}
@@ -102,33 +102,25 @@
 <style>
   .actions-cell {
     display: flex;
-    align-items: center;
     justify-content: flex-end;
-    gap: 4px;
   }
 
-  .icon-button {
-    box-sizing: border-box;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    margin: 0;
+  .action-btn {
+    background: transparent;
     border: none;
     border-radius: 4px;
-    background-color: var(--white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 0.25rem;
     cursor: pointer;
-    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
     transition: background-color 0.15s ease;
   }
 
-  .icon-button:hover {
-    background-color: #f2f2f2;
+  .action-btn:hover {
+    background-color: var(--base3);
   }
 
-  .icon-button:focus-visible {
+  .action-btn:focus-visible {
     outline: 2px solid var(--primary-base);
     outline-offset: 2px;
   }

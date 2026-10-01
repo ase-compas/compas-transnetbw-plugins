@@ -170,7 +170,7 @@
             variant="unelevated"
             aria-label="Continue process"
             onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
+            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
           >
             <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
             <Label>Continue</Label>
@@ -181,7 +181,7 @@
             variant="unelevated"
             aria-label="Start process"
             onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
+            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
           >
             <Icon><OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" /></Icon>
             <Label>Start</Label>
@@ -250,7 +250,6 @@
 
   .actions-cell {
     display: flex;
-    align-items: center;
     justify-content: flex-end;
     gap: 8px;
   }
@@ -261,7 +260,7 @@
     height: 36px;
     padding: 0;
     margin: 0;
-    border: none;
+    border: 1px solid #ccc;
     border-radius: 4px;
     background-color: var(--white);
     display: flex;
