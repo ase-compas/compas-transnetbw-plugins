@@ -1,5 +1,12 @@
 import type { ViewPlugin } from './viewPlugin';
-import { describePluginLoadError, getPluginLoadState, setPluginLoadState } from './plugin-load-status.svelte';
+import {
+  describePluginLoadError,
+  getPluginLoadState,
+  setPluginLoadState,
+} from './plugin-load-status.svelte';
+import { getPluginElementTag } from './plugin-element-tag';
+
+export { getPluginElementTag } from './plugin-element-tag';
 
 const inFlight = new Map<string, Promise<void>>();
 
@@ -17,16 +24,43 @@ function assertValidCustomElementName(tag: string) {
 
 const ALLOWED_SRC_PROTOCOLS = new Set(['http:', 'https:']);
 
-function assertSafePluginSrc(src: string): URL {
+function isLocalHostname(hostname: string): boolean {
+  return (
+    hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]'
+  );
+}
+
+export function resolvePluginModuleUrl(
+  src: string,
+  origin = window.location.origin,
+): URL {
   let resolved: URL;
   try {
-    resolved = new URL(src, window.location.origin);
+    resolved = new URL(src, origin);
   } catch {
     throw new Error(`Invalid plugin URL "${src}".`);
   }
+
   if (!ALLOWED_SRC_PROTOCOLS.has(resolved.protocol)) {
-    throw new Error(`Refusing to load plugin from unsupported URL scheme "${resolved.protocol}".`);
+    throw new Error(
+      `Refusing to load plugin from unsupported URL scheme "${resolved.protocol}".`,
+    );
   }
+
+  const hostOrigin = new URL(origin);
+  const isSameOrigin = resolved.origin === hostOrigin.origin;
+  const isSecure = resolved.protocol === 'https:';
+  const isLocalDevelopment =
+    resolved.protocol === 'http:' &&
+    isLocalHostname(resolved.hostname) &&
+    isLocalHostname(hostOrigin.hostname);
+
+  if (!isSecure && !isSameOrigin && !isLocalDevelopment) {
+    throw new Error(
+      `Refusing to load insecure cross-origin plugin "${resolved.href}".`,
+    );
+  }
+
   return resolved;
 }
 
@@ -39,10 +73,18 @@ function cacheBustedHref(url: URL): string {
 export async function ensureCustomElementDefined(
   plugin: ViewPlugin,
 ): Promise<void> {
-  if (plugin.type !== 'external') return;
-
-  const tag = plugin.id;
+  const tag = getPluginElementTag(plugin);
   assertValidCustomElementName(tag);
+
+  if (plugin.resolutionError) {
+    const error = new Error(plugin.resolutionError);
+    setPluginLoadState(tag, {
+      status: 'error',
+      error: plugin.resolutionError,
+      errorKind: 'plugin',
+    });
+    throw error;
+  }
 
   if (isDefined(tag)) {
     setPluginLoadState(tag, { status: 'loaded' });
@@ -57,12 +99,11 @@ export async function ensureCustomElementDefined(
 
   const p = (async () => {
     try {
-      const srcUrl = assertSafePluginSrc(plugin.src);
+      const srcUrl = resolvePluginModuleUrl(plugin.src);
       const href = retry ? cacheBustedHref(srcUrl) : srcUrl.href;
       const mod = await import(/* @vite-ignore */ href);
       const ctor = (mod?.default ?? mod?.element) as
-        | CustomElementConstructor
-        | undefined;
+        CustomElementConstructor | undefined;
 
       if (!ctor) {
         throw new Error(
@@ -84,7 +125,10 @@ export async function ensureCustomElementDefined(
       await customElements.whenDefined(tag);
       setPluginLoadState(tag, { status: 'loaded' });
     } catch (e) {
-      setPluginLoadState(tag, { status: 'error', error: describePluginLoadError(e) });
+      setPluginLoadState(tag, {
+        status: 'error',
+        ...describePluginLoadError(e),
+      });
       throw e;
     }
   })().finally(() => {
@@ -93,18 +137,4 @@ export async function ensureCustomElementDefined(
 
   inFlight.set(tag, p);
   return p;
-}
-
-export async function preloadAllPlugins(plugins: ViewPlugin[]) {
-  await Promise.all(
-    plugins
-      .filter((p) => p.type === 'external')
-      .map(async (p) => {
-        try {
-          await ensureCustomElementDefined(p);
-        } catch (e) {
-          console.error('Failed to preload plugin', p.id, e);
-        }
-      }),
-  );
 }

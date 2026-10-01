@@ -3,12 +3,10 @@
   import type { Plugin } from '@oscd-transnet-plugins/shared';
   import type { ViewPlugin } from '../features/workflow/viewPlugin';
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
-  import ExternalPluginView from '../features/workflow/components/plugins/ExternalPluginView.svelte';
   import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
   import WorkflowActions from '../components/shared/WorkflowActions.svelte';
   import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
-  import { preloadAllPlugins } from '../features/workflow/external-elements';
   import { readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { enterFullscreenView } from '../features/workflow/layout.svelte';
@@ -81,8 +79,7 @@
     return { groupIndex: null, pluginIndex: null };
   }
 
-  // Selecting a plugin is now purely a state switch — loading (and any failure/retry) of
-  // external plugins is handled reactively by <ExternalPluginView>, keyed off `selectedPlugin`.
+  // Selection is a state switch; PluginHost loads the selected plugin lazily.
   function onSelectPlugin(plugin?: Plugin) {
     if (!plugin) return;
 
@@ -119,8 +116,6 @@
   const previousPlugin = () => advance(-1);
 
   onMount(() => {
-    if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
-
     let initialPluginId: string | null = runningEngineeringProcess.lastSelectedPluginId;
     if (!initialPluginId && doc) {
       try {
@@ -172,33 +167,19 @@
 
 {#if selectedPlugin}
   <div class="plugin-container">
-    {#if selectedPlugin.type === 'internal'}
-      <PluginHost
-        plugin={selectedPlugin}
-        doc={doc}
-        {editCount}
-        {plugins}
-        {nsdoc}
-        {docName}
-        {docId}
-        {docs}
-        {locale}
-        {oscdApi}
-      />
-    {:else}
-      <ExternalPluginView
-        plugin={selectedPlugin}
-        {doc}
-        {editCount}
-        {docs}
-        {nsdoc}
-        {docName}
-        {docId}
-        {locale}
-        {oscdApi}
-        {host}
-      />
-    {/if}
+    <PluginHost
+      plugin={selectedPlugin}
+      {doc}
+      {editCount}
+      {plugins}
+      {nsdoc}
+      {docName}
+      {docId}
+      {docs}
+      {locale}
+      {oscdApi}
+      {host}
+    />
   </div>
 {/if}
 

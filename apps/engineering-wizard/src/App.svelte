@@ -16,10 +16,12 @@
     engineeringProcessEditing,
     engineeringProcesses,
     runningEngineeringProcess,
-    selectedEngineeringProcess
+    selectedEngineeringProcess,
+    corePlugins,
   } from './features/processes/stores.svelte';
   import { setRunningProcess } from './features/processes/mutations.svelte';
   import { getPluginsForProcess } from './features/processes/selectors';
+  import { resolveWorkflowPlugin } from './features/plugins/plugin-catalog';
   import { documentStore, updateDocumentStore } from './documentStore.svelte';
   import { validationCoordinator } from './services/validationCoordinator.svelte';
 
@@ -122,7 +124,11 @@
     if (doc) {
       validationCoordinator.runNow(selectedEngineeringProcess.process, doc);
     }
-    const viewPlugins = getPluginsForProcess(selectedEngineeringProcess.process);
+    const viewPlugins = getPluginsForProcess(
+      selectedEngineeringProcess.process,
+    ).map((plugin) =>
+      resolveWorkflowPlugin(plugin, corePlugins.plugins),
+    );
     await openDialog(WorkflowDialog as any, { doc, editCount, host, plugins: viewPlugins, nsdoc, docId, docName, docs, locale, oscdApi });
     if (doc && host) {
       writeEngineeringWorkflowState(doc, host, {

@@ -23,6 +23,7 @@ function parseSrcType(processEl: Element): PluginType {
 function parsePlugin(el: Element): Plugin {
   return {
     id: text(el.querySelector('id')),
+    catalogId: text(el.querySelector('catalogId')) || undefined,
     name: text(el.querySelector('name')),
     src: text(el.querySelector('src')) || undefined,
     sourceUrl: text(el.querySelector('sourceUrl')) || undefined,

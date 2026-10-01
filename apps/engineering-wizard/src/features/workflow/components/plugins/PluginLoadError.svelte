@@ -1,16 +1,34 @@
 <script lang="ts">
-  import { OscdLinkOffIcon, OscdRefreshIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import {
+    OscdErrorIcon,
+    OscdLinkOffIcon,
+    OscdRefreshIcon,
+  } from '@oscd-transnet-plugins/oscd-icons';
+  import type { PluginLoadErrorKind } from '../../plugin-load-status.svelte';
 
   interface Props {
     message?: string;
+    kind?: PluginLoadErrorKind;
     onRetry?: () => void;
   }
 
-  let { message = 'Failed to load the plugin.', onRetry }: Props = $props();
+  let {
+    message = 'The plugin could not be loaded.',
+    kind = 'plugin',
+    onRetry,
+  }: Props = $props();
 </script>
 
 <div class="plugin-error">
-  <OscdLinkOffIcon svgStyles="fill: var(--red); width: 32px; height: 32px;" />
+  {#if kind === 'offline'}
+    <OscdLinkOffIcon
+      svgStyles="fill: var(--red); width: 32px; height: 32px;"
+    />
+  {:else}
+    <OscdErrorIcon
+      svgStyles="fill: var(--red); width: 32px; height: 32px;"
+    />
+  {/if}
   <span class="message">{message}</span>
   {#if onRetry}
     <button type="button" class="retry-btn" onclick={onRetry}>
