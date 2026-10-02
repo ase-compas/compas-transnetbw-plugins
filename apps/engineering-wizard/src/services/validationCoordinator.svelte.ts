@@ -1,5 +1,6 @@
 import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
 import { getPluginsForProcess } from '../features/processes/selectors';
+import { getValidationsForScope } from '../features/processes/mutations.svelte';
 import { WORKFLOW_STATE_PRIVATE_TYPES } from '../features/workflow/document-state';
 import {
   describeValidationError,
@@ -59,8 +60,10 @@ function buildRequest(
   const processSnapshot = $state.snapshot(process) as Process;
   const plugins = getPluginsForProcess(processSnapshot).map((plugin) => ({
     id: plugin.id,
-    rules: (plugin.validations ?? []).filter(
-      (validation) => validation.processId === processSnapshot.id,
+    rules: getValidationsForScope(
+      plugin.validations,
+      processSnapshot.id,
+      plugin.id,
     ),
   }));
   const sclContent = xmlSerializer.serializeToString(
@@ -205,9 +208,8 @@ function cancel(): void {
 }
 
 function getPluginView(processId: string, plugin: Plugin): PluginValidationView {
-  const hasValidations = (plugin.validations ?? []).some(
-    (validation) => validation.processId === processId,
-  );
+  const hasValidations =
+    getValidationsForScope(plugin.validations, processId, plugin.id).length > 0;
   const rules = state.resultsByPluginId[plugin.id] ?? [];
   const erroredRules = rules.filter((rule) => rule.rejected);
   const failedRules = rules.filter((rule) => !rule.passed && !rule.rejected);

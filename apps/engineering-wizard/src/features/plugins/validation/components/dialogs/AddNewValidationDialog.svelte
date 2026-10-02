@@ -10,6 +10,10 @@
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
   import { validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
+  import {
+    elementCheckTypeHasCount,
+    isValidElementCount,
+  } from '../../validationRuleUi';
   import { buildAssertionExpression } from '../../xpathBuilder';
 
   interface Props {
@@ -42,10 +46,26 @@
     }
   });
 
+  function isRuleDefinitionValid(): boolean {
+    const hasMessage = !!validationEditor.ruleUi.message?.trim();
+    if (validationEditor.ruleUi.expertMode) {
+      return !!validationEditor.ruleUi.expertXPath?.trim() && hasMessage;
+    }
+    if (validationEditor.ruleUi.mode === 'attribute') {
+      return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
+    }
+
+    const hasElementName = !!validationEditor.ruleUi.elementName?.trim();
+    const countIsValid =
+      !elementCheckTypeHasCount(validationEditor.ruleUi.elementCheckType) ||
+      isValidElementCount(validationEditor.ruleUi.elementCount);
+    return hasElementName && countIsValid && hasMessage;
+  }
+
   const isValid = $derived(
     !!validationEditor.entry.title?.trim() &&
       !!validationEditor.entry.assert?.trim() &&
-      !!validationEditor.entry.message?.trim(),
+      isRuleDefinitionValid(),
   );
 
   const isStepValid = $derived.by(() => {
@@ -54,14 +74,7 @@
       return hasTitle;
     }
     if (currentStep === 'rule-definition') {
-      const hasMessage = !!validationEditor.ruleUi.message?.trim();
-      if (validationEditor.ruleUi.expertMode) {
-        return !!validationEditor.ruleUi.expertXPath?.trim() && hasMessage;
-      }
-      if (validationEditor.ruleUi.mode === 'attribute') {
-        return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
-      }
-      return !!validationEditor.ruleUi.elementName?.trim() && hasMessage;
+      return isRuleDefinitionValid();
     }
     return true;
   });
@@ -75,7 +88,6 @@
       context: (validationEditor.entry.context ?? '').trim(),
       assert: validationEditor.entry.assert.trim(),
       message: (validationEditor.entry.message ?? '').trim(),
-      ruleUi: $state.snapshot(validationEditor.ruleUi) as Record<string, unknown>,
     });
   }
 

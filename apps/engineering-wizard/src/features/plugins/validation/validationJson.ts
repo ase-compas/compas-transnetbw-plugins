@@ -47,14 +47,7 @@ function toValidation(
     throw new Error(`Validation ${index + 1} must be a JSON object.`);
   }
 
-  const ruleUi = value.ruleUi;
-  const normalizedRuleUi: Record<string, unknown> | undefined =
-    isRecord(ruleUi) ? ruleUi : undefined;
-  if (ruleUi !== undefined && !normalizedRuleUi) {
-    throw new Error(`Validation ${index + 1} "ruleUi" must be a JSON object.`);
-  }
-
-  const validation: XPathValidation = {
+  return {
     title: readRequiredString(value, 'title', index),
     description: readOptionalString(value, 'description'),
     context: readRequiredString(value, 'context', index),
@@ -63,9 +56,6 @@ function toValidation(
     processId,
     pluginId,
   };
-
-  if (normalizedRuleUi) validation.ruleUi = normalizedRuleUi;
-  return validation;
 }
 
 function getImportValidations(content: unknown): unknown[] {
@@ -83,26 +73,15 @@ function getImportValidations(content: unknown): unknown[] {
   return content.validations;
 }
 
-export function getValidationsForScope(
-  validations: XPathValidation[] | undefined,
-  processId: string,
-  pluginId: string,
-): XPathValidation[] {
-  return (validations ?? []).filter(
-    (validation) => validation.processId === processId && validation.pluginId === pluginId,
-  );
-}
-
 export function createValidationExport(validations: readonly XPathValidation[]): ValidationExport {
   return {
     formatVersion: VALIDATION_EXPORT_FORMAT_VERSION,
-    validations: validations.map(({ title, description, context, assert, message, ruleUi }) => ({
+    validations: validations.map(({ title, description, context, assert, message }) => ({
       title,
       description,
       context,
       assert,
-      ...(message === undefined ? {} : { message }),
-      ...(ruleUi === undefined ? {} : { ruleUi }),
+      message: message ?? '',
     })),
   };
 }

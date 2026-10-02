@@ -1,4 +1,9 @@
-import type { ElementCheckType, RuleUiState } from './validationRuleUi';
+import {
+  elementCheckTypeHasCount,
+  isValidElementCount,
+  type ElementCheckType,
+  type RuleUiState,
+} from './validationRuleUi';
 
 /** Extract the last element name from an XPath context path, e.g. `//SCL/Substation/VoltageLevel` → `VoltageLevel`. */
 export function lastNodeFromContext(ctx: string): string {
@@ -65,7 +70,13 @@ function buildElementAssertion(ui: RuleUiState): string {
   const el = (ui.elementName ?? '').trim();
   if (!el) return '';
 
-  const n = ui.elementCount ?? 1;
+  if (
+    elementCheckTypeHasCount(ui.elementCheckType) &&
+    !isValidElementCount(ui.elementCount)
+  ) {
+    return '';
+  }
+  const n = ui.elementCount;
 
   switch (ui.elementCheckType as ElementCheckType) {
     case 'exists':    return `count(${el}) > 0`;

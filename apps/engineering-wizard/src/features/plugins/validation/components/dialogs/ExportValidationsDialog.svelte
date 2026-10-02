@@ -8,8 +8,8 @@
   import {
     createValidationExportFileName,
     downloadValidationExport,
-    getValidationsForScope,
   } from '../../validationJson';
+  import { getValidationsForScope } from '../../../../processes/mutations.svelte';
 
   interface Props {
     open?: boolean;

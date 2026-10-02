@@ -1,11 +1,10 @@
 <script lang="ts">
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
-  import { buildAssertionExpression } from '../../../xpathBuilder';
   import {
     validationEditor,
-    parseAssertionToRuleUi,
-    isExpertXPathParseable,
+    enterExpertMode,
+    exitExpertMode,
   } from '../../../validationEditorStore.svelte';
 
   import AttributeRuleEditor from '../../AttributeRuleEditor.svelte';
@@ -35,33 +34,6 @@
     if (!ctx && !assert) return '';
     return `Context:   ${ctx || '—'}\nAssertion: ${assert || '—'}`;
   });
-
-  function enterExpertMode() {
-    // Only seed from the form builder on first entry. Once the user has typed
-    // a custom XPath, preserve it across mode toggles (per user requirement).
-    if (!validationEditor.ruleUi.expertXPath.trim()) {
-      validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);
-    }
-    validationEditor.ruleUi.expertMode = true;
-  }
-
-  function exitExpertMode() {
-    const xpath = validationEditor.ruleUi.expertXPath.trim();
-    // Preserve expertXPath in memory — user can switch back without losing their work.
-    if (isExpertXPathParseable(xpath, validationEditor.ruleUi.message)) {
-      const parsed = parseAssertionToRuleUi(xpath, validationEditor.ruleUi.message);
-      // Keep expertXPath so toggling back to expert mode restores their input
-      validationEditor.ruleUi = {
-        ...parsed,
-        expertMode: false,
-        expertXPath: validationEditor.ruleUi.expertXPath,
-      };
-    } else {
-      // XPath can't be represented in the form builder — silently fall back.
-      // Form fields keep their previous values; expertXPath stays for when they return.
-      validationEditor.ruleUi.expertMode = false;
-    }
-  }
 
   function handleExpertClick() {
     if (!validationEditor.ruleUi.expertMode) {

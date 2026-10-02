@@ -2,7 +2,7 @@
   import Button, { Group, GroupItem } from '@smui/button';
   import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import { addValidationToPluginInProcess } from '../../../processes/mutations.svelte';
+  import { addValidationsToPluginInProcess } from '../../../processes/mutations.svelte';
   import {
     MAX_VALIDATION_IMPORT_BYTES,
     parseValidationImportJson,
@@ -40,9 +40,11 @@
         activeProcess.id,
         activePlugin.id,
       );
-      for (const validation of imported) {
-        addValidationToPluginInProcess(activeProcess.id, activePlugin.id, validation);
-      }
+      addValidationsToPluginInProcess(
+        activeProcess.id,
+        activePlugin.id,
+        imported,
+      );
       toastService.success(
         'Validations imported',
         `${imported.length} validation${imported.length === 1 ? '' : 's'} added to "${activePlugin.name}".`,

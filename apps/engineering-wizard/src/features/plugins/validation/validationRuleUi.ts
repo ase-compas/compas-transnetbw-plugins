@@ -46,5 +46,12 @@ export const ELEMENT_CHECK_TYPES: { key: ElementCheckType; label: string; hasCou
   { key: 'atMost',    label: 'At most N',      hasCount: true  },
 ];
 
-export { ALL_SCL_ELEMENTS as ELEMENT_OPTIONS } from './scl-schema';
+export function elementCheckTypeHasCount(type: ElementCheckType): boolean {
+  return ELEMENT_CHECK_TYPES.find((check) => check.key === type)?.hasCount ?? false;
+}
 
+export function isValidElementCount(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
+export { ALL_SCL_ELEMENTS as ELEMENT_OPTIONS } from './scl-schema';
