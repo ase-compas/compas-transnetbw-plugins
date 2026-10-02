@@ -21,8 +21,10 @@ export type RuleUiState = {
   elementName: string;
   elementCount: number;
   message: string;
-  /** Full element path selected by the user, e.g. `//SCL/Substation/VoltageLevel`. */
-  elementPath: string;
+  /** When true, the user writes a raw XPath assertion instead of using the form builder. */
+  expertMode: boolean;
+  /** The raw XPath assertion typed by the user in expert mode. */
+  expertXPath: string;
 };
 
 export const CONDITIONS = [
@@ -44,5 +46,12 @@ export const ELEMENT_CHECK_TYPES: { key: ElementCheckType; label: string; hasCou
   { key: 'atMost',    label: 'At most N',      hasCount: true  },
 ];
 
-export { ALL_SCL_ELEMENTS as ELEMENT_OPTIONS } from './scl-schema';
+export function elementCheckTypeHasCount(type: ElementCheckType): boolean {
+  return ELEMENT_CHECK_TYPES.find((check) => check.key === type)?.hasCount ?? false;
+}
 
+export function isValidElementCount(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
+export { ALL_SCL_ELEMENTS as ELEMENT_OPTIONS } from './scl-schema';

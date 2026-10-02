@@ -1,5 +1,6 @@
 import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 import { documentStore } from '../documentStore.svelte';
+import { describeNetworkError } from '../utils/network-error';
 
 const API_URL =
   import.meta.env.VITE_VALIDATION_API_URL ??
@@ -56,4 +57,12 @@ function isValidationResult(data: unknown): data is ValidationResult {
     typeof (data as Record<string, unknown>).valid === 'boolean' &&
     Array.isArray((data as Record<string, unknown>).errors)
   );
+}
+
+export function describeValidationError(error: unknown): string {
+  return describeNetworkError(error, {
+    offline: 'You appear to be offline. Validation will resume once your connection is restored.',
+    unreachable: 'Could not reach the validation service. Check your connection and try again.',
+    fallback: 'Validation request failed.',
+  });
 }

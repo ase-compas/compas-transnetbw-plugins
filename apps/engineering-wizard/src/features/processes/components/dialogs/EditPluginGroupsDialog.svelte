@@ -59,6 +59,8 @@
   title="Edit Groups"
   confirmActionText="Save"
   maxWidth="600px"
+  height="auto"
+  maxHeight="80vh"
   bind:open
   onConfirm={save}
   onCancel={cancel}
@@ -115,5 +117,4 @@
     align-items: center;
   }
 </style>
-
 

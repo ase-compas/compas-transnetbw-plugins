@@ -1,16 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import type { Plugin } from '@oscd-transnet-plugins/shared';
   import type { ViewPlugin } from '../features/workflow/viewPlugin';
   import PluginHost from '../features/workflow/components/plugins/PluginHost.svelte';
   import PluginGroupsStepper from '../components/shared/PluginGroupsStepper.svelte';
   import WorkflowTitle from '../components/shared/WorkflowTitle.svelte';
-  import WorkflowActions from '../components/shared/WorkflowActions.svelte';  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
-  import { ensureCustomElementDefined, preloadAllPlugins } from '../features/workflow/external-elements';
-  import { writeEngineeringWorkflowState, readEngineeringWorkflowState } from '../features/workflow/document-state';
+  import WorkflowActions from '../components/shared/WorkflowActions.svelte';
+  import { selectedEngineeringProcess } from '../features/processes/stores.svelte';
+  import { readEngineeringWorkflowState } from '../features/workflow/document-state';
   import { setLastSelectedPluginId } from '../features/processes/mutations.svelte';
   import { enterFullscreenView } from '../features/workflow/layout.svelte';
   import { runningEngineeringProcess } from '../features/processes/stores.svelte';
-  import { pluginValidationStatuses, validationKey } from '../services/validationStatusStore.svelte';
+  import {
+    validationCoordinator,
+    type PluginValidationView,
+  } from '../services/validationCoordinator.svelte';
 
   interface Props {
     doc: XMLDocument | undefined;
@@ -50,15 +54,12 @@
 
   let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
 
-  // Project composite-keyed validation statuses into a pluginId-keyed map for the stepper
-  let processValidationStatuses = $derived.by(() => {
+  let pluginValidationViews = $derived.by(() => {
     const processId = runningEngineeringProcess.process?.id;
-    if (!processId) return {};
-    const result: Record<string, typeof pluginValidationStatuses.statuses[string]> = {};
+    if (!processId) return {} as Record<string, PluginValidationView>;
+    const result: Record<string, PluginValidationView> = {};
     for (const plugin of plugins) {
-      const key = validationKey(processId, plugin.id);
-      const status = pluginValidationStatuses.statuses[key];
-      if (status) result[plugin.id] = status;
+      result[plugin.id] = validationCoordinator.getPluginView(processId, plugin);
     }
     return result;
   });
@@ -78,25 +79,22 @@
     return { groupIndex: null, pluginIndex: null };
   }
 
-  async function onSelectPlugin(plugin?: ViewPlugin) {
+  // Selection is a state switch; PluginHost loads the selected plugin lazily.
+  function onSelectPlugin(plugin?: Plugin) {
     if (!plugin) return;
 
-    if (selectedPlugin?.id === plugin.id) return;
+    const viewPlugin = plugins.find((candidate) => candidate.id === plugin.id);
+    if (!viewPlugin) return;
 
-    await ensureCustomElementDefined(plugin);
-    selectedPlugin = plugin;
+    if (selectedPlugin?.id === viewPlugin.id) return;
 
-    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(plugin.id);
+    selectedPlugin = viewPlugin;
+
+    const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(viewPlugin.id);
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = pluginIndex;
 
-    try {
-      if (doc && host) writeEngineeringWorkflowState(doc, host, { lastPluginId: plugin.id });
-    } catch (e) {
-      console.warn('[EngineeringWizard] Failed to persist plugin selection:', e);
-    }
-
-    setLastSelectedPluginId(plugin.id);
+    setLastSelectedPluginId(viewPlugin.id);
   }
 
   function advance(step: number) {
@@ -110,26 +108,14 @@
     else if (nextIndexUnbounded >= plugins.length) nextIndex = plugins.length - 1;
 
     if (nextIndex !== currentIndex) {
-      void onSelectPlugin(plugins[nextIndex]);
+      onSelectPlugin(plugins[nextIndex]);
     }
   }
 
   const nextPlugin = () => advance(1);
   const previousPlugin = () => advance(-1);
 
-  function setProps(node: HTMLElement, props: Record<string, unknown>) {
-    Object.assign(node, props);
-
-    return {
-      update(newProps: Record<string, unknown>) {
-        Object.assign(node, newProps);
-      },
-    };
-  }
-
   onMount(() => {
-    if (plugins.length) preloadAllPlugins(plugins).catch(console.error);
-
     let initialPluginId: string | null = runningEngineeringProcess.lastSelectedPluginId;
     if (!initialPluginId && doc) {
       try {
@@ -145,7 +131,7 @@
       const { groupIndex, pluginIndex } = findGroupAndPluginIndexById(initialPlugin.id);
       selectedGroupIndex = groupIndex;
       selectedPluginIndex = pluginIndex;
-      void onSelectPlugin(initialPlugin);
+      onSelectPlugin(initialPlugin);
     }
 
     return enterFullscreenView();
@@ -166,7 +152,8 @@
     expandedGroupBorderColor="white"
     bind:selectedGroupIndex
     bind:selectedPluginIndex
-    validationStatuses={processValidationStatuses}
+    validationViews={pluginValidationViews}
+    autoSelect={false}
   />
 
   <WorkflowActions
@@ -180,25 +167,19 @@
 
 {#if selectedPlugin}
   <div class="plugin-container">
-    {#if selectedPlugin.type === 'internal'}
-      <PluginHost
-        plugin={selectedPlugin}
-        doc={doc}
-        {editCount}
-        {plugins}
-        {nsdoc}
-        {docName}
-        {docId}
-        {docs}
-        {locale}
-        {oscdApi}
-      />
-    {:else}
-      <svelte:element
-        this={selectedPlugin.id}
-        use:setProps={{ doc, editCount, docVersion: editCount, docs, nsdoc, docName, docId, locale, oscdApi, host }}
-      />
-    {/if}
+    <PluginHost
+      plugin={selectedPlugin}
+      {doc}
+      {editCount}
+      {plugins}
+      {nsdoc}
+      {docName}
+      {docId}
+      {docs}
+      {locale}
+      {oscdApi}
+      {host}
+    />
   </div>
 {/if}
 

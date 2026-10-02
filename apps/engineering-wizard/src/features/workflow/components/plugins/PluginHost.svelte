@@ -1,41 +1,25 @@
 <script lang="ts">
-  function pluginTag(uri: string): string {
-    let h1 = 0xdeadbeef,
-      h2 = 0x41c6ce57;
-    for (let i = 0, ch; i < uri.length; i++) {
-      ch = uri.charCodeAt(i);
-      h1 = Math.imul(h1 ^ ch, 2654435761);
-      h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
-    h1 =
-      Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^
-      Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2 =
-      Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^
-      Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-    return (
-      'oscd-plugin' +
-      ((h2 >>> 0).toString(16).padStart(8, '0') +
-        (h1 >>> 0).toString(16).padStart(8, '0'))
-    );
-  }
-
-  interface Plugin {
-    src: string;
-  }
+  import type { ViewPlugin } from '../../viewPlugin';
+  import {
+    ensureCustomElementDefined,
+    getPluginElementTag,
+  } from '../../external-elements';
+  import { getPluginLoadState } from '../../plugin-load-status.svelte';
+  import PluginLoadingIndicator from './PluginLoadingIndicator.svelte';
+  import PluginLoadError from './PluginLoadError.svelte';
 
   interface Props {
-    plugin?: Plugin;
-
+    plugin: ViewPlugin;
     doc?: XMLDocument;
     editCount?: number;
-    plugins?: Plugin[];
+    plugins?: ViewPlugin[];
     nsdoc?: any;
     docName?: string;
     docId?: string;
     docs?: Record<string, XMLDocument>;
     locale?: string;
     oscdApi?: any;
+    host?: HTMLElement;
   }
 
   let {
@@ -48,51 +32,62 @@
     docId,
     docs,
     locale,
-    oscdApi
+    oscdApi,
+    host,
   }: Props = $props();
 
-  let container: HTMLDivElement | null = null;
-  let el: any = null;
-  let currentTag = '';
+  let tag = $derived(getPluginElementTag(plugin));
+  let loadState = $derived(getPluginLoadState(tag));
 
-  function syncProps(target: any) {
-    target.doc = doc;
-    target.editCount = editCount;
-    target.docVersion = editCount;
-    target.plugins = plugins;
-    target.nsdoc = nsdoc;
-    target.docName = docName;
-    target.docId = docId;
-    target.docs = docs;
-    target.locale = locale;
-    if (oscdApi) target.oscdApi = oscdApi;
+  function load() {
+    ensureCustomElementDefined(plugin).catch(() => {});
   }
 
   $effect(() => {
-    if (!container) return;
-
-    if (!plugin?.src) {
-      container.innerHTML = '';
-      el = null;
-      currentTag = '';
-      return;
-    }
-
-    const newTag = pluginTag(plugin.src);
-
-    if (newTag !== currentTag) {
-      currentTag = newTag;
-      container.innerHTML = '';
-      el = document.createElement(newTag);
-      syncProps(el);
-      container.appendChild(el);
-    } else if (el) {
-      syncProps(el);
-    }
+    plugin.src;
+    tag;
+    load();
   });
+
+  function setProps(node: HTMLElement, props: Record<string, unknown>) {
+    Object.assign(node, props);
+
+    return {
+      update(newProps: Record<string, unknown>) {
+        Object.assign(node, newProps);
+      },
+    };
+  }
 </script>
 
-<div class="plugin-host" bind:this={container}></div>
+<div class="plugin-host">
+{#if loadState.status === 'error'}
+  <PluginLoadError
+    message={loadState.error}
+    kind={loadState.errorKind}
+    onRetry={plugin.resolutionError ? undefined : load}
+  />
+{:else if loadState.status !== 'loaded'}
+  <PluginLoadingIndicator />
+{:else}
+  <svelte:element
+    this={tag}
+    use:setProps={{
+      doc,
+      editCount,
+      docVersion: editCount,
+      plugins,
+      nsdoc,
+      docName,
+      docId,
+      docs,
+      locale,
+      oscdApi,
+      host,
+    }}
+  />
+{/if}
+</div>
 
 <style>
   /*

@@ -10,7 +10,11 @@
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
   import { validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
-  import { lastNodeOfPath } from '../../xpathBuilder';
+  import {
+    elementCheckTypeHasCount,
+    isValidElementCount,
+  } from '../../validationRuleUi';
+  import { buildAssertionExpression } from '../../xpathBuilder';
 
   interface Props {
     open: boolean;
@@ -31,27 +35,47 @@
   const isAtFirstStep = $derived(currentStepIndex === 0);
   const isAtLastStep = $derived(currentStepIndex === steps.length - 1);
 
+  // Sync ruleUi → entry regardless of which step is currently visible.
+  $effect(() => {
+    validationEditor.entry.message = validationEditor.ruleUi.message;
+
+    if (validationEditor.ruleUi.expertMode) {
+      validationEditor.entry.assert = validationEditor.ruleUi.expertXPath;
+    } else {
+      validationEditor.entry.assert = buildAssertionExpression(validationEditor.ruleUi);
+    }
+  });
+
+  function isRuleDefinitionValid(): boolean {
+    const hasMessage = !!validationEditor.ruleUi.message?.trim();
+    if (validationEditor.ruleUi.expertMode) {
+      return !!validationEditor.ruleUi.expertXPath?.trim() && hasMessage;
+    }
+    if (validationEditor.ruleUi.mode === 'attribute') {
+      return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
+    }
+
+    const hasElementName = !!validationEditor.ruleUi.elementName?.trim();
+    const countIsValid =
+      !elementCheckTypeHasCount(validationEditor.ruleUi.elementCheckType) ||
+      isValidElementCount(validationEditor.ruleUi.elementCount);
+    return hasElementName && countIsValid && hasMessage;
+  }
+
   const isValid = $derived(
     !!validationEditor.entry.title?.trim() &&
-    !!validationEditor.entry.assert?.trim() &&
-    !!validationEditor.entry.message?.trim(),
+      !!validationEditor.entry.assert?.trim() &&
+      isRuleDefinitionValid(),
   );
 
   const isStepValid = $derived.by(() => {
     if (currentStep === 'basic') {
       const hasTitle = !!validationEditor.entry.title?.trim();
-      if (validationEditor.ruleUi.mode === 'element') {
-        return hasTitle && !!lastNodeOfPath(validationEditor.ruleUi.elementPath);
-      }
       return hasTitle;
     }
     if (currentStep === 'rule-definition') {
-      const hasMessage = !!validationEditor.ruleUi.message?.trim();
-      if (validationEditor.ruleUi.mode === 'attribute') {
-        return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
-      }
-        return !!lastNodeOfPath(validationEditor.ruleUi.elementPath) && hasMessage;
-      }
+      return isRuleDefinitionValid();
+    }
     return true;
   });
 
@@ -61,10 +85,9 @@
     closeDialog('confirm', {
       ...$state.snapshot(validationEditor.entry),
       title: validationEditor.entry.title.trim(),
-      context: validationEditor.entry.context ?? '',
+      context: (validationEditor.entry.context ?? '').trim(),
       assert: validationEditor.entry.assert.trim(),
       message: (validationEditor.entry.message ?? '').trim(),
-      ruleUi: $state.snapshot(validationEditor.ruleUi) as Record<string, unknown>,
     });
   }
 

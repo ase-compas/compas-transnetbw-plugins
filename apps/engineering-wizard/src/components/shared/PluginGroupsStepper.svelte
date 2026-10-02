@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginGroup, Plugin } from '@oscd-transnet-plugins/shared';
-  import type { RuleResult } from '../../services/validationStatusStore.svelte';
+  import type { PluginValidationView } from '../../services/validationCoordinator.svelte';
   import ValidationBadgePopover from './ValidationBadgePopover.svelte';
 
   type PluginChip = { type: 'plugin'; plugin: Plugin; pluginIndex: number };
@@ -12,7 +12,8 @@
     expandedGroupBackground?: string;
     expandedGroupBorderColor?: string;
     selectPlugin?: (plugin: Plugin) => void;
-    validationStatuses?: Record<string, RuleResult[]>;
+    validationViews?: Record<string, PluginValidationView>;
+    autoSelect?: boolean;
   }
 
   let {
@@ -22,7 +23,8 @@
     expandedGroupBackground = 'var(--primary-base)',
     expandedGroupBorderColor = 'var(--primary-base)',
     selectPlugin,
-    validationStatuses = {},
+    validationViews = {},
+    autoSelect = true,
   }: Props = $props();
 
   // Normalize the incoming indices into valid, clamped values without mutating state.
@@ -58,13 +60,15 @@
   // Notify the parent whenever the resolved selection changes.
   $effect(() => {
     const plugin = resolvedPlugin;
-    if (plugin) selectPlugin?.(plugin);
+    if (autoSelect && plugin) selectPlugin?.(plugin);
   });
 
   function onSelectGroup(groupIndex: number) {
     const group = pluginGroups[groupIndex];
     selectedGroupIndex = groupIndex;
     selectedPluginIndex = group?.plugins?.length ? 0 : null;
+    const plugin = group?.plugins?.[0];
+    if (plugin) selectPlugin?.(plugin);
   }
 
   function onSelectPlugin(groupIndex: number, pluginIndex: number) {
@@ -74,10 +78,6 @@
     // reference hasn't changed (same object) and the $effect would not re-fire.
     const plugin = pluginGroups[groupIndex]?.plugins?.[pluginIndex];
     if (plugin) selectPlugin?.(plugin);
-  }
-
-  function failureCount(pluginId: string): number {
-    return (validationStatuses[pluginId] ?? []).filter((r) => !r.passed).length;
   }
 
   /** Returns all plugin chips for the group — no truncation. */
@@ -102,6 +102,7 @@
 
       {#if groupIndex === resolvedGroupIndex}
         {#each visiblePluginChips(group.plugins) as chip}
+          {@const view = validationViews[chip.plugin.id]}
           <button
             type="button"
             class="validation-groups__plugin"
@@ -109,11 +110,8 @@
             onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
           >
             <span>{chip.plugin.name}</span>
-            {#if failureCount(chip.plugin.id) > 0}
-              <ValidationBadgePopover
-                rules={validationStatuses[chip.plugin.id] ?? []}
-                active={chip.pluginIndex === selectedPluginIndex}
-              />
+            {#if view}
+              <ValidationBadgePopover {view} active={chip.pluginIndex === selectedPluginIndex} />
             {/if}
           </button>
         {/each}

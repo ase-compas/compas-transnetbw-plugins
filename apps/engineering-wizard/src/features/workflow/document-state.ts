@@ -5,10 +5,17 @@ import {
   dispatchEditEvent,
 } from '@oscd-transnet-plugins/oscd-event-api';
 import type { EditV2 } from '@oscd-transnet-plugins/oscd-event-api';
+import { markWorkflowStateEdit } from '../../documentStore.svelte';
 
 const PRIVATE_NS_PREFIX = 'compas';
 export const PRIVATE_WORKFLOW_PROCESS_ID = `${PRIVATE_NS_PREFIX}:workflowProcessId`;
 export const PRIVATE_WORKFLOW_LAST_PLUGIN_ID = `${PRIVATE_NS_PREFIX}:workflowLastPluginId`;
+
+/** All `Private` element types used to persist workflow UI state in the SCL document itself. */
+export const WORKFLOW_STATE_PRIVATE_TYPES = [
+  PRIVATE_WORKFLOW_PROCESS_ID,
+  PRIVATE_WORKFLOW_LAST_PLUGIN_ID,
+] as const;
 
 export type EngineeringWorkflowState = {
   processId: string | null;
@@ -49,7 +56,8 @@ function upsertPrivate(
   }
 
   if (existing) {
-    edits.push(buildSetTextContent(existing, text));
+    const current = (existing.textContent ?? '').trim();
+    if (current !== text) edits.push(buildSetTextContent(existing, text));
   } else {
     const header = findHeader(doc);
     edits.push(buildInsert(root(doc), createPrivate(doc, type, text), header));
@@ -84,5 +92,8 @@ export function writeEngineeringWorkflowState(
       patch.lastPluginId,
     );
 
-  return edits.length ? dispatchEditEvent(host, edits) : false;
+  if (edits.length === 0) return false;
+
+  markWorkflowStateEdit();
+  return dispatchEditEvent(host, edits);
 }

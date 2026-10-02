@@ -26,6 +26,24 @@ function findPlugin(procId: string, pluginId: string): Plugin | undefined {
     .find((pl) => pl.id === pluginId);
 }
 
+function isValidationForScope(
+  validation: XPathValidation,
+  procId: string,
+  pluginId: string,
+): boolean {
+  return validation.processId === procId && validation.pluginId === pluginId;
+}
+
+export function getValidationsForScope(
+  validations: XPathValidation[] | undefined,
+  procId: string,
+  pluginId: string,
+): XPathValidation[] {
+  return (validations ?? []).filter((validation) =>
+    isValidationForScope(validation, procId, pluginId),
+  );
+}
+
 /**
  * Returns the validations for a specific plugin scoped to a process,
  * together with their original indices in the raw validations array.
@@ -37,7 +55,7 @@ function getFilteredValidations(
 ): { validation: XPathValidation; rawIndex: number }[] {
   return validations
     .map((v, rawIndex) => ({ validation: v, rawIndex }))
-    .filter(({ validation: v }) => v.processId === procId && v.pluginId === pluginId);
+    .filter(({ validation }) => isValidationForScope(validation, procId, pluginId));
 }
 
 function mutatePluginValidations(
@@ -49,6 +67,18 @@ function mutatePluginValidations(
   if (!plugin) return;
   plugin.validations ??= [];
   fn(plugin.validations);
+}
+
+function withValidationScope(
+  validation: XPathValidation,
+  procId: string,
+  pluginId: string,
+): XPathValidation {
+  return {
+    ...validation,
+    processId: procId,
+    pluginId,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -131,7 +161,24 @@ export function addValidationToPluginInProcess(
   pluginId: string,
   validation: XPathValidation,
 ): void {
-  mutatePluginValidations(procId, pluginId, (v) => v.push(validation));
+  addValidationsToPluginInProcess(procId, pluginId, [validation]);
+}
+
+export function addValidationsToPluginInProcess(
+  procId: string,
+  pluginId: string,
+  validations: readonly XPathValidation[],
+): void {
+  if (validations.length === 0) return;
+
+  const plugin = findPlugin(procId, pluginId);
+  if (!plugin) return;
+  plugin.validations = [
+    ...(plugin.validations ?? []),
+    ...validations.map((validation) =>
+      withValidationScope(validation, procId, pluginId),
+    ),
+  ];
 }
 
 export function removeValidationFromPluginInProcess(
@@ -155,7 +202,13 @@ export function updateValidationInPluginInProcess(
   mutatePluginValidations(procId, pluginId, (validations) => {
     const filtered = getFilteredValidations(validations, procId, pluginId);
     const entry = filtered[entryIndex];
-    if (entry) validations[entry.rawIndex] = validation;
+    if (entry) {
+      validations[entry.rawIndex] = withValidationScope(
+        validation,
+        procId,
+        pluginId,
+      );
+    }
   });
 }
 

@@ -1,15 +1,16 @@
 import type { Plugin } from '@oscd-transnet-plugins/shared';
 import { corePlugins } from '../processes/stores.svelte';
 import { derivePluginId } from './id';
+import { getHostPluginCatalogId } from './plugin-catalog';
 
 /**
- * Returns all core plugins mapped to the `Plugin` shape, optionally filtered
- * by a search term. IDs are deterministic (derived from src), so the output
- * is referentially stable across re-renders for the same input.
+ * Returns all host-catalog plugins mapped to the process `Plugin` shape.
  */
 export function getFilteredCorePlugins(searchTerm: string): Plugin[] {
   const allPlugins = (corePlugins.plugins ?? []).map((p) => ({
     id: derivePluginId(p.src, p.name),
+    catalogId: getHostPluginCatalogId(p),
+    icon: p.icon,
     name: p.name,
     src: p.src,
     type: 'internal' as const,

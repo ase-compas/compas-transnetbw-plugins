@@ -17,6 +17,8 @@
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import AddNewValidationDialog
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
+  import ValidationJsonTransferActions
+    from '../../features/plugins/validation/components/ValidationJsonTransferActions.svelte';
   import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
@@ -26,12 +28,21 @@
 
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
+  interface Props {
+    onReturnToList: () => Promise<void>;
+  }
+
+  const { onReturnToList }: Props = $props();
+
   let currentStepIndex = $state(0);
   let currentStepId = $derived(STEP_IDS[currentStepIndex] ?? STEP_IDS[0]);
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
 
   let pluginGroups = $derived(selectedEngineeringProcess.process?.pluginGroups ?? []);
+  let processNameInvalid = $derived(
+    !selectedEngineeringProcess.process?.name?.trim(),
+  );
   let selectedPluginId: string | null = $state(null);
 
   let visitedSteps: EditorStepIds[] = $state([]);
@@ -65,12 +76,14 @@
   }
 
   function goToNextStep() {
+    if (saving) return;
     if (isAtLastStep) return;
     markStepVisited(currentStepId);
     currentStepIndex += 1;
   }
 
   function goToPreviousStep() {
+    if (saving) return;
     if (isAtFirstStep) return;
     currentStepIndex -= 1;
   }
@@ -93,7 +106,13 @@
     selectedEngineeringProcess.process = null;
   }
 
+  async function returnToProcessList() {
+    await onReturnToList();
+    leaveEditMode();
+  }
+
   async function exitEditing() {
+    if (saving) return;
     const proc = selectedEngineeringProcess.process;
     if (proc && hasChanges()) {
       const result = await openDialog(OscdDiscardChangesDialog, {
@@ -102,12 +121,16 @@
       if (result?.type !== 'confirm') return;
       restoreSnapshot();
     }
-    leaveEditMode();
+    await returnToProcessList();
   }
 
   /** Called by the Done button — skips the "save or discard?" prompt, goes straight to version bump. */
   async function handleDone() {
     const proc = selectedEngineeringProcess.process;
+    if (!proc?.name?.trim()) {
+      toastService.error('Process name required', 'Enter a process name before saving.');
+      return;
+    }
     if (proc && hasChanges()) {
       const versionResult = await openDialog(OscdVersionBumpDialog, {
         currentVersion: proc.version || '1.0.0',
@@ -126,10 +149,11 @@
         saving = false;
       }
     }
-    leaveEditMode();
+    await returnToProcessList();
   }
 
   function handleStepSelect(stepId: EditorStepIds) {
+    if (saving) return;
     const idx = STEP_IDS.indexOf(stepId);
     if (idx !== -1) currentStepIndex = idx;
   }
@@ -203,11 +227,11 @@
       isAtFirstStep={isAtFirstStep}
       isAtLastStep={isAtLastStep}
       nextDisabled={isAtLastStep}
-      doneDisabled={saving}
+      doneDisabled={saving || processNameInvalid}
     />
   </div>
 
-  <div class="step-content">
+  <div class="step-content" inert={saving} aria-busy={saving}>
     {#if currentStepId === 'process-definition'}
       {#if selectedEngineeringProcess.process}
         {@const proc = selectedEngineeringProcess.process}
@@ -217,7 +241,8 @@
           version={proc.version}
           current={true}
           description={proc.description ?? ''}
-          nameInvalid={proc.name?.trim().length === 0}
+          nameInvalid={processNameInvalid}
+          disabled={saving}
           onNameChange={(v) => updateProcessMetadata(proc.id, { name: v })}
           onDescriptionChange={(v) => updateProcessMetadata(proc.id, { description: v })}
         />
@@ -231,15 +256,21 @@
           bind:selectedGroupIndex
           bind:selectedPluginIndex
         />
-        <Button
-          variant="raised"
-          style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
-          onclick={handleAddValidationClick}
-          disabled={!selectedEngineeringProcess.process || !selectedPlugin}
-          aria-label="Add validation"
-        >
-          Add new validation
-        </Button>
+        <div class="validation-actions">
+          <ValidationJsonTransferActions
+            process={selectedEngineeringProcess.process}
+            plugin={selectedPlugin}
+          />
+          <Button
+            variant="raised"
+            style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+            onclick={handleAddValidationClick}
+            disabled={!selectedEngineeringProcess.process || !selectedPlugin}
+            aria-label="Add validation"
+          >
+            Add new validation
+          </Button>
+        </div>
       </div>
       <ProcessValidationView
         {selectedPlugin}
@@ -285,7 +316,11 @@
     padding-bottom: 12px;
   }
 
-  .header :global(button) {
+  .validation-actions {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
+
 </style>

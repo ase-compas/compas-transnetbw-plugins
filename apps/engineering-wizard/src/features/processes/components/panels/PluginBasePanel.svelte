@@ -14,8 +14,9 @@
   } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import StepCircle from '../steppers/StepCircle.svelte';
-  import { engineeringProcessEditing } from '../../stores.svelte';
+  import { corePlugins, engineeringProcessEditing } from '../../stores.svelte';
   import { createPluginInstance } from '../../pluginGroupOps';
+  import { resolveWorkflowPlugin } from '../../../plugins/plugin-catalog';
 
   type ItemActionContext = {
     group: PluginGroup;
@@ -90,6 +91,10 @@
 
   function toggleGroupSelection(group: PluginGroup) {
     selectedGroupTitle = selectedGroupTitle === group.title ? null : group.title;
+  }
+
+  function getPluginIcon(plugin: Plugin): string | undefined {
+    return resolveWorkflowPlugin(plugin, corePlugins.plugins).icon;
   }
 
   function handleSort(e: PluginDndEvent, group: PluginGroup) {
@@ -186,6 +191,7 @@
             onfinalize={(e) => handleFinalize(e, group)}
           >
             {#each group.plugins as plugin, pluginIndex (plugin.id)}
+              {@const icon = getPluginIcon(plugin)}
               <div
                 data-id={plugin.id}
                 animate:flip={{duration: 100}}
@@ -200,6 +206,9 @@
                       </div>
                     {/if}
 
+                      {#if icon}
+                        <span class="material-icons plugin-list__item-icon" aria-hidden="true">{icon}</span>
+                      {/if}
                       <span class="plugin-list__item-name">{plugin.name}</span>
                     </div>
 
@@ -256,8 +265,6 @@
 {/snippet}
 
 <style>
-  /* Header */
-
   .plugin-list__header {
     display: flex;
     align-items: center;
@@ -279,8 +286,6 @@
     align-items: center;
   }
 
-  /* Body */
-
   .plugin-list__body {
     display: flex;
     flex-direction: column;
@@ -301,8 +306,6 @@
     flex: 1;
   }
 
-  /* Group header as button */
-
   .plugin-list__group-header {
     display: flex;
     align-items: center;
@@ -320,8 +323,6 @@
     outline: 2px solid rgba(255, 255, 255, 0.8);
     outline-offset: 2px;
   }
-
-  /* Group plugins section */
 
   .plugin-list__group-plugins-section {
     display: flex;
@@ -376,6 +377,12 @@
     user-select: none;
   }
 
+  .plugin-list__item-icon {
+    color: var(--primary-base);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
   .plugin-list__item-action {
     display: flex;
     align-items: center;
@@ -386,8 +393,6 @@
     display: flex;
     align-items: center;
   }
-
-  /* Footer / edit controls */
 
   .plugin-list__footer {
     display: flex;

@@ -4,6 +4,7 @@ import {
   type ElementCheckType,
 } from './validationRuleUi';
 import type { XPathValidation } from '@oscd-transnet-plugins/shared';
+import { buildAssertionExpression } from './xpathBuilder';
 
 function defaultEntry(processId = '', pluginId = ''): XPathValidation {
   return {
@@ -27,7 +28,29 @@ function defaultRuleUi(): RuleUiState {
     elementName: '',
     elementCount: 1,
     message: '',
-    elementPath: '',
+    expertMode: false,
+    expertXPath: '',
+  };
+}
+
+function expertRuleUi(assert: string, message: string): RuleUiState {
+  return {
+    ...defaultRuleUi(),
+    message,
+    expertMode: true,
+    expertXPath: assert,
+  };
+}
+
+function editableEntry(existing: XPathValidation): XPathValidation {
+  return {
+    title: existing.title,
+    description: existing.description,
+    context: existing.context,
+    assert: existing.assert,
+    message: existing.message,
+    processId: existing.processId,
+    pluginId: existing.pluginId,
   };
 }
 
@@ -42,75 +65,141 @@ export function initValidationEditor(
   existing?: XPathValidation,
 ): void {
   if (existing) {
-    validationEditor.entry = { ...existing };
-    validationEditor.ruleUi = existing.ruleUi
-      ? restoreRuleUi(existing.ruleUi, existing.context)
-      : parseAssertionToRuleUi(existing.assert, existing.message ?? '', existing.context);
+    validationEditor.entry = editableEntry(existing);
+    const message = existing.message ?? '';
+    const parsedRuleUi = parseAssertionToRuleUi(existing.assert, message);
+    if (parsedRuleUi) {
+      validationEditor.ruleUi = parsedRuleUi;
+    } else {
+      validationEditor.ruleUi = expertRuleUi(existing.assert, message);
+    }
   } else {
     validationEditor.entry = defaultEntry(processId, pluginId);
     validationEditor.ruleUi = defaultRuleUi();
   }
 }
 
-// ---------------------------------------------------------------------------
-// Restore ruleUi from a previously-persisted snapshot.
-// ---------------------------------------------------------------------------
-
-function restoreRuleUi(stored: Record<string, unknown>, existingContext?: string): RuleUiState {
-  const elementName = (stored.elementName as string) ?? '';
-  const storedPath  = (stored.elementPath as string) ?? '';
-  // Reconstruct elementPath for snapshots persisted before elementPath was introduced.
-  const elementPath = storedPath || (elementName
-    ? `${existingContext ?? '//SCL'}/${elementName}`
-    : '');
-  return {
-    mode: (stored.mode as RuleUiState['mode']) ?? 'attribute',
-    condition: (stored.condition as RuleUiState['condition']) ?? 'notContains',
-    specificText: (stored.specificText as string) ?? '',
-    attribute: (stored.attribute as string) ?? '',
-    elementCheckType:
-      (stored.elementCheckType as RuleUiState['elementCheckType']) ?? 'exists',
-    elementName,
-    elementCount: (stored.elementCount as number) ?? 1,
-    message: (stored.message as string) ?? '',
-    elementPath,
-  };
+export function enterExpertMode(): void {
+  validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);
+  validationEditor.ruleUi.expertMode = true;
 }
 
-// ---------------------------------------------------------------------------
-// Parse an XPath assertion back into RuleUiState — covers all patterns that
-// xpathBuilder.ts can produce so that entries created before ruleUi was
-// persisted can still be edited with the full UI.
-// ---------------------------------------------------------------------------
+export function exitExpertMode(): boolean {
+  const expertXPath = validationEditor.ruleUi.expertXPath;
+  const parsedRuleUi = parseAssertionToRuleUi(
+    expertXPath,
+    validationEditor.ruleUi.message,
+  );
+  if (!parsedRuleUi) return false;
 
-const ATTR_PATTERNS: Array<[RegExp, ConditionKey]> = [
-  [/^contains\(normalize-space\((@\w+)\),\s*'([^']*)'\)$/,           'contains'   ],
-  [/^not\(contains\(normalize-space\((@\w+)\),\s*'([^']*)'\)\)$/,    'notContains'],
-  [/^normalize-space\((@\w+)\)\s*=\s*'([^']*)'$/,                    'equals'     ],
-  [/^not\(normalize-space\((@\w+)\)\s*=\s*'([^']*)'\)$/,             'notEquals'  ],
-  [/^starts-with\(normalize-space\((@\w+)\),\s*'([^']*)'\)$/,        'startsWith' ],
-  [/^substring\(normalize-space\((@\w+)\),.+\)\s*=\s*'([^']*)'$/,    'endsWith'   ],
-  [/^matches\(normalize-space\((@\w+)\),\s*'([^']*)'\)$/,            'matches'    ],
-  [/^not\(matches\(normalize-space\((@\w+)\),\s*'([^']*)'\)\)$/,     'notMatches' ],
-];
+  validationEditor.ruleUi = {
+    ...parsedRuleUi,
+    expertMode: false,
+    expertXPath,
+  };
+  return true;
+}
 
-function parseAssertionToRuleUi(assert: string, message: string, existingContext?: string): RuleUiState {
+type AttributeMatch = {
+  attribute: string;
+  condition: ConditionKey;
+  literal: string;
+};
+
+function parseXPathStringLiteral(expression: string): string | null {
+  const singleQuoted = expression.match(/^'([^']*)'$/);
+  if (singleQuoted) return singleQuoted[1];
+
+  const concat = expression.match(/^concat\((.*)\)$/);
+  if (!concat) return null;
+
+  let remaining = concat[1];
+  let value = '';
+  let apostropheCount = 0;
+  while (remaining) {
+    const segment = remaining.match(/^'([^']*)'/);
+    if (!segment) return null;
+    value += segment[1];
+    remaining = remaining.slice(segment[0].length);
+    if (!remaining) break;
+    if (!remaining.startsWith(`, "'", `)) return null;
+    value += "'";
+    apostropheCount += 1;
+    remaining = remaining.slice(7);
+  }
+  return apostropheCount > 0 ? value : null;
+}
+
+function attributeRule(
+  attribute: string,
+  condition: ConditionKey,
+  literalExpression: string,
+): AttributeMatch | null {
+  const literal = parseXPathStringLiteral(literalExpression);
+  return literal === null ? null : { attribute, condition, literal };
+}
+
+function parseAttributeAssertion(assert: string): AttributeMatch | null {
+  let match = assert.match(/^contains\(normalize-space\((@[\w:.-]+)\), (.+)\)$/);
+  if (match) return attributeRule(match[1], 'contains', match[2]);
+
+  match = assert.match(/^not\(contains\(normalize-space\((@[\w:.-]+)\), (.+)\)\)$/);
+  if (match) return attributeRule(match[1], 'notContains', match[2]);
+
+  match = assert.match(/^normalize-space\((@[\w:.-]+)\) = (.+)$/);
+  if (match) return attributeRule(match[1], 'equals', match[2]);
+
+  match = assert.match(/^not\(normalize-space\((@[\w:.-]+)\) = (.+)\)$/);
+  if (match) return attributeRule(match[1], 'notEquals', match[2]);
+
+  match = assert.match(/^starts-with\(normalize-space\((@[\w:.-]+)\), (.+)\)$/);
+  if (match) return attributeRule(match[1], 'startsWith', match[2]);
+
+  match = assert.match(
+    /^substring\(normalize-space\((@[\w:.-]+)\), string-length\(normalize-space\(\1\)\) - string-length\((.+)\) \+ 1\) = (.+)$/,
+  );
+  if (match && match[2] === match[3]) {
+    return attributeRule(match[1], 'endsWith', match[2]);
+  }
+
+  match = assert.match(/^matches\(normalize-space\((@[\w:.-]+)\), (.+)\)$/);
+  if (match) return attributeRule(match[1], 'matches', match[2]);
+
+  match = assert.match(/^not\(matches\(normalize-space\((@[\w:.-]+)\), (.+)\)\)$/);
+  if (match) return attributeRule(match[1], 'notMatches', match[2]);
+
+  match = assert.match(/^normalize-space\((@[\w:.-]+)\)$/);
+  if (match) {
+    return { attribute: match[1], condition: 'notContains', literal: '' };
+  }
+
+  return null;
+}
+
+function builderRuleUi(
+  ruleUi: RuleUiState,
+  assert: string,
+): RuleUiState | null {
+  return buildAssertionExpression(ruleUi) === assert ? ruleUi : null;
+}
+
+export function parseAssertionToRuleUi(
+  assert: string,
+  message: string,
+): RuleUiState | null {
   const a = assert.trim();
+  if (!a) return { ...defaultRuleUi(), message };
 
-  // Element check: count(El) op N
-  const elM = a.match(/^count\((\w+)\)\s*(>=|<=|>|=)\s*(\d+)$/);
+  const elM = a.match(/^count\(([\w:.-]+)\) (>=|<=|>|=) (-?(?:\d+(?:\.\d+)?|\.\d+))$/);
   if (elM) {
     const [, elementName, op] = elM;
-    const n = parseInt(elM[3], 10);
+    const n = Number(elM[3]);
     const elementCheckType: ElementCheckType =
       op === '>' && n === 0 ? 'exists'    :
       op === '=' && n === 0 ? 'notExists' :
       op === '='             ? 'exactly'  :
       op === '>='            ? 'atLeast'  : 'atMost';
-    // Reconstruct elementPath from stored context + element name (backwards compat).
-    const parentCtx = existingContext ?? '//SCL';
-    const elementPath = `${parentCtx}/${elementName}`;
-    return {
+    return builderRuleUi({
       mode: 'element',
       condition: 'notContains',
       specificText: '',
@@ -119,26 +208,24 @@ function parseAssertionToRuleUi(assert: string, message: string, existingContext
       elementName,
       elementCount: op === '>' ? 1 : n,
       message,
-      elementPath,
-    };
+      expertMode: false,
+      expertXPath: '',
+    }, a);
   }
 
-  for (const [pattern, condition] of ATTR_PATTERNS) {
-    const m = a.match(pattern);
-    if (m) {
-      return {
-        mode: 'attribute',
-        condition,
-        specificText: m[2],
-        attribute: m[1].replace(/^@/, ''),
-        elementCheckType: 'exists',
-        elementName: '',
-        elementCount: 1,
-        message,
-        elementPath: '',
-      };
-    }
-  }
+  const attributeMatch = parseAttributeAssertion(a);
+  if (!attributeMatch) return null;
 
-  return { ...defaultRuleUi(), message };
+  return builderRuleUi({
+    mode: 'attribute',
+    condition: attributeMatch.condition,
+    specificText: attributeMatch.literal,
+    attribute: attributeMatch.attribute.replace(/^@/, ''),
+    elementCheckType: 'exists',
+    elementName: '',
+    elementCount: 1,
+    message,
+    expertMode: false,
+    expertXPath: '',
+  }, a);
 }

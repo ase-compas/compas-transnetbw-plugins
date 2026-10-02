@@ -5,6 +5,7 @@
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { validateEntry, type ValidationError } from '../../services/validationService';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { getValidationsForScope } from '../../features/processes/mutations.svelte';
 
   function formatToastDetail(errors: ValidationError[], userMessage: string): string {
     if (errors.length === 0) return '';
@@ -25,7 +26,11 @@
     const procId = selectedEngineeringProcess?.process?.id;
     if (!procId || !selectedPlugin) return [] as XPathValidation[];
 
-    return (selectedPlugin.validations ?? []).filter((v) => v.processId === procId);
+    return getValidationsForScope(
+      selectedPlugin.validations,
+      procId,
+      selectedPlugin.id,
+    );
   });
 
   const columns = [
