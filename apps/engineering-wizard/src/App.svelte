@@ -156,30 +156,29 @@
     selectedEngineeringProcess.process = process;
   }
 
-  async function refreshProcesses() {
-    try {
-      await refreshEngineeringProcesses();
-      restoreWorkflowState(doc);
-    } catch {
-      // Status is already tracked in engineeringProcessesStatus.error
-    }
-  }
-
   function addNewProcess() {
     engineeringProcessEditing.isEditing = false;
     selectedEngineeringProcess.process = null;
     isCreatingProcess = true;
   }
 
-  async function cancelCreate() {
-    engineeringProcessEditing.isEditing = false;
-    await refreshProcesses();
-    isCreatingProcess = false;
+  function refreshProcessesInBackground() {
+    void refreshEngineeringProcesses({ silent: true })
+      .then(() => restoreWorkflowState(doc))
+      .catch((error) => {
+        console.warn('[EngineeringWizard] Failed to refresh processes:', error);
+      });
   }
 
-  async function handleCreated(_proc: Process) {
-    await refreshProcesses();
+  function cancelCreate() {
+    engineeringProcessEditing.isEditing = false;
     isCreatingProcess = false;
+    refreshProcessesInBackground();
+  }
+
+  function handleCreated(_proc: Process) {
+    isCreatingProcess = false;
+    refreshProcessesInBackground();
   }
 </script>
 
@@ -189,7 +188,7 @@
   {#if isCreatingProcess}
     <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
   {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
-    <ProcessEditView onReturnToList={refreshProcesses} />
+    <ProcessEditView onReturnToList={refreshProcessesInBackground} />
   {:else}
     <ProcessesListView
       handleView={handleEdit}

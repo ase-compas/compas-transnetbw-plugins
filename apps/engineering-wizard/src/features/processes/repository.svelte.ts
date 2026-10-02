@@ -38,9 +38,12 @@ function preserveRecentlySavedProcesses(processes: Process[]): Process[] {
 
 async function loadEngineeringProcessesFromSources(
   allowBackendFallback: boolean,
+  silent: boolean,
 ): Promise<Process[]> {
-  engineeringProcessesStatus.loading = true;
-  engineeringProcessesStatus.error = '';
+  if (!silent) {
+    engineeringProcessesStatus.loading = true;
+    engineeringProcessesStatus.error = '';
+  }
 
   try {
     // 1. Load the static baseline XML shipped with the plugin.
@@ -78,20 +81,26 @@ async function loadEngineeringProcessesFromSources(
     engineeringProcesses.processes = processes;
     return processes;
   } catch (err) {
-    engineeringProcessesStatus.error =
-      err instanceof Error ? err.message : 'Failed to load processes.';
+    if (!silent) {
+      engineeringProcessesStatus.error =
+        err instanceof Error ? err.message : 'Failed to load processes.';
+    }
     throw err;
   } finally {
-    engineeringProcessesStatus.loading = false;
+    if (!silent) {
+      engineeringProcessesStatus.loading = false;
+    }
   }
 }
 
 export function loadEngineeringProcesses(): Promise<Process[]> {
-  return loadEngineeringProcessesFromSources(true);
+  return loadEngineeringProcessesFromSources(true, false);
 }
 
-export function refreshEngineeringProcesses(): Promise<Process[]> {
-  return loadEngineeringProcessesFromSources(false);
+export function refreshEngineeringProcesses(
+  options: { silent?: boolean } = {},
+): Promise<Process[]> {
+  return loadEngineeringProcessesFromSources(false, options.silent ?? false);
 }
 
 export async function saveProcess(
