@@ -6,6 +6,7 @@
     import type { DefaultType, DefaultTypeKey } from '../../../default-types/types';
     import { defaultMetadataService } from '../../../../bootstrap';
     import ApplyDefaultMemberRow from './ApplyDefaultMemberRow.svelte';
+    import { defaultMService } from '../../../../bootstrap';
 
     interface Member {
         name: string;

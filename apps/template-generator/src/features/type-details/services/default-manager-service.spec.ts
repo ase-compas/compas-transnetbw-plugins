@@ -162,7 +162,7 @@ describe('getDefaultInfo', () => {
     test('returns not available and not local latest when no remote and no local', async () => {
         const doc = parseScl(`<SCL xmlns="http://www.iec.ch/61850/2003/SCL"/>`);
 
-        const status = await service.getDefaultInfo(doc, KEY);
+        const status = await service.getDefaultStatusByKey(doc, KEY);
 
         expect(status).toEqual({ isAvailable: false, isLocalLatest: false });
     });
@@ -174,7 +174,7 @@ describe('getDefaultInfo', () => {
         service = new DefaultManagerService(metadataService, mockDefaultTypeService);
         const doc = parseScl(`<SCL xmlns="http://www.iec.ch/61850/2003/SCL"/>`);
 
-        const status = await service.getDefaultInfo(doc, KEY);
+        const status = await service.getDefaultStatusByKey(doc, KEY);
 
         expect(status.isAvailable).toBe(true);
         expect(status.isLocalLatest).toBe(false);
@@ -197,7 +197,7 @@ describe('getDefaultInfo', () => {
             </SCL>
         `);
 
-        const status = await service.getDefaultInfo(doc, KEY);
+        const status = await service.getDefaultStatusByKey(doc, KEY);
 
         expect(status.isAvailable).toBe(true);
         expect(status.isLocalLatest).toBe(true);
@@ -214,10 +214,113 @@ describe('getDefaultInfo', () => {
             </SCL>
         `);
 
-        const status = await service.getDefaultInfo(doc, KEY);
+        const status = await service.getDefaultStatusByKey(doc, KEY);
 
         expect(status.isAvailable).toBe(false);
         expect(status.isLocalLatest).toBe(false);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// local default status helpers
+// ---------------------------------------------------------------------------
+
+describe('getLocalDefaultVersionStatusByTypeId', () => {
+    test('returns current when local version equals latest', async () => {
+        mockDefaultTypeService.listLatest = vi.fn().mockResolvedValue(
+            makeDefaultTypeList([makeDefaultType({ version: '2.0.0' })]),
+        );
+        service = new DefaultManagerService(metadataService, mockDefaultTypeService);
+
+        const doc = parseScl(`
+            <SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+                <Private type="compas:default-type-info">
+                    <compas:default-type kind="DOType" instance="Measurement" rootId="root-1" version="2.0.0" id="db-1">
+                        <compas:type-element id="root-1"/>
+                    </compas:default-type>
+                </Private>
+            </SCL>
+        `);
+
+        const status = await service.getLocalDefaultVersionStatusByTypeId(doc, 'root-1');
+
+        expect(status).toEqual({
+            isCurrent: true,
+            latestVersion: '2.0.0',
+        });
+    });
+
+    test('returns outdated when local version differs from latest', async () => {
+        mockDefaultTypeService.listLatest = vi.fn().mockResolvedValue(
+            makeDefaultTypeList([makeDefaultType({ version: '3.0.0' })]),
+        );
+        service = new DefaultManagerService(metadataService, mockDefaultTypeService);
+
+        const doc = parseScl(`
+            <SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+                <Private type="compas:default-type-info">
+                    <compas:default-type kind="DOType" instance="Measurement" rootId="root-1" version="2.0.0" id="db-1">
+                        <compas:type-element id="root-1"/>
+                    </compas:default-type>
+                </Private>
+            </SCL>
+        `);
+
+        const status = await service.getLocalDefaultVersionStatusByTypeId(doc, 'root-1');
+
+        expect(status).toEqual({
+            isCurrent: false,
+            latestVersion: '3.0.0',
+        });
+    });
+
+    test('returns null when type has no local default metadata', async () => {
+        const doc = parseScl(`<SCL xmlns="http://www.iec.ch/61850/2003/SCL"/>`);
+
+        const status = await service.getLocalDefaultVersionStatusByTypeId(doc, 'missing-type');
+
+        expect(status).toBeNull();
+    });
+});
+
+describe('listLocalDefaultsWithStatus', () => {
+    test('returns local defaults with current/outdated/unavailable status', async () => {
+        mockDefaultTypeService.listLatest = vi.fn().mockResolvedValue(
+            makeDefaultTypeList([
+                makeDefaultType({ version: '2.0.0' }),
+                makeDefaultType({ kind: TypeKind.LNodeType, instance: 'LLN0', version: '1.1.0' }),
+            ]),
+        );
+        service = new DefaultManagerService(metadataService, mockDefaultTypeService);
+
+        const doc = parseScl(`
+            <SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:compas="https://www.lfenergy.org/compas/extension/v1">
+                <Private type="compas:default-type-info">
+                    <compas:default-type kind="DOType" instance="Measurement" rootId="root-current" version="2.0.0" id="db-current">
+                        <compas:type-element id="root-current"/>
+                    </compas:default-type>
+                    <compas:default-type kind="LNodeType" instance="LLN0" rootId="root-old" version="1.0.0" id="db-old">
+                        <compas:type-element id="root-old"/>
+                    </compas:default-type>
+                    <compas:default-type kind="EnumType" instance="NoRemote" rootId="root-none" version="1.0.0" id="db-none">
+                        <compas:type-element id="root-none"/>
+                    </compas:default-type>
+                </Private>
+            </SCL>
+        `);
+
+        const result = await service.listLocalDefaultsWithStatus(doc);
+
+        const byRootId = new Map(result.map(item => [item.metadata.rootId, item]));
+
+        expect(byRootId.get('root-current')?.status).toBe('current');
+        expect(byRootId.get('root-current')?.latestVersion).toBe('2.0.0');
+
+        expect(byRootId.get('root-old')?.status).toBe('outdated');
+        expect(byRootId.get('root-old')?.latestVersion).toBe('1.1.0');
+
+        expect(byRootId.get('root-none')?.status).toBe('unavailable');
+        expect(byRootId.get('root-none')?.latestVersion).toBeNull();
     });
 });
 
