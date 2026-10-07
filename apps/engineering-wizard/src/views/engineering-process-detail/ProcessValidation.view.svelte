@@ -10,7 +10,13 @@
   function formatToastDetail(errors: ValidationError[], userMessage: string): string {
     if (errors.length === 0) return '';
     const msg = userMessage.trim();
-    const parts = errors.map((e) => (msg.length > 0 ? msg : e.message));
+    const parts = errors.map((e) => {
+      const message = msg.length > 0 ? msg : e.message;
+      const note = e.message.startsWith('No context nodes found')
+        ? 'No context nodes found'
+        : undefined;
+      return note ? `${message} (${note})` : message;
+    });
     return [...new Set(parts)].join('; ');
   }
 

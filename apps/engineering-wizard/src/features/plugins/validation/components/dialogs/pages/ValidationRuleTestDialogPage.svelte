@@ -15,7 +15,7 @@
   function resolveErrorDisplay(err: ValidationError, userMessage: string) {
     const msg = userMessage.trim();
     const message = msg.length > 0 ? msg : err.message;
-    const note = (err.lineNumber === null && err.message.startsWith('No context nodes found'))
+    const note = err.message.startsWith('No context nodes found')
       ? 'No context nodes found'
       : undefined;
     return { message, note };
