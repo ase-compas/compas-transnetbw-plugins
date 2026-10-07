@@ -1,7 +1,7 @@
 <script lang="ts">
   import CircularProgress from '@smui/circular-progress';
   import { onMount } from 'svelte';
-  import { TypeKind } from '../../../../shared/model';
+  import { TypeKind, type DefaultTypeVersionStatus } from '../../../../shared/model';
   import DefaultTypeInfoPanel from './DefaultTypeInfoPanel.svelte';
   import OscdBadge from 'libs/oscd-component/src/oscd-badge/OscdBadge.svelte';
   import OscdIconActionButton from 'libs/oscd-component/src/oscd-icon-action-button/OscdIconActionButton.svelte';
@@ -11,16 +11,6 @@
     instance: string;
     version: string;
     rootId: string;
-  };
-
-  type DefaultTypeVersionStatus = {
-    currentVersion: string;
-    latestVersion: string;
-    latestSource: 'local' | 'db';
-    localLatestVersion: string | null;
-    dbLatestVersion: string | null;
-    hasUpdate: boolean;
-    isDeprecated: boolean;
   };
 
   interface Props {
@@ -47,9 +37,9 @@
   const hasVersionStatus = $derived(!!defaultTypeVersionStatus);
   const isOutdated = $derived(
     !!defaultTypeVersionStatus &&
-      (defaultTypeVersionStatus.hasUpdate || defaultTypeVersionStatus.isDeprecated),
+      !defaultTypeVersionStatus.isCurrent,
   );
-    const isCurrent = $derived(!!defaultTypeVersionStatus && !isOutdated);
+    const isCurrent = $derived(!!defaultTypeVersionStatus && defaultTypeVersionStatus.isCurrent);
 
     function openInfoPanel() {
       isInfoPanelOpen = !isInfoPanelOpen;
@@ -95,7 +85,7 @@
     {#if isOutdated}
       <OscdIconActionButton
         type="input-circle"
-        tooltip={`Update to latest version (v${defaultTypeVersionStatus.currentVersion} → v${defaultTypeVersionStatus?.latestVersion})`}
+        tooltip={`Update to latest version (v${defaultTypeInfo?.version ?? '-'} → v${defaultTypeVersionStatus?.latestVersion})`}
         tooltipSide="top"
         onClick={onUpdateDefaultTypeToLatest}
         fillColor="var(--mdc-theme-error, #d32f2f)"
@@ -125,7 +115,7 @@
           currentTypeId={typeId}
           onOpenRootType={onOpenDefaultRootType}
         />
-        {#if defaultTypeVersionStatus?.isDeprecated}
+        {#if defaultTypeVersionStatus && !defaultTypeVersionStatus.isCurrent}
           <div class="default-row">
             <span class="default-row-label">Latest</span>
             <span class="default-row-value default-latest-version">
