@@ -13,18 +13,32 @@ describe('getFilteredCorePlugins', () => {
     expect(result.map((p) => p.name)).toEqual(['Plugin A', 'Plugin B']);
   });
 
-  it('deduplicates entries that derive the same ID so the keyed list never crashes', () => {
-    // Two host-catalog entries that would otherwise collide on derived ID
-    // (e.g. duplicate registrations for the same plugin module).
+  it('deduplicates repeated registrations of the same catalog entry', () => {
     corePlugins.plugins = [
-      { src: 'a.js', name: 'Plugin A', kind: 'editor' } as any,
-      { src: 'a.js', name: 'Plugin A', kind: 'editor' } as any,
-      { src: 'b.js', name: 'Plugin B', kind: 'editor' } as any,
+      { src: 'a.js', name: 'Plugin A', kind: 'editor', catalogId: 'plugin-a' } as any,
+      { src: 'a.js', name: 'Plugin A', kind: 'editor', catalogId: 'plugin-a' } as any,
+      { src: 'b.js', name: 'Plugin B', kind: 'editor', catalogId: 'plugin-b' } as any,
     ];
 
     const result = getFilteredCorePlugins('');
     const ids = result.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(result).toHaveLength(2);
+  });
+
+  it('keeps distinct catalog entries with colliding derived IDs', () => {
+    corePlugins.plugins = [
+      { src: 'a.js', name: 'Plugin A', kind: 'editor', catalogId: 'plugin-a' } as any,
+      { src: 'a.js', name: 'Plugin A', kind: 'editor', catalogId: 'plugin-a-alias' } as any,
+    ];
+
+    const result = getFilteredCorePlugins('');
+
+    expect(result).toHaveLength(2);
+    expect(result.map((plugin) => plugin.catalogId)).toEqual([
+      'plugin-a',
+      'plugin-a-alias',
+    ]);
+    expect(new Set(result.map((plugin) => plugin.id)).size).toBe(2);
   });
 });

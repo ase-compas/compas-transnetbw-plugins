@@ -16,15 +16,20 @@ export function getFilteredCorePlugins(searchTerm: string): Plugin[] {
     type: 'internal' as const,
   }));
 
-  // Host catalogs can contain multiple entries that derive the same ID
-  // (e.g. duplicate registrations, or entries missing a distinguishing
-  // `src`). Keeping duplicates would crash the keyed `{#each}` list in
-  // PluginExternalPanel with a `each_key_duplicate` error, so only the
-  // first occurrence of each ID is retained.
+  const seenPlugins = new Set<string>();
   const seenIds = new Set<string>();
-  const allPlugins = mapped.filter((p) => {
-    if (seenIds.has(p.id)) return false;
-    seenIds.add(p.id);
+  const allPlugins = mapped.filter((plugin) => {
+    const identity = `${plugin.catalogId}\0${plugin.src ?? ''}\0${plugin.name}`;
+    if (seenPlugins.has(identity)) return false;
+    seenPlugins.add(identity);
+
+    const baseId = plugin.id;
+    let suffix = 2;
+    while (seenIds.has(plugin.id)) {
+      plugin.id = `${baseId}-${suffix}`;
+      suffix += 1;
+    }
+    seenIds.add(plugin.id);
     return true;
   });
 
