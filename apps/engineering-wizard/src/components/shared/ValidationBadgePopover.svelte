@@ -8,8 +8,9 @@
   interface Props {
     view: PluginValidationView;
     active?: boolean;
+    pluginName?: string;
   }
-  let { view, active = false }: Props = $props();
+  let { view, active = false, pluginName = '' }: Props = $props();
 
   let failedCount = $derived(view.failedRules.length);
   let passedCount = $derived(view.passedRules.length);
@@ -80,8 +81,8 @@
       </div>
 
       {#if view.state === 'no-validations'}
-        <div class="section-header section-header--empty">
-          <span>No validations configured for this plugin.</span>
+        <div class="section-header section-header--empty section-header--no-validations">
+          <span>No validations configured for "{pluginName}".</span>
         </div>
       {:else}
         {#if view.state === 'loading'}
@@ -255,7 +256,7 @@
 
   .pin-btn {
     padding: 2px 8px;
-    border: 1px solid var(--base3);
+    border: 1px solid #000;
     border-radius: 4px;
     background: none;
     font-size: 0.75rem;
@@ -290,6 +291,10 @@
   .section-header--empty { color: var(--base1, #93a1a1); }
   .section-header--running { color: var(--primary-base); }
   .section-header--error { color: var(--base1, #93a1a1); }
+
+  .section-header--no-validations {
+    padding: 12px 16px 20px;
+  }
 
   .rule-list {
     list-style: none;

@@ -246,28 +246,8 @@ describe('validation editor initialization', () => {
     });
   });
 
-  it('converts parseable expert XPath back to builder state without losing the draft', () => {
+  it('keeps the untouched builder state when exiting expert mode after an edit', () => {
     const expertXPath = "normalize-space(@name) = 'updated'";
-    initValidationEditor('process', 'plugin');
-    validationEditor.ruleUi.message = 'The name must be updated.';
-    validationEditor.ruleUi.expertMode = true;
-    validationEditor.ruleUi.expertXPath = expertXPath;
-
-    expect(exitExpertMode()).toBe(true);
-    expect(validationEditor.ruleUi).toMatchObject({
-      expertMode: false,
-      expertXPath,
-      attribute: 'name',
-      condition: 'equals',
-      specificText: 'updated',
-      message: 'The name must be updated.',
-    });
-
-    enterExpertMode();
-    expect(validationEditor.ruleUi.expertXPath).toBe(expertXPath);
-  });
-
-  it('seeds expert mode from builder changes instead of restoring a stale draft', () => {
     initValidationEditor('process', 'plugin', {
       title: 'Attribute rule',
       description: '',
@@ -279,35 +259,46 @@ describe('validation editor initialization', () => {
     });
 
     enterExpertMode();
-    expect(exitExpertMode()).toBe(true);
-    validationEditor.ruleUi.specificText = 'changed in builder';
+    // The user edits the raw XPath while in expert mode.
+    validationEditor.ruleUi.expertXPath = expertXPath;
+    exitExpertMode();
 
+    // Builder fields are untouched: the normal mode state never saw the edit.
+    expect(validationEditor.ruleUi).toMatchObject({
+      expertMode: false,
+      attribute: 'name',
+      condition: 'equals',
+      specificText: 'initial',
+    });
+
+    // Re-entering expert mode restores the previously typed draft, not a
+    // re-derivation from the (unchanged) builder fields.
     enterExpertMode();
-
-    expect(validationEditor.ruleUi.expertXPath)
-      .toBe("normalize-space(@name) = 'changed in builder'");
+    expect(validationEditor.ruleUi.expertXPath).toBe(expertXPath);
   });
 
-  it('stays in expert mode when the XPath cannot be represented by the builder', () => {
+  it('allows exiting expert mode even when the XPath cannot be represented by the builder', () => {
     const expertXPath = 'count(IED) > 2';
     initValidationEditor('process', 'plugin');
     validationEditor.ruleUi.expertMode = true;
     validationEditor.ruleUi.expertXPath = expertXPath;
 
-    expect(exitExpertMode()).toBe(false);
+    exitExpertMode();
+
     expect(validationEditor.ruleUi).toMatchObject({
-      expertMode: true,
+      expertMode: false,
       expertXPath,
     });
   });
 
-  it('returns to the default builder state for empty expert XPath', () => {
+  it('leaves builder fields untouched when exiting expert mode with an empty draft', () => {
     initValidationEditor('process', 'plugin');
     validationEditor.ruleUi.message = 'Define this rule.';
     validationEditor.ruleUi.expertMode = true;
     validationEditor.ruleUi.expertXPath = '   ';
 
-    expect(exitExpertMode()).toBe(true);
+    exitExpertMode();
+
     expect(validationEditor.ruleUi).toMatchObject({
       mode: 'attribute',
       condition: 'notContains',

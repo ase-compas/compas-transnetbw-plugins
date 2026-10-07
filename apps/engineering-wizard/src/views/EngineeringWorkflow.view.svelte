@@ -162,6 +162,7 @@
     onDone={exitWorkflow}
     isAtFirstStep={currentIndex <= 0}
     isAtLastStep={currentIndex === plugins.length - 1}
+    nextDisabled={currentIndex === plugins.length - 1}
   />
 </div>
 
