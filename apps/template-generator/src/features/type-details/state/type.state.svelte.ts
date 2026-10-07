@@ -1,5 +1,5 @@
 import { TypeKind, type DataTypeDetails, type DataTypeMember, type SimpleDataType, type ViewMode } from "../../../shared/model";
-import { type ApplyDefaultTypesPreview, type DataTypeService } from "../services/type.service";
+import { type DataTypeService } from "../services/type.service";
 import { buildColumns } from "../type.columns";
 import { isTypeAssignable } from "../../../shared/utils/data-type.utils";
 import type {
@@ -115,46 +115,6 @@ export class DataTypeDetailsState {
         this.dataTypeService.detachDefault(typeId);
         this.viewMode = 'edit';
         this.config.toggleEditModeSwitchDisabled = false;
-    }
-
-    public async applyDefaultType(memberName: string) {
-        try {
-            const preview = await this.getApplyDefaultTypesPreview([memberName]);
-            if (!preview) return;
-            this.applyDefaultTypesFromPreview(preview);
-        } catch (err) {
-            console.error(`Error applying default type for member ${memberName} in type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
-        }
-    }
-
-    public async applyAllDefaultTypes() {
-        try {
-            const preview = await this.getApplyDefaultTypesPreview();
-            if (!preview) return;
-            this.applyDefaultTypesFromPreview(preview);
-        } catch (err) {
-            console.error(`Error applying default types for type ${this.loadedType?.id}:`, err instanceof Error ? err.message : String(err));
-        }
-    }
-
-    /**
-     * Build preview for applying default types.
-     * If memberNames is omitted, preview includes all members of the loaded type.
-     */
-    public async getApplyDefaultTypesPreview(memberNames?: string[]): Promise<ApplyDefaultTypesPreview | null> {
-        if (!this.loadedType) {
-            return null;
-        }
-
-        const targetMemberNames = memberNames ?? this.loadedType.members.map(member => member.name);
-        return this.dataTypeService.getApplyDefaultTypesPreview(this.loadedType.id, targetMemberNames);
-    }
-
-    /**
-     * Apply a previously built preview.
-     */
-    public applyDefaultTypesFromPreview(preview: ApplyDefaultTypesPreview): void {
-        this.dataTypeService.applyDefaultTypesFromPreview(preview);
     }
 
     public setReferenceToMarkedMember(typeId: string) {
@@ -297,6 +257,14 @@ export class DataTypeDetailsState {
     /**
      * Get names of members that are either configured or mandatory.
      */
+    public getConfiguredMembers(): DataTypeMember[] {
+        return this.loadedType?.members
+            .filter((m) => m.isConfigured || m.isMandatory) ?? [];
+    }
+
+    /**
+     * Get names of members that are either configured or mandatory.
+     */
     public getConfiguredMemberNames(): string[] {
         return this.loadedType?.members
             .filter((m) => m.isConfigured || m.isMandatory)
@@ -419,11 +387,11 @@ export class DataTypeDetailsState {
             canClick: this.isEditMode,
             canUnlink: false,
             canEdit: true,
-            isDefaultType: type.isDefaultType,
-            defaultTypeVersion: type.defaultTypeVersion,
-            defaultTypeRootId: type.defaultTypeRootId,
-            defaultTypeInstance: type.defaultTypeInstance,
-            defaultTypeKind: type.typeKind,
+            isDefaultType: !!type.defaultTypeInfo,
+            defaultTypeVersion: type.defaultTypeInfo?.version,
+            defaultTypeRootId: type.defaultTypeInfo?.rootId,
+            defaultTypeInstance: type.defaultTypeInfo?.instance,
+            defaultTypeKind: type.defaultTypeInfo?.kind,
         };
     }
 }
