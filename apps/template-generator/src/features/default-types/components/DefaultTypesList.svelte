@@ -62,7 +62,6 @@
 <div class="warning">
   <OscdWarningIcon size="15px" />
   Default types are generic and do not consider underlying enumeration variants due to IEC 61850 limitations. You can leave specific parameters undefined and configure them after application.
-
 </div>
 
 <OscdBasicDataTable
@@ -103,6 +102,7 @@
     background-color: #D9D800;
     padding: 0.2rem;
     width: fit-content;
+    margin: 0.5rem 0;
   }
 
   .actions-cell {
