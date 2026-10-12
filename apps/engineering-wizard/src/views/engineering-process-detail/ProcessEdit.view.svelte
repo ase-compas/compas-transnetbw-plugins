@@ -196,21 +196,21 @@
     }
   }
 
-  function handleDuplicateValidationClick(entry: XPathValidation) {
+  async function handleDuplicateValidationClick(entry: XPathValidation) {
     const proc = selectedEngineeringProcess.process;
     const pl = selectedPlugin;
     if (!pl || !proc) return;
 
+    const base = entry.title.replace(/ \(copy(?: \d+)?\)$/, '');
     const existing = new Set((pl.validations ?? []).map((v) => v.title));
-    const base = `${entry.title} (copy)`;
-    let title = base;
-    for (let n = 2; existing.has(title); n++) title = `${base} ${n}`;
+    let title = `${base} (copy)`;
+    for (let n = 2; existing.has(title); n++) title = `${base} (copy ${n})`;
 
-    addValidationToPluginInProcess(proc.id, pl.id, {
-      ...$state.snapshot(entry),
-      title,
-    });
-    toastService.success('Validation duplicated', `"${title}" was added.`);
+    const copy = { ...$state.snapshot(entry), title };
+    addValidationToPluginInProcess(proc.id, pl.id, copy);
+
+    const index = (pl.validations?.length ?? 1) - 1;
+    await handleEditValidationClick(copy, index);
   }
 
   async function handleDeleteValidationClick(entry: XPathValidation, index: number) {

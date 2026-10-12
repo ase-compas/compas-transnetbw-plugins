@@ -84,18 +84,6 @@
         </button>
         <button
           type="button"
-          class="action-btn action-btn--duplicate"
-          title="Duplicate"
-          aria-label="Duplicate validation"
-          onclick={() => {
-            const index = validationEntries.indexOf(item);
-            onDuplicateEntry?.(item, index);
-          }}
-        >
-          <OscdControlPointDuplicateIcon svgStyles="fill: var(--primary-base)" />
-        </button>
-        <button
-          type="button"
           class="action-btn action-btn--edit"
           title="Edit"
           aria-label="Edit validation"
@@ -105,6 +93,18 @@
           }}
         >
           <OscdEditIcon svgStyles="fill: var(--primary-base)" />
+        </button>
+        <button
+          type="button"
+          class="action-btn action-btn--duplicate"
+          title="Duplicate"
+          aria-label="Duplicate validation"
+          onclick={() => {
+            const index = validationEntries.indexOf(item);
+            onDuplicateEntry?.(item, index);
+          }}
+        >
+          <OscdControlPointDuplicateIcon svgStyles="fill: var(--primary-base)" />
         </button>
         <button
           type="button"
