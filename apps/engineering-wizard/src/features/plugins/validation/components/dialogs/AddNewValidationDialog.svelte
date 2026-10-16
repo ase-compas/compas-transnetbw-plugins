@@ -5,11 +5,12 @@
 
   import Button from '@smui/button';
   import WorkflowActions from '../../../../../components/shared/WorkflowActions.svelte';
+  import LeaveConfirmDialog from '../../../../../../../../libs/oscd-component/src/oscd-dialog/LeaveConfirmDialog.svelte';
 
   import ValidationBasicInformationDialogPage from './pages/ValidationBasicInformationDialogPage.svelte';
   import ValidationRuleDefinitionDialogPage from './pages/ValidationRuleDefinitionDialogPage.svelte';
   import ValidationRuleTestDialogPage from './pages/ValidationRuleTestDialogPage.svelte';
-  import { validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
+  import { discardExpertExpression, validationEditor, initValidationEditor } from '../../validationEditorStore.svelte';
   import {
     elementCheckTypeHasCount,
     isValidElementCount,
@@ -31,6 +32,7 @@
   type Step = (typeof steps)[number];
 
   let currentStepIndex = $state(0);
+  let confirmSwitch = $state(false);
   const currentStep: Step = $derived(steps[currentStepIndex]);
   const isAtFirstStep = $derived(currentStepIndex === 0);
   const isAtLastStep = $derived(currentStepIndex === steps.length - 1);
@@ -99,6 +101,15 @@
     if (currentStepIndex > 0) currentStepIndex -= 1;
   }
 
+  function cancelSwitch() {
+    confirmSwitch = false;
+  }
+
+  function confirmDiscard() {
+    confirmSwitch = false;
+    discardExpertExpression();
+  }
+
   function onGoToNextStep() {
     if (currentStepIndex < steps.length - 1) {
       currentStepIndex += 1;
@@ -125,7 +136,7 @@
     {#if currentStep === 'basic'}
       <ValidationBasicInformationDialogPage />
     {:else if currentStep === 'rule-definition'}
-      <ValidationRuleDefinitionDialogPage />
+      <ValidationRuleDefinitionDialogPage onNeedsExpertSwitch={() => (confirmSwitch = true)} />
     {:else}
       <ValidationRuleTestDialogPage />
     {/if}
@@ -155,6 +166,27 @@
     </div>
   {/snippet}
 </OscdBaseDialog>
+
+<svelte:window
+  onkeydowncapture={(event) => {
+    if (!confirmSwitch || event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    cancelSwitch();
+  }}
+/>
+
+<LeaveConfirmDialog
+  bind:open={confirmSwitch}
+  title="Switch to builder"
+  message="This XPath cannot be edited in the builder. Switching discards it and shows an empty attribute rule. The error message and context stay."
+  cancelActionText="Keep editing"
+  discardActionText="Switch"
+  titleId="expert-switch-title"
+  contentId="expert-switch-content"
+  onStay={cancelSwitch}
+  onLeave={confirmDiscard}
+/>
 
 <style>
   .dialog-actions {

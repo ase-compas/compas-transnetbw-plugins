@@ -10,6 +10,8 @@
     cancelActionText?: string;
     onStay?: () => void;
     onLeave?: () => void;
+    titleId?: string;
+    contentId?: string;
   }
 
   let {
@@ -20,6 +22,8 @@
     cancelActionText = 'Keep editing',
     onStay = () => {},
     onLeave = () => {},
+    titleId = 'leave-confirm-title',
+    contentId = 'leave-confirm-content',
   }: Props = $props();
 </script>
 
@@ -27,17 +31,17 @@
   bind:open
   class="leave-confirm-dialog"
   surface$style="width: 100%; max-width: 480px;"
-  aria-labelledby="leave-confirm-title"
-  aria-describedby="leave-confirm-content"
+  aria-labelledby={titleId}
+  aria-describedby={contentId}
 >
   <Header>
     <div class="header">
-      <h4 id="leave-confirm-title">{title}</h4>
+      <h4 id={titleId}>{title}</h4>
     </div>
   </Header>
 
   <Content>
-    <p class="message" id="leave-confirm-content">{message}</p>
+    <p class="message" id={contentId}>{message}</p>
   </Content>
 
   <Actions class="leave-confirm-actions">

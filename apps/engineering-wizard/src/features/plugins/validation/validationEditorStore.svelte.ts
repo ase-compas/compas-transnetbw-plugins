@@ -80,14 +80,25 @@ export function initValidationEditor(
 }
 
 export function enterExpertMode(): void {
-  if (!validationEditor.ruleUi.expertXPath) {
-    validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);
-  }
+  validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);
   validationEditor.ruleUi.expertMode = true;
 }
 
-export function exitExpertMode(): void {
-  validationEditor.ruleUi.expertMode = false;
+export type ExpertExit = 'switched' | 'confirm';
+
+/** Leaves expert mode when the draft is empty or the builder can reproduce it. */
+export function exitExpertMode(): ExpertExit {
+  const draft = validationEditor.ruleUi.expertXPath.trim();
+  const parsed = parseAssertionToRuleUi(draft, validationEditor.ruleUi.message);
+  if (!parsed) return 'confirm';
+  validationEditor.ruleUi = parsed;
+  return 'switched';
+}
+
+/** Drops an unparseable expert draft and shows the default builder rule. */
+export function discardExpertExpression(): void {
+  const message = validationEditor.ruleUi.message;
+  validationEditor.ruleUi = { ...defaultRuleUi(), message };
 }
 
 type AttributeMatch = {

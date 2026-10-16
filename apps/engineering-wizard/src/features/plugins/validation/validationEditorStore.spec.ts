@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  discardExpertExpression,
   enterExpertMode,
   exitExpertMode,
   initValidationEditor,
@@ -246,7 +247,7 @@ describe('validation editor initialization', () => {
     });
   });
 
-  it('keeps the untouched builder state when exiting expert mode after an edit', () => {
+  it('applies a parseable expert edit to the builder', () => {
     const expertXPath = "normalize-space(@name) = 'updated'";
     initValidationEditor('process', 'plugin', {
       title: 'Attribute rule',
@@ -259,46 +260,61 @@ describe('validation editor initialization', () => {
     });
 
     enterExpertMode();
-    // The user edits the raw XPath while in expert mode.
     validationEditor.ruleUi.expertXPath = expertXPath;
-    exitExpertMode();
 
-    // Builder fields are untouched: the normal mode state never saw the edit.
+    expect(exitExpertMode()).toBe('switched');
     expect(validationEditor.ruleUi).toMatchObject({
       expertMode: false,
       attribute: 'name',
       condition: 'equals',
-      specificText: 'initial',
+      specificText: 'updated',
+      message: 'The name must be valid.',
     });
+    expect(validationEditor.entry.context).toBe('//SCL');
 
-    // Re-entering expert mode restores the previously typed draft, not a
-    // re-derivation from the (unchanged) builder fields.
     enterExpertMode();
     expect(validationEditor.ruleUi.expertXPath).toBe(expertXPath);
   });
 
-  it('allows exiting expert mode even when the XPath cannot be represented by the builder', () => {
+  it('asks for confirmation when the expert XPath cannot be represented by the builder', () => {
     const expertXPath = 'count(IED) > 2';
     initValidationEditor('process', 'plugin');
+    validationEditor.entry.context = '//SCL';
+    validationEditor.ruleUi.message = 'More IEDs are required.';
     validationEditor.ruleUi.expertMode = true;
     validationEditor.ruleUi.expertXPath = expertXPath;
 
-    exitExpertMode();
+    expect(exitExpertMode()).toBe('confirm');
+    expect(validationEditor.ruleUi).toMatchObject({
+      expertMode: true,
+      expertXPath,
+      message: 'More IEDs are required.',
+    });
+
+    discardExpertExpression();
 
     expect(validationEditor.ruleUi).toMatchObject({
+      mode: 'attribute',
+      condition: 'notContains',
+      attribute: '',
+      specificText: '',
+      message: 'More IEDs are required.',
       expertMode: false,
-      expertXPath,
+      expertXPath: '',
     });
+    expect(validationEditor.entry.context).toBe('//SCL');
+
+    enterExpertMode();
+    expect(validationEditor.ruleUi.expertXPath).toBe('');
   });
 
-  it('leaves builder fields untouched when exiting expert mode with an empty draft', () => {
+  it('switches an empty expert draft to the default builder rule without confirmation', () => {
     initValidationEditor('process', 'plugin');
     validationEditor.ruleUi.message = 'Define this rule.';
     validationEditor.ruleUi.expertMode = true;
     validationEditor.ruleUi.expertXPath = '   ';
 
-    exitExpertMode();
-
+    expect(exitExpertMode()).toBe('switched');
     expect(validationEditor.ruleUi).toMatchObject({
       mode: 'attribute',
       condition: 'notContains',
@@ -306,7 +322,7 @@ describe('validation editor initialization', () => {
       specificText: '',
       message: 'Define this rule.',
       expertMode: false,
-      expertXPath: '   ',
+      expertXPath: '',
     });
   });
 
