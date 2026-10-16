@@ -12,7 +12,7 @@
     const msg = userMessage.trim();
     const parts = errors.map((e) => {
       const message = msg.length > 0 ? msg : e.message;
-      const note = e.message.startsWith('No context nodes found')
+      const note = msg.length > 0 && e.message.startsWith('No context nodes found')
         ? 'No context nodes found'
         : undefined;
       return note ? `${message} (${note})` : message;
