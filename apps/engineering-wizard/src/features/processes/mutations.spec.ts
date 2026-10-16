@@ -2,28 +2,26 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 import {
   addValidationsToPluginInProcess,
-  getValidationsForScope,
+  removeValidationFromPluginInProcess,
   updateValidationInPluginInProcess,
 } from './mutations.svelte';
 import { engineeringProcesses } from './stores.svelte';
 
-function validation(
-  processId: string,
-  pluginId: string,
-  title: string,
-): XPathValidation {
+function validation(title: string): XPathValidation {
   return {
     title,
     description: '',
     context: '//SCL',
     assert: '@name',
     message: '',
-    processId,
-    pluginId,
   };
 }
 
-describe('getValidationsForScope', () => {
+function storedValidations(): XPathValidation[] | undefined {
+  return engineeringProcesses.processes[0].pluginGroups[0].plugins[0].validations;
+}
+
+describe('plugin validation mutations', () => {
   beforeEach(() => {
     engineeringProcesses.processes = [{
       id: 'process-a',
@@ -42,54 +40,45 @@ describe('getValidationsForScope', () => {
     }];
   });
 
-  it('filters by both process and plugin', () => {
-    const matching = validation('process-a', 'plugin-a', 'Matching');
-    const validations = [
-      matching,
-      validation('process-a', 'plugin-b', 'Wrong plugin'),
-      validation('process-b', 'plugin-a', 'Wrong process'),
-    ];
-
-    expect(
-      getValidationsForScope(validations, 'process-a', 'plugin-a'),
-    ).toEqual([matching]);
-  });
-
-  it('returns an empty list when validations are undefined', () => {
-    expect(getValidationsForScope(undefined, 'process', 'plugin')).toEqual([]);
-  });
-
-  it('adds validations in one batch and enforces the target scope', () => {
+  it('stores added validations without scope identifiers', () => {
     addValidationsToPluginInProcess('process-a', 'plugin-a', [
-      validation('wrong-process', 'wrong-plugin', 'First'),
-      validation('wrong-process', 'wrong-plugin', 'Second'),
+      {
+        ...validation('First'),
+        processId: 'wrong-process',
+        pluginId: 'wrong-plugin',
+        ruleUi: { mode: 'element' },
+      } as XPathValidation,
+      validation('Second'),
     ]);
 
-    const validations =
-      engineeringProcesses.processes[0].pluginGroups[0].plugins[0].validations;
-    expect(validations).toHaveLength(2);
-    expect(validations).toEqual([
-      validation('process-a', 'plugin-a', 'First'),
-      validation('process-a', 'plugin-a', 'Second'),
+    expect(storedValidations()).toEqual([
+      validation('First'),
+      validation('Second'),
     ]);
   });
 
-  it('enforces the target scope when updating a validation', () => {
+  it('updates and removes the validation at the array index', () => {
     addValidationsToPluginInProcess('process-a', 'plugin-a', [
-      validation('process-a', 'plugin-a', 'Original'),
+      validation('First'),
+      validation('Second'),
+      validation('Third'),
     ]);
 
     updateValidationInPluginInProcess(
       'process-a',
       'plugin-a',
-      0,
-      validation('wrong-process', 'wrong-plugin', 'Updated'),
+      1,
+      {
+        ...validation('Updated'),
+        processId: 'wrong-process',
+        pluginId: 'wrong-plugin',
+      } as XPathValidation,
     );
+    removeValidationFromPluginInProcess('process-a', 'plugin-a', 0);
 
-    const validations =
-      engineeringProcesses.processes[0].pluginGroups[0].plugins[0].validations;
-    expect(validations).toEqual([
-      validation('process-a', 'plugin-a', 'Updated'),
+    expect(storedValidations()).toEqual([
+      validation('Updated'),
+      validation('Third'),
     ]);
   });
 });

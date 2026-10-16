@@ -59,7 +59,7 @@
     if (!processId) return {} as Record<string, PluginValidationView>;
     const result: Record<string, PluginValidationView> = {};
     for (const plugin of plugins) {
-      result[plugin.id] = validationCoordinator.getPluginView(processId, plugin);
+      result[plugin.id] = validationCoordinator.getPluginView(plugin);
     }
     return result;
   });

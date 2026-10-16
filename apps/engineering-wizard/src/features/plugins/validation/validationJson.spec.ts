@@ -30,21 +30,23 @@ describe('validationJson', () => {
     });
   });
 
-  it('imports validations into the active process and plugin scope', () => {
-    const [imported] = parseValidationImport([validation], 'target-process', 'target-plugin');
+  it('imports validations without scope identifiers', () => {
+    const [imported] = parseValidationImport([validation]);
 
-    expect(imported).toMatchObject({
-      ...validation,
-      processId: 'target-process',
-      pluginId: 'target-plugin',
+    expect(imported).toEqual({
+      title: validation.title,
+      description: validation.description,
+      context: validation.context,
+      assert: validation.assert,
+      message: validation.message,
     });
+    expect(imported).not.toHaveProperty('processId');
+    expect(imported).not.toHaveProperty('pluginId');
   });
 
   it('imports legacy validations without an error message', () => {
     const [imported] = parseValidationImport(
       [{ ...validation, message: undefined }],
-      'target-process',
-      'target-plugin',
     );
 
     expect(imported.message).toBe('');
@@ -64,11 +66,7 @@ describe('validationJson', () => {
       ruleUi: { mode: 'element', elementName: 'IED' },
     };
 
-    const [imported] = parseValidationImport(
-      [legacyValidation],
-      'target-process',
-      'target-plugin',
-    );
+    const [imported] = parseValidationImport([legacyValidation]);
 
     expect(imported).not.toHaveProperty('ruleUi');
     expect(createValidationExport([legacyValidation])).not.toHaveProperty(
@@ -77,12 +75,10 @@ describe('validationJson', () => {
   });
 
   it('rejects invalid JSON and unsupported export versions', () => {
-    expect(() => parseValidationImportJson('{', 'process', 'plugin'))
+    expect(() => parseValidationImportJson('{'))
       .toThrow('The selected file does not contain valid JSON.');
     expect(() => parseValidationImport(
       { formatVersion: 2, validations: [] },
-      'process',
-      'plugin',
     )).toThrow('Unsupported validation export format version "2".');
   });
 
