@@ -15,6 +15,12 @@
   import ToggleSwitch from '../../ToggleSwitch.svelte';
   import FormBlock from '../../FormBlock.svelte';
 
+  interface Props {
+    onNeedsExpertSwitch?: () => void;
+  }
+
+  let { onNeedsExpertSwitch }: Props = $props();
+
   const isMessageEmpty = $derived(!validationEditor.ruleUi.message?.trim());
 
   const rulePreview = $derived.by(() => {
@@ -38,9 +44,10 @@
   function handleExpertClick() {
     if (!validationEditor.ruleUi.expertMode) {
       enterExpertMode();
-    } else {
-      exitExpertMode();
+      return;
     }
+    if (exitExpertMode() === 'switched') return;
+    onNeedsExpertSwitch?.();
   }
 </script>
 
