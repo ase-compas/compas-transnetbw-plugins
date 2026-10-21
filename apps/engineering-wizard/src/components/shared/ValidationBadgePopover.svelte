@@ -8,8 +8,9 @@
   interface Props {
     view: PluginValidationView;
     active?: boolean;
+    pluginName?: string;
   }
-  let { view, active = false }: Props = $props();
+  let { view, active = false, pluginName = '' }: Props = $props();
 
   let failedCount = $derived(view.failedRules.length);
   let passedCount = $derived(view.passedRules.length);
@@ -57,7 +58,7 @@
     class:badge--error={view.state === 'error'}
   >
     {#if view.state === 'loading'}
-      <Spinner size="10px" color="var(--primary-base)" trackColor="rgba(0, 0, 0, 0.15)" />
+      <Spinner size="10px" color="var(--oscd-plugin-brand)" trackColor="rgba(0, 0, 0, 0.15)" />
     {:else if view.state === 'error'}
       <OscdCloudOffIcon svgStyles="fill: var(--white); width: 11px; height: 11px;" />
     {:else}
@@ -80,13 +81,13 @@
       </div>
 
       {#if view.state === 'no-validations'}
-        <div class="section-header section-header--empty">
-          <span>No validations configured for this plugin.</span>
+        <div class="section-header section-header--empty section-header--no-validations">
+          <span>No validations configured for "{pluginName}".</span>
         </div>
       {:else}
         {#if view.state === 'loading'}
           <div class="section-header section-header--running">
-            <Spinner size="12px" color="var(--primary-base)" />
+            <Spinner size="12px" color="var(--oscd-plugin-brand)" />
             <span>Validating…</span>
           </div>
         {/if}
@@ -118,7 +119,7 @@
         {#if passedCount > 0}
           <div class="section-header section-header--passed">
             <span>{passedCount} rule{passedCount === 1 ? '' : 's'} passed</span>
-            <OscdCheckIcon svgStyles="fill: var(--primary-base);" />
+            <OscdCheckIcon svgStyles="fill: var(--oscd-plugin-brand);" />
           </div>
           <ul class="rule-list">
             {#each view.passedRules as rule}
@@ -212,7 +213,7 @@
     width: 600px;
     max-height: 800px;
     overflow-y: auto;
-    background: var(--white);
+    background: var(--oscd-plugin-surface);
     border: 1px solid var(--base3);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
@@ -238,7 +239,7 @@
     transform: translateX(-50%);
     border: 7px solid transparent;
     border-top: none;
-    border-bottom-color: var(--white);
+    border-bottom-color: var(--oscd-plugin-surface);
     pointer-events: none;
   }
 
@@ -249,13 +250,13 @@
     padding: 18px 16px 12px;
     position: sticky;
     top: 0;
-    background: var(--white);
+    background: var(--oscd-plugin-surface);
     z-index: 1;
   }
 
   .pin-btn {
     padding: 2px 8px;
-    border: 1px solid var(--base3);
+    border: 1px solid #000;
     border-radius: 4px;
     background: none;
     font-size: 0.75rem;
@@ -263,16 +264,16 @@
   }
 
   .pin-btn--active {
-    background: var(--primary-base);
-    color: var(--white);
-    border-color: var(--primary-base);
+    background: var(--oscd-plugin-brand);
+    color: var(--oscd-plugin-on-brand);
+    border-color: var(--oscd-plugin-brand);
   }
 
   .panel-title {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
     font-weight: var(--ew-font-weight-heading, 600);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
   }
 
   .section-header {
@@ -286,10 +287,14 @@
   }
 
   .section-header--failed { color: var(--red); }
-  .section-header--passed { color: var(--primary-base); }
+  .section-header--passed { color: var(--oscd-plugin-brand); }
   .section-header--empty { color: var(--base1, #93a1a1); }
-  .section-header--running { color: var(--primary-base); }
+  .section-header--running { color: var(--oscd-plugin-brand); }
   .section-header--error { color: var(--base1, #93a1a1); }
+
+  .section-header--no-validations {
+    padding: 12px 16px 20px;
+  }
 
   .rule-list {
     list-style: none;

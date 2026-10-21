@@ -15,7 +15,7 @@
   function resolveErrorDisplay(err: ValidationError, userMessage: string) {
     const msg = userMessage.trim();
     const message = msg.length > 0 ? msg : err.message;
-    const note = (err.lineNumber === null && err.message.startsWith('No context nodes found'))
+    const note = err.message.startsWith('No context nodes found')
       ? 'No context nodes found'
       : undefined;
     return { message, note };
@@ -70,13 +70,13 @@
   <div class="test-validate__actions">
     <Button
       variant="raised"
-      style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+      style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
       onclick={runValidation}
       disabled={isLoading || !xmlContent.trim()}
     >
       {#if isLoading}
         <CircularProgress
-          style="height: 18px; width: 18px; margin-right: 8px; --mdc-circular-progress-bar-color: var(--white);"
+          style="height: 18px; width: 18px; margin-right: 8px; --mdc-theme-primary: var(--oscd-plugin-on-action);"
           indeterminate
         />
       {/if}

@@ -102,7 +102,7 @@
   function handleOnReferenceClick(e: Event) { e.stopPropagation(); if (canClickReference) onReferenceClick(); }
 
   let cardState= $derived(getCardState(isDragTarget, canDrop, selectionEnabled, isMandatory, selected));
-  let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'white' : 'var(--mdc-theme-primary)');
+  let onPrimaryColor = $derived(((selected || isMandatory) && !isDragTarget) ? 'var(--oscd-plugin-on-brand)' : 'var(--oscd-plugin-brand)');
   let addReferenceDisabled = $derived(!subtitle && !canAddReference);
   let addReferenceButtonProps = $derived.by(() => ({
     disabled: addReferenceDisabled,
@@ -214,6 +214,7 @@
         variant={subtitle ? "outlined" : "unelevated"}
         {...addReferenceButtonProps}
         class="reference-button {referenceButtonState ? referenceButtonState : ''}"
+        style={`--oscd-reference-ink: ${onPrimaryColor};`}
         onclick={(e) => {
           e.stopPropagation();
           if (subtitle) {
@@ -273,20 +274,20 @@
 
   }
   .oscd-card-item.selected, .oscd-card-item.mandatory {
-    background-color: var(--mdc-theme-primary, #ff3e00);
+    background-color: var(--oscd-plugin-brand);
   }
 
   .oscd-card-item.selected .oscd-card-title,
   .oscd-card-item.selected .oscd-references,
   .oscd-card-item.mandatory .oscd-card-title {
-    color: white;
+    color: var(--oscd-plugin-on-brand);
   }
 
   .oscd-card-item.unselected {
-    background-color: #F0F4F6; /* subtle bluish-gray */
+    background-color: var(--oscd-plugin-surface-muted);
 
     outline: 1px solid #E0E0E0;
-    border-left: 4px solid var(--mdc-theme-primary, #004552); /* clickable accent */
+    border-left: 4px solid var(--oscd-plugin-brand); /* clickable accent */
     transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
@@ -296,29 +297,29 @@
   }
 
   .oscd-card-item.default {
-    background-color: white;
+    background-color: var(--oscd-plugin-surface);
   }
 
   .oscd-card-item.draggable:hover {
-    background-color: rgba(0, 69, 82, 0.05);
+    background-color: color-mix(in srgb, var(--oscd-plugin-brand) 5%, var(--oscd-plugin-surface));
   }
 
   /* ✅ Drop target — valid */
   .oscd-card-item.drag-can-drop {
     outline: 2px dashed #2196F3; /* Material Blue 500 */
-    background-color: #E3F2FD; /* Light blue */
+    background-color: color-mix(in srgb, #2196F3 12%, var(--oscd-plugin-surface));
     box-shadow: 0 0 4px 1px rgba(33, 150, 243, 0.3);
   }
 
   .oscd-card-item.drag-can-drop.is-over {
-    background-color: #BBDEFB; /* darker blue */
+    background-color: color-mix(in srgb, #2196F3 25%, var(--oscd-plugin-surface));
     box-shadow: 0 0 6px 2px rgba(33, 150, 243, 0.4);
   }
 
   /* ❌ Drop target — invalid */
   .oscd-card-item.drag-cannot-drop {
     outline: 2px dashed transparent;
-    background-color: #F5F5F5; /* light gray */
+    background-color: var(--oscd-plugin-surface-muted);
     opacity: 0.6;
   }
 
@@ -353,7 +354,7 @@
   .oscd-card-title {
     font-size: var(--tg-font-size-subheading);
     font-weight: var(--tg-font-weight-medium);
-    color: var(--mdc-theme-primary);
+    color: var(--oscd-plugin-text);
     line-height: 1.2;
   }
 
@@ -376,8 +377,8 @@
     font-size: var(--tg-font-size-small);
     padding: 0 0.5rem;
     border-radius: 8px;
-    background: #DAE3E6;
-    color: var(--mdc-theme-primary);;
+    background: var(--oscd-plugin-surface-muted);
+    color: var(--oscd-plugin-text);
     font-weight: var(--tg-font-weight-medium);
     white-space: nowrap;
   }
@@ -410,23 +411,24 @@
   }
 
   :global(.oscd-card-item .reference-button.has-reference) {
-    color: var(--mdc-theme-on-primary) !important;
-    border-color: var(--mdc-theme-on-primary) !important;
+    color: var(--oscd-reference-ink) !important;
+    border-color: var(--oscd-reference-ink) !important;
     text-transform: none !important;
   }
 
   :global(.oscd-card-item .reference-button.needs-reference:not(:disabled)) {
-    background: var(--oscd-error) !important;
+    background: var(--oscd-plugin-error) !important;
+    color: white !important;
   }
 
   :global(.oscd-card-item .reference-button.no-reference:not(:disabled)) {
-    background: var(--primary) !important;
+    background: var(--oscd-plugin-action) !important;
   }
 
   :global(.oscd-card-item .reference-button.drop) {
     background: none !important;
     outline: 2px dashed #9dcaf5;
-    color: var(--mdc-theme-primary, #004552);
+    color: var(--oscd-plugin-brand);
   }
 
   :global(.oscd-card-item .reference-button:disabled) {
@@ -448,7 +450,7 @@
 
   .default-type-star {
     font-size: 1.2rem;
-    color: var(--mdc-theme-primary, #004552);
+    color: var(--oscd-plugin-brand);
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     line-height: 1;

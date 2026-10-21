@@ -133,7 +133,7 @@
                 disabled={!selectedGroupTitle}
                 aria-label={selectedGroupTitle ? `Add ${plugin.name} to group ${selectedGroupTitle}` : `Add ${plugin.name} (select a group first)`}
               >
-                <OscdAddIcon svgStyles="fill: #fff; width: 16px; height: 16px;" />
+                <OscdAddIcon svgStyles="fill: var(--oscd-plugin-on-action); width: 16px; height: 16px;" />
               </button>
             </OscdTooltip>
           </div>
@@ -156,7 +156,7 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
     font-weight: 600;
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     margin: 0;
   }
 
@@ -191,14 +191,14 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: 600;
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     user-select: none;
     cursor: default;
     pointer-events: none;
   }
 
   .plugin-icon {
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     font-size: 20px;
     flex-shrink: 0;
   }
@@ -220,7 +220,7 @@
   }
 
   .plugin-add-btn--active {
-    background: var(--primary-base);
+    background: var(--oscd-plugin-action);
     cursor: pointer;
   }
 

@@ -80,24 +80,14 @@ export function initValidationEditor(
 }
 
 export function enterExpertMode(): void {
-  validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);
+  if (!validationEditor.ruleUi.expertXPath) {
+    validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);
+  }
   validationEditor.ruleUi.expertMode = true;
 }
 
-export function exitExpertMode(): boolean {
-  const expertXPath = validationEditor.ruleUi.expertXPath;
-  const parsedRuleUi = parseAssertionToRuleUi(
-    expertXPath,
-    validationEditor.ruleUi.message,
-  );
-  if (!parsedRuleUi) return false;
-
-  validationEditor.ruleUi = {
-    ...parsedRuleUi,
-    expertMode: false,
-    expertXPath,
-  };
-  return true;
+export function exitExpertMode(): void {
+  validationEditor.ruleUi.expertMode = false;
 }
 
 type AttributeMatch = {

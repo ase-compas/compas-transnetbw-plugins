@@ -11,7 +11,7 @@
     border: none;
     padding: 0;
     margin: 0;
-    color: white;
+    color: var(--oscd-plugin-on-brand);
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
     font-weight: var(--ew-font-weight-heading, 600);

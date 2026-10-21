@@ -52,21 +52,20 @@
   }: Props = $props();
 
   const backStyles = $derived(`
-    background-color: ${backBg ?? 'var(--base0)'};
-    color: ${backColor ?? 'var(--white)'};
+    background-color: ${backBg ?? nextBg ?? 'var(--oscd-plugin-surface)'};
+    color: ${backColor ?? nextColor ?? 'var(--oscd-plugin-brand)'};
     opacity: ${isAtFirstStep ? '0.38' : '1'};
-    pointer-events: ${isAtFirstStep ? 'none' : 'auto'};
   `);
   const nextStyles = $derived(`
-    background-color: ${nextBg ?? 'var(--white)'};
-    color: ${nextColor ?? 'var(--primary-base)'};
+    background-color: ${nextBg ?? 'var(--oscd-plugin-surface)'};
+    color: ${nextColor ?? 'var(--oscd-plugin-brand)'};
     opacity: ${nextDisabled ? '0.38' : '1'};
-    pointer-events: ${nextDisabled ? 'none' : 'auto'};
   `);
   const doneStyles = $derived(`
-    ${doneBg ? `background-color: ${doneBg};` : `background-color: var(--white);`}
-    ${doneColor ? `color: ${doneColor};` : `color: var(--primary-base);`}
-    border: 1px solid var(--primary-base);
+    background-color: ${doneBg ?? 'var(--oscd-plugin-action)'};
+    color: ${doneColor ?? 'var(--oscd-plugin-on-action)'};
+    border: 1px solid ${doneBg ?? 'var(--oscd-plugin-action)'};
+    opacity: ${doneDisabled ? '0.38' : '1'};
   `);
 </script>
 <div class="stepper-actions">
@@ -77,7 +76,7 @@
       aria-label="Previous step"
       style={backStyles}
     >
-      <Icon><OscdArrowBackIcon svgStyles={`fill: ${backIconFill ?? 'var(--white)'};`} /></Icon>
+      <Icon><OscdArrowBackIcon svgStyles={`fill: ${backIconFill ?? nextIconFill ?? 'var(--oscd-plugin-brand)'};`} /></Icon>
       <Label>Back</Label>
     </Button>
 
@@ -91,9 +90,9 @@
       <Label>{isAtLastStep && nextLabelWhenLastStep ? nextLabelWhenLastStep : 'Next'}</Label>
       <Icon>
         {#if isAtLastStep && showCheckOnLastStep}
-          <OscdCheckIcon svgStyles={`fill: ${nextIconFill ?? 'var(--primary-base)'};`} />
+          <OscdCheckIcon svgStyles={`fill: ${nextIconFill ?? 'var(--oscd-plugin-brand)'};`} />
         {:else}
-          <OscdArrowForwardIcon svgStyles={`fill: ${nextIconFill ?? 'var(--primary-base)'};`} />
+          <OscdArrowForwardIcon svgStyles={`fill: ${nextIconFill ?? 'var(--oscd-plugin-brand)'};`} />
         {/if}
       </Icon>
     </Button>
@@ -104,7 +103,7 @@
         aria-label="Done"
         style={doneStyles}
       >
-        <Icon><OscdCheckIcon svgStyles={`fill: ${doneIconFill ?? 'var(--primary-base)'};`} /></Icon>
+        <Icon><OscdCheckIcon svgStyles={`fill: ${doneIconFill ?? doneColor ?? 'var(--oscd-plugin-on-action)'};`} /></Icon>
         <Label>Done</Label>
       </Button>
     {/if}

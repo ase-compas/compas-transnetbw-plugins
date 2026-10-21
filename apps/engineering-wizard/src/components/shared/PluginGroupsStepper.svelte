@@ -20,8 +20,8 @@
     pluginGroups = [],
     selectedGroupIndex = $bindable<number>(0),
     selectedPluginIndex = $bindable<number>(0),
-    expandedGroupBackground = 'var(--primary-base)',
-    expandedGroupBorderColor = 'var(--primary-base)',
+    expandedGroupBackground = 'var(--oscd-plugin-brand)',
+    expandedGroupBorderColor = 'var(--oscd-plugin-brand)',
     selectPlugin,
     validationViews = {},
     autoSelect = true,
@@ -109,9 +109,13 @@
             class:active={chip.pluginIndex === resolvedPluginIndex}
             onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
           >
-            <span>{chip.plugin.name}</span>
+            <span class="validation-groups__plugin-label">{chip.plugin.name}</span>
             {#if view}
-              <ValidationBadgePopover {view} active={chip.pluginIndex === selectedPluginIndex} />
+              <ValidationBadgePopover
+                {view}
+                active={chip.pluginIndex === selectedPluginIndex}
+                pluginName={chip.plugin.name}
+              />
             {/if}
           </button>
         {/each}
@@ -126,8 +130,8 @@
     flex-direction: row;
     gap: 4px;
 
-    --expanded-group-bg: var(--primary-base);
-    --expanded-group-border: var(--primary-base);
+    --expanded-group-bg: var(--oscd-plugin-brand);
+    --expanded-group-border: var(--oscd-plugin-brand);
   }
 
   .validation-groups__group {
@@ -138,7 +142,7 @@
     box-sizing: border-box;
     padding: 4px;
 
-    background-color: white;
+    background-color: var(--oscd-plugin-surface);
     border: 2px solid transparent;
   }
 
@@ -158,7 +162,7 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     cursor: pointer;
     user-select: none;
 
@@ -169,8 +173,8 @@
   }
 
   .validation-groups__group.expanded .validation-groups__group-title {
-    background-color: var(--primary-base);
-    color: var(--white);
+    background-color: var(--oscd-plugin-brand);
+    color: var(--oscd-plugin-on-brand);
   }
 
   .validation-groups__plugin {
@@ -181,14 +185,15 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     padding: 6px 0.5rem;
     min-height: 36px;
-    background-color: white;
+    background-color: var(--oscd-plugin-surface);
     border-radius: 2px;
 
     width: fit-content;
     min-width: 2rem;
+    max-width: 10rem;
     cursor: pointer;
 
     margin: 0;
@@ -196,7 +201,14 @@
     overflow: visible;
   }
 
+  .validation-groups__plugin-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   .validation-groups__plugin.active {
-    background-color: #d9d800;
+    background-color: var(--oscd-plugin-action);
+    color: var(--oscd-plugin-on-action);
   }
 </style>

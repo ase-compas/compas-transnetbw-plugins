@@ -101,18 +101,18 @@
     <div class="topbar__actions">
       <Button
         variant="outlined"
-        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        style="--mdc-theme-primary: var(--oscd-plugin-brand); --mdc-theme-on-primary: var(--oscd-plugin-on-brand)"
         onclick={cancel}
       >Cancel</Button>
       <Button
         variant="raised"
-        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
         onclick={save}
         disabled={!canSave || saving}
       >
         {#if saving}
           <CircularProgress
-            style="height: 16px; width: 16px; margin-right: 6px; --mdc-circular-progress-bar-color: var(--white);"
+            style="height: 16px; width: 16px; margin-right: 6px; --mdc-theme-primary: var(--oscd-plugin-on-action);"
             indeterminate
           />
         {/if}
@@ -171,7 +171,7 @@
 
   .title {
     margin: 0;
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     font-size: var(--ew-font-size-h1, 1.25rem);
     font-weight: var(--ew-font-weight-heading, 600);
   }

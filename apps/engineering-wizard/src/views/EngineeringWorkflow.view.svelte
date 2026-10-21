@@ -148,7 +148,7 @@
   <PluginGroupsStepper
     selectPlugin={onSelectPlugin}
     {pluginGroups}
-    expandedGroupBackground="var(--primary-base)"
+    expandedGroupBackground="var(--oscd-plugin-brand)"
     expandedGroupBorderColor="white"
     bind:selectedGroupIndex
     bind:selectedPluginIndex
@@ -162,6 +162,7 @@
     onDone={exitWorkflow}
     isAtFirstStep={currentIndex <= 0}
     isAtLastStep={currentIndex === plugins.length - 1}
+    nextDisabled={currentIndex === plugins.length - 1}
   />
 </div>
 
@@ -189,8 +190,8 @@
   }
 
   .stepper {
-    background-color: var(--primary-base);
-    --on-brand: #fff;
+    background-color: var(--oscd-plugin-brand);
+    --on-brand: var(--oscd-plugin-on-brand);
 
     display: flex;
     flex-direction: row;

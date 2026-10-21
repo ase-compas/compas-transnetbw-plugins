@@ -43,7 +43,8 @@ body {
 }
 
 body {
-  color: #333;
+  color: var(--oscd-plugin-text, #333);
+  background-color: var(--oscd-plugin-surface, white);
   margin: 0;
   padding: 8px;
   box-sizing: border-box;
@@ -73,7 +74,7 @@ body {
 }
 
 .oscd-app {
-  color: #333;
+  color: var(--oscd-plugin-text, #333);
   margin: 0;
   padding: 8px;
   box-sizing: border-box;
@@ -125,7 +126,7 @@ button:disabled {
   color: #999;
 }
 
-button:not(:disabled):active {
+button:not(:disabled):not(.mdc-button):active {
   background-color: #ddd;
 }
 

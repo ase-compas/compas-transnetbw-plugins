@@ -114,8 +114,8 @@ function handleBackdropKeydown(event: KeyboardEvent) {
     border-bottom: 1px solid #ddd;
     font-weight: 500;
     font-size: 1.5rem;
-    color: #dae3e6;
-    background: var(--mdc-theme-primary, #ff3e00);
+    color: var(--oscd-plugin-on-brand, #dae3e6);
+    background: var(--oscd-plugin-brand, var(--mdc-theme-primary, #ff3e00));
   }
 
   .drawer-body {
@@ -125,7 +125,7 @@ function handleBackdropKeydown(event: KeyboardEvent) {
   }
 
   .drawer-footer {
-    background: #fff;
+    background: var(--oscd-plugin-surface, #fff);
     padding: 8px 1.5rem;
     border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, .12));
   }
@@ -188,7 +188,7 @@ function handleBackdropKeydown(event: KeyboardEvent) {
 
         <OscdIconActionButton
           type="close"
-          fillColor="white"
+          fillColor="var(--oscd-plugin-on-brand, white)"
           onClick={() => closeDrawer("button")}
           tooltip="Close"
           tooltipSide="left"
@@ -211,8 +211,8 @@ function handleBackdropKeydown(event: KeyboardEvent) {
           <Button
             variant="unelevated"
             color="primary"
-            style="background: white;
-            color: var(--mdc-theme-primary, #ff3e00)"
+            style="background: var(--oscd-plugin-surface, white);
+            color: var(--oscd-plugin-brand, var(--mdc-theme-primary, #ff3e00))"
             onclick={() => closeDrawer('cancel')}
           >Cancel</Button>
           <Button

@@ -9,7 +9,7 @@
 </script>
 
 <div class="plugin-loading">
-  <Spinner size="40px" color="var(--primary-base, #4a7a7f)" />
+  <Spinner size="40px" color="var(--oscd-plugin-brand, #4a7a7f)" />
   <span class="message">{message}</span>
 </div>
 

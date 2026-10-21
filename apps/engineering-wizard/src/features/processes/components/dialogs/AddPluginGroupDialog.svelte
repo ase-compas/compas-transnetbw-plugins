@@ -83,14 +83,14 @@
         padding: 0 0.75rem;
         border: 1px solid #b2c7cb;
         border-radius: 4px;
-        background: var(--white);
+        background: var(--oscd-plugin-surface);
         color: var(--base03);
         font: inherit;
         font-size: 1rem;
     }
 
     .position-field select:focus {
-        border-color: var(--primary-base);
-        outline: 1px solid var(--primary-base);
+        border-color: var(--oscd-plugin-brand);
+        outline: 1px solid var(--oscd-plugin-brand);
     }
 </style>

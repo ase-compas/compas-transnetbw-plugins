@@ -132,8 +132,8 @@
         hoverDelay={300}
         side="bottom"
         offset={12}
-        backgroundColor="var(--primary-base)"
-        textColor="var(--white)"
+        backgroundColor="var(--oscd-plugin-brand)"
+        textColor="var(--oscd-plugin-on-brand)"
         paddingY={8}
         paddingX={12}
       >

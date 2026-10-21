@@ -50,8 +50,8 @@
 
 <style>
   .header {
-    background-color: var(--primary-base);
-    color: white;
+    background-color: var(--oscd-plugin-brand, var(--primary-base));
+    color: var(--oscd-plugin-on-brand, white);
     padding: 1.2rem 1.5rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   }

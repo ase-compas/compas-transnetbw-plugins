@@ -90,7 +90,7 @@
     font-size: var(--tg-font-size-heading);
     font-weight: var(--tg-font-weight-heading);
     line-height: 1.2;
-    color: var(--mdc-theme-primary);
+    color: var(--oscd-plugin-text);
   }
 
   .title-secondary {

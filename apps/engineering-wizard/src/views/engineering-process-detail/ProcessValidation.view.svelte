@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
-  import { OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdControlPointDuplicateIcon, OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { validateEntry, type ValidationError } from '../../services/validationService';
@@ -10,7 +10,13 @@
   function formatToastDetail(errors: ValidationError[], userMessage: string): string {
     if (errors.length === 0) return '';
     const msg = userMessage.trim();
-    const parts = errors.map((e) => (msg.length > 0 ? msg : e.message));
+    const parts = errors.map((e) => {
+      const message = msg.length > 0 ? msg : e.message;
+      const note = e.message.startsWith('No context nodes found')
+        ? 'No context nodes found'
+        : undefined;
+      return note ? `${message} (${note})` : message;
+    });
     return [...new Set(parts)].join('; ');
   }
 
@@ -18,9 +24,10 @@
     selectedPlugin?: Plugin | null;
     onEditEntry?: (item: XPathValidation, index: number) => void;
     onDeleteEntry?: (item: XPathValidation, index: number) => void;
+    onDuplicateEntry?: (item: XPathValidation, index: number) => void;
   }
 
-  let { selectedPlugin = null, onEditEntry, onDeleteEntry }: Props = $props();
+  let { selectedPlugin = null, onEditEntry, onDeleteEntry, onDuplicateEntry }: Props = $props();
 
   const validationEntries = $derived.by(() => {
     const procId = selectedEngineeringProcess?.process?.id;
@@ -73,7 +80,7 @@
           aria-label="Run validation"
           onclick={() => handleValidate(item)}
         >
-          <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
+          <OscdPlayCircleIcon svgStyles="fill: var(--oscd-plugin-brand)" />
         </button>
         <button
           type="button"
@@ -85,7 +92,19 @@
             onEditEntry?.(item, index);
           }}
         >
-          <OscdEditIcon svgStyles="fill: var(--primary-base)" />
+          <OscdEditIcon svgStyles="fill: var(--oscd-plugin-brand)" />
+        </button>
+        <button
+          type="button"
+          class="action-btn action-btn--duplicate"
+          title="Duplicate"
+          aria-label="Duplicate validation"
+          onclick={() => {
+            const index = validationEntries.indexOf(item);
+            onDuplicateEntry?.(item, index);
+          }}
+        >
+          <OscdControlPointDuplicateIcon svgStyles="fill: var(--oscd-plugin-brand)" />
         </button>
         <button
           type="button"
@@ -126,7 +145,7 @@
   }
 
   .action-btn:focus-visible {
-    outline: 2px solid var(--primary-base);
+    outline: 2px solid var(--oscd-plugin-brand);
     outline-offset: 2px;
   }
 </style>

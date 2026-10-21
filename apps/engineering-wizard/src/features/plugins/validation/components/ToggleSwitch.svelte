@@ -41,11 +41,11 @@
   }
 
   .switch:focus-visible {
-    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary-base);
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--oscd-plugin-brand);
   }
 
   .switch--on {
-    background: var(--primary-base);
+    background: var(--oscd-plugin-brand);
   }
 
   .switch:disabled {
@@ -60,7 +60,7 @@
     width: 1.125rem;
     height: 1.125rem;
     border-radius: 50%;
-    background: var(--white);
+    background: var(--oscd-plugin-on-brand);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: transform 0.2s ease;
   }

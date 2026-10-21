@@ -29,7 +29,7 @@
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
   interface Props {
-    onReturnToList: () => Promise<void>;
+    onReturnToList: () => void | Promise<void>;
   }
 
   const { onReturnToList }: Props = $props();
@@ -106,9 +106,10 @@
     selectedEngineeringProcess.process = null;
   }
 
-  async function returnToProcessList() {
-    await onReturnToList();
+  // Route first; refresh runs in the background so the UI never waits on the fetch.
+  function returnToProcessList() {
     leaveEditMode();
+    void onReturnToList();
   }
 
   async function exitEditing() {
@@ -121,7 +122,7 @@
       if (result?.type !== 'confirm') return;
       restoreSnapshot();
     }
-    await returnToProcessList();
+    returnToProcessList();
   }
 
   /** Called by the Done button — skips the "save or discard?" prompt, goes straight to version bump. */
@@ -149,7 +150,7 @@
         saving = false;
       }
     }
-    await returnToProcessList();
+    returnToProcessList();
   }
 
   function handleStepSelect(stepId: EditorStepIds) {
@@ -193,6 +194,23 @@
     if (result?.type === 'confirm') {
       updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
     }
+  }
+
+  async function handleDuplicateValidationClick(entry: XPathValidation) {
+    const proc = selectedEngineeringProcess.process;
+    const pl = selectedPlugin;
+    if (!pl || !proc) return;
+
+    const base = entry.title.replace(/ \(copy(?: \d+)?\)$/, '');
+    const existing = new Set((pl.validations ?? []).map((v) => v.title));
+    let title = `${base} (copy)`;
+    for (let n = 2; existing.has(title); n++) title = `${base} (copy ${n})`;
+
+    const copy = { ...$state.snapshot(entry), title };
+    addValidationToPluginInProcess(proc.id, pl.id, copy);
+
+    const index = (pl.validations?.length ?? 1) - 1;
+    await handleEditValidationClick(copy, index);
   }
 
   async function handleDeleteValidationClick(entry: XPathValidation, index: number) {
@@ -263,7 +281,7 @@
           />
           <Button
             variant="raised"
-            style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+            style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
             onclick={handleAddValidationClick}
             disabled={!selectedEngineeringProcess.process || !selectedPlugin}
             aria-label="Add validation"
@@ -276,6 +294,7 @@
         {selectedPlugin}
         onEditEntry={handleEditValidationClick}
         onDeleteEntry={handleDeleteValidationClick}
+        onDuplicateEntry={handleDuplicateValidationClick}
       />
     {/if}
   </div>
@@ -304,7 +323,7 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    background-color: var(--primary-base);
+    background-color: var(--oscd-plugin-brand);
     flex-shrink: 0;
   }
 
