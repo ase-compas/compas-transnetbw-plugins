@@ -1,11 +1,9 @@
 <script lang="ts">
   import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { OscdControlPointDuplicateIcon, OscdDeleteIcon, OscdEditIcon, OscdPlayCircleIcon } from '@oscd-transnet-plugins/oscd-icons';
-  import { selectedEngineeringProcess } from '../../features/processes/stores.svelte';
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { validateEntry, type ValidationError } from '../../services/validationService';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import { getValidationsForScope } from '../../features/processes/mutations.svelte';
 
   function formatToastDetail(errors: ValidationError[], userMessage: string): string {
     if (errors.length === 0) return '';
@@ -29,16 +27,7 @@
 
   let { selectedPlugin = null, onEditEntry, onDeleteEntry, onDuplicateEntry }: Props = $props();
 
-  const validationEntries = $derived.by(() => {
-    const procId = selectedEngineeringProcess?.process?.id;
-    if (!procId || !selectedPlugin) return [] as XPathValidation[];
-
-    return getValidationsForScope(
-      selectedPlugin.validations,
-      procId,
-      selectedPlugin.id,
-    );
-  });
+  const validationEntries = $derived(selectedPlugin?.validations ?? []);
 
   const columns = [
     { key: 'title', header: 'Name', bold: true, width: '220px' },
@@ -69,7 +58,7 @@
     hasActions
     headerBg="var(--base3)"
     rowBg="var(--white)"
-    getRowId={(item, i) => `${item.processId}:${item.pluginId}:${item.title}:${i}`}
+    getRowId={(item, i) => `${item.title}:${i}`}
   >
     {#snippet actions({ item })}
       <div class="actions-cell">

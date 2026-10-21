@@ -40,11 +40,7 @@
       const imported = (await Promise.all(
         files.map(async (file) => {
           try {
-            return parseValidationImportJson(
-              await file.text(),
-              activeProcess.id,
-              activePlugin.id,
-            );
+            return parseValidationImportJson(await file.text());
           } catch (error) {
             const detail = error instanceof Error ? error.message : String(error);
             throw new Error(`"${file.name}": ${detail}`);

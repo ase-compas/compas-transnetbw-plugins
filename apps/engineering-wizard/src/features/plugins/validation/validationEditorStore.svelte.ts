@@ -3,18 +3,16 @@ import {
   type ConditionKey,
   type ElementCheckType,
 } from './validationRuleUi';
-import type { XPathValidation } from '@oscd-transnet-plugins/shared';
+import { toStoredValidation, type XPathValidation } from '@oscd-transnet-plugins/shared';
 import { buildAssertionExpression } from './xpathBuilder';
 
-function defaultEntry(processId = '', pluginId = ''): XPathValidation {
+function defaultEntry(): XPathValidation {
   return {
     title: '',
     description: '',
     context: '//SCL',
     assert: '',
     message: '',
-    processId,
-    pluginId,
   };
 }
 
@@ -42,30 +40,14 @@ function expertRuleUi(assert: string, message: string): RuleUiState {
   };
 }
 
-function editableEntry(existing: XPathValidation): XPathValidation {
-  return {
-    title: existing.title,
-    description: existing.description,
-    context: existing.context,
-    assert: existing.assert,
-    message: existing.message,
-    processId: existing.processId,
-    pluginId: existing.pluginId,
-  };
-}
-
 export const validationEditor = $state({
   entry: defaultEntry(),
   ruleUi: defaultRuleUi(),
 });
 
-export function initValidationEditor(
-  processId: string,
-  pluginId: string,
-  existing?: XPathValidation,
-): void {
+export function initValidationEditor(existing?: XPathValidation): void {
   if (existing) {
-    validationEditor.entry = editableEntry(existing);
+    validationEditor.entry = toStoredValidation(existing);
     const message = existing.message ?? '';
     const parsedRuleUi = parseAssertionToRuleUi(existing.assert, message);
     if (parsedRuleUi) {
@@ -74,7 +56,7 @@ export function initValidationEditor(
       validationEditor.ruleUi = expertRuleUi(existing.assert, message);
     }
   } else {
-    validationEditor.entry = defaultEntry(processId, pluginId);
+    validationEditor.entry = defaultEntry();
     validationEditor.ruleUi = defaultRuleUi();
   }
 }

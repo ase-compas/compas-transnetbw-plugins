@@ -12,14 +12,12 @@ describe('validation editor initialization', () => {
   it('preserves unsupported XPath in expert mode', () => {
     const assert = 'every $ied in IED satisfies normalize-space($ied/@name)';
 
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Custom rule',
       description: '',
       context: '//SCL',
       assert,
       message: 'IED names are required.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -36,15 +34,13 @@ describe('validation editor initialization', () => {
       context: '//SCL',
       assert: "normalize-space(@name) = 'valid'",
       message: 'The name must be valid.',
-      processId: 'process',
-      pluginId: 'plugin',
       ruleUi: {
         mode: 'element',
         elementName: 'IED',
       },
     };
 
-    initValidationEditor('process', 'plugin', legacyValidation);
+    initValidationEditor(legacyValidation);
 
     expect(validationEditor.ruleUi).toMatchObject({
       expertMode: false,
@@ -57,14 +53,12 @@ describe('validation editor initialization', () => {
   });
 
   it('uses the default builder state for an empty assertion', () => {
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Empty rule',
       description: '',
       context: '//SCL',
       assert: '   ',
       message: 'Define this rule.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -79,14 +73,12 @@ describe('validation editor initialization', () => {
   });
 
   it('restores builder rules with namespaced and hyphenated attributes', () => {
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Attribute rule',
       description: '',
       context: '//SCL',
       assert: "normalize-space(@scl:name-format) = 'valid'",
       message: 'The format must be valid.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -121,14 +113,12 @@ describe('validation editor initialization', () => {
     };
     const assert = buildAssertionExpression(ruleUi);
 
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Attribute rule',
       description: '',
       context: '//SCL',
       assert,
       message: ruleUi.message,
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -166,14 +156,12 @@ describe('validation editor initialization', () => {
     };
     const assert = buildAssertionExpression(ruleUi);
 
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Element rule',
       description: '',
       context: '//SCL',
       assert,
       message: ruleUi.message,
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -189,14 +177,12 @@ describe('validation editor initialization', () => {
   it('round-trips the attribute-presence assertion used for empty comparison text', () => {
     const assert = 'normalize-space(@name)';
 
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Attribute rule',
       description: '',
       context: '//SCL',
       assert,
       message: 'Name is required.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -211,14 +197,12 @@ describe('validation editor initialization', () => {
   it('keeps builder-like assertions in expert mode when they cannot round-trip', () => {
     const assert = 'count(IED) > 2';
 
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Custom count',
       description: '',
       context: '//SCL',
       assert,
       message: 'More IEDs are required.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -228,14 +212,12 @@ describe('validation editor initialization', () => {
   });
 
   it('seeds expert mode from the current builder assertion', () => {
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Attribute rule',
       description: '',
       context: '//SCL',
       assert: "normalize-space(@name) = 'valid'",
       message: 'The name must be valid.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     enterExpertMode();
@@ -248,14 +230,12 @@ describe('validation editor initialization', () => {
 
   it('keeps the untouched builder state when exiting expert mode after an edit', () => {
     const expertXPath = "normalize-space(@name) = 'updated'";
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Attribute rule',
       description: '',
       context: '//SCL',
       assert: "normalize-space(@name) = 'initial'",
       message: 'The name must be valid.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     enterExpertMode();
@@ -279,7 +259,7 @@ describe('validation editor initialization', () => {
 
   it('allows exiting expert mode even when the XPath cannot be represented by the builder', () => {
     const expertXPath = 'count(IED) > 2';
-    initValidationEditor('process', 'plugin');
+    initValidationEditor();
     validationEditor.ruleUi.expertMode = true;
     validationEditor.ruleUi.expertXPath = expertXPath;
 
@@ -292,7 +272,7 @@ describe('validation editor initialization', () => {
   });
 
   it('leaves builder fields untouched when exiting expert mode with an empty draft', () => {
-    initValidationEditor('process', 'plugin');
+    initValidationEditor();
     validationEditor.ruleUi.message = 'Define this rule.';
     validationEditor.ruleUi.expertMode = true;
     validationEditor.ruleUi.expertXPath = '   ';
@@ -334,14 +314,12 @@ describe('validation editor initialization', () => {
       };
       const assert = buildAssertionExpression(ruleUi);
 
-      initValidationEditor('process', 'plugin', {
+      initValidationEditor({
         title: 'Attribute rule',
         description: '',
         context: '//SCL',
         assert,
         message: ruleUi.message,
-        processId: 'process',
-        pluginId: 'plugin',
       });
 
       expect(buildAssertionExpression(validationEditor.ruleUi)).toBe(assert);
@@ -358,14 +336,12 @@ describe('validation editor initialization', () => {
   it('normalizes exactly zero elements to the equivalent not-exists state', () => {
     const assert = 'count(IED) = 0';
 
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'No IEDs',
       description: '',
       context: '//SCL',
       assert,
       message: 'IEDs are not allowed.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
@@ -402,14 +378,12 @@ describe('validation editor initialization', () => {
     'count(IED) = -1',
     'count(IED) >= 1.5',
   ])('keeps invalid builder count assertion "%s" in expert mode', (assert) => {
-    initValidationEditor('process', 'plugin', {
+    initValidationEditor({
       title: 'Invalid count',
       description: '',
       context: '//SCL',
       assert,
       message: 'Invalid count.',
-      processId: 'process',
-      pluginId: 'plugin',
     });
 
     expect(validationEditor.ruleUi).toMatchObject({
