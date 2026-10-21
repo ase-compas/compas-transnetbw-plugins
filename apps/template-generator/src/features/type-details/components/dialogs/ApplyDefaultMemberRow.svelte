@@ -45,7 +45,7 @@
       label="Use default"
       align="end"
       labelStyle={`font-size: 0.8rem; ${
-        willApply ? 'color: var(--mdc-theme-primary);' : ''
+        willApply ? 'color: var(--oscd-plugin-brand);' : ''
       }`}
     />
   </header>

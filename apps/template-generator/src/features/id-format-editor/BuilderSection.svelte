@@ -54,7 +54,7 @@
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 0.3rem;
-    background-color: #f5f5f5;
+    background-color: var(--oscd-plugin-surface-muted);
     padding: 0.5rem;
     border-radius: 8px;
     min-height: 2.5rem;
@@ -65,7 +65,7 @@
     width: fit-content !important;
     align-self: flex-start !important;
     padding: 0 8px;
-    background-color: var(--white);
+    background-color: var(--oscd-plugin-surface);
     border: 1px solid #cfd8dc;
     border-radius: 6px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);

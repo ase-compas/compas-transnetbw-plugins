@@ -164,7 +164,7 @@
     font-size: var(--ew-font-size-body);
     line-height: 1.5;
     color: var(--base03);
-    background: var(--white);
+    background: var(--oscd-plugin-surface);
     border: 1px solid #b2c7cb;
     border-radius: 4px;
     resize: vertical;
@@ -173,6 +173,6 @@
   }
 
   .expert-editor__textarea:focus {
-    border-color: var(--primary-base);
+    border-color: var(--oscd-plugin-brand);
   }
 </style>

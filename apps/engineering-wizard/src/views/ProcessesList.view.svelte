@@ -125,7 +125,7 @@
       <SearchInput bind:value={searchQuery} label="Search Processes" />
       <Button
         variant="raised"
-        style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+        style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
         onclick={handleAddNew}
         aria-label="Start process"
       >
@@ -137,15 +137,15 @@
   {#if runningProc}
     <div class="process-banner">
       <div class="process-banner__info">
-        <OscdInfoIcon svgStyles="fill: var(--primary-base); width: 20px; height: 20px;" />
+        <OscdInfoIcon svgStyles="fill: var(--oscd-plugin-on-brand); width: 20px; height: 20px;" />
         <span>{bannerText}</span>
       </div>
       <Button
         type="button"
         variant="unelevated"
-        style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base);"
+        style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-text);"
         onclick={continueRunning}>
-        <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
+        <Icon><OscdArrowForwardIcon svgStyles="fill: var(--oscd-plugin-text); width: 18px; height: 18px;" /></Icon>
         <Label>Continue</Label>
       </Button>
     </div>
@@ -170,9 +170,9 @@
             variant="unelevated"
             aria-label="Continue process"
             onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+            style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand); border: 1px solid #ccc;"
           >
-            <Icon><OscdArrowForwardIcon svgStyles="fill: var(--primary-base); width: 18px; height: 18px;" /></Icon>
+            <Icon><OscdArrowForwardIcon svgStyles="fill: var(--oscd-plugin-brand); width: 18px; height: 18px;" /></Icon>
             <Label>Continue</Label>
           </Button>
         {:else}
@@ -181,9 +181,9 @@
             variant="unelevated"
             aria-label="Start process"
             onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--white); --mdc-theme-on-primary: var(--primary-base); border: 1px solid #ccc;"
+            style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand); border: 1px solid #ccc;"
           >
-            <Icon><OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" /></Icon>
+            <Icon><OscdPlayCircleIcon svgStyles="fill: var(--oscd-plugin-brand)" /></Icon>
             <Label>Start</Label>
           </Button>
         {/if}
@@ -211,7 +211,7 @@
     font-family: var(--ew-font-family, 'Inter', sans-serif);
     font-size: var(--ew-font-size-h1, 1.25rem);
     font-weight: var(--ew-font-weight-heading, 600);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-text);
     margin: 0;
     white-space: nowrap;
   }
@@ -239,7 +239,7 @@
     padding: 0 24px;
     margin-bottom: 24px;
     border-radius: 4px;
-    background-color: #d9d800;
+    background-color: var(--oscd-plugin-brand);
   }
 
   .process-banner__info {
@@ -262,7 +262,7 @@
     margin: 0;
     border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: var(--white);
+    background-color: var(--oscd-plugin-surface);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -271,18 +271,18 @@
   }
 
   .delete-process-button:hover {
-    background-color: #f2f2f2;
+    background-color: var(--oscd-plugin-surface-muted);
   }
 
   .delete-process-button:focus-visible {
-    outline: 2px solid var(--primary-base);
+    outline: 2px solid var(--oscd-plugin-brand);
     outline-offset: 2px;
   }
 
-  .process-banner span {
+  .process-banner__info > span {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-on-brand);
     font-weight: var(--ew-font-weight-medium, 500);
   }
 </style>

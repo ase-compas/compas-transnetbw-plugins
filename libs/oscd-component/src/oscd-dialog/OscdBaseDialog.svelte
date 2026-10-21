@@ -16,6 +16,8 @@
     maxHeight?: string;
     confirmDisabled?: boolean;
     color?: string;
+    headerColor?: string;
+    confirmButtonColor?: string;
     contentPadding?: string;
     showCloseButton?: boolean;
     confirmClose?: boolean;
@@ -37,7 +39,9 @@
     height = '85vh',
     maxHeight = '85vh',
     confirmDisabled = false,
-    color = 'var(--mdc-theme-primary, #ff3e00)',
+    color,
+    headerColor,
+    confirmButtonColor,
     contentPadding = 'var(--dialog-h-padding, 1.5rem)',
     showCloseButton = true,
     confirmClose = false,
@@ -89,10 +93,23 @@
     action();
   }
 
+  // Explicit legacy `color` still colors both regions for existing callers.
+  const headerBackground = $derived(
+    headerColor ?? color ?? 'var(--oscd-plugin-brand, var(--mdc-theme-primary, #ff3e00))'
+  );
+  const actionBackground = $derived(
+    confirmButtonColor ?? color ?? 'var(--oscd-plugin-action, var(--mdc-theme-primary, #ff3e00))'
+  );
+  const headerForeground = $derived(
+    (headerColor ?? color) === undefined ? 'var(--oscd-plugin-on-brand, white)' : 'white'
+  );
+  const actionForeground = $derived(
+    (confirmButtonColor ?? color) === undefined ? 'var(--oscd-plugin-on-action, white)' : 'white'
+  );
   const confirmButtonStyle = $derived(
     confirmDisabled
       ? ''
-      : `background-color: ${confirmActionColor === 'primary' ? color : '#FF203A'}; color: white;`
+      : `background-color: ${confirmActionColor === 'primary' ? actionBackground : '#FF203A'}; color: ${confirmActionColor === 'primary' ? actionForeground : 'white'};`
   );
 </script>
 
@@ -110,7 +127,7 @@
   surface$style={`width: ${width}; max-width: ${maxWidth}; height: ${height}; max-height: ${maxHeight}; --dialog-content-padding: ${contentPadding};`}
 >
   <Header>
-    <div class="dialog__title" style={`background-color: ${color};`}>
+    <div class="dialog__title" style={`background-color: ${headerBackground}; color: ${headerForeground};`}>
       <h4>{title}</h4>
       {#if showCloseButton}
         <OscdIconActionButton
@@ -119,7 +136,7 @@
           tooltip="Close"
           tooltipSide="left"
           type="close"
-          fillColor="white"
+          fillColor={headerForeground}
         />
       {/if}
     </div>
@@ -199,7 +216,7 @@
   }
 
   .dialog__actions {
-    background-color: white;
+    background-color: var(--oscd-plugin-surface, white);
     border-top: 1px solid var(--mdc-theme-on-surface-divider-color, rgba(0, 0, 0, 0.12));
   }
 

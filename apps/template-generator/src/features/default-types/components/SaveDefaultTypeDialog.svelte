@@ -202,14 +202,14 @@
     padding: 0.75rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    background: #fafafa;
+    background: var(--oscd-plugin-surface-muted);
   }
 
   .summary__title {
     margin: 0;
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-bold);
-    color: #555;
+    color: var(--oscd-plugin-text-muted);
   }
 
   .summary__grid {
@@ -228,12 +228,12 @@
   .summary__label {
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-heading);
-    color: #666;
+    color: var(--oscd-plugin-text-muted);
   }
 
   .summary__value {
     font-size: var(--tg-font-size-body);
-    color: #222;
+    color: var(--oscd-plugin-text);
     line-height: 1.3;
     overflow-wrap: anywhere;
   }
@@ -250,14 +250,14 @@
   .summary__note {
     margin: 0;
     font-size: var(--tg-font-size-body);
-    color: #555;
+    color: var(--oscd-plugin-text-muted);
     line-height: 1.35;
   }
 
   .summary__toggle {
     border: none;
     background: transparent;
-    color: var(--primary);
+    color: var(--oscd-plugin-text);
     font-size: var(--tg-font-size-body);
     font-weight: var(--tg-font-weight-heading);
     text-align: left;

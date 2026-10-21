@@ -70,22 +70,24 @@
 {:else if loadState.status !== 'loaded'}
   <PluginLoadingIndicator />
 {:else}
-  <svelte:element
-    this={tag}
-    use:setProps={{
-      doc,
-      editCount,
-      docVersion: editCount,
-      plugins,
-      nsdoc,
-      docName,
-      docId,
-      docs,
-      locale,
-      oscdApi,
-      host,
-    }}
-  />
+  <div class="external-plugin">
+    <svelte:element
+      this={tag}
+      use:setProps={{
+        doc,
+        editCount,
+        docVersion: editCount,
+        plugins,
+        nsdoc,
+        docName,
+        docId,
+        docs,
+        locale,
+        oscdApi,
+        host,
+      }}
+    />
+  </div>
 {/if}
 </div>
 
@@ -98,5 +100,19 @@
    */
   .plugin-host {
     height: 100%;
+  }
+
+  /* External plugins retain the host's Material palette, not the wizard's roles. */
+  .external-plugin {
+    height: 100%;
+    --primary-base: initial;
+    --mdc-theme-primary: var(--oscd-primary, var(--oscd-theme-primary, #004552));
+    --mdc-theme-secondary: var(--oscd-secondary, var(--oscd-theme-secondary, #004552));
+    --mdc-theme-on-primary: var(--oscd-base2, var(--oscd-theme-base2, #eee8d5));
+    --mdc-theme-on-secondary: var(--oscd-base2, var(--oscd-theme-base2, #eee8d5));
+    --mdc-theme-on-surface: var(--oscd-base00, var(--oscd-theme-base00, #657b83));
+    --mdc-theme-on-background: var(--oscd-base00, var(--oscd-theme-base00, #657b83));
+    --mdc-theme-text-primary-on-background: var(--oscd-base01, var(--oscd-theme-base01, #586e75));
+    --mdc-theme-text-secondary-on-background: var(--oscd-base00, var(--oscd-theme-base00, #657b83));
   }
 </style>

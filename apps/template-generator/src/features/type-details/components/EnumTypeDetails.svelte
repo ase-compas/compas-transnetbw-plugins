@@ -88,7 +88,7 @@
 
 		<Body>
 			{#each filteredMembers as item (item.name)}
-				<Row style="background: white">
+				<Row style="background: var(--oscd-plugin-surface)">
 					{#if isEditMode}
 						<Cell>
 							<Checkbox

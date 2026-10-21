@@ -15,7 +15,7 @@
 
 <div class="step-circle {active ? 'active' : ''} {visited ? 'visited' : ''} {selected ? 'selected' : ''}">
   {#if selected}
-    <OscdCheckIcon svgStyles="fill: var(--primary-base); width: 0.875rem; height: 0.875rem;" />
+    <OscdCheckIcon svgStyles="fill: var(--oscd-plugin-brand); width: 0.875rem; height: 0.875rem;" />
   {:else if visited && status}
     {#if status === 'check'}
       <OscdCheckIcon />
@@ -48,17 +48,17 @@
   }
 
   .step-circle.active {
-    background-color: #D9D800;
-    color: var(--primary-base);
+    background-color: var(--oscd-plugin-action);
+    color: var(--oscd-plugin-on-action);
   }
 
   .step-circle.visited {
-    background-color: var(--white);
-    color: var(--primary-base);
+    background-color: var(--oscd-plugin-surface);
+    color: var(--oscd-plugin-brand);
   }
 
   .step-circle.selected {
-    background-color: var(--white);
-    color: var(--primary-base);
+    background-color: var(--oscd-plugin-surface);
+    color: var(--oscd-plugin-brand);
   }
 </style>

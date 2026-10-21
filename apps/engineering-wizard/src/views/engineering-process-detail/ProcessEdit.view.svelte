@@ -281,7 +281,7 @@
           />
           <Button
             variant="raised"
-            style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+            style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
             onclick={handleAddValidationClick}
             disabled={!selectedEngineeringProcess.process || !selectedPlugin}
             aria-label="Add validation"
@@ -323,7 +323,7 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    background-color: var(--primary-base);
+    background-color: var(--oscd-plugin-brand);
     flex-shrink: 0;
   }
 

@@ -182,7 +182,7 @@
                 id="bulk-toggle-applicable"
                 label="All"
                 align="end"
-                labelStyle="font-size: 0.8rem; color: var(--mdc-theme-primary);"
+                labelStyle="font-size: 0.8rem; color: var(--oscd-plugin-text);"
               />
             {/if}
           </div>
@@ -298,7 +298,7 @@
   }
 
   .success-text {
-    color: var(--primary);
+    color: var(--oscd-plugin-text);
   }
 
   .muted-text {

@@ -111,7 +111,7 @@
     }
 
     .ewf-dialog-panel {
-        background: var(--white);
+        background: var(--oscd-plugin-surface);
         width: 100vw;
         height: 100%;
         border-radius: 8px;

@@ -23,9 +23,9 @@
       {rule.title}
     </span>
     {#if expanded}
-      <OscdArrowUpIcon svgStyles={`fill: var(--primary-base);`} />
+      <OscdArrowUpIcon svgStyles={`fill: var(--oscd-plugin-brand);`} />
     {:else}
-      <OscdArrowDownIcon svgStyles={`fill: var(--primary-base);`} />
+      <OscdArrowDownIcon svgStyles={`fill: var(--oscd-plugin-brand);`} />
     {/if}
   </summary>
 
@@ -56,7 +56,7 @@
 
 <style>
   .item {
-    background: #fff4f5;
+    background: color-mix(in srgb, var(--oscd-plugin-error) 6%, var(--oscd-plugin-surface));
     border-radius: 6px;
     overflow: hidden;
   }
@@ -66,7 +66,7 @@
   }
 
   .item--error {
-    background: #f2f2f2;
+    background: var(--oscd-plugin-surface-muted);
   }
 
   .item--error .title,
@@ -93,7 +93,7 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
   }
 
   .body {
@@ -109,7 +109,7 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-normal, 400);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-text);
     line-height: 1.5;
     text-align: left;
   }

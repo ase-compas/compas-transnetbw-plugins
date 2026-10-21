@@ -14,7 +14,7 @@
 
 <style>
   .info-box {
-    background: #ffffff;
+    background: var(--oscd-plugin-surface);
     border: 1px solid #dae3e6;
     border-radius: 5px;
     padding: 0.75rem 1rem;
