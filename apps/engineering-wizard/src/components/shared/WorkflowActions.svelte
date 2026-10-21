@@ -52,16 +52,14 @@
   }: Props = $props();
 
   const backStyles = $derived(`
-    background-color: ${backBg ?? 'var(--base0)'};
-    color: ${backColor ?? 'var(--white)'};
+    background-color: ${backBg ?? nextBg ?? 'var(--white)'};
+    color: ${backColor ?? nextColor ?? 'var(--primary-base)'};
     opacity: ${isAtFirstStep ? '0.38' : '1'};
-    pointer-events: ${isAtFirstStep ? 'none' : 'auto'};
   `);
   const nextStyles = $derived(`
     background-color: ${nextBg ?? 'var(--white)'};
     color: ${nextColor ?? 'var(--primary-base)'};
     opacity: ${nextDisabled ? '0.38' : '1'};
-    pointer-events: ${nextDisabled ? 'none' : 'auto'};
   `);
   const doneStyles = $derived(`
     ${doneBg ? `background-color: ${doneBg};` : `background-color: var(--white);`}
@@ -77,7 +75,7 @@
       aria-label="Previous step"
       style={backStyles}
     >
-      <Icon><OscdArrowBackIcon svgStyles={`fill: ${backIconFill ?? 'var(--white)'};`} /></Icon>
+      <Icon><OscdArrowBackIcon svgStyles={`fill: ${backIconFill ?? nextIconFill ?? 'var(--primary-base)'};`} /></Icon>
       <Label>Back</Label>
     </Button>
 

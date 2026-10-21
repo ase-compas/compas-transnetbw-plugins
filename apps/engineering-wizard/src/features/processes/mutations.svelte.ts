@@ -1,9 +1,10 @@
-import type {
-  CoMPASPlugin,
-  Plugin,
-  PluginGroup,
-  Process,
-  XPathValidation,
+import {
+  toStoredValidation,
+  type CoMPASPlugin,
+  type Plugin,
+  type PluginGroup,
+  type Process,
+  type XPathValidation,
 } from '@oscd-transnet-plugins/shared';
 import {
   corePlugins,
@@ -26,38 +27,6 @@ function findPlugin(procId: string, pluginId: string): Plugin | undefined {
     .find((pl) => pl.id === pluginId);
 }
 
-function isValidationForScope(
-  validation: XPathValidation,
-  procId: string,
-  pluginId: string,
-): boolean {
-  return validation.processId === procId && validation.pluginId === pluginId;
-}
-
-export function getValidationsForScope(
-  validations: XPathValidation[] | undefined,
-  procId: string,
-  pluginId: string,
-): XPathValidation[] {
-  return (validations ?? []).filter((validation) =>
-    isValidationForScope(validation, procId, pluginId),
-  );
-}
-
-/**
- * Returns the validations for a specific plugin scoped to a process,
- * together with their original indices in the raw validations array.
- */
-function getFilteredValidations(
-  validations: XPathValidation[],
-  procId: string,
-  pluginId: string,
-): { validation: XPathValidation; rawIndex: number }[] {
-  return validations
-    .map((v, rawIndex) => ({ validation: v, rawIndex }))
-    .filter(({ validation }) => isValidationForScope(validation, procId, pluginId));
-}
-
 function mutatePluginValidations(
   procId: string,
   pluginId: string,
@@ -67,18 +36,6 @@ function mutatePluginValidations(
   if (!plugin) return;
   plugin.validations ??= [];
   fn(plugin.validations);
-}
-
-function withValidationScope(
-  validation: XPathValidation,
-  procId: string,
-  pluginId: string,
-): XPathValidation {
-  return {
-    ...validation,
-    processId: procId,
-    pluginId,
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -175,9 +132,7 @@ export function addValidationsToPluginInProcess(
   if (!plugin) return;
   plugin.validations = [
     ...(plugin.validations ?? []),
-    ...validations.map((validation) =>
-      withValidationScope(validation, procId, pluginId),
-    ),
+    ...validations.map(toStoredValidation),
   ];
 }
 
@@ -187,9 +142,8 @@ export function removeValidationFromPluginInProcess(
   entryIndex: number,
 ): void {
   mutatePluginValidations(procId, pluginId, (validations) => {
-    const filtered = getFilteredValidations(validations, procId, pluginId);
-    const entry = filtered[entryIndex];
-    if (entry) validations.splice(entry.rawIndex, 1);
+    if (entryIndex < 0 || entryIndex >= validations.length) return;
+    validations.splice(entryIndex, 1);
   });
 }
 
@@ -200,15 +154,8 @@ export function updateValidationInPluginInProcess(
   validation: XPathValidation,
 ): void {
   mutatePluginValidations(procId, pluginId, (validations) => {
-    const filtered = getFilteredValidations(validations, procId, pluginId);
-    const entry = filtered[entryIndex];
-    if (entry) {
-      validations[entry.rawIndex] = withValidationScope(
-        validation,
-        procId,
-        pluginId,
-      );
-    }
+    if (entryIndex < 0 || entryIndex >= validations.length) return;
+    validations[entryIndex] = toStoredValidation(validation);
   });
 }
 

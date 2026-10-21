@@ -3,7 +3,7 @@ import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 export const VALIDATION_EXPORT_FORMAT_VERSION = 1;
 export const MAX_VALIDATION_IMPORT_BYTES = 5 * 1024 * 1024;
 
-type ExportedValidation = Omit<XPathValidation, 'processId' | 'pluginId'>;
+type ExportedValidation = XPathValidation;
 
 export type ValidationExport = {
   formatVersion: typeof VALIDATION_EXPORT_FORMAT_VERSION;
@@ -37,12 +37,7 @@ function readRequiredString(entry: JsonRecord, key: string, index: number): stri
   return normalizedValue;
 }
 
-function toValidation(
-  value: unknown,
-  processId: string,
-  pluginId: string,
-  index: number,
-): XPathValidation {
+function toValidation(value: unknown, index: number): XPathValidation {
   if (!isRecord(value)) {
     throw new Error(`Validation ${index + 1} must be a JSON object.`);
   }
@@ -53,8 +48,6 @@ function toValidation(
     context: readRequiredString(value, 'context', index),
     assert: readRequiredString(value, 'assert', index),
     message: readOptionalString(value, 'message'),
-    processId,
-    pluginId,
   };
 }
 
@@ -86,23 +79,15 @@ export function createValidationExport(validations: readonly XPathValidation[]):
   };
 }
 
-export function parseValidationImport(
-  content: unknown,
-  processId: string,
-  pluginId: string,
-): XPathValidation[] {
+export function parseValidationImport(content: unknown): XPathValidation[] {
   return getImportValidations(content).map((validation, index) =>
-    toValidation(validation, processId, pluginId, index),
+    toValidation(validation, index),
   );
 }
 
-export function parseValidationImportJson(
-  content: string,
-  processId: string,
-  pluginId: string,
-): XPathValidation[] {
+export function parseValidationImportJson(content: string): XPathValidation[] {
   try {
-    return parseValidationImport(JSON.parse(content), processId, pluginId);
+    return parseValidationImport(JSON.parse(content));
   } catch (error) {
     if (error instanceof SyntaxError) {
       throw new Error('The selected file does not contain valid JSON.');
