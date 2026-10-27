@@ -1,0 +1,51 @@
+/*
+ * Resolved OpenSCD tokens -> plugin roles -> SMUI/legacy component tokens.
+ * These plugins use primary for branding and secondary for action accents.
+ */
+:root,
+:host {
+  --oscd-plugin-action: var(--oscd-secondary, var(--oscd-theme-secondary, light-dark(#004552, #8ac6ce)));
+  --oscd-plugin-brand: var(--oscd-primary, var(--oscd-theme-primary, light-dark(#004552, #8ac6ce)));
+  --oscd-plugin-text: var(--oscd-base03, var(--oscd-theme-base03, light-dark(#002b36, #fdf6e3)));
+  --oscd-plugin-text-muted: var(--oscd-base01, var(--oscd-theme-base01, light-dark(#586e75, #93a1a1)));
+  --oscd-plugin-surface: var(--oscd-base3, var(--oscd-theme-base3, light-dark(#ffffff, #002b36)));
+  --oscd-plugin-surface-muted: var(--oscd-base2, var(--oscd-theme-base2, light-dark(#eee8d5, #073642)));
+  --oscd-plugin-on-action: var(--oscd-plugin-surface);
+  --oscd-plugin-on-brand: var(--oscd-plugin-surface);
+  --oscd-plugin-error: var(--oscd-error, var(--oscd-theme-error, var(--oscd-red, var(--oscd-theme-red, #dc322f))));
+
+  /* Compatibility for shared components; new components should use role tokens. */
+  --primary-base: var(--oscd-plugin-brand);
+  --white: #ffffff;
+  --danger: var(--oscd-plugin-error);
+  --red: var(--oscd-red, var(--oscd-theme-red, #dc322f));
+  --base03: var(--oscd-plugin-text);
+  --base02: var(--oscd-base02, var(--oscd-theme-base02, light-dark(#073642, #eee8d5)));
+  --base01: var(--oscd-plugin-text-muted);
+  --base00: var(--oscd-base00, var(--oscd-theme-base00, light-dark(#657b83, #839496)));
+  --base0: var(--oscd-base0, var(--oscd-theme-base0, light-dark(#839496, #657b83)));
+  --base1: var(--oscd-base1, var(--oscd-theme-base1, light-dark(#93a1a1, #586e75)));
+  --base2: var(--oscd-plugin-surface-muted);
+  --base3: var(--oscd-plugin-surface);
+
+  --mdc-theme-primary: var(--oscd-plugin-action);
+  --mdc-theme-secondary: var(--oscd-plugin-brand);
+  --mdc-theme-on-primary: var(--oscd-plugin-on-action);
+  --mdc-theme-on-secondary: var(--oscd-plugin-on-brand);
+  --mdc-theme-background: var(--oscd-plugin-surface);
+  --mdc-theme-surface: var(--oscd-plugin-surface);
+  --mdc-theme-on-surface: var(--oscd-plugin-text);
+  --mdc-theme-on-background: var(--oscd-plugin-text);
+  --mdc-theme-text-primary-on-background: var(--oscd-plugin-text);
+  --mdc-theme-text-secondary-on-background: var(--oscd-plugin-text-muted);
+  --mdc-theme-error: var(--oscd-plugin-error);
+
+  color: var(--oscd-plugin-text);
+}
+
+.mdc-button:focus-visible {
+  outline-color: var(--oscd-plugin-text);
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 2px;
+}

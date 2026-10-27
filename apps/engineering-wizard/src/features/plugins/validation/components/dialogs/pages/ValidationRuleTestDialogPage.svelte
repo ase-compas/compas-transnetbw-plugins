@@ -70,13 +70,13 @@
   <div class="test-validate__actions">
     <Button
       variant="raised"
-      style="--mdc-theme-primary: var(--primary-base); --mdc-theme-on-primary: var(--white)"
+      style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
       onclick={runValidation}
       disabled={isLoading || !xmlContent.trim()}
     >
       {#if isLoading}
         <CircularProgress
-          style="height: 18px; width: 18px; margin-right: 8px; --mdc-circular-progress-bar-color: var(--white);"
+          style="height: 18px; width: 18px; margin-right: 8px; --mdc-theme-primary: var(--oscd-plugin-on-action);"
           indeterminate
         />
       {/if}

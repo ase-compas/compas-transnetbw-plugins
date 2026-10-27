@@ -138,7 +138,7 @@
         preventToggleOnClick={true}
         id={`edit-mode-switch-${typeId}`}
         label="Edit Mode"
-        labelStyle="font-weight: bold; text-transform: uppercase; color: var(--mdc-theme-primary);"
+        labelStyle="font-weight: bold; text-transform: uppercase; color: var(--oscd-plugin-text);"
         disabled={toggleEditModeSwitchDisabled}/>
       {#if showSetAsDefault && !defaultTypeInfo}
         <SetDefaultButton onClick={onClickDefault} />

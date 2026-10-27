@@ -63,6 +63,62 @@ npm run build:tsld
 
 Build artifacts are emitted to dist/apps/<app-name>.
 
+## Plugin color roles
+
+Engineering Wizard and Template Generator share
+`libs/theme/src/lib/plugin-theme.css`. Their plugin wrappers load it inside the
+shadow root, and their standalone entry points load the same stylesheet.
+The adapter consumes the host's resolved `--oscd-*` palette. Customer
+`--oscd-theme-*` inputs and light/dark defaults are fallbacks for standalone use.
+Plugins do not use the host's navigation tokens.
+
+| Plugin role | Host input | Usage |
+| --- | --- | --- |
+| `--oscd-plugin-action` | `--oscd-secondary` | Primary CTA fills and interactive accents |
+| `--oscd-plugin-brand` | `--oscd-primary` | Structural headers, selected cards and brand accents |
+| `--oscd-plugin-text` | `--oscd-base03` | Headings and body text |
+| `--oscd-plugin-text-muted` | `--oscd-base01` | Secondary text |
+| `--oscd-plugin-surface` | `--oscd-base3` | Content surfaces |
+| `--oscd-plugin-surface-muted` | `--oscd-base2` | Muted cards and chips |
+| `--oscd-plugin-on-action` | `--oscd-base3` | Ink on action fills |
+| `--oscd-plugin-on-brand` | `--oscd-base3` | Ink on brand fills |
+| `--oscd-plugin-error` | `--oscd-error` / `--oscd-red` | Error states |
+
+Primary supplies branding and secondary supplies actions in these two plugins.
+This is their shared convention, not a universal OpenSCD role definition.
+
+Text and neutral surfaces adapt together in light and dark mode. Material's
+hover, focus and pressed layers follow each button's local colors; no global
+state-layer color is imposed. Keyboard focus has an explicit outline. The
+native-button pressed fill excludes Material buttons in both apps so it does
+not replace their CTA fill with gray.
+
+The adapter maps these roles into SMUI's `--mdc-*` variables. The legacy
+`--primary-base` alias is retained for shared components but means structural
+branding, not the action accent. New component styles should use the role tokens
+directly, never use primary as a general text/surface color, and preserve disabled
+and destructive-action states. Choose host fill/ink pairs with sufficient contrast;
+the plugin cannot guarantee text contrast for arbitrary customer colors.
+The host's `--primary` alias is not redefined. Engineering Wizard restores the
+host's Material mappings at the external-plugin mount boundary; its loading and
+error controls retain the wizard's own palette.
+
+Engineering Wizard also uses the action role for enabled external-plugin add
+buttons, active process steps and plugin chips, and Done buttons. Disabled
+controls remain muted; structural stepper backgrounds retain the brand role.
+
+`OscdBaseDialog` and `OscdConfirmDialog` have independent `headerColor` and
+`confirmButtonColor` overrides. Their defaults use the brand and action roles,
+respectively. The existing explicit `color` prop remains a backwards-compatible
+override for both regions; the new individual overrides take precedence.
+Explicit color overrides retain white text and close icons in both modes, so
+callers must choose backgrounds that contrast with white. Without an explicit
+color, the theme's on-brand/on-action roles apply. Other
+plugins that do not load the adapter retain their existing Material defaults.
+
+Source changes must be built and released before a distribution pinned to older
+plugin URLs/hashes can consume them; this does not happen automatically.
+
 ## Preview (serve for CoMPAS integration)
 
 Preview serves a built app on a local HTTP port. Use this when integrating the plugin into a running CoMPAS instance (point CoMPAS to the preview URL).

@@ -29,9 +29,9 @@
     padding: 0 12px;
     font-family: var(--ew-font-family, 'Inter', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
-    color: var(--primary-base, #1a3c54);
-    background: white;
-    border: 1.5px solid var(--primary-base, #1a3c54);
+    color: var(--oscd-plugin-text, #1a3c54);
+    background: var(--oscd-plugin-surface, white);
+    border: 1.5px solid var(--oscd-plugin-brand, #1a3c54);
     border-radius: 4px;
     outline: none;
     box-sizing: border-box;

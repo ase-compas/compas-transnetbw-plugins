@@ -110,7 +110,7 @@
   }
 
   .option__preview {
-    color: var(--mdc-theme-primary, #4a7a7f);
+    color: var(--oscd-plugin-text, var(--mdc-theme-primary, #4a7a7f));
     font-weight: 500;
     font-family: monospace;
     white-space: nowrap;

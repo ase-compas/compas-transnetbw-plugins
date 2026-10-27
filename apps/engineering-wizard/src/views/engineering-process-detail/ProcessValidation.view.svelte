@@ -69,7 +69,7 @@
           aria-label="Run validation"
           onclick={() => handleValidate(item)}
         >
-          <OscdPlayCircleIcon svgStyles="fill: var(--primary-base)" />
+          <OscdPlayCircleIcon svgStyles="fill: var(--oscd-plugin-brand)" />
         </button>
         <button
           type="button"
@@ -81,7 +81,7 @@
             onEditEntry?.(item, index);
           }}
         >
-          <OscdEditIcon svgStyles="fill: var(--primary-base)" />
+          <OscdEditIcon svgStyles="fill: var(--oscd-plugin-brand)" />
         </button>
         <button
           type="button"
@@ -93,7 +93,7 @@
             onDuplicateEntry?.(item, index);
           }}
         >
-          <OscdControlPointDuplicateIcon svgStyles="fill: var(--primary-base)" />
+          <OscdControlPointDuplicateIcon svgStyles="fill: var(--oscd-plugin-brand)" />
         </button>
         <button
           type="button"
@@ -134,7 +134,7 @@
   }
 
   .action-btn:focus-visible {
-    outline: 2px solid var(--primary-base);
+    outline: 2px solid var(--oscd-plugin-brand);
     outline-offset: 2px;
   }
 </style>

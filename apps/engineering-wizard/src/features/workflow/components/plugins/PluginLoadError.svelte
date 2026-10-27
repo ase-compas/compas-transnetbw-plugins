@@ -32,7 +32,7 @@
   <span class="message">{message}</span>
   {#if onRetry}
     <button type="button" class="retry-btn" onclick={onRetry}>
-      <OscdRefreshIcon svgStyles="fill: #fff; width: 14px; height: 14px;" />
+      <OscdRefreshIcon svgStyles="fill: var(--oscd-plugin-on-action); width: 14px; height: 14px;" />
       <span>Retry</span>
     </button>
   {/if}
@@ -64,8 +64,8 @@
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
-    background-color: var(--primary-base, #4a7a7f);
-    color: #fff;
+    background-color: var(--oscd-plugin-action);
+    color: var(--oscd-plugin-on-action);
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;

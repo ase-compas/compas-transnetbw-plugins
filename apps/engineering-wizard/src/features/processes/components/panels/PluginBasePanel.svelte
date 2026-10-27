@@ -139,7 +139,7 @@
 
 <OscdPanel
   class="plugin-list"
-  backgroundColor="var(--primary-base)"
+  backgroundColor="var(--oscd-plugin-brand)"
   {header}
   {content}
   {additional}
@@ -246,7 +246,7 @@
         class="plugin-list__footer-button plugin-list__footer-button--edit"
         onclick={editGroups}
       >
-        <OscdEditIcon svgStyles="fill: var(--primary-base);" aria-hidden="true" />
+        <OscdEditIcon svgStyles="fill: var(--oscd-plugin-brand);" aria-hidden="true" />
         <span>Edit groups</span>
       </button>
 
@@ -256,7 +256,7 @@
         onclick={addGroup}
       >
         <span class="footer-btn__icon footer-btn__icon--filled">
-          <OscdAddIcon svgStyles="fill: #fff; width: 14px; height: 14px;" aria-hidden="true" />
+          <OscdAddIcon svgStyles="fill: var(--oscd-plugin-on-brand); width: 14px; height: 14px;" aria-hidden="true" />
         </span>
         <span>Add group</span>
       </button>
@@ -277,7 +277,7 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
     font-weight: 600;
-    color: var(--white);
+    color: var(--oscd-plugin-on-brand);
     line-height: 1.2;
   }
 
@@ -320,7 +320,7 @@
   }
 
   .plugin-list__group-header:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline: 2px solid var(--oscd-plugin-on-brand);
     outline-offset: 2px;
   }
 
@@ -339,7 +339,7 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: var(--ew-font-weight-medium, 500);
-    color: #dae3e6;
+    color: var(--oscd-plugin-on-brand);
     user-select: none;
   }
 
@@ -361,24 +361,24 @@
     padding: 0.8rem;
     min-height: 2rem;
     border-radius: 12px;
-    border: 2px dashed rgba(255, 255, 255, 0.4);
+    border: 2px dashed color-mix(in srgb, var(--oscd-plugin-on-brand) 40%, transparent);
     transition: border-color 0.15s ease;
   }
 
   .plugin_list__group-plugins--dashed.plugin_list__group-plugins--selected {
-    border-color: rgba(255, 255, 255, 1);
+    border-color: var(--oscd-plugin-on-brand);
   }
 
   .plugin-list__item-name {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     font-weight: 600;
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     user-select: none;
   }
 
   .plugin-list__item-icon {
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
     font-size: 20px;
     flex-shrink: 0;
   }
@@ -417,15 +417,15 @@
     border-radius: 4px;
     cursor: pointer;
     white-space: nowrap;
-    background-color: white;
-    color: var(--primary-base);
+    background-color: var(--oscd-plugin-surface);
+    color: var(--oscd-plugin-brand);
   }
 
   .footer-btn__icon--filled {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--primary-base);
+    background: var(--oscd-plugin-brand);
     border-radius: 50%;
     width: 16px;
     height: 16px;

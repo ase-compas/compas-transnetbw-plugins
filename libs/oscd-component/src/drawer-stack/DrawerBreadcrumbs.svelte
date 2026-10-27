@@ -72,7 +72,7 @@
   white-space: nowrap;
   max-width: 100%;                    
   overflow: hidden;                   
-  color: rgba(255, 255, 255, 0.75);   
+  color: color-mix(in srgb, var(--oscd-plugin-on-brand, #fff) 75%, transparent);
 }
 
 .breadcrumb {
@@ -80,7 +80,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: default;                    
-  color: rgba(255, 255, 255, 0.65);   
+  color: color-mix(in srgb, var(--oscd-plugin-on-brand, #fff) 65%, transparent);
   flex-shrink: 1;                     
   min-width: 0;                       
   max-width: 200px;                   
@@ -88,7 +88,7 @@
 
 .breadcrumb.current {
   font-weight: 500;  
-  color: #fff;       
+  color: var(--oscd-plugin-on-brand, #fff);
   cursor: default;   
   flex-shrink: 0;    
   white-space: nowrap;
@@ -98,13 +98,13 @@
 }
 
 .breadcrumb.ellipsis {
-  color: rgba(255, 255, 255, 0.65);
+  color: color-mix(in srgb, var(--oscd-plugin-on-brand, #fff) 65%, transparent);
   flex-shrink: 1;                  
   cursor: default;                 
 }
 
 .separator {
-  color: rgba(255, 255, 255, 0.5);  
+  color: color-mix(in srgb, var(--oscd-plugin-on-brand, #fff) 50%, transparent);
   margin: 0 0.25rem;                
   flex-shrink: 0;                   
 }

@@ -25,13 +25,13 @@
   }
 
   .osc-card--primary {
-    --osc-card-bg: var(--white);
-    --osc-card-fg: var(--primary-base);
+    --osc-card-bg: var(--oscd-plugin-surface, var(--white));
+    --osc-card-fg: var(--oscd-plugin-text, var(--primary-base));
   }
 
   .osc-card--secondary {
-    --osc-card-bg: var(--white);
-    --osc-card-fg: var(--primary-base);
+    --osc-card-bg: var(--oscd-plugin-surface, var(--white));
+    --osc-card-fg: var(--oscd-plugin-text, var(--primary-base));
   }
 
   .osc-card--dashed {

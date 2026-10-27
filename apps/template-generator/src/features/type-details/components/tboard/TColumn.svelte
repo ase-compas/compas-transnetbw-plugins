@@ -177,10 +177,10 @@
   }
 
   .oscd-tcolumn.apply-defaults {
-    background-color: color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 13%, transparent);
+    background-color: color-mix(in srgb, var(--oscd-plugin-brand) 13%, transparent);
   }
 
   .oscd-tcolumn.drag-border {
-    outline: 2px dashed color-mix(in srgb, var(--mdc-theme-primary, #ff3e00) 50%, transparent);
+    outline: 2px dashed color-mix(in srgb, var(--oscd-plugin-brand) 50%, transparent);
   }
 </style>

@@ -143,12 +143,12 @@
         isAtLastStep={isAtLastStep}
         nextDisabled={isNextDisabled}
         showDone={false}
-        backBg="var(--primary-base)"
-        backColor="var(--white)"
-        backIconFill="var(--white)"
-        nextBg="var(--primary-base)"
-        nextColor="var(--white)"
-        nextIconFill="var(--white)"
+        backBg="var(--oscd-plugin-surface)"
+        backColor="var(--oscd-plugin-action)"
+        backIconFill="var(--oscd-plugin-action)"
+        nextBg="var(--oscd-plugin-action)"
+        nextColor="var(--oscd-plugin-on-action)"
+        nextIconFill="var(--oscd-plugin-on-action)"
         nextLabelWhenLastStep={initialValidation ? 'Save' : 'Create'}
         showCheckOnLastStep={true}
       />

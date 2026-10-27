@@ -168,17 +168,13 @@
   .description {
     margin: 0;
     font-size: var(--tg-font-size-body);
-    color: var(--mdc-theme-on-surface-variant, #666);
+    color: var(--oscd-plugin-text-muted);
   }
 
   .separator {
     width: 100%;
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     margin: 0.5rem 0 0.25rem 0;
-  }
-
-  :global(.mdc-card) {
-    background-color: white !important;
   }
 
   .preview-inline {
@@ -190,17 +186,17 @@
   }
 
   .tag {
-    background: rgba(0, 0, 0, 0.08);
+    background: var(--oscd-plugin-surface-muted);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: var(--tg-font-size-small);
     font-weight: var(--tg-font-weight-heading);
-    color: rgba(0, 0, 0, 0.7);
+    color: var(--oscd-plugin-text);
   }
 
   .mono {
     font-family: 'Roboto Mono', monospace;
     font-size: var(--tg-font-size-body);
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--oscd-plugin-text);
   }
 </style>

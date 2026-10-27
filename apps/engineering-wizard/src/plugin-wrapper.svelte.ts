@@ -1,6 +1,7 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from 'svelte';
+import pluginTheme from '../../../libs/theme/src/lib/plugin-theme.css?inline';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
 import { validationCoordinator } from './services/validationCoordinator.svelte';
@@ -51,7 +52,7 @@ export default class NewOSCDPlugin extends HTMLElement {
     shadowRoot.appendChild(linkElement);
 
     const themeEl = document.createElement('style');
-    themeEl.textContent = `:host { --primary-base: var(--primary); --white: #ffffff; --danger: var(--red); }`;
+    themeEl.textContent = pluginTheme;
     shadowRoot.appendChild(themeEl);
 
     linkElement.addEventListener(

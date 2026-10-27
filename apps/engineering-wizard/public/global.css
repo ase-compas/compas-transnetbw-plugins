@@ -34,7 +34,7 @@
    * Redefine --mdc-theme-primary here so every var(--mdc-theme-primary, …) rule
    * in smui.css resolves to the actual primary colour instead of orange.
    */
-  --mdc-theme-primary: var(--primary-base, #4a7a7f);
+  --mdc-theme-primary: var(--oscd-plugin-action, #4a7a7f);
 
   --oscd-status-success: #4CAF50;
   --oscd-status-error: #F44336;
@@ -50,7 +50,8 @@ body {
 }
 
 body {
-  color: #333;
+  color: var(--oscd-plugin-text, #333);
+  background-color: var(--oscd-plugin-surface, white);
   margin: 0;
   padding: 8px;
   box-sizing: border-box;
@@ -72,7 +73,7 @@ body {
   --ew-font-weight-normal:  400;
 
   --mdc-typography-font-family: 'Inter', sans-serif;
-  --mdc-theme-primary: var(--primary-base, #4a7a7f);
+  --mdc-theme-primary: var(--oscd-plugin-action, #4a7a7f);
 
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
@@ -124,7 +125,7 @@ button:disabled {
   color: #999;
 }
 
-button:not(:disabled):active {
+button:not(:disabled):not(.mdc-button):active {
   background-color: #ddd;
 }
 
@@ -182,22 +183,19 @@ button:focus {
   border-radius: inherit;
 }
 
-/* SMUI text field: any invalid state (focused or not) uses primary, not error red.
- * We redefine --mdc-theme-error at the component level so every SMUI rule that
- * reads var(--mdc-theme-error) (label, outline segments, caret) automatically
- * picks up the primary colour instead of the hardcoded red. */
+/* Validation errors retain their status color, independent of the CTA accent. */
 .mdc-text-field--invalid,
 .mdc-select--invalid {
-  --mdc-theme-error: var(--primary-base, #4a7a7f);
+  --mdc-theme-error: var(--oscd-plugin-error, #dc322f);
 }
 
 /*
  * smui.css bakes focused label colours as hardcoded rgba values (no CSS variable)
  * for both text fields and selects — override with !important.
  */
-.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label,
-.mdc-select:not(.mdc-select--disabled).mdc-select--focused .mdc-floating-label {
-  color: var(--primary-base, #4a7a7f) !important;
+.mdc-text-field--focused:not(.mdc-text-field--disabled):not(.mdc-text-field--invalid) .mdc-floating-label,
+.mdc-select:not(.mdc-select--disabled):not(.mdc-select--invalid).mdc-select--focused .mdc-floating-label {
+  color: var(--oscd-plugin-brand, #4a7a7f) !important;
 }
 
 /*
@@ -208,7 +206,7 @@ button:focus {
 .mdc-text-field--invalid + .mdc-text-field-helper-line
   .mdc-text-field-helper-text--validation-msg,
 .mdc-select--invalid + .mdc-select-helper-text--validation-msg {
-  color: var(--primary-base, #4a7a7f) !important;
+  color: var(--oscd-plugin-error, #dc322f) !important;
 }
 
 /* Ensure icon wrappers inside SMUI buttons vertically centre the SVG */

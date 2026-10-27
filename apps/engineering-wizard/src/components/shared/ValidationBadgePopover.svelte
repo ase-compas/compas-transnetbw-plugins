@@ -58,7 +58,7 @@
     class:badge--error={view.state === 'error'}
   >
     {#if view.state === 'loading'}
-      <Spinner size="10px" color="var(--primary-base)" trackColor="rgba(0, 0, 0, 0.15)" />
+      <Spinner size="10px" color="var(--oscd-plugin-brand)" trackColor="rgba(0, 0, 0, 0.15)" />
     {:else if view.state === 'error'}
       <OscdCloudOffIcon svgStyles="fill: var(--white); width: 11px; height: 11px;" />
     {:else}
@@ -87,7 +87,7 @@
       {:else}
         {#if view.state === 'loading'}
           <div class="section-header section-header--running">
-            <Spinner size="12px" color="var(--primary-base)" />
+            <Spinner size="12px" color="var(--oscd-plugin-brand)" />
             <span>Validating…</span>
           </div>
         {/if}
@@ -119,7 +119,7 @@
         {#if passedCount > 0}
           <div class="section-header section-header--passed">
             <span>{passedCount} rule{passedCount === 1 ? '' : 's'} passed</span>
-            <OscdCheckIcon svgStyles="fill: var(--primary-base);" />
+            <OscdCheckIcon svgStyles="fill: var(--oscd-plugin-brand);" />
           </div>
           <ul class="rule-list">
             {#each view.passedRules as rule}
@@ -213,7 +213,7 @@
     width: 600px;
     max-height: 800px;
     overflow-y: auto;
-    background: var(--white);
+    background: var(--oscd-plugin-surface);
     border: 1px solid var(--base3);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
@@ -239,7 +239,7 @@
     transform: translateX(-50%);
     border: 7px solid transparent;
     border-top: none;
-    border-bottom-color: var(--white);
+    border-bottom-color: var(--oscd-plugin-surface);
     pointer-events: none;
   }
 
@@ -250,7 +250,7 @@
     padding: 18px 16px 12px;
     position: sticky;
     top: 0;
-    background: var(--white);
+    background: var(--oscd-plugin-surface);
     z-index: 1;
   }
 
@@ -264,16 +264,16 @@
   }
 
   .pin-btn--active {
-    background: var(--primary-base);
-    color: var(--white);
-    border-color: var(--primary-base);
+    background: var(--oscd-plugin-brand);
+    color: var(--oscd-plugin-on-brand);
+    border-color: var(--oscd-plugin-brand);
   }
 
   .panel-title {
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-heading, 1.125rem);
     font-weight: var(--ew-font-weight-heading, 600);
-    color: var(--primary-base);
+    color: var(--oscd-plugin-brand);
   }
 
   .section-header {
@@ -287,9 +287,9 @@
   }
 
   .section-header--failed { color: var(--red); }
-  .section-header--passed { color: var(--primary-base); }
+  .section-header--passed { color: var(--oscd-plugin-brand); }
   .section-header--empty { color: var(--base1, #93a1a1); }
-  .section-header--running { color: var(--primary-base); }
+  .section-header--running { color: var(--oscd-plugin-brand); }
   .section-header--error { color: var(--base1, #93a1a1); }
 
   .section-header--no-validations {

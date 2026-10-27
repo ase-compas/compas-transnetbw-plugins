@@ -82,7 +82,7 @@
     text-align: left;
     font: inherit;
     font-size: 0.82rem;
-    color: var(--mdc-theme-primary, #3f51b5);
+    color: var(--oscd-plugin-brand);
     text-decoration: underline;
     cursor: pointer;
     word-break: break-word;

@@ -11,6 +11,8 @@ import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
     confirmActionColor?: 'primary' | 'danger';
     cancelActionText?: string;
     color?: string;
+    headerColor?: string;
+    confirmButtonColor?: string;
   }
 
   let {
@@ -20,7 +22,9 @@ import {closeDialog} from "@oscd-transnet-plugins/oscd-services/dialog";
     confirmActionText = 'OK',
     confirmActionColor = 'primary',
     cancelActionText = 'Cancel',
-    color = 'var(--mdc-theme-primary, #ff3e00)'
+    color,
+    headerColor,
+    confirmButtonColor,
   }: Props = $props();
 
 function handleConfirm() {
@@ -39,6 +43,8 @@ function handleCancel() {
   {confirmActionColor}
   {cancelActionText}
   {color}
+  {headerColor}
+  {confirmButtonColor}
   onConfirm={() => handleConfirm()}
   onCancel={() => handleCancel()}
   onClose={() => closeDialog('cancel')}

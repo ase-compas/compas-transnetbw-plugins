@@ -68,6 +68,6 @@
     flex-direction: row;
     gap: 1rem;
     align-items: center;
-    --mdc-theme-secondary: var(--primary-base);
+    --mdc-theme-secondary: var(--oscd-plugin-brand);
   }
 </style>
