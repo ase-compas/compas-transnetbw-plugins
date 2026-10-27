@@ -1,9 +1,8 @@
 @use 'sass:color';
 
-@use '@material/theme/color-palette';
+@use '@smui/common/theme/color-palette';
 
-// Svelte Colors!
-@use '@material/theme/index' as theme with (
+@use '@smui/common/theme/index' as theme with (
   $primary: #ff3e00,
   $secondary: #676778,
   $surface: #fff,

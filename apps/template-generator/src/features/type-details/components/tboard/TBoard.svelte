@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { v4 as uuidv4 } from 'uuid';
 
-  import IconButton from '@smui/icon-button';
+  import IconButton, { Icon } from '@smui/icon-button';
   import TColumn from './TColumn.svelte';
   import type { ItemDropOnItemEventDetail, TBoardItemContext, TColumnConfig, TData, TItem } from './types';
   import { isDroppable } from './utils';
@@ -153,7 +153,7 @@
 
     {#if index < columns.length - 1}
       <div class="seperator">
-        <IconButton class="material-icons">chevron_right</IconButton>
+        <IconButton><Icon class="material-icons">chevron_right</Icon></IconButton>
       </div>
     {/if}
   {/each}
