@@ -1,5 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+  color: var(--mdc-theme-primary) !important;
+}
+
+* {
+  --mdc-switch-selected-track-color: var(--mdc-theme-primary, #6B9197) !important;
+  --mdc-switch-selected-focus-track-color: var(--mdc-theme-primary, #6B9197) !important;
+  --mdc-switch-selected-hover-track-color: var(--mdc-theme-primary, #6B9197) !important;
+  --mdc-switch-selected-pressed-track-color: var(--mdc-theme-primary, #6B9197) !important;
+  --mdc-switch-unselected-icon-color: var(--base2) !important;
+  --mdc-switch-selected-handle-color: var(--mdc-theme-primary, #676778) !important;
+  --mdc-switch-selected-hover-handle-color: var(--mdc-theme-primary, #676778) !important;
+  --mdc-switch-selected-pressed-handle-color: var(--mdc-theme-primary, #676778) !important;
+  --mdc-switch-selected-focus-handle-color: var(--mdc-theme-primary, #676778) !important;
+}
+
+.mdc-data-table__sort-icon-button {
+  margin: 0 !important;
+}
+
+.mdc-data-table__logical-node-row:hover {
+  cursor: pointer;
+  background: #D9D800 !important;
+}
+
+.smui-autocomplete,
+.smui-autocomplete .mdc-text-field {
+  width: 100%;
+}
+
 /* ─── Template Generator – Typography tokens ──────────────────────────────── */
 
 /*

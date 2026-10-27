@@ -2,7 +2,7 @@
   import DataTable, { Head, Body, Row, Cell, Pagination } from '@smui/data-table';
   import LinearProgress from '@smui/linear-progress';
   import Select, { Option } from '@smui/select';
-  import IconButton from '@smui/icon-button';
+  import IconButton, { Icon } from '@smui/icon-button';
   import { Label } from '@smui/common';
 
   export type Column = {
@@ -224,45 +224,41 @@
 
         {#if showFirstLastPageButtons}
           <IconButton
-            class="material-icons"
             action="first-page"
             title="First page"
             onclick={() => goToPage(0)}
             aria-disabled={pageIndex === 0 ? 'true' : undefined}
           >
-            first_page
+            <Icon class="material-icons">first_page</Icon>
           </IconButton>
         {/if}
 
         <IconButton
-          class="material-icons"
           action="prev-page"
           title="Previous page"
           onclick={() => goToPage(pageIndex - 1)}
           aria-disabled={pageIndex === 0 ? 'true' : undefined}
         >
-          chevron_left
+          <Icon class="material-icons">chevron_left</Icon>
         </IconButton>
 
         <IconButton
-          class="material-icons"
           action="next-page"
           title="Next page"
           onclick={() => goToPage(pageIndex + 1)}
           aria-disabled={pageIndex >= lastPage ? 'true' : undefined}
         >
-          chevron_right
+          <Icon class="material-icons">chevron_right</Icon>
         </IconButton>
 
         {#if showFirstLastPageButtons}
           <IconButton
-            class="material-icons"
             action="last-page"
             title="Last page"
             onclick={() => goToPage(lastPage)}
             aria-disabled={pageIndex >= lastPage ? 'true' : undefined}
           >
-            last_page
+            <Icon class="material-icons">last_page</Icon>
           </IconButton>
         {/if}
       </Pagination>

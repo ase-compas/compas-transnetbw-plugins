@@ -1,6 +1,5 @@
 <script lang="ts">
-  import IconButton from '@smui/icon-button';
-  import { Icon } from '@smui/button';
+  import IconButton, { Icon } from '@smui/icon-button';
 
   interface Props {
     callback?: () => void;

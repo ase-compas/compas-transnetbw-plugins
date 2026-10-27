@@ -17,6 +17,9 @@ export default (defineConfig as any)(async () => {
   return {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/engineering-wizard',
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV ?? 'production'),
+    },
 
     server: {
       port: 4201,
