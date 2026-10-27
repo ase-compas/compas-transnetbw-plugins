@@ -171,15 +171,15 @@
     isCreatingProcess = true;
   }
 
-  async function cancelCreate() {
+  function cancelCreate() {
     engineeringProcessEditing.isEditing = false;
-    await refreshProcesses();
     isCreatingProcess = false;
+    void refreshProcesses();
   }
 
-  async function handleCreated(_proc: Process) {
-    await refreshProcesses();
+  function handleCreated(_proc: Process) {
     isCreatingProcess = false;
+    void refreshProcesses();
   }
 </script>
 

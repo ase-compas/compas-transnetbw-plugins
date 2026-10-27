@@ -32,19 +32,20 @@ describe('pluginGroupOps', () => {
     expect(createPluginInstance(groups, plugin).id).toBe('example-plugin-3');
   });
 
-  it('updates copied validations to reference the new instance', () => {
-    const pluginWithValidation: Plugin = {
+  it('copies validations onto the new instance without scope identifiers', () => {
+    const source = {
+      title: 'Rule',
+      description: 'Description',
+      context: 'SCL',
+      assert: 'true()',
+      message: 'Failed',
+      processId: 'process',
+      pluginId: plugin.id,
+      ruleUi: { mode: 'element' },
+    };
+    const pluginWithValidation = {
       ...plugin,
-      validations: [
-        {
-          title: 'Rule',
-          description: 'Description',
-          context: 'SCL',
-          assert: 'true()',
-          processId: 'process',
-          pluginId: plugin.id,
-        },
-      ],
+      validations: [source],
     };
 
     const instance = createPluginInstance(
@@ -52,10 +53,16 @@ describe('pluginGroupOps', () => {
       pluginWithValidation,
     );
 
-    expect(instance.validations?.[0].pluginId).toBe('example-plugin-2');
-    expect(instance.validations?.[0]).not.toBe(
-      pluginWithValidation.validations?.[0],
-    );
+    expect(instance.id).toBe('example-plugin-2');
+    expect(instance.validations?.[0]).toEqual({
+      title: 'Rule',
+      description: 'Description',
+      context: 'SCL',
+      assert: 'true()',
+      message: 'Failed',
+    });
+    expect(instance.validations?.[0]).not.toBe(source);
+    expect(pluginWithValidation.validations[0]).toBe(source);
   });
 
   it('removes one instance without removing the others', () => {

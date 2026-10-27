@@ -109,9 +109,13 @@
             class:active={chip.pluginIndex === resolvedPluginIndex}
             onclick={() => onSelectPlugin(groupIndex, chip.pluginIndex)}
           >
-            <span>{chip.plugin.name}</span>
+            <span class="validation-groups__plugin-label">{chip.plugin.name}</span>
             {#if view}
-              <ValidationBadgePopover {view} active={chip.pluginIndex === selectedPluginIndex} />
+              <ValidationBadgePopover
+                {view}
+                active={chip.pluginIndex === selectedPluginIndex}
+                pluginName={chip.plugin.name}
+              />
             {/if}
           </button>
         {/each}
@@ -189,11 +193,18 @@
 
     width: fit-content;
     min-width: 2rem;
+    max-width: 10rem;
     cursor: pointer;
 
     margin: 0;
     border: none;
     overflow: visible;
+  }
+
+  .validation-groups__plugin-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .validation-groups__plugin.active {

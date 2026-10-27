@@ -4,12 +4,11 @@
   import FormField from '@smui/form-field';
   import { OscdBaseDialog } from '@oscd-transnet-plugins/oscd-component';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
   import {
     createValidationExportFileName,
     downloadValidationExport,
   } from '../../validationJson';
-  import { getValidationsForScope } from '../../../../processes/mutations.svelte';
 
   interface Props {
     open?: boolean;
@@ -20,10 +19,7 @@
   let { open = $bindable(false), process, plugin }: Props = $props();
   let selectedRuleIndexes = $state<number[]>([]);
 
-  const validations = $derived.by(() => {
-    if (!process || !plugin) return [] as XPathValidation[];
-    return getValidationsForScope(plugin.validations, process.id, plugin.id);
-  });
+  const validations = $derived(plugin?.validations ?? []);
 
   $effect(() => {
     if (open) selectedRuleIndexes = validations.map((_, index) => index);

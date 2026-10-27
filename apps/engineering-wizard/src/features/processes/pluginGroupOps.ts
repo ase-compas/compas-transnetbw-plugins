@@ -4,7 +4,7 @@
  * mutations (for existing processes) and by local component state (e.g. AddProcess).
  */
 
-import type { Plugin, PluginGroup } from '@oscd-transnet-plugins/shared';
+import { toStoredValidation, type Plugin, type PluginGroup } from '@oscd-transnet-plugins/shared';
 
 export function createPluginInstance(
   groups: PluginGroup[],
@@ -23,10 +23,7 @@ export function createPluginInstance(
 
   const instance: Plugin = { ...plugin, id };
   if (plugin.validations) {
-    instance.validations = plugin.validations.map((validation) => ({
-      ...validation,
-      pluginId: id,
-    }));
+    instance.validations = plugin.validations.map(toStoredValidation);
   }
   return instance;
 }

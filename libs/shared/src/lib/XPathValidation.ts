@@ -4,7 +4,14 @@ export type XPathValidation = {
   context: string;
   assert: string;
   message?: string;
-
-  processId: string;
-  pluginId: string;
 };
+
+export function toStoredValidation(validation: XPathValidation): XPathValidation {
+  return {
+    title: validation.title,
+    description: validation.description,
+    context: validation.context,
+    assert: validation.assert,
+    message: validation.message,
+  };
+}

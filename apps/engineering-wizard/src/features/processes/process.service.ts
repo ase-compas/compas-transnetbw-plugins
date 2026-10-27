@@ -1,5 +1,5 @@
 import type { Process, VersionBump } from '@oscd-transnet-plugins/shared';
-import { bumpVersion } from '@oscd-transnet-plugins/shared';
+import { bumpVersion, toStoredValidation } from '@oscd-transnet-plugins/shared';
 import type { CustomResourceService } from '@oscd-transnet-plugins/api-compas-custom-resource';
 import {
   UploadDataContentTypeEnum,
@@ -9,6 +9,21 @@ import {
 export type { UploadDataNextVersionTypeEnum };
 
 export type { VersionBump } from '@oscd-transnet-plugins/shared';
+
+function toStoredProcess(process: Process, version: string): Process {
+  return {
+    ...process,
+    version,
+    pluginGroups: process.pluginGroups.map((group) => ({
+      ...group,
+      plugins: group.plugins.map((plugin) =>
+        plugin.validations
+          ? { ...plugin, validations: plugin.validations.map(toStoredValidation) }
+          : plugin,
+      ),
+    })),
+  };
+}
 
 export interface RemoteProcessEntry {
   /** Backend resource UUID */
@@ -71,7 +86,7 @@ export class ProcessService {
     const currentVersion = process.version || '1.0.0';
     const newVersion = versionBump ? bumpVersion(currentVersion, versionBump) : currentVersion;
 
-    const content = new Blob([JSON.stringify({ ...process, version: newVersion })], {
+    const content = new Blob([JSON.stringify(toStoredProcess(process, newVersion))], {
       type: 'application/json',
     });
 

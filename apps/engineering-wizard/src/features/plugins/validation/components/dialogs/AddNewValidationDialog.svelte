@@ -25,7 +25,7 @@
 
   let { open = $bindable(false), plugin, process, initialValidation }: Props = $props();
 
-  initValidationEditor(process.id, plugin.id, initialValidation);
+  initValidationEditor(initialValidation);
 
   const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
   type Step = (typeof steps)[number];
