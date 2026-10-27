@@ -3,10 +3,7 @@
   import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { addValidationsToPluginInProcess } from '../../../processes/mutations.svelte';
-  import {
-    MAX_VALIDATION_IMPORT_BYTES,
-    parseValidationImportJson,
-  } from '../validationJson';
+  import { importValidationFiles } from '../validationJson';
   import ExportValidationsDialog from './dialogs/ExportValidationsDialog.svelte';
 
   interface Props {
@@ -18,6 +15,7 @@
 
   let fileInput = $state<HTMLInputElement>();
   let exportDialogOpen = $state(false);
+  let importing = $state(false);
 
   function selectImportFile() {
     fileInput?.click();
@@ -27,39 +25,41 @@
     const input = event.currentTarget as HTMLInputElement;
     const files = Array.from(input.files ?? []);
     input.value = '';
-    if (files.length === 0 || !process || !plugin) return;
+    if (files.length === 0 || !process || !plugin || importing) return;
 
     const activeProcess = process;
     const activePlugin = plugin;
+    importing = true;
     try {
-      const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
-      if (totalBytes > MAX_VALIDATION_IMPORT_BYTES) {
-        throw new Error('The selected files exceed the combined 5 MB import limit.');
-      }
-
-      const imported = (await Promise.all(
-        files.map(async (file) => {
-          try {
-            return parseValidationImportJson(await file.text());
-          } catch (error) {
-            const detail = error instanceof Error ? error.message : String(error);
-            throw new Error(`"${file.name}": ${detail}`);
-          }
-        }),
-      )).flat();
+      const { validations, importedFiles, failures } =
+        await importValidationFiles(files);
 
       addValidationsToPluginInProcess(
         activeProcess.id,
         activePlugin.id,
-        imported,
+        validations,
       );
-      toastService.success(
-        'Validations imported',
-        `${imported.length} validation${imported.length === 1 ? '' : 's'} from ${files.length} file${files.length === 1 ? '' : 's'} added to "${activePlugin.name}".`,
-      );
+      const summary =
+        `${importedFiles} of ${files.length} file${files.length === 1 ? '' : 's'} successfully imported; ` +
+        `${validations.length} validation${validations.length === 1 ? '' : 's'} added to "${activePlugin.name}".`;
+
+      if (failures.length > 0) {
+        const detail = `${summary} Could not import: ${failures
+          .map(({ name, reason }) => `"${name}": ${reason}`)
+          .join('; ')}`;
+        if (importedFiles > 0) {
+          toastService.warn('Some files could not be imported', detail, 15_000);
+        } else {
+          toastService.error('Import failed', detail, 15_000);
+        }
+      } else {
+        toastService.success('Validations imported', summary);
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       toastService.error('Import failed', detail);
+    } finally {
+      importing = false;
     }
   }
 </script>
@@ -69,7 +69,7 @@
     use={[GroupItem]}
     variant="outlined"
     onclick={selectImportFile}
-    disabled={!process || !plugin}
+    disabled={!process || !plugin || importing}
   >
     Import JSON
   </Button>

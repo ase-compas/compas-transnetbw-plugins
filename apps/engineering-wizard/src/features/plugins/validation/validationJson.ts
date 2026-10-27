@@ -96,6 +96,36 @@ export function parseValidationImportJson(content: string): XPathValidation[] {
   }
 }
 
+export async function importValidationFiles(
+  files: readonly Pick<File, 'name' | 'size' | 'text'>[],
+) {
+  const validations: XPathValidation[] = [];
+  const failures: { name: string; reason: string }[] = [];
+  let importedFiles = 0;
+  let readBytes = 0;
+
+  for (const file of files) {
+    try {
+      if (file.size > MAX_VALIDATION_IMPORT_BYTES - readBytes) {
+        throw new Error('The file exceeds the remaining combined 5 MB import limit.');
+      }
+
+      // Count failed reads too, so invalid files cannot bypass the batch limit.
+      readBytes += file.size;
+      const parsed = parseValidationImportJson(await file.text());
+      for (const validation of parsed) validations.push(validation);
+      importedFiles += 1;
+    } catch (error) {
+      failures.push({
+        name: file.name,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return { validations, importedFiles, failures };
+}
+
 export function createValidationExportFileName(pluginName: string): string {
   const normalizedName = pluginName
     .normalize('NFKD')
