@@ -15,7 +15,7 @@
           <id>template-generator-xyz</id>
           <name>Template Generator</name>
           <src type="external">
-            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/template-generator/index.js
+            https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/template-generator/index.js
           </src>
         </plugin>
         <plugin>
@@ -30,7 +30,7 @@
           <id>type-distributor-xyz</id>
           <name>Type Distributor</name>
           <src type="external">
-            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/type-distributor/index.js
+            https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/type-distributor/index.js
           </src>
         </plugin>
       </group>
@@ -82,7 +82,7 @@
           <id>location-manager-xyz</id>
           <name>Location Manager</name>
           <src type="external">
-            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/location-manager/index.js
+            https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/location-manager/index.js
           </src>
         </plugin>
 
@@ -90,7 +90,7 @@
           <id>history-viewer-xyz</id>
           <name>History Viewer</name>
           <src type="external">
-            https://ase-compas.github.io/compas-transnetbw-plugins/bearingpoint/compas/plugins/history-viewer/index.js
+            https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/history-viewer/index.js
           </src>
         </plugin>
       </group>

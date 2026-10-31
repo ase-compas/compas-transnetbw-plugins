@@ -1,0 +1,8 @@
+/*
+ * Some Plugin Specific Tokens which can be overwritten bei the Host-Distribution
+ */
+:root,
+:host {
+  --oscd-plugin-ew-primary-bg: var(--oscd-plugin-engineering-wizard-theme-primary-bg, var(--oscd-plugin-brand));
+  --oscd-plugin-ew-info-bg: var(--oscd-plugin-engineering-wizard-theme-info-bg, var(--oscd-theme-blue, #268bd2));
+}
