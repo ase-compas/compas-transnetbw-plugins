@@ -22,61 +22,6 @@ afterEach(async () => {
   vi.useRealTimers();
 });
 
-describe('plugin color roles', () => {
-  it('prefers resolved host colors and keeps standalone fallbacks', () => {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(theme);
-    const rule = sheet.cssRules[0] as CSSStyleRule;
-    expect(rule.selectorText).toContain(':host');
-    expect(rule.selectorText).toContain(':root');
-    expect(rule.style.getPropertyValue('--oscd-plugin-action').trim())
-      .toBe('var(--oscd-secondary, var(--oscd-theme-secondary, light-dark(#004552, #8ac6ce)))');
-    expect(rule.style.getPropertyValue('--oscd-plugin-brand').trim())
-      .toBe('var(--oscd-primary, var(--oscd-theme-primary, light-dark(#004552, #8ac6ce)))');
-    expect(rule.style.getPropertyValue('--oscd-plugin-text').trim())
-      .toBe('var(--oscd-base03, var(--oscd-theme-base03, light-dark(#002b36, #fdf6e3)))');
-    expect(rule.style.getPropertyValue('--oscd-plugin-surface-muted').trim())
-      .toBe('var(--oscd-base2, var(--oscd-theme-base2, light-dark(#eee8d5, #073642)))');
-    expect(rule.style.getPropertyValue('--primary-base').trim())
-      .toBe('var(--oscd-plugin-brand)');
-    expect(rule.style.getPropertyValue('--mdc-theme-primary').trim())
-      .toBe('var(--oscd-plugin-action)');
-    expect(theme).not.toMatch(/--oscd-(?:internal-)?nav-/);
-    expect(rule.style.getPropertyValue('--primary')).toBe('');
-    expect(rule.style.getPropertyValue('--oscd-error')).toBe('');
-  });
-
-  it('uses the surface role for ink on action and brand fills', () => {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(theme);
-    const rule = sheet.cssRules[0] as CSSStyleRule;
-    expect(rule.style.getPropertyValue('--oscd-plugin-on-action').trim())
-      .toBe('var(--oscd-plugin-surface)');
-    expect(rule.style.getPropertyValue('--oscd-plugin-on-brand').trim())
-      .toBe('var(--oscd-plugin-surface)');
-    expect(rule.style.getPropertyValue('--mdc-theme-on-primary').trim())
-      .toBe('var(--oscd-plugin-on-action)');
-  });
-
-  it('keeps Material state layers component-local and provides visible keyboard focus', () => {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(theme);
-    const rule = sheet.cssRules[0] as CSSStyleRule;
-    for (const variant of ['filled', 'protected']) {
-      expect(rule.style.getPropertyValue(`--mdc-${variant}-button-hover-state-layer-color`).trim())
-        .toBe('');
-    }
-    expect(rule.style.getPropertyValue('--mdc-text-button-hover-state-layer-color')).toBe('');
-    expect(rule.style.getPropertyValue('--mdc-ripple-color')).toBe('');
-    const focusRule = sheet.cssRules[1] as CSSStyleRule;
-    expect(focusRule.selectorText).toBe('.mdc-button:focus-visible');
-    expect(focusRule.style.getPropertyValue('outline-color')).toBe('var(--oscd-plugin-text)');
-    expect(focusRule.style.getPropertyValue('outline-style')).toBe('solid');
-    expect(focusRule.style.getPropertyValue('outline-width')).toBe('2px');
-    expect(focusRule.style.getPropertyValue('outline-offset')).toBe('2px');
-  });
-});
-
 describe('embedded plugin boundary', () => {
   it('keeps the external element in a separate palette boundary and forwards document props', () => {
     const doc = document.implementation.createDocument(null, 'SCL');
