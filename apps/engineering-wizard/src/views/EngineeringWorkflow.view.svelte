@@ -190,7 +190,7 @@
   }
 
   .stepper {
-    background-color: var(--oscd-plugin-brand);
+    background-color: var(--oscd-plugin-ew-primary-bg);
     --on-brand: var(--oscd-plugin-on-brand);
 
     display: flex;

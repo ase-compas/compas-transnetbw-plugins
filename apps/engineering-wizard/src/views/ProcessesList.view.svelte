@@ -239,7 +239,7 @@
     padding: 0 24px;
     margin-bottom: 24px;
     border-radius: 4px;
-    background-color: var(--oscd-plugin-brand);
+    background-color: var(--oscd-plugin-ew-info-bg);
   }
 
   .process-banner__info {
