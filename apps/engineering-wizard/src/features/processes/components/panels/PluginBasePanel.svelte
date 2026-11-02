@@ -139,7 +139,7 @@
 
 <OscdPanel
   class="plugin-list"
-  backgroundColor="var(--oscd-plugin-brand)"
+  backgroundColor="var(--oscd-plugin-ew-primary-bg)"
   {header}
   {content}
   {additional}

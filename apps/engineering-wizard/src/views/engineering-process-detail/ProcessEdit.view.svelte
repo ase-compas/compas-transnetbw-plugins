@@ -323,7 +323,7 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    background-color: var(--oscd-plugin-brand);
+    background-color: var(--oscd-plugin-ew-primary-bg);
     flex-shrink: 0;
   }
 

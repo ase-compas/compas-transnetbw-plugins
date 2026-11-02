@@ -105,7 +105,8 @@
   /* External plugins retain the host's Material palette, not the wizard's roles. */
   .external-plugin {
     height: 100%;
-    --primary-base: initial;
+    /* TODO: this overwrites maybe obsolete because /libs/theme/src/lib/global.css is not used anymore. */
+    --primary-base: var(--oscd-primary, var(--oscd-theme-primary, #004552));
     --mdc-theme-primary: var(--oscd-primary, var(--oscd-theme-primary, #004552));
     --mdc-theme-secondary: var(--oscd-secondary, var(--oscd-theme-secondary, #004552));
     --mdc-theme-on-primary: var(--oscd-base2, var(--oscd-theme-base2, #eee8d5));
