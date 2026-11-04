@@ -68,6 +68,12 @@ Build artifacts are emitted to dist/apps/<app-name>.
 Engineering Wizard uses the Validation Service 2.0.0 typed API. Deploy that
 backend before deploying the updated wizard.
 
+In the rule dialog, expert-mode XPath is checked automatically after a short
+pause using `POST /api/validation-rules/validation`. Both the context and
+assertion must compile before Next/Save is enabled. Edits invalidate previous
+checks; unavailable services require a retry. This check needs no SCL document
+and does not prove that the rule will pass its separate document test.
+
 Starting a process from the process list sends the current SCL document once
 per plugin with all of that plugin's rules to
 `POST /api/scl-resources/validation`. Document changes trigger the existing
