@@ -63,6 +63,27 @@ npm run build:tsld
 
 Build artifacts are emitted to dist/apps/<app-name>.
 
+## Engineering Wizard validation
+
+Engineering Wizard uses the Validation Service 2.0.0 typed API. Deploy that
+backend before deploying the updated wizard.
+
+Production defaults use the existing same-origin gateway:
+
+| Environment variable | Default |
+| --- | --- |
+| `VITE_SCL_VALIDATION_API_URL` | `/compas-validation-service/api/scl-resources/validation` |
+| `VITE_VALIDATION_RULES_API_URL` | `/compas-validation-service/api/validation-rules/validation` |
+
+These are build-time settings. Development overrides live in
+`apps/engineering-wizard/.env.development`. Replace the old
+`VITE_VALIDATION_API_URL` setting with the two settings above when using custom
+endpoints; the wizard no longer calls the legacy endpoint. Direct cross-origin
+development requests require matching CORS and authentication configuration.
+The backend requires the existing `SCL_VALIDATION` role; the wizard keeps the
+existing fetch/gateway authentication mechanism and does not store bearer tokens.
+HTTP size-limit errors may have an empty `413` body.
+
 ## Plugin color roles
 
 Engineering Wizard and Template Generator share

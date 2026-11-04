@@ -48,6 +48,14 @@ export default (defineConfig as any)(async () => {
       conditions: ['browser'],
     },
 
+    test: {
+      server: {
+        deps: {
+          inline: [/@smui\//, /@smui-extra\//, /@testing-library\//],
+        },
+      },
+    },
+
     build: {
       outDir: '../../dist/apps/engineering-wizard',
       emptyOutDir: true,
