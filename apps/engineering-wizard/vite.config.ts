@@ -18,7 +18,9 @@ export default (defineConfig as any)(async () => {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/engineering-wizard',
     define: {
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV ?? 'production'),
+      'process.env.NODE_ENV': JSON.stringify(
+        process.env.NODE_ENV ?? 'production',
+      ),
     },
 
     server: {
@@ -36,10 +38,20 @@ export default (defineConfig as any)(async () => {
       proxy: backendProxy,
     },
 
-    plugins: [svelte(), nxViteTsPaths()],
+    plugins: [
+      svelte({ emitCss: false }),
+      // Nx 19 otherwise copies package.json into the single-file build.
+      { ...nxViteTsPaths(), writeBundle: undefined },
+    ],
+
+    resolve: {
+      conditions: ['browser'],
+    },
 
     build: {
       outDir: '../../dist/apps/engineering-wizard',
+      emptyOutDir: true,
+      copyPublicDir: false,
       reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,
@@ -47,6 +59,7 @@ export default (defineConfig as any)(async () => {
       rollupOptions: {
         output: {
           entryFileNames: 'index.js',
+          inlineDynamicImports: true,
         },
       },
       lib: {

@@ -5,10 +5,6 @@
     OscdToastHost,
   } from '@oscd-transnet-plugins/oscd-component';
   import DefaultTypeView from './features/default-types/components/DefaultTypeView.svelte';
-  import 'svelte-material-ui/bare.css';
-  import '../public/material-icon.css';
-  import '../public/smui.css';
-  import '../public/global.css';
   import DataTypesListView from './features/type-details/components/DataTypesListView.svelte';
   import NavigationHeader from './shared/ui/NavigationHeader.svelte';
   import IdFormatSettings from './features/id-format-settings/IdFormatSettings.svelte';
