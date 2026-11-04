@@ -46,7 +46,7 @@
       placeholder={placeholder}
       invalid={isEmpty}
       class="rule-editor__full"
-      helper={isEmpty ? requiredHelper : undefined}
+      helper={requiredHelper}
     />
   </div>
 {/if}

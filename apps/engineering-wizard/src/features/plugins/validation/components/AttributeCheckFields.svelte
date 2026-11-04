@@ -15,7 +15,11 @@
 </script>
 
 {#snippet regexHelper()}
-  <HelperText>XPath <code>matches()</code> — use <code>^…$</code> to anchor the full value.</HelperText>
+  <HelperText>
+    {#if isRegex}
+      XPath <code>matches()</code> — use <code>^…$</code> to anchor the full value.
+    {/if}
+  </HelperText>
 {/snippet}
 
 <ValidationSelectField
@@ -33,5 +37,5 @@
   label={isRegex ? 'Pattern' : 'Specific text'}
   variant="outlined"
   class="rule-editor__full"
-  helper={isRegex ? regexHelper : undefined}
+  helper={regexHelper}
 />

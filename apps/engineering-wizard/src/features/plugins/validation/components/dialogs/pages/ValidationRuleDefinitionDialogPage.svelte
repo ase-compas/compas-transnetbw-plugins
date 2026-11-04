@@ -122,7 +122,7 @@
       label="Error Message"
       variant="outlined"
       invalid={isMessageEmpty}
-      helper={isMessageEmpty ? errorMessageHelper : undefined}
+      helper={errorMessageHelper}
     />
   </FormBlock>
 
