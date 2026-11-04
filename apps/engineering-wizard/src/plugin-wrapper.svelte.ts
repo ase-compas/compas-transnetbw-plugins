@@ -4,9 +4,10 @@ import { mount } from 'svelte';
 import { installPluginFonts, pluginTheme } from '@oscd-transnet-plugins/theme';
 import materialStyles from 'svelte-material-ui/bare.css?inline';
 import iconStyles from '../public/material-icon.css?inline';
+import iconFontStyles from '../public/material-icon-font.css?inline';
 import smuiStyles from '../public/smui.css?inline';
 import globalStyles from '../public/global.css?inline';
-import '../public/custom-theme-tokens.css';
+import customThemeStyles from '../public/custom-theme-tokens.css?inline';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
 import { validationCoordinator } from './services/validationCoordinator.svelte';
@@ -53,7 +54,7 @@ export default class NewOSCDPlugin extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     const shadowRoot = this.shadowRoot!;
 
-    installPluginFonts(iconStyles);
+    installPluginFonts(iconFontStyles);
 
     const styleElement = document.createElement('style');
     styleElement.id = `${pkg.name}-v${pkg.version}-style`;
@@ -63,6 +64,7 @@ export default class NewOSCDPlugin extends HTMLElement {
       smuiStyles,
       globalStyles,
       pluginTheme,
+      customThemeStyles,
     ].join('\n');
     shadowRoot.appendChild(styleElement);
 

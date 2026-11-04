@@ -12,6 +12,15 @@ vi.mock('../../../services/validationService', () => ({
 
 const rule = { context: '//SCL', assert: 'true()' };
 
+function waitForAbort(signal?: AbortSignal): Promise<SyntaxValidationResult> {
+  return new Promise((_resolve, reject) => {
+    if (!signal) throw new Error('Missing request signal');
+    signal.addEventListener('abort', () => reject(signal.reason), {
+      once: true,
+    });
+  });
+}
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.mocked(checkRuleSyntax).mockReset();
@@ -93,4 +102,50 @@ describe('expert syntax check lifecycle', () => {
     expect(checkRuleSyntax).toHaveBeenCalledTimes(2);
     check.dispose();
   });
+
+  it('times out a stalled request and allows retrying the same rule', async () => {
+    vi.mocked(checkRuleSyntax)
+      .mockImplementationOnce((_rules, signal) => waitForAbort(signal))
+      .mockResolvedValueOnce({ valid: true, errors: [] });
+    const check = createRuleSyntaxCheck();
+    check.update(rule);
+    await vi.advanceTimersByTimeAsync(500);
+    const signal = vi.mocked(checkRuleSyntax).mock.calls[0][1];
+
+    await vi.advanceTimersByTimeAsync(29_999);
+    expect(check.state.status).toBe('checking');
+    expect(signal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(signal?.aborted).toBe(true);
+    expect(check.state.status).toBe('error');
+    expect(check.state.error).toContain('timed out');
+    expect(check.isValidFor(rule)).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+
+    check.retry();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(check.isValidFor(rule)).toBe(true);
+    expect(check.state.error).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+    check.dispose();
+  });
+
+  it.each(['reset', 'dispose'] as const)(
+    'cancels the request and its deadline on %s',
+    async (action) => {
+      vi.mocked(checkRuleSyntax).mockImplementationOnce((_rules, signal) =>
+        waitForAbort(signal),
+      );
+      const check = createRuleSyntaxCheck();
+      check.update(rule);
+      await vi.advanceTimersByTimeAsync(500);
+      const signal = vi.mocked(checkRuleSyntax).mock.calls[0][1];
+
+      check[action]();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(signal?.aborted).toBe(true);
+      expect(check.state.error).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
 });

@@ -58,6 +58,7 @@ describe.each([
     expect(fonts?.textContent).toContain('@font-face');
     expect(fonts?.textContent).toContain('Inter');
     expect(fonts?.textContent).toContain('Material Icons Outlined');
+    expect(fonts?.textContent?.includes('.material-icons')).toBe(false);
     expect(mount).toHaveBeenCalledOnce();
     expect(mount).toHaveBeenCalledWith(
       expect.anything(),
@@ -83,6 +84,15 @@ it('shares font declarations between both plugins', () => {
   document.body.append(new TemplateGenerator(), new EngineeringWizard());
 
   expect(document.head.querySelectorAll('#oscd-plugin-fonts')).toHaveLength(1);
+});
+
+it('embeds Wizard-specific color declarations in the shadow root', () => {
+  const plugin = new EngineeringWizard();
+  document.body.appendChild(plugin);
+
+  const styles = plugin.shadowRoot?.querySelector('style')?.textContent;
+  expect(/--oscd-plugin-ew-primary-bg\s*:/.test(styles ?? '')).toBe(true);
+  expect(/--oscd-plugin-ew-info-bg\s*:/.test(styles ?? '')).toBe(true);
 });
 
 it('embeds only WOFF2 while preserving all Inter weights and glyph ranges', () => {

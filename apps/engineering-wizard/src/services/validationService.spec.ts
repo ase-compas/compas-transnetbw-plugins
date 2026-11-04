@@ -139,4 +139,49 @@ describe('typed validation client', () => {
       details: 'Invalid document',
     } satisfies Partial<ValidationApiError>);
   });
+
+  it.each([
+    { name: 'empty JSON', body: null, contentType: 'application/json' },
+    {
+      name: 'malformed JSON',
+      body: '{invalid',
+      contentType: 'application/json',
+    },
+    { name: 'empty untyped', body: null, contentType: '' },
+    { name: 'HTML', body: '<html>Too large</html>', contentType: 'text/html' },
+  ])(
+    'preserves HTTP status for $name error bodies',
+    async ({ body, contentType }) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          new Response(body, {
+            status: 413,
+            statusText: 'Payload Too Large',
+            headers: contentType ? { 'Content-Type': contentType } : {},
+          }),
+        ),
+      );
+
+      await expect(
+        validateRulesWithContent([rule], '<SCL/>'),
+      ).rejects.toMatchObject({
+        name: 'ValidationApiError',
+        status: 413,
+        message: 'HTTP 413: Payload Too Large',
+      });
+    },
+  );
+
+  it('does not swallow cancellation while reading an HTTP error body', async () => {
+    const error = new DOMException('Request cancelled', 'AbortError');
+    const response = new Response(null, {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    vi.spyOn(response, 'json').mockRejectedValue(error);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
+
+    await expect(checkRuleSyntax([rule])).rejects.toBe(error);
+  });
 });

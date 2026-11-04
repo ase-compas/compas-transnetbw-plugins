@@ -5,6 +5,8 @@ import {
   type SyntaxDiagnostic,
 } from '../../../services/validationService';
 
+const REQUEST_TIMEOUT_MS = 30_000;
+
 export type SyntaxCheckState = {
   status: 'unchecked' | 'checking' | 'valid' | 'invalid' | 'error';
   key: string;
@@ -38,6 +40,13 @@ export function createRuleSyntaxCheck() {
   async function run(rule: RuleExpressions, token: number) {
     const request = new AbortController();
     controller = request;
+    const deadline = setTimeout(
+      () =>
+        request.abort(
+          new Error('Rule syntax check timed out. Please try again.'),
+        ),
+      REQUEST_TIMEOUT_MS,
+    );
     try {
       const result = await checkRuleSyntax([rule], request.signal);
       if (token !== generation) return;
@@ -48,6 +57,7 @@ export function createRuleSyntaxCheck() {
       state.status = 'error';
       state.error = describeValidationError(error);
     } finally {
+      clearTimeout(deadline);
       if (token === generation) controller = undefined;
     }
   }

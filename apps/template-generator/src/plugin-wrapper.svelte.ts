@@ -4,6 +4,7 @@ import { mount } from 'svelte';
 import { installPluginFonts, pluginTheme } from '@oscd-transnet-plugins/theme';
 import materialStyles from 'svelte-material-ui/bare.css?inline';
 import iconStyles from '../public/material-icon.css?inline';
+import iconFontStyles from '../public/material-icon-font.css?inline';
 import smuiStyles from '../public/smui.css?inline';
 import globalStyles from '../public/global.css?inline';
 
@@ -41,7 +42,7 @@ export default class NewOSCDPlugin extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     const shadowRoot = this.shadowRoot!;
 
-    installPluginFonts(iconStyles);
+    installPluginFonts(iconFontStyles);
 
     const styleElement = document.createElement('style');
     styleElement.id = `${pkg.name}-v${pkg.version}-style`;

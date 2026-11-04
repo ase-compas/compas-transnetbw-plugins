@@ -1,6 +1,7 @@
 import App from './App.svelte';
 import '../public/global.css';
 import '../public/material-icon.css';
+import '../public/material-icon-font.css';
 import 'svelte-material-ui/bare.css';
 import '../public/smui.css';
 import '@oscd-transnet-plugins/theme/plugin-fonts.css';

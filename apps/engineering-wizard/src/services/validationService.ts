@@ -75,11 +75,14 @@ function typedRule(rule: RuleExpressions) {
 
 async function readResponse(response: Response): Promise<unknown> {
   if (!response.ok) {
-    const body: unknown = response.headers
-      .get('content-type')
-      ?.includes('application/json')
-      ? await response.json()
-      : null;
+    let body: unknown;
+    if (response.headers.get('content-type')?.includes('application/json')) {
+      try {
+        body = await response.json();
+      } catch (error) {
+        if (!(error instanceof SyntaxError)) throw error;
+      }
+    }
     throw new ValidationApiError(
       response.status,
       isRecord(body) && typeof body.message === 'string'

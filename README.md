@@ -71,7 +71,8 @@ backend before deploying the updated wizard.
 In the rule dialog, expert-mode XPath is checked automatically after a short
 pause using `POST /api/validation-rules/validation`. Both the context and
 assertion must compile before Next/Save is enabled. Edits invalidate previous
-checks; unavailable services require a retry. This check needs no SCL document
+checks; unavailable services require a retry. Syntax requests time out after
+30 seconds and can then be retried. This check needs no SCL document
 and does not prove that the rule will pass its separate document test.
 
 Starting a process from the process list sends the current SCL document once
