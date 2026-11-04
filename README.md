@@ -68,6 +68,17 @@ Build artifacts are emitted to dist/apps/<app-name>.
 Engineering Wizard uses the Validation Service 2.0.0 typed API. Deploy that
 backend before deploying the updated wizard.
 
+Starting a process from the process list sends the current SCL document once
+per plugin with all of that plugin's rules to
+`POST /api/scl-resources/validation`. Document changes trigger the existing
+debounced revalidation. Plugins without rules send no request. Individual-rule
+Run actions and dialog document tests use the same endpoint with a one-rule list.
+
+Results distinguish passed assertions, failed assertions, invalid XPath, and
+evaluation errors. A bad rule does not stop the others. Rules are mapped by their
+submitted array index, so duplicate titles are safe. Plugin status never reports
+success while any rule failed or could not be evaluated.
+
 Production defaults use the existing same-origin gateway:
 
 | Environment variable | Default |
