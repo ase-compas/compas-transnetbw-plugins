@@ -25,11 +25,6 @@
   import { documentStore, updateDocumentStore } from './documentStore.svelte';
   import { validationCoordinator } from './services/validationCoordinator.svelte';
 
-  import 'svelte-material-ui/bare.css';
-  import "../public/material-icon.css"
-  import "../public/smui.css"
-  import "../public/global.css"
-
   interface Props {
     doc?: XMLDocument;
     editCount?: number;

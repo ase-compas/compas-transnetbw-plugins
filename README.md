@@ -63,6 +63,45 @@ npm run build:tsld
 
 Build artifacts are emitted to dist/apps/<app-name>.
 
+## Engineering Wizard validation
+
+Engineering Wizard uses the Validation Service 2.0.0 typed API. Deploy that
+backend before deploying the updated wizard.
+
+In the rule dialog, expert-mode XPath is checked automatically after a short
+pause using `POST /api/validation-rules/validation`. Both the context and
+assertion must compile before Next/Save is enabled. Edits invalidate previous
+checks; unavailable services require a retry. Syntax requests time out after
+30 seconds and can then be retried. This check needs no SCL document
+and does not prove that the rule will pass its separate document test.
+
+Starting a process from the process list sends the current SCL document once
+per plugin with all of that plugin's rules to
+`POST /api/scl-resources/validation`. Document changes trigger the existing
+debounced revalidation. Plugins without rules send no request. Individual-rule
+Run actions and dialog document tests use the same endpoint with a one-rule list.
+
+Results distinguish passed assertions, failed assertions, invalid XPath, and
+evaluation errors. A bad rule does not stop the others. Rules are mapped by their
+submitted array index, so duplicate titles are safe. Plugin status never reports
+success while any rule failed or could not be evaluated.
+
+Production defaults use the existing same-origin gateway:
+
+| Environment variable | Default |
+| --- | --- |
+| `VITE_SCL_VALIDATION_API_URL` | `/compas-validation-service/api/scl-resources/validation` |
+| `VITE_VALIDATION_RULES_API_URL` | `/compas-validation-service/api/validation-rules/validation` |
+
+These are build-time settings. Development overrides live in
+`apps/engineering-wizard/.env.development`. Replace the old
+`VITE_VALIDATION_API_URL` setting with the two settings above when using custom
+endpoints; the wizard no longer calls the legacy endpoint. Direct cross-origin
+development requests require matching CORS and authentication configuration.
+The backend requires the existing `SCL_VALIDATION` role; the wizard keeps the
+existing fetch/gateway authentication mechanism and does not store bearer tokens.
+HTTP size-limit errors may have an empty `413` body.
+
 ## Plugin color roles
 
 Engineering Wizard and Template Generator share

@@ -15,6 +15,7 @@
   let failedCount = $derived(view.failedRules.length);
   let passedCount = $derived(view.passedRules.length);
   let erroredCount = $derived(view.erroredRules.length);
+  const hasRequestError = $derived(view.erroredRules.some((rule) => rule.status === 'REQUEST_ERROR'));
 
   let hovering = $state(false);
   let pinned = $state(false);
@@ -60,7 +61,11 @@
     {#if view.state === 'loading'}
       <Spinner size="10px" color="var(--oscd-plugin-brand)" trackColor="rgba(0, 0, 0, 0.15)" />
     {:else if view.state === 'error'}
-      <OscdCloudOffIcon svgStyles="fill: var(--white); width: 11px; height: 11px;" />
+      {#if hasRequestError}
+        <OscdCloudOffIcon svgStyles="fill: var(--white); width: 11px; height: 11px;" />
+      {:else}
+        <OscdWarningIcon fill="var(--white)" size="11px" />
+      {/if}
     {:else}
       {#key `${failedCount}-${unseen}`}<span class="badge-count">{failedCount}</span>{/key}
     {/if}
@@ -94,8 +99,12 @@
 
         {#if erroredCount > 0}
           <div class="section-header section-header--error">
-            <span>{erroredCount} rule{erroredCount === 1 ? '' : 's'} could not be validated</span>
-            <OscdCloudOffIcon svgStyles="fill: var(--base1, #93a1a1); width: 16px; height: 16px;" />
+            <span>{erroredCount} rule{erroredCount === 1 ? '' : 's'} could not be evaluated</span>
+            {#if hasRequestError}
+              <OscdCloudOffIcon svgStyles="fill: var(--base1, #93a1a1); width: 16px; height: 16px;" />
+            {:else}
+              <OscdWarningIcon fill="var(--oscd-plugin-error)" size="16px" />
+            {/if}
           </div>
           <ul class="rule-list">
             {#each view.erroredRules as rule}

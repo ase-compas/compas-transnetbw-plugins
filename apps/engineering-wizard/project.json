@@ -20,7 +20,8 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/engineering-wizard"
+        "outputPath": "dist/apps/engineering-wizard",
+        "generatePackageJson": false
       },
       "configurations": {
         "development": {

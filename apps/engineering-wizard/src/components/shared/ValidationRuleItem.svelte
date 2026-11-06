@@ -10,12 +10,15 @@
   let { rule, passed = false }: Props = $props();
 
   let expanded = $state(false);
+  const couldNotEvaluate = $derived(
+    rule.status === 'INVALID_RULE' || rule.status === 'EVALUATION_ERROR' || rule.status === 'REQUEST_ERROR',
+  );
 </script>
 
 <details
   class="item"
   class:item--passed={passed}
-  class:item--error={rule.rejected}
+  class:item--error={couldNotEvaluate}
   ontoggle={(e) => (expanded = e.currentTarget.open)}
 >
   <summary class="summary">
@@ -30,11 +33,19 @@
   </summary>
 
   <div class="body">
-    {#if rule.rejected}
+    {#if couldNotEvaluate}
       <div class="field field--error">
         <span class="label">Status</span>
-        <span class="reason">Could not be validated{rule.rejectReason ? `: ${rule.rejectReason}` : '.'}</span>
+        <span class="reason">
+          {rule.status === 'INVALID_RULE' ? 'Invalid XPath syntax' : 'Could not be evaluated'}{rule.rejectReason ? `: ${rule.rejectReason}` : '.'}
+        </span>
       </div>
+      {#each rule.diagnostics as diagnostic}
+        <div class="field field--error">
+          <span class="label">{diagnostic.field === 'assert' ? 'Assertion' : 'Context'}</span>
+          <span class="reason">{diagnostic.message}</span>
+        </div>
+      {/each}
     {/if}
     {#if rule.description}
       <p>{rule.description}</p>

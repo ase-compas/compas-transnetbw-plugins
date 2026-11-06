@@ -63,7 +63,9 @@
       "@oscd-transnet-plugins/oscd-services/toast": [
         "libs/oscd-services/src/toast/index.ts"
       ],
-      "@oscd-transnet-plugins/shared": ["libs/shared/src/index.ts"]
+      "@oscd-transnet-plugins/shared": ["libs/shared/src/index.ts"],
+      "@oscd-transnet-plugins/theme": ["libs/theme/src/index.ts"],
+      "@oscd-transnet-plugins/theme/*": ["libs/theme/src/lib/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -24,7 +24,7 @@
       style="width: 100%"
       bind:value={validationEditor.entry.title}
       invalid={isTitleEmpty}
-      helper={isTitleEmpty ? ruleNameHelper : undefined}
+      helper={ruleNameHelper}
     />
     <Textfield textarea bind:value={validationEditor.entry.description} label="Description" />
   </FormBlock>
