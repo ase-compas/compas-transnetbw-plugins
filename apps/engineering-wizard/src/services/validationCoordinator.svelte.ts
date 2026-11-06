@@ -110,7 +110,7 @@ function toRuleResult(rule: XPathValidation, result: RuleOutcome): RuleResult {
   };
 }
 
-async function validatePlugin(
+async function validateRules(
   rules: XPathValidation[],
   sclContent: string,
   signal: AbortSignal,
@@ -144,23 +144,26 @@ async function execute(
   const controller = new AbortController();
   inFlight = controller;
   try {
-    const pluginResults = await Promise.all(
-      request.plugins.map(
-        async (plugin) =>
-          [
-            plugin.id,
-            await validatePlugin(
-              plugin.rules,
-              request.sclContent,
-              controller.signal,
-            ),
-          ] as const,
-      ),
+    const rules = request.plugins.flatMap((plugin) => plugin.rules);
+    const results = await validateRules(
+      rules,
+      request.sclContent,
+      controller.signal,
     );
 
     if (runGeneration !== generation) return;
 
-    state.resultsByPluginId = Object.fromEntries(pluginResults);
+    let offset = 0;
+    state.resultsByPluginId = Object.fromEntries(
+      request.plugins.map((plugin) => {
+        const pluginResults = results.slice(
+          offset,
+          offset + plugin.rules.length,
+        );
+        offset += plugin.rules.length;
+        return [plugin.id, pluginResults];
+      }),
+    );
     state.status = 'ready';
   } catch (error) {
     if (runGeneration !== generation) return;

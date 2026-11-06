@@ -55,64 +55,148 @@ beforeEach(() => {
 });
 afterEach(() => {
   validationCoordinator.cancel();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
-describe('plugin ruleset batching', () => {
-  it('uploads once for ten rules, once per plugin, and skips empty rulesets', async () => {
+describe('process ruleset batching', () => {
+  it('uploads once for all plugins and preserves their rule order', async () => {
     const plugins = [
       plugin('first', 10),
-      plugin('second', 2),
       plugin('empty', 0),
+      plugin('second', 2),
+    ];
+    plugins[2].validations = [
+      { ...rule, assert: 'false()' },
+      { ...rule, context: '/' },
     ];
     vi.mocked(validateRulesWithContent).mockImplementation(async (rules) =>
       passed(rules.length),
     );
     validationCoordinator.runNow(process(plugins), document());
     await vi.advanceTimersByTimeAsync(0);
-    expect(validateRulesWithContent).toHaveBeenCalledTimes(2);
-    expect(
-      vi
-        .mocked(validateRulesWithContent)
-        .mock.calls.map(([rules]) => rules.length),
-    ).toEqual([10, 2]);
+    expect(validateRulesWithContent).toHaveBeenCalledOnce();
+    expect(vi.mocked(validateRulesWithContent).mock.calls[0][0]).toEqual([
+      ...(plugins[0].validations ?? []),
+      ...(plugins[2].validations ?? []),
+    ]);
     expect(
       validationCoordinator.getPluginView(plugins[0]).passedRules,
     ).toHaveLength(10);
-    expect(validationCoordinator.getPluginView(plugins[2]).state).toBe(
+    expect(validationCoordinator.getPluginView(plugins[1]).state).toBe(
       'no-validations',
     );
+    expect(
+      validationCoordinator
+        .getPluginView(plugins[2])
+        .rules.map((result) => [result.context, result.assertion]),
+    ).toEqual([
+      ['//SCL', 'false()'],
+      ['/', 'true()'],
+    ]);
+  });
+
+  it('sends 1000 rules across plugin groups in one request', async () => {
+    vi.useRealTimers();
+    const plugins = Array.from({ length: 20 }, (_, index) =>
+      plugin(`plugin-${index}`, 50),
+    );
+    const configuration = process([]);
+    configuration.pluginGroups = [
+      { id: 'first', name: 'First', plugins: plugins.slice(0, 10) },
+      { id: 'second', name: 'Second', plugins: plugins.slice(10) },
+    ];
+    const client = await vi.importActual<typeof import('./validationService')>(
+      './validationService',
+    );
+    vi.mocked(validateRulesWithContent).mockImplementation(
+      client.validateRulesWithContent,
+    );
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(passed(1000)), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    validationCoordinator.runNow(configuration, document());
+    await vi.waitFor(() =>
+      expect(validationCoordinator.getPluginView(plugins[19]).state).toBe(
+        'passed',
+      ),
+    );
+
+    expect(validateRulesWithContent).toHaveBeenCalledOnce();
+    const [rules, content] = vi.mocked(validateRulesWithContent).mock.calls[0];
+    expect(rules).toHaveLength(1000);
+    expect(content).toBe('<SCL/>');
+    expect(fetch).toHaveBeenCalledOnce();
+    const form: FormData = fetch.mock.calls[0][1].body;
+    expect([...form.keys()]).toEqual(['sclFile', 'rules', 'sclFileExtension']);
+    expect(form.getAll('sclFile')).toHaveLength(1);
+    expect(form.get('sclFile')).toBeInstanceOf(File);
+    const rulesPart = form.get('rules');
+    if (!(rulesPart instanceof Blob)) throw new Error('Missing rules part');
+    expect(rulesPart.type).toBe('application/json');
+    const payload = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(rulesPart);
+    });
+    expect(JSON.parse(payload)).toEqual(
+      rules.map(({ context, assert }) => ({ type: 'XPATH', context, assert })),
+    );
+    for (const entry of plugins) {
+      expect(
+        validationCoordinator.getPluginView(entry).passedRules,
+      ).toHaveLength(50);
+    }
+  });
+
+  it.each([
+    { name: 'no plugins', plugins: [] },
+    { name: 'empty plugin', plugins: [plugin('empty', 0)] },
+  ])('does not send a request for $name', async ({ plugins }) => {
+    vi.mocked(validateRulesWithContent).mockResolvedValue(passed(0));
+    validationCoordinator.runNow(process(plugins), document());
+    await vi.advanceTimersByTimeAsync(0);
+    expect(validateRulesWithContent).not.toHaveBeenCalled();
+    for (const entry of plugins) {
+      expect(validationCoordinator.getPluginView(entry).state).toBe(
+        'no-validations',
+      );
+    }
   });
 
   it('maps reordered outcomes by index, preserving mixed rule and plugin states', async () => {
     const plugins = [plugin('first', 3), plugin('second', 1)];
-    vi.mocked(validateRulesWithContent)
-      .mockResolvedValueOnce({
-        valid: false,
-        complete: false,
-        results: [
-          { ruleIndex: 2, status: 'PASSED', errors: [], diagnostics: [] },
-          {
-            ruleIndex: 0,
-            status: 'INVALID_RULE',
-            errors: [],
-            diagnostics: [
-              {
-                field: 'assert',
-                code: 'INVALID_XPATH',
-                message: 'Invalid syntax',
-              },
-            ],
-          },
-          {
-            ruleIndex: 1,
-            status: 'FAILED',
-            errors: [{ ruleName: 'xpath rule', message: 'Violation' }],
-            diagnostics: [],
-          },
-        ],
-      })
-      .mockResolvedValueOnce(passed(1));
+    vi.mocked(validateRulesWithContent).mockResolvedValueOnce({
+      valid: false,
+      complete: false,
+      results: [
+        { ruleIndex: 3, status: 'PASSED', errors: [], diagnostics: [] },
+        { ruleIndex: 2, status: 'PASSED', errors: [], diagnostics: [] },
+        {
+          ruleIndex: 0,
+          status: 'INVALID_RULE',
+          errors: [],
+          diagnostics: [
+            {
+              field: 'assert',
+              code: 'INVALID_XPATH',
+              message: 'Invalid syntax',
+            },
+          ],
+        },
+        {
+          ruleIndex: 1,
+          status: 'FAILED',
+          errors: [{ ruleName: 'xpath rule', message: 'Violation' }],
+          diagnostics: [],
+        },
+      ],
+    });
     validationCoordinator.runNow(process(plugins), document());
     await vi.advanceTimersByTimeAsync(0);
     const view = validationCoordinator.getPluginView(plugins[0]);
@@ -128,6 +212,9 @@ describe('plugin ruleset batching', () => {
     expect(validationCoordinator.getPluginView(plugins[1]).state).toBe(
       'passed',
     );
+    validationCoordinator.retryFailed();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(validateRulesWithContent).toHaveBeenCalledOnce();
   });
 
   it('aborts old requests and does not publish results after a process switch', async () => {
@@ -156,23 +243,61 @@ describe('plugin ruleset batching', () => {
     );
   });
 
-  it('isolates request failures and retries connectivity failures rather than invalid rules', async () => {
+  it('marks all plugins on request failure and retries the full process', async () => {
     const plugins = [plugin('first', 1), plugin('second', 1)];
     vi.mocked(validateRulesWithContent)
       .mockRejectedValueOnce(new Error('Offline'))
-      .mockResolvedValue(passed(1));
+      .mockResolvedValue(passed(2));
     validationCoordinator.runNow(process(plugins), document());
     await vi.advanceTimersByTimeAsync(0);
-    expect(
-      validationCoordinator.getPluginView(plugins[0]).erroredRules[0].status,
-    ).toBe('REQUEST_ERROR');
-    expect(validationCoordinator.getPluginView(plugins[1]).state).toBe(
-      'passed',
-    );
+    for (const entry of plugins) {
+      const view = validationCoordinator.getPluginView(entry);
+      expect(view.state).toBe('error');
+      expect(view.erroredRules[0]).toMatchObject({
+        status: 'REQUEST_ERROR',
+        rejectReason: 'Offline',
+      });
+    }
     validationCoordinator.retryFailed();
     await vi.advanceTimersByTimeAsync(0);
+    expect(validateRulesWithContent).toHaveBeenCalledTimes(2);
+    expect(
+      vi
+        .mocked(validateRulesWithContent)
+        .mock.calls.map(([rules]) => rules.length),
+    ).toEqual([2, 2]);
+    for (const entry of plugins) {
+      expect(validationCoordinator.getPluginView(entry).state).toBe('passed');
+    }
+  });
+
+  it('debounces document changes into one current process request', async () => {
+    const plugins = [plugin('first', 1), plugin('second', 1)];
+    const configuration = process(plugins);
+    vi.mocked(validateRulesWithContent).mockResolvedValue(passed(2));
+    validationCoordinator.runNow(configuration, document());
+    await vi.advanceTimersByTimeAsync(0);
+
+    const changed = document();
+    changed.documentElement.setAttribute('revision', '1');
+    validationCoordinator.request(configuration, changed);
     expect(validationCoordinator.getPluginView(plugins[0]).state).toBe(
-      'passed',
+      'loading',
     );
+    await vi.advanceTimersByTimeAsync(500);
+    changed.documentElement.setAttribute('revision', '2');
+    validationCoordinator.request(configuration, changed);
+    await vi.advanceTimersByTimeAsync(999);
+    expect(validateRulesWithContent).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(validateRulesWithContent).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(validateRulesWithContent).mock.calls[1][1]).toContain(
+      'revision="2"',
+    );
+
+    validationCoordinator.request(configuration, changed);
+    validationCoordinator.retryFailed();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(validateRulesWithContent).toHaveBeenCalledTimes(2);
   });
 });
