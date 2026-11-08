@@ -116,6 +116,7 @@
     }
 
     let targetTypeId = result.data.id;
+    let childMode: ViewMode = 'edit';
 
     if (result.data.mode === 'create') {
       if (result.data.createFromDefault) {
@@ -126,24 +127,39 @@
         }
 
         targetTypeId = effectiveRootId;
-        await openTypeById(targetTypeId, member.refKind, 'view');
+        childMode = 'view';
       } else {
-        service.create(member.refKind, result.data.instanceType, result.data.id)
+        service.create(member.refKind, result.data.instanceType, result.data.id);
         targetTypeId = result.data.id;
-        await openTypeById(targetTypeId, member.refKind, 'edit');
       }
     }
 
-    typeDetailsState.setReference(memberId, targetTypeId);
+    // openTypeById resolves only when the child drawer closes. Linking afterwards
+    // races the reload of this type and the member stays on "Add Reference".
+    if (!typeDetailsState.setReference(memberId, targetTypeId)) {
+      toastService.error(
+        'Reference not saved',
+        `Could not link ${memberId} to ${targetTypeId}.`,
+      );
+      return;
+    }
+
+    if (result.data.mode === 'create') {
+      await openTypeById(targetTypeId, member.refKind, childMode);
+    }
   }
 
 
   function handleClickItem(columnId: string, itemId: string) {
     if (columnId === "refs") {
       typeDetailsState.markMember(itemId);
-    } else {
-      // assign reference to marked member
-      typeDetailsState.setReferenceToMarkedMember(itemId);
+      return;
+    }
+    if (!typeDetailsState.setReferenceToMarkedMember(itemId)) {
+      toastService.error(
+        'Reference not saved',
+        'Could not assign the selected type to the marked member.',
+      );
     }
   }
 
@@ -388,7 +404,14 @@
       data={typeDetailsState.data}
       onItemClick={handleClickItem}
       onItemUnlink={(itemId) => typeDetailsState.clearReference(itemId)}
-      onItemDrop={(targetItemId, sourceItemId) => typeDetailsState.setReference(targetItemId, sourceItemId)}
+      onItemDrop={(targetItemId, sourceItemId) => {
+        if (!typeDetailsState.setReference(targetItemId, sourceItemId)) {
+          toastService.error(
+            'Reference not saved',
+            `Could not link ${targetItemId} to ${sourceItemId}.`,
+          );
+        }
+      }}
       onItemSelectChange={(itemId) => typeDetailsState.toggleMember(itemId)}
       onItemReferenceClick={(itemId) => openTypeDetails(itemId, typeDetailsState.viewMode)}
       onItemAddReferenceClick={(itemId) => createDataTypeFromReference(itemId)}

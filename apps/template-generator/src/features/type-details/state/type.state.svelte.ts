@@ -157,22 +157,24 @@ export class DataTypeDetailsState {
         this.dataTypeService.applyDefaultTypesFromPreview(preview);
     }
 
-    public setReferenceToMarkedMember(typeId: string) {
+    public setReferenceToMarkedMember(typeId: string): boolean {
         if (!this.markedMemberId) {
             console.warn('No member is marked to set reference');
-            return;
+            return true;
         }
-        this.setReference(this.markedMemberId, typeId);
-        this.markedMemberId = null;
+        return this.setReference(this.markedMemberId, typeId);
     }
 
-    public setReference(memberName: string, typeId: string) {
-        if (!this.loadedType) return;
+    public setReference(memberName: string, typeId: string): boolean {
+        if (!this.loadedType) return false;
         try {
             this.dataTypeService.setReference(this.loadedType.id, memberName, typeId);
             this.markedMemberId = null;
+            this.applyMarkedMember();
+            return true;
         } catch (err) {
             console.error(`Error setting reference for member ${memberName} in type ${this.loadedType.id} to type ${typeId}:`, err instanceof Error ? err.message : String(err));
+            return false;
         }
     }
 
@@ -269,13 +271,21 @@ export class DataTypeDetailsState {
 
     public markMember(memberId: string) {
         this.markedMemberId = this.markedMemberId === memberId ? null : memberId;
-        this.refreshData()
+        // Reloading the board here replaces every card, including the type the
+        // next click assigns. Flip the mark on the current items instead.
+        this.applyMarkedMember();
     }
 
     public clearMarkedMember() {
         if (!this.markedMemberId) return;
         this.markedMemberId = null;
-        this.refreshData();
+        this.applyMarkedMember();
+    }
+
+    private applyMarkedMember() {
+        for (const item of this.data.refs) {
+            item.marked = item.id === this.markedMemberId;
+        }
     }
 
     public getMember(memberName: string): DataTypeMember  | null {
