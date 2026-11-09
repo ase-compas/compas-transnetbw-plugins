@@ -34,6 +34,37 @@ function handleConfirm() {
 function handleCancel() {
   closeDialog('cancel');
 }
+
+function fitMessage(node: HTMLDivElement) {
+  const content = node.parentElement;
+  const surface = node.closest<HTMLElement>('.oscd-base-dialog__surface');
+  if (!content || !surface) throw new Error('Confirmation message requires a dialog surface.');
+
+  const update = () => {
+    const contentStyle = getComputedStyle(content);
+    const availableHeight =
+      parseFloat(getComputedStyle(surface).maxHeight) -
+      (surface.offsetHeight - content.offsetHeight) -
+      parseFloat(contentStyle.paddingTop) -
+      parseFloat(contentStyle.paddingBottom);
+    const lineHeight = parseFloat(getComputedStyle(node).lineHeight);
+    node.style.setProperty('--message-lines', String(Math.max(1, Math.floor(availableHeight / lineHeight))));
+  };
+
+  const observer = new ResizeObserver(update);
+  // Clamping changes the content size, so observe only the dialog chrome.
+  for (const child of Array.from(surface.children)) {
+    if (child !== content) observer.observe(child);
+  }
+  window.addEventListener('resize', update);
+  update();
+  return {
+    destroy() {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    },
+  };
+}
 </script>
 
 <OscdBaseDialog
@@ -51,10 +82,10 @@ function handleCancel() {
   width="100%"
   maxWidth="500px"
   height="auto"
-  maxHeight="auto"
+  maxHeight="calc(100dvh - 64px)"
 >
   {#snippet content()}
-    <div class="oscd-confirm-dialog__content">
+    <div class="oscd-confirm-dialog__content" title={message} use:fitMessage>
       {message}
     </div>
   {/snippet}
@@ -64,5 +95,13 @@ function handleCancel() {
 <style>
   .oscd-confirm-dialog__content {
     text-align: center;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--message-lines);
+    line-clamp: var(--message-lines);
+    line-height: 1.5;
   }
 </style>

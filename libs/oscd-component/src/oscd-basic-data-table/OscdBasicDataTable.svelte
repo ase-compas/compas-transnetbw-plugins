@@ -12,6 +12,8 @@
     header: string;
     /** Optional CSS width value, e.g. "140px" or "20%". */
     width?: string;
+    /** Shows the full cell text in a tooltip when the column is truncated. */
+    tooltip?: boolean;
     /** Renders the cell value using bold text when true. */
     bold?: boolean;
   };
@@ -20,7 +22,10 @@
     /** Rows to render in the table body. */
     items?: any[];
     /** Column definitions in display order. */
-    columns?: Column[];
+    columns?: readonly Column[];
+    /** Fixed layout lets columns without a width share the remaining space. */
+    tableLayout?: 'auto' | 'fixed';
+    actionsWidth?: string;
     /** Controls the built-in table loading progress bar. */
     loading?: boolean;
     /** Displays an error row when set. Takes precedence over empty state. */
@@ -60,6 +65,8 @@
   let {
     items = [],
     columns = [],
+    tableLayout = 'auto',
+    actionsWidth,
     loading = false,
     errorMsg = '',
     emptyText = 'Nothing to show.',
@@ -132,7 +139,11 @@
    */
 </script>
 
-<DataTable table$aria-label={tableAriaLabel} style="width: 100%;">
+<DataTable
+  table$aria-label={tableAriaLabel}
+  table$style={`width:100%;table-layout:${tableLayout}`}
+  style={`width:100%;min-width:0;${tableLayout === 'fixed' ? 'container-type:inline-size;' : ''}`}
+>
   <Head style={headerBg ? `background-color:${headerBg}` : undefined}>
     <Row>
       {#each columns as col}
@@ -146,7 +157,12 @@
         </Cell>
       {/each}
       {#if showActions}
-        <Cell style={headerBg ? `background-color:${headerBg}` : undefined}></Cell>
+        <Cell
+          style={[
+            actionsWidth ? `width:${actionsWidth}` : '',
+            headerBg ? `background-color:${headerBg}` : ''
+          ].filter(Boolean).join(';')}
+        ></Cell>
       {/if}
     </Row>
   </Head>
@@ -190,7 +206,10 @@
           }}
         >
           {#each columns as col}
-            <Cell class={col.bold ? 'cell-bold' : ''}>
+            <Cell
+              class={col.bold ? 'cell-bold' : ''}
+              title={col.tooltip ? String(item?.[col.key] ?? '') : undefined}
+            >
               {item?.[col.key] ?? ''}
             </Cell>
           {/each}

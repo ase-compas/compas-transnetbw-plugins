@@ -121,6 +121,8 @@
       bind:value={validationEditor.ruleUi.message}
       label="Error Message"
       variant="outlined"
+      style="width: 100%; min-width: 0; box-sizing: border-box;"
+      input$style="overflow-wrap: anywhere;"
       invalid={isMessageEmpty}
       helper={errorMessageHelper}
     />
@@ -135,6 +137,8 @@
     flex-direction: column;
     padding: 1rem 0;
     gap: 2rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .expert-toggle-row {

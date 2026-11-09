@@ -30,9 +30,9 @@
   const validationEntries = $derived(selectedPlugin?.validations ?? []);
 
   const columns = [
-    { key: 'title', header: 'Name', bold: true, width: '220px' },
-    { key: 'context', header: 'Scope' },
-    { key: 'assert', header: 'Condition' },
+    { key: 'title', header: 'Name', bold: true, width: 'min(22cqw, 252px)', tooltip: true },
+    { key: 'context', header: 'Scope', width: 'min(28cqw, 392px)', tooltip: true },
+    { key: 'assert', header: 'Condition', tooltip: true },
   ] as const;
 
   async function handleValidate(entry: XPathValidation) {
@@ -54,6 +54,8 @@
   <OscdBasicDataTable
     items={validationEntries}
     {columns}
+    tableLayout="fixed"
+    actionsWidth="144px"
     emptyText={`No validations configured for "${selectedPlugin.name}" yet.`}
     hasActions
     headerBg="var(--base3)"
