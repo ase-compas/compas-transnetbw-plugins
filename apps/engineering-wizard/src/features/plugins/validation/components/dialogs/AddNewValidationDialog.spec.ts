@@ -8,6 +8,7 @@ import {
   type SyntaxValidationResult,
 } from '../../../../../services/validationService';
 import AddNewValidationDialog from './AddNewValidationDialog.svelte';
+import { validationEditor } from '../../validationEditorStore.svelte';
 
 vi.mock('../../../../../services/validationService', () => ({
   checkRuleSyntax: vi.fn(),
@@ -83,4 +84,68 @@ it('gates expert navigation on the current syntax check, not a previous successf
   await waitFor(() =>
     expect(getByText('Assertion: Invalid assertion')).toBeTruthy(),
   );
+});
+
+function renderElementRule(context: string, element: string) {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(
+    new DOMRect(0, 0, 100, 30),
+  );
+  return render(AddNewValidationDialog, {
+    open: true,
+    plugin: { id: 'plugin', name: 'Plugin', type: 'internal' },
+    process: {
+      id: 'process',
+      name: 'Process',
+      description: '',
+      version: '1',
+      pluginGroups: [],
+    },
+    initialValidation: {
+      title: 'Element rule',
+      description: '',
+      context,
+      assert: `count(${element}) > 0`,
+      message: 'Element missing',
+    },
+  });
+}
+
+it('allows an unlisted child in the first-page path and preserves it when navigating back', async () => {
+  const parent = '//SCL/Communication/SubNetwork/ConnectedAP';
+  const { getByRole, queryByRole } = renderElementRule(parent, 'Address');
+
+  await fireEvent.input(getByRole('textbox', { name: 'Next element name', hidden: true }), {
+    target: { value: 'P' },
+  });
+  expect(validationEditor.entry.context).toBe(`${parent}/Address`);
+  expect(validationEditor.entry.assert).toBe('count(P) > 0');
+
+  await fireEvent.click(getByRole('button', { name: 'Next step', hidden: true }));
+  expect(queryByRole('textbox', { name: 'Element name', hidden: true })).toBeNull();
+  await fireEvent.click(getByRole('button', { name: 'Previous step', hidden: true }));
+
+  const elementInput = getByRole('textbox', { name: 'Element name', hidden: true });
+  expect((elementInput as HTMLInputElement).value).toBe('P');
+  expect(validationEditor.entry.context).toBe(`${parent}/Address`);
+  expect(validationEditor.entry.assert).toBe('count(P) > 0');
+
+  await fireEvent.input(elementInput, { target: { value: '' } });
+  expect(validationEditor.entry.context).toBe(parent);
+  expect(validationEditor.entry.assert).toBe('count(Address) > 0');
+});
+
+it('shows the parent execution context when entering expert mode for an element rule', async () => {
+  vi.mocked(checkRuleSyntax).mockResolvedValue({ valid: true, errors: [] });
+  const parent = '//SCL/Substation/VoltageLevel';
+  const { getByRole, getByLabelText } = renderElementRule(parent, 'Bay');
+
+  await fireEvent.click(getByRole('button', { name: 'Next step', hidden: true }));
+  await fireEvent.click(getByRole('switch', { hidden: true }));
+
+  const assertionInput = getByLabelText(/XPath assertion/) as HTMLTextAreaElement;
+  const hint = assertionInput.labels?.[0];
+  expect(hint?.textContent).toContain(parent);
+  expect(hint?.textContent).toContain('parent of the selected element');
+  expect(validationEditor.entry.context).toBe(parent);
+  expect(validationEditor.entry.assert).toBe('count(Bay) > 0');
 });

@@ -9,7 +9,6 @@
 
   import AttributeRuleEditor from '../../AttributeRuleEditor.svelte';
   import AttributeCheckFields from '../../AttributeCheckFields.svelte';
-  import ElementRuleEditor from '../../ElementRuleEditor.svelte';
   import ElementCheckFields from '../../ElementCheckFields.svelte';
   import PreviewBox from '../../PreviewBox.svelte';
   import ToggleSwitch from '../../ToggleSwitch.svelte';
@@ -69,7 +68,11 @@
         <label class="expert-editor__label" for="expert-xpath-input">
           XPath assertion
           <span class="expert-editor__hint">
-            Written relative to the context node selected on the previous page.
+            Written relative to the execution context:
+            <code>{validationEditor.entry.context || '//SCL'}</code>.
+            {#if validationEditor.ruleUi.mode === 'element'}
+              This is the parent of the selected element.
+            {/if}
             Example: <code>normalize-space(@name) = 'Bay1'</code>
           </span>
         </label>
@@ -102,20 +105,13 @@
       </div>
     {:else if validationEditor.ruleUi.mode === 'attribute'}
       <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
+      <AttributeCheckFields bind:ruleUi={validationEditor.ruleUi} />
     {:else}
-      <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
+      <ElementCheckFields bind:ruleUi={validationEditor.ruleUi} />
     {/if}
   </FormBlock>
 
   <FormBlock bold label="Define the message to be shown if the rule fails">
-    {#if !validationEditor.ruleUi.expertMode}
-      {#if validationEditor.ruleUi.mode === 'attribute'}
-        <AttributeCheckFields bind:ruleUi={validationEditor.ruleUi} />
-      {:else}
-        <ElementCheckFields bind:ruleUi={validationEditor.ruleUi} />
-      {/if}
-    {/if}
-
     <Textfield
       textarea
       bind:value={validationEditor.ruleUi.message}
@@ -136,7 +132,7 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 0;
-    gap: 2rem;
+    gap: 1.25rem;
     min-width: 0;
     overflow-wrap: anywhere;
   }

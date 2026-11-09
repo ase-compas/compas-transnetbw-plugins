@@ -8,9 +8,10 @@
 
   interface Props {
     value?: string;
+    allowCustomElements?: boolean;
   }
 
-  let { value = $bindable('//SCL') }: Props = $props();
+  let { value = $bindable('//SCL'), allowCustomElements = false }: Props = $props();
 
   let contextPath = $state<MaybeNode[]>([null]);
 
@@ -36,6 +37,7 @@
 
   /** Whether the last selected node has any possible children (to show trailing null). */
   function lastNodeHasChildren(selected: NodeName[]): boolean {
+    if (allowCustomElements) return true;
     if (selected.length === 0) return true; // SCL root always has children
     const last = selected[selected.length - 1];
     return (SCL_SCHEMA[last]?.children?.length ?? 0) > 0;
@@ -142,12 +144,24 @@
 
       <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 20px; height: 20px;" />
     {:else if isSelectVisible(index)}
-      <OscdSmartSelect
-        placeholder="Select next node"
-        clearable
-        bind:value={contextPath[index]}
-        options={getOptionsForIndex(index)}
-      />
+      {#if allowCustomElements && getOptionsForIndex(index).length === 0}
+        <input
+          class="custom-node"
+          aria-label={contextPath[index] ? 'Element name' : 'Next element name'}
+          placeholder="Element name"
+          value={contextPath[index] ?? ''}
+          oninput={(event) => {
+            contextPath[index] = event.currentTarget.value || null;
+          }}
+        />
+      {:else}
+        <OscdSmartSelect
+          placeholder="Select next node"
+          clearable
+          bind:value={contextPath[index]}
+          options={getOptionsForIndex(index)}
+        />
+      {/if}
 
       {#if hasChevronAfter(index)}
         <OscdChevronRightIcon svgStyles="fill: #B2C7CB; width: 20px; height: 20px;" />
@@ -182,5 +196,24 @@
     line-height: 1;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  .custom-node {
+    margin: 0;
+    width: 10rem;
+    max-width: 100%;
+    height: 2.5rem;
+    box-sizing: border-box;
+    padding: 0 0.75rem;
+    border: 1px solid #b2c7cb;
+    border-radius: 5px;
+    background: var(--base3);
+    color: var(--primary-base);
+    font: inherit;
+  }
+
+  .custom-node:focus {
+    border-color: var(--primary-base);
+    outline: 1px solid var(--primary-base);
   }
 </style>

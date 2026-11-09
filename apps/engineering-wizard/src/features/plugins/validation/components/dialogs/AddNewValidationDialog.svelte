@@ -90,7 +90,11 @@
   const isStepValid = $derived.by(() => {
     if (currentStep === 'basic') {
       const hasTitle = !!validationEditor.entry.title?.trim();
-      return hasTitle;
+      const needsElement =
+        validationEditor.ruleUi.mode === 'element' &&
+        !validationEditor.ruleUi.expertMode &&
+        !validationEditor.ruleUi.elementName?.trim();
+      return hasTitle && !needsElement;
     }
     if (currentStep === 'rule-definition') {
       return isRuleDefinitionValid();

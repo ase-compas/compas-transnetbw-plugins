@@ -60,10 +60,14 @@
     width: 100%;
     min-height: 3.5rem;
     box-sizing: border-box;
-    padding: 0 0.75rem;
+    padding: 0 2.5rem 0 0.75rem;
     border: 1px solid #b2c7cb;
     border-radius: 4px;
-    background: var(--oscd-plugin-surface);
+    appearance: none;
+    background-color: var(--oscd-plugin-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2393a1a1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
     color: var(--base03);
     font: inherit;
   }
