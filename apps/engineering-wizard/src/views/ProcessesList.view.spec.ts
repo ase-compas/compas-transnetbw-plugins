@@ -70,6 +70,46 @@ function renderList() {
   return { ...render(ProcessesList, callbacks), ...callbacks };
 }
 
+it('recalculates the scrollable table height when host padding changes around a running process', async () => {
+  const callbacks = new Map<Element, Set<() => void>>();
+  vi.stubGlobal('ResizeObserver', class {
+    private targets = new Set<Element>();
+    constructor(private callback: () => void) {}
+    observe(target: Element, options?: ResizeObserverOptions) {
+      if (options?.box !== 'border-box') return;
+      this.targets.add(target);
+      if (!callbacks.has(target)) callbacks.set(target, new Set());
+      callbacks.get(target)?.add(this.callback);
+    }
+    disconnect() {
+      for (const target of this.targets) callbacks.get(target)?.delete(this.callback);
+    }
+  });
+  let tableTop = 144;
+  const bounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+    .mockImplementation(() => new DOMRect(0, tableTop, 1000, 0));
+  try {
+    const { container, getByRole } = renderList();
+    const table = container.querySelector<HTMLElement>('.oscd-basic-table');
+    expect(table?.style.getPropertyValue('--oscd-basic-table-max-height'))
+      .toBe(`${window.innerHeight - 144 - 24}px`);
+
+    runningEngineeringProcess.process = engineeringProcesses.processes[0];
+    await waitFor(() => expect(getByRole('button', { name: 'Continue', exact: true })).toBeTruthy());
+    tableTop = 236;
+    for (const callback of callbacks.get(document.body) ?? []) callback();
+    expect(table?.style.getPropertyValue('--oscd-basic-table-max-height'))
+      .toBe(`${window.innerHeight - 236 - 24}px`);
+
+    tableTop = 300;
+    for (const callback of callbacks.get(document.body) ?? []) callback();
+    expect(table?.style.getPropertyValue('--oscd-basic-table-max-height'))
+      .toBe(`${window.innerHeight - 300 - 24}px`);
+  } finally {
+    bounds.mockRestore();
+  }
+});
+
 it('opens a saved duplicate when the user stays in the process list', async () => {
   vi.mocked(saveProcess).mockResolvedValueOnce('1.0.0');
   const { getAllByRole, handleEdit, handleView } = renderList();

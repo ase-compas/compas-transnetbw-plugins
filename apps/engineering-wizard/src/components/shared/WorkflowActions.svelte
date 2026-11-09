@@ -33,6 +33,7 @@
     onGoToPreviousStep,
     onGoToNextStep,
     onDone,
+    previousDisabled = false,
     isAtFirstStep = false,
     isAtLastStep = false,
     nextDisabled = false,
@@ -56,7 +57,7 @@
   const backStyles = $derived(`
     background-color: ${backBg ?? nextBg ?? 'var(--oscd-plugin-surface)'};
     color: ${backColor ?? nextColor ?? 'var(--oscd-plugin-brand)'};
-    opacity: ${isAtFirstStep ? '0.38' : '1'};
+    opacity: ${isAtFirstStep || previousDisabled ? '0.38' : '1'};
   `);
   const nextStyles = $derived(`
     background-color: ${nextBg ?? 'var(--oscd-plugin-surface)'};
@@ -75,7 +76,7 @@
     <Button
       tag="button"
       onclick={onGoToPreviousStep}
-      disabled={isAtFirstStep}
+      disabled={isAtFirstStep || previousDisabled}
       aria-label="Previous step"
       style={backStyles}
     >

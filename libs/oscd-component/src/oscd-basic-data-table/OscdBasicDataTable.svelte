@@ -208,7 +208,12 @@
         return;
       }
       observer = new ResizeObserver(updateHeight);
-      observer.observe(node.parentElement ?? node);
+      let ancestor: Element | null = node.parentElement ?? node;
+      while (ancestor) {
+        observer.observe(ancestor, { box: 'border-box' });
+        const root = ancestor.getRootNode();
+        ancestor = ancestor.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
+      }
       window.addEventListener('resize', updateHeight);
       updateHeight();
     }

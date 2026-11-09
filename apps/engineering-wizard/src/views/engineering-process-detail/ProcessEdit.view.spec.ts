@@ -212,15 +212,119 @@ it('confirms discarding a draft and never saves it when leaving the editor', asy
     target: { value: 'Unsaved process' },
   });
   vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
-  await fireEvent.click(getByRole('button', { name: 'Engineering Wizard', exact: true }));
+  await fireEvent.click(getByRole('button', { name: 'Discard Changes', exact: true }));
   expect(onReturnToList).not.toHaveBeenCalled();
   expect(selectedEngineeringProcess.draft?.name).toBe('Unsaved process');
 
-  await fireEvent.click(getByRole('button', { name: 'Engineering Wizard', exact: true }));
+  await fireEvent.click(getByRole('button', { name: 'Discard Changes', exact: true }));
   expect(selectedEngineeringProcess.draft).toBeNull();
   expect(engineeringProcesses.processes).toHaveLength(1);
   expect(saveProcess).not.toHaveBeenCalled();
   expect(onReturnToList).toHaveBeenCalledOnce();
+});
+
+it('keeps discard and navigation in the bottom bar on both editor steps', async () => {
+  const { getByRole, container } = render(ProcessEdit, { onReturnToList: vi.fn() });
+  const footer = getByRole('toolbar', { name: 'Process editor actions' });
+  const actions = within(footer);
+  expect(actions.getAllByRole('button').map((button) => button.textContent?.trim())).toEqual([
+    'Discard Changes', 'Back', 'Next', 'Save',
+  ]);
+  expect(footer.parentElement?.lastElementChild).toBe(footer);
+  expect(container.querySelector('.stepper .stepper-actions')).toBeNull();
+  expect(actions.getByRole<HTMLButtonElement>('button', { name: 'Previous step' }).disabled).toBe(true);
+
+  await fireEvent.click(actions.getByRole('button', { name: 'Next step' }));
+  expect(actions.getByRole<HTMLButtonElement>('button', { name: 'Previous step' }).disabled).toBe(false);
+  expect(actions.getByRole<HTMLButtonElement>('button', { name: 'Next step' }).disabled).toBe(true);
+  await fireEvent.click(actions.getByRole('button', { name: 'Previous step' }));
+  expect(getByRole('textbox', { name: 'Process name' })).toBeTruthy();
+});
+
+it('keeps the wizard aligned when host padding changes without a window resize', async () => {
+  const callbacks = new Map<Element, () => void>();
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(private callback: () => void) {}
+    observe(target: Element, options?: ResizeObserverOptions) {
+      if (options?.box === 'border-box') callbacks.set(target, this.callback);
+    }
+    disconnect() {
+      for (const [target, callback] of callbacks) {
+        if (callback === this.callback) callbacks.delete(target);
+      }
+    }
+  });
+  let top = 96;
+  const bounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+    () => new DOMRect(24, top, window.innerWidth - 48, 0),
+  );
+  try {
+    const { container } = render(ProcessEdit, { onReturnToList: vi.fn() });
+    const anchor = container.querySelector<HTMLElement>('.editor-viewport');
+    expect(anchor?.style.getPropertyValue('--editor-top')).toBe('96px');
+    expect(anchor?.style.getPropertyValue('--editor-left')).toBe('24px');
+    expect(anchor?.style.getPropertyValue('--editor-right')).toBe('24px');
+    top = 64;
+    callbacks.get(document.body)?.();
+    expect(anchor?.style.getPropertyValue('--editor-top')).toBe('64px');
+  } finally {
+    bounds.mockRestore();
+  }
+});
+
+it('switches the stepper layout using available plugin width rather than window width', async () => {
+  let width = 600;
+  const bounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+    .mockImplementation(() => new DOMRect(0, 80, width, 0));
+  try {
+    const { container } = render(ProcessEdit, { onReturnToList: vi.fn() });
+    const stepper = container.querySelector('.edit-view > .stepper');
+    await waitFor(() => expect(stepper?.classList.contains('compact')).toBe(true));
+    width = 1000;
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(stepper?.classList.contains('compact')).toBe(false));
+    width = 480;
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(stepper?.classList.contains('compact')).toBe(true));
+  } finally {
+    bounds.mockRestore();
+  }
+});
+
+it('restores an existing process when discarding changes from the bottom bar', async () => {
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { onReturnToList });
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Unsaved name' },
+  });
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
+  await fireEvent.click(getByRole('button', { name: 'Discard Changes' }));
+  expect(onReturnToList).not.toHaveBeenCalled();
+  expect(engineeringProcesses.processes[0].name).toBe('Unsaved name');
+
+  await fireEvent.click(getByRole('button', { name: 'Discard Changes' }));
+  expect(engineeringProcesses.processes[0].name).toBe('Process A');
+  expect(onReturnToList).toHaveBeenCalledOnce();
+  expect(saveProcess).not.toHaveBeenCalled();
+});
+
+it('disables all bottom bar actions while saving', async () => {
+  let finishSave!: (version: string) => void;
+  vi.mocked(saveProcess).mockReturnValueOnce(new Promise((resolve) => {
+    finishSave = resolve;
+  }));
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { onReturnToList });
+  await fireEvent.click(getByRole('button', { name: 'Next step' }));
+  await fireEvent.click(getByRole('checkbox', { name: 'Select validation First' }));
+  await fireEvent.click(getByRole('button', { name: 'Delete', exact: true }));
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'confirm', data: 'patch' });
+  await fireEvent.click(getByRole('button', { name: 'Save', exact: true }));
+
+  const footer = within(getByRole('toolbar', { name: 'Process editor actions' }));
+  expect(footer.getAllByRole<HTMLButtonElement>('button').every((button) => button.disabled)).toBe(true);
+  finishSave('1.0.1');
+  await waitFor(() => expect(onReturnToList).toHaveBeenCalledOnce());
 });
 
 it('always shows Save for an existing process and retains version-bump saving for changes', async () => {

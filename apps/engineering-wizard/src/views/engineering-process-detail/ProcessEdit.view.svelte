@@ -9,7 +9,7 @@
   } from '../../features/processes/stores.svelte';
   import { enterFullscreenView } from '../../features/workflow/layout.svelte';
   import Button, { Icon, Label } from '@smui/button';
-  import { OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdCloseIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ProcessValidationView from './ProcessValidation.view.svelte';
   import ProcessDefinitionView from './ProcessDefinition.view.svelte';
   import ProcessInfoBar from '../../components/shared/ProcessInfoBar.svelte';
@@ -38,6 +38,7 @@
   const { creating = false, onReturnToList }: Props = $props();
 
   let currentStepIndex = $state(0);
+  let compactStepper = $state(false);
   let currentStepId = $derived(STEP_IDS[currentStepIndex] ?? STEP_IDS[0]);
   let isAtFirstStep = $derived(currentStepIndex === 0);
   let isAtLastStep = $derived(currentStepIndex === STEP_IDS.length - 1);
@@ -316,24 +317,42 @@
     selectedValidations = selectedValidations.filter((selected) => !entries.includes(selected));
   }
 
+  function fitEditorViewport(anchor: HTMLDivElement) {
+    function update() {
+      const bounds = anchor.getBoundingClientRect();
+      compactStepper = bounds.width <= 820;
+      anchor.style.setProperty('--editor-top', `${Math.max(0, bounds.top)}px`);
+      anchor.style.setProperty('--editor-left', `${Math.max(0, bounds.left)}px`);
+      anchor.style.setProperty('--editor-right', `${Math.max(0, window.innerWidth - bounds.right)}px`);
+    }
+
+    const observer = new ResizeObserver(update);
+    let ancestor: Element | null = anchor;
+    while (ancestor) {
+      observer.observe(ancestor, { box: 'border-box' });
+      const root = ancestor.getRootNode();
+      ancestor = ancestor.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
+    }
+    window.addEventListener('resize', update);
+    update();
+    const frame = requestAnimationFrame(update);
+    return {
+      destroy() {
+        observer.disconnect();
+        window.removeEventListener('resize', update);
+        cancelAnimationFrame(frame);
+      },
+    };
+  }
+
 </script>
+<div class="editor-viewport" use:fitEditorViewport>
 <div class="edit-view">
-  <div class="stepper">
+  <div class="stepper" class:compact={compactStepper}>
     <WorkflowTitle onClick={exitEditing} />
 
     <ProcessDetailStepper currentId={currentStepId} visited={visitedSteps} onSelect={handleStepSelect} />
 
-    <WorkflowActions
-      onGoToPreviousStep={goToPreviousStep}
-      onGoToNextStep={goToNextStep}
-      onDone={handleDone}
-
-      isAtFirstStep={isAtFirstStep}
-      isAtLastStep={isAtLastStep}
-      nextDisabled={isAtLastStep}
-      doneDisabled={saving || processNameInvalid}
-      {doneLabel}
-    />
   </div>
 
   <div class="step-content" inert={saving} aria-busy={saving}>
@@ -390,9 +409,9 @@
           >
             Add new validation
           </Button>
-        </div>
-      </div>
-      {#if selectedPlugin}
+              </div>
+            </div>
+            {#if selectedPlugin}
         <div class="ew-table-section">
           <div class="ew-table-toolbar" role="toolbar" aria-label="Validation rules table controls">
             <SearchInput bind:value={validationSearchQuery} label="Search Rules" />
@@ -435,33 +454,108 @@
       {/if}
     {/if}
   </div>
+  <div class="bottom-bar" role="toolbar" aria-label="Process editor actions">
+    <Button
+      tag="button"
+      onclick={exitEditing}
+      disabled={saving}
+      style="--mdc-theme-primary: white; color: white;"
+    >
+      <Icon><OscdCloseIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" /></Icon>
+      <Label>Discard Changes</Label>
+    </Button>
+    <WorkflowActions
+      onGoToPreviousStep={goToPreviousStep}
+      onGoToNextStep={goToNextStep}
+      onDone={handleDone}
+      {isAtFirstStep}
+      {isAtLastStep}
+      previousDisabled={saving}
+      nextDisabled={saving || isAtLastStep}
+      doneDisabled={saving || processNameInvalid}
+      {doneLabel}
+    />
+  </div>
+</div>
 </div>
 
 <style>
   * { font-family: var(--ew-font-family, 'Roboto', sans-serif); }
 
   .edit-view {
-    /*
-     * Controls the max-height of the plugin panels.
-     * Increase this value if panels still overflow (accounts for stepper + info bar + OpenSCD chrome).
-     */
-    --oscd-panel-max-height: calc(100vh - 23rem);
+    --editor-bottom-bar-height: 48px;
+    --oscd-panel-max-height: 100%;
+    position: fixed;
+    inset: var(--editor-top) var(--editor-right) 0 var(--editor-left);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--oscd-plugin-surface);
   }
 
   .step-content {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
     padding: 16px 24px;
     display: flex;
     flex-direction: column;
+  }
+
+  .step-content > :global(.info-bar) {
+    flex-shrink: 0;
+  }
+
+  .step-content > .ew-table-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ew-table-section > .ew-table-toolbar {
+    flex-shrink: 0;
+  }
+
+  .ew-table-section > :global(.oscd-basic-table) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .ew-table-section :global(.mdc-data-table) {
+    min-height: 0;
   }
 
   .stepper {
     height: 4rem;
     padding: 0 2rem;
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     background-color: var(--oscd-plugin-ew-primary-bg);
     flex-shrink: 0;
+  }
+
+  .stepper > :global(.btn-engineering-wizard_title) {
+    justify-self: start;
+  }
+
+  .stepper.compact {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    box-sizing: border-box;
+    padding: 4px 12px;
+    row-gap: 2px;
+  }
+
+  .stepper.compact > :global(.btn-engineering-wizard_title) {
+    justify-self: center;
+    font-size: var(--ew-font-size-body);
   }
 
   .header {
@@ -477,6 +571,22 @@
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 12px;
+    box-sizing: border-box;
+    height: var(--editor-bottom-bar-height);
+    padding: 6px 24px;
+    background-color: var(--oscd-plugin-ew-primary-bg);
+  }
+
+  .bottom-bar :global(.stepper-actions) {
+    margin-left: auto;
   }
 
 </style>
