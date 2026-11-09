@@ -8,10 +8,12 @@
     selectedEngineeringProcess
   } from '../../features/processes/stores.svelte';
   import { enterFullscreenView } from '../../features/workflow/layout.svelte';
-  import Button from '@smui/button';
+  import Button, { Icon, Label } from '@smui/button';
+  import { OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
   import ProcessValidationView from './ProcessValidation.view.svelte';
   import ProcessDefinitionView from './ProcessDefinition.view.svelte';
   import ProcessInfoBar from '../../components/shared/ProcessInfoBar.svelte';
+  import SearchInput from '../../components/shared/SearchInput.svelte';
   import PluginGroupsStepper from '../../components/shared/PluginGroupsStepper.svelte';
   import type { EditorStepIds } from '../../features/processes/editor/types';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
@@ -44,6 +46,8 @@
     !selectedEngineeringProcess.process?.name?.trim(),
   );
   let selectedPluginId: string | null = $state(null);
+  let selectedValidations = $state<XPathValidation[]>([]);
+  let validationSearchQuery = $state('');
 
   let visitedSteps: EditorStepIds[] = $state([]);
 
@@ -59,6 +63,17 @@
       ?.flatMap((g) => g.plugins ?? [])
       .find((p) => p.id === id) ?? null;
   });
+  const normalizedValidationQuery = $derived(validationSearchQuery.trim().toLowerCase());
+  const filteredValidations = $derived(
+    (selectedPlugin?.validations ?? []).filter((entry) =>
+      [entry.title, entry.context, entry.assert].some((value) =>
+        value.toLowerCase().includes(normalizedValidationQuery),
+      ),
+    ),
+  );
+  const visibleSelectedValidations = $derived(
+    filteredValidations.filter((entry) => selectedValidations.includes(entry)),
+  );
 
   // Snapshot taken when edit mode opens — used to detect actual changes.
   let entrySnapshot: string | null = null;
@@ -79,13 +94,13 @@
     if (saving) return;
     if (isAtLastStep) return;
     markStepVisited(currentStepId);
-    currentStepIndex += 1;
+    handleStepSelect(STEP_IDS[currentStepIndex + 1]);
   }
 
   function goToPreviousStep() {
     if (saving) return;
     if (isAtFirstStep) return;
-    currentStepIndex -= 1;
+    handleStepSelect(STEP_IDS[currentStepIndex - 1]);
   }
 
   let saving = $state(false);
@@ -156,7 +171,10 @@
   function handleStepSelect(stepId: EditorStepIds) {
     if (saving) return;
     const idx = STEP_IDS.indexOf(stepId);
-    if (idx !== -1) currentStepIndex = idx;
+    if (idx === -1 || idx === currentStepIndex) return;
+    selectedValidations = [];
+    validationSearchQuery = '';
+    currentStepIndex = idx;
   }
 
   function markStepVisited(id: EditorStepIds) {
@@ -164,6 +182,9 @@
   }
 
   function onSelectPlugin(plugin: Plugin) {
+    if (selectedPluginId === plugin.id) return;
+    selectedValidations = [];
+    validationSearchQuery = '';
     selectedPluginId = plugin.id;
   }
 
@@ -192,7 +213,12 @@
     });
 
     if (result?.type === 'confirm') {
+      const wasSelected = selectedValidations.includes(entry);
       updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
+      const updatedEntry = pl.validations?.[index];
+      if (wasSelected && updatedEntry) {
+        selectedValidations = selectedValidations.map((selected) => selected === entry ? updatedEntry : selected);
+      }
     }
   }
 
@@ -228,6 +254,31 @@
     if (result?.type !== 'confirm') return;
 
     removeValidationFromPluginInProcess(proc.id, pl.id, index);
+    selectedValidations = selectedValidations.filter((selected) => selected !== entry);
+  }
+
+  async function handleDeleteSelectedValidations() {
+    const proc = selectedEngineeringProcess.process;
+    const pl = selectedPlugin;
+    const entries = visibleSelectedValidations;
+    if (!proc || !pl || entries.length === 0) return;
+
+    const result = await openDialog(OscdConfirmDialog, {
+      title: 'Remove validations',
+      message: `Are you sure you want to remove ${entries.length} selected validations? This cannot be undone.`,
+      confirmActionText: 'Remove',
+      confirmActionColor: 'danger',
+    });
+    if (result?.type !== 'confirm') return;
+
+    const indexes = entries
+      .map((entry) => (pl.validations ?? []).indexOf(entry))
+      .filter((index) => index >= 0)
+      .sort((a, b) => b - a);
+    for (const index of indexes) {
+      removeValidationFromPluginInProcess(proc.id, pl.id, index);
+    }
+    selectedValidations = selectedValidations.filter((selected) => !entries.includes(selected));
   }
 
 </script>
@@ -289,6 +340,7 @@
           <ValidationJsonTransferActions
             process={selectedEngineeringProcess.process}
             plugin={selectedPlugin}
+            selectedValidations={visibleSelectedValidations}
           />
           <Button
             variant="raised"
@@ -301,12 +353,41 @@
           </Button>
         </div>
       </div>
-      <ProcessValidationView
-        {selectedPlugin}
-        onEditEntry={handleEditValidationClick}
-        onDeleteEntry={handleDeleteValidationClick}
-        onDuplicateEntry={handleDuplicateValidationClick}
-      />
+      {#if selectedPlugin}
+        <div class="ew-table-section">
+          <div class="ew-table-toolbar" role="toolbar" aria-label="Validation rules table controls">
+            <SearchInput bind:value={validationSearchQuery} label="Search Rules" />
+            <div class="ew-table-toolbar__selection">
+              <span role="status">
+                {#if visibleSelectedValidations.length > 0}
+                  {visibleSelectedValidations.length} selected
+                {:else}
+                  {filteredValidations.length} {filteredValidations.length === 1 ? 'rule' : 'rules'}
+                {/if}
+              </span>
+              <Button
+                tag="button"
+                variant="raised"
+                style="--mdc-theme-primary: var(--oscd-plugin-error); --mdc-theme-on-primary: white;"
+                onclick={handleDeleteSelectedValidations}
+                disabled={visibleSelectedValidations.length === 0}
+              >
+                <Icon><OscdDeleteIcon svgStyles="fill: currentColor; width: 18px; height: 18px;" /></Icon>
+                <Label>Delete</Label>
+              </Button>
+            </div>
+          </div>
+          <ProcessValidationView
+            {selectedPlugin}
+            visibleEntries={filteredValidations}
+            {selectedValidations}
+            onSelectionChange={(entries) => { selectedValidations = entries; }}
+            onEditEntry={handleEditValidationClick}
+            onDeleteEntry={handleDeleteValidationClick}
+            onDuplicateEntry={handleDuplicateValidationClick}
+          />
+        </div>
+      {/if}
     {/if}
   </div>
 </div>
@@ -343,14 +424,14 @@
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-    padding-bottom: 12px;
+    padding-bottom: 16px;
   }
 
   .validation-actions {
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 12px;
   }
 
 </style>

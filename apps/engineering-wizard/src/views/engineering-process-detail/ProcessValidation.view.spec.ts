@@ -2,10 +2,79 @@
 
 import { cleanup, fireEvent, render } from '@testing-library/svelte';
 import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
-import { afterEach, expect, it, vi } from 'vitest';
+import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { engineeringProcesses } from '../../features/processes/stores.svelte';
 import ProcessValidation from './ProcessValidation.view.svelte';
 
-afterEach(cleanup);
+beforeEach(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe = vi.fn();
+      disconnect = vi.fn();
+    },
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  engineeringProcesses.processes = [];
+  vi.unstubAllGlobals();
+});
+
+it('keeps non-scrolling tables as direct layout children', () => {
+  const { container } = render(OscdBasicDataTable, {
+    items: [{ id: 'first', name: 'First' }],
+    columns: [{ key: 'name', header: 'Name' }],
+  });
+
+  expect(container.querySelector('.oscd-basic-table')).toBeNull();
+  expect(container.querySelector('.mdc-data-table')?.parentElement).toBe(
+    container,
+  );
+});
+
+it('displays the selection provided by its parent without resetting it on mount', () => {
+  const entry: XPathValidation = {
+    title: 'Selected rule',
+    description: '',
+    context: '//scl:Bay',
+    assert: '@name',
+  };
+  engineeringProcesses.processes = [
+    {
+      id: 'process-a',
+      name: 'Process A',
+      description: '',
+      version: '1.0.0',
+      pluginGroups: [
+        {
+          title: 'Plugins',
+          plugins: [
+            {
+              id: 'validation',
+              name: 'Validation',
+              type: 'internal',
+              validations: [entry],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+  const plugin = engineeringProcesses.processes[0].pluginGroups[0].plugins[0];
+  const { getByRole } = render(ProcessValidation, {
+    selectedPlugin: plugin,
+    selectedValidations: plugin.validations,
+  });
+
+  expect(
+    getByRole<HTMLInputElement>('checkbox', {
+      name: 'Select validation Selected rule',
+    }).checked,
+  ).toBe(true);
+});
 
 it.each(['short', 'long'])(
   'keeps full %s cell values in tooltips and edit callbacks',

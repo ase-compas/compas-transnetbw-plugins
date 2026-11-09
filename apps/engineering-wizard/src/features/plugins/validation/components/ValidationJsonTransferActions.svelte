@@ -1,24 +1,35 @@
 <script lang="ts">
   import Button, { Group, GroupItem } from '@smui/button';
-  import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
+  import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { addValidationsToPluginInProcess } from '../../../processes/mutations.svelte';
-  import { importValidationFiles } from '../validationJson';
-  import ExportValidationsDialog from './dialogs/ExportValidationsDialog.svelte';
+  import { importValidationFiles, createValidationExportFileName, downloadValidationExport } from '../validationJson';
 
   interface Props {
     process: Process | null;
     plugin: Plugin | null;
+    selectedValidations?: XPathValidation[];
   }
 
-  let { process, plugin }: Props = $props();
+  let { process, plugin, selectedValidations = [] }: Props = $props();
 
   let fileInput = $state<HTMLInputElement>();
-  let exportDialogOpen = $state(false);
   let importing = $state(false);
+  const exportPlugin = $derived(
+    process && selectedValidations.length > 0 ? plugin : null,
+  );
 
   function selectImportFile() {
     fileInput?.click();
+  }
+
+  function exportSelected() {
+    if (!exportPlugin) return;
+    try {
+      downloadValidationExport(createValidationExportFileName(exportPlugin.name), selectedValidations);
+    } catch (error) {
+      toastService.error('Export failed', error instanceof Error ? error.message : String(error));
+    }
   }
 
   async function importValidations(event: Event) {
@@ -66,6 +77,7 @@
 
 <Group variant="outlined" aria-label="Validation JSON transfer">
   <Button
+    tag="button"
     use={[GroupItem]}
     variant="outlined"
     onclick={selectImportFile}
@@ -74,12 +86,13 @@
     Import JSON
   </Button>
   <Button
+    tag="button"
     use={[GroupItem]}
     variant="outlined"
-    onclick={() => { exportDialogOpen = true; }}
-    disabled={!process || !plugin}
+    onclick={exportSelected}
+    disabled={!exportPlugin}
   >
-    Export JSON
+    Export selected ({selectedValidations.length})
   </Button>
 </Group>
 <input
@@ -89,11 +102,6 @@
   accept="application/json,.json"
   multiple
   onchange={importValidations}
-/>
-<ExportValidationsDialog
-  bind:open={exportDialogOpen}
-  {process}
-  {plugin}
 />
 
 <style>

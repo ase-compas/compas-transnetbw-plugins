@@ -23,11 +23,30 @@
     onEditEntry?: (item: XPathValidation, index: number) => void;
     onDeleteEntry?: (item: XPathValidation, index: number) => void;
     onDuplicateEntry?: (item: XPathValidation, index: number) => void;
+    selectedValidations?: readonly XPathValidation[];
+    onSelectionChange?: (entries: XPathValidation[]) => void;
+    visibleEntries?: XPathValidation[];
   }
 
-  let { selectedPlugin = null, onEditEntry, onDeleteEntry, onDuplicateEntry }: Props = $props();
+  let { selectedPlugin = null, onEditEntry, onDeleteEntry, onDuplicateEntry, selectedValidations = [], onSelectionChange, visibleEntries }: Props = $props();
 
   const validationEntries = $derived(selectedPlugin?.validations ?? []);
+  const validationIds = new WeakMap<XPathValidation, number>();
+  let nextValidationId = 0;
+
+  function getValidationId(entry: XPathValidation): number {
+    let id = validationIds.get(entry);
+    if (id === undefined) {
+      id = nextValidationId++;
+      validationIds.set(entry, id);
+    }
+    return id;
+  }
+
+  function selectValidations(ids: (string | number)[]) {
+    const selectedIds = new Set(ids);
+    onSelectionChange?.(validationEntries.filter((entry) => selectedIds.has(getValidationId(entry))));
+  }
 
   const columns = [
     { key: 'title', header: 'Name', bold: true, width: 'min(22cqw, 252px)', tooltip: true },
@@ -52,30 +71,37 @@
 
 {#if selectedPlugin}
   <OscdBasicDataTable
-    items={validationEntries}
+    scrollable
+    tableAriaLabel="Validation rules"
+    items={visibleEntries ?? validationEntries}
     {columns}
     tableLayout="fixed"
-    actionsWidth="144px"
-    emptyText={`No validations configured for "${selectedPlugin.name}" yet.`}
+    actionsWidth="192px"
+    emptyText={validationEntries.length === 0
+      ? `No validations configured for "${selectedPlugin.name}" yet.`
+      : 'No matching validation rules.'}
     hasActions
-    headerBg="var(--base3)"
-    rowBg="var(--white)"
-    getRowId={(item, i) => `${item.title}:${i}`}
+    headerBg="var(--oscd-plugin-surface-muted)"
+    rowBg="var(--oscd-plugin-surface)"
+    getRowId={getValidationId}
+    selectable
+    bind:selectedRowIds={() => selectedValidations.map(getValidationId), selectValidations}
+    getSelectionLabel={(item) => `Select validation ${item.title}`}
   >
     {#snippet actions({ item })}
-      <div class="actions-cell">
+      <div class="ew-table-actions">
         <button
           type="button"
-          class="action-btn action-btn--run"
+          class="ew-table-action"
           title="Run validation"
           aria-label="Run validation"
           onclick={() => handleValidate(item)}
         >
-          <OscdPlayCircleIcon svgStyles="fill: var(--oscd-plugin-brand)" />
+          <OscdPlayCircleIcon svgStyles="fill: currentColor;" />
         </button>
         <button
           type="button"
-          class="action-btn action-btn--edit"
+          class="ew-table-action"
           title="Edit"
           aria-label="Edit validation"
           onclick={() => {
@@ -83,11 +109,11 @@
             onEditEntry?.(item, index);
           }}
         >
-          <OscdEditIcon svgStyles="fill: var(--oscd-plugin-brand)" />
+          <OscdEditIcon svgStyles="fill: currentColor;" />
         </button>
         <button
           type="button"
-          class="action-btn action-btn--duplicate"
+          class="ew-table-action"
           title="Duplicate"
           aria-label="Duplicate validation"
           onclick={() => {
@@ -95,11 +121,11 @@
             onDuplicateEntry?.(item, index);
           }}
         >
-          <OscdControlPointDuplicateIcon svgStyles="fill: var(--oscd-plugin-brand)" />
+          <OscdControlPointDuplicateIcon svgStyles="fill: currentColor;" />
         </button>
         <button
           type="button"
-          class="action-btn action-btn--delete"
+          class="ew-table-action ew-table-action--danger"
           title="Remove"
           aria-label="Remove validation"
           onclick={() => {
@@ -107,36 +133,9 @@
             onDeleteEntry?.(item, index);
           }}
         >
-          <OscdDeleteIcon svgStyles="fill: var(--red)" />
+          <OscdDeleteIcon svgStyles="fill: currentColor;" />
         </button>
       </div>
     {/snippet}
   </OscdBasicDataTable>
 {/if}
-
-<style>
-  .actions-cell {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .action-btn {
-    background: transparent;
-    border: none;
-    border-radius: 4px;
-    padding: 0.25rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    transition: background-color 0.15s ease;
-  }
-
-  .action-btn:hover {
-    background-color: var(--base3);
-  }
-
-  .action-btn:focus-visible {
-    outline: 2px solid var(--oscd-plugin-brand);
-    outline-offset: 2px;
-  }
-</style>

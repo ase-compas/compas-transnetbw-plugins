@@ -213,3 +213,90 @@ button:focus {
   align-items: center;
   justify-content: center;
 }
+
+.ew-table-section {
+  min-width: 0;
+}
+
+.ew-table-toolbar {
+  --ew-search-width: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 6px 6px 0 0;
+  background-color: var(--oscd-plugin-surface-muted);
+  color: var(--oscd-plugin-text);
+  font-family: var(--ew-font-family, 'Inter', sans-serif);
+  font-size: var(--ew-font-size-body, 0.875rem);
+}
+
+.ew-table-toolbar__selection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ew-table-section .mdc-data-table,
+.ew-table-section .mdc-data-table .mdc-data-table__header-cell:first-child,
+.ew-table-section .mdc-data-table .mdc-data-table__header-cell:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.ew-table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.ew-table-actions .ew-table-action {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  margin: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--oscd-plugin-brand);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ew-table-actions .ew-table-action--labeled {
+  --mdc-filled-button-hover-state-layer-opacity: 0.04;
+  --mdc-filled-button-focus-state-layer-opacity: 0.08;
+  width: auto;
+  padding: 0 12px;
+  border: 1px solid var(--oscd-plugin-text-muted);
+  background-color: var(--oscd-plugin-surface);
+}
+
+.ew-table-actions .ew-table-action--danger {
+  color: var(--oscd-plugin-error);
+}
+
+.ew-table-actions .ew-table-action:hover:not(:disabled) {
+  background-color: var(--oscd-plugin-surface-muted);
+}
+
+.ew-table-actions .ew-table-action--labeled:hover:not(:disabled) {
+  background-color: var(--oscd-plugin-surface);
+}
+
+.ew-table-actions .ew-table-action:focus-visible {
+  outline: 2px solid var(--oscd-plugin-brand);
+  outline-offset: 2px;
+}
+
+.ew-table-actions .ew-table-action:disabled {
+  cursor: default;
+}
