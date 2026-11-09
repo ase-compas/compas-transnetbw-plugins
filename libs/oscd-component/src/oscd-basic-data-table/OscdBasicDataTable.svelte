@@ -326,7 +326,10 @@
           }}
         >
           {#if selectable}
-            <Cell class="oscd-basic-table__selection-cell">
+            <Cell
+              class="oscd-basic-table__selection-cell"
+              onclick={(event) => event.stopPropagation()}
+            >
               <input
                 type="checkbox"
                 class="oscd-basic-table__checkbox"
@@ -469,7 +472,7 @@
     white-space: nowrap;
   }
 
-  :global(.mdc-data-table__row.oscd-basic-table__row--clickable > .mdc-data-table__cell) {
+  :global(.mdc-data-table__row.oscd-basic-table__row--clickable > .mdc-data-table__cell:not(.oscd-basic-table__selection-cell)) {
     cursor: pointer;
   }
 

@@ -177,6 +177,12 @@ it('selects rows without opening them and shows partial/select-all state', async
     name: 'Select all rows',
   });
 
+  const selectionCell = alpha.closest('td');
+  if (!selectionCell) throw new Error('Missing checkbox cell');
+  await fireEvent.click(selectionCell);
+  expect(handleView).not.toHaveBeenCalled();
+  expect(getByRole<HTMLInputElement>('checkbox', { name: 'Select process Alpha' }).checked).toBe(false);
+
   await fireEvent.keyDown(alpha, { key: ' ' });
   expect(handleView).not.toHaveBeenCalled();
   await fireEvent.click(alpha);

@@ -35,6 +35,33 @@ it('keeps non-scrolling tables as direct layout children', () => {
   );
 });
 
+it('ignores selection-cell padding while preserving checkbox, data-cell and keyboard actions', async () => {
+  const item = { id: 'first', name: 'First' };
+  const onRowClick = vi.fn();
+  const { getByRole, getByText } = render(OscdBasicDataTable, {
+    items: [item],
+    columns: [{ key: 'name', header: 'Name' }],
+    selectable: true,
+    onRowClick,
+  });
+  const checkbox = getByRole<HTMLInputElement>('checkbox', { name: 'Select row 1' });
+  const selectionCell = checkbox.closest('td');
+  const row = checkbox.closest('tr');
+  if (!selectionCell || !row) throw new Error('Missing checkbox cell or row');
+
+  await fireEvent.click(selectionCell);
+  expect(onRowClick).not.toHaveBeenCalled();
+  expect(checkbox.checked).toBe(false);
+  await fireEvent.click(checkbox);
+  expect(checkbox.checked).toBe(true);
+  expect(onRowClick).not.toHaveBeenCalled();
+  await fireEvent.click(getByText('First'));
+  expect(onRowClick).toHaveBeenCalledOnce();
+  expect(onRowClick).toHaveBeenCalledWith(item);
+  await fireEvent.keyDown(row, { key: 'Enter' });
+  expect(onRowClick).toHaveBeenCalledTimes(2);
+});
+
 it('displays the selection provided by its parent without resetting it on mount', () => {
   const entry: XPathValidation = {
     title: 'Selected rule',
@@ -97,6 +124,11 @@ it.each(['short', 'long'])(
       selectedPlugin,
       onEditEntry,
     });
+
+    const selectionCell = getByRole('checkbox', { name: `Select validation ${entry.title}` }).closest('td');
+    if (!selectionCell) throw new Error('Missing checkbox cell');
+    await fireEvent.click(selectionCell);
+    expect(onEditEntry).not.toHaveBeenCalled();
 
     for (const value of [entry.title, entry.context, entry.assert]) {
       const cell = getByTitle(value);
