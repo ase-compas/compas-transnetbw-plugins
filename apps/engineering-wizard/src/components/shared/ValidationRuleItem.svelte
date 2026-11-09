@@ -13,6 +13,11 @@
   const couldNotEvaluate = $derived(
     rule.status === 'INVALID_RULE' || rule.status === 'EVALUATION_ERROR' || rule.status === 'REQUEST_ERROR',
   );
+  const lineNumbers = $derived(
+    rule.status === 'FAILED'
+      ? [...new Set(rule.errors.flatMap((error) => error.lineNumber != null ? [error.lineNumber] : []))]
+      : [],
+  );
 </script>
 
 <details
@@ -49,6 +54,16 @@
     {/if}
     {#if rule.description}
       <p>{rule.description}</p>
+    {/if}
+    {#if lineNumbers.length > 0}
+      <div class="field field--lines">
+        <span class="label">{lineNumbers.length === 1 ? 'Line' : 'Lines'}</span>
+        <ul class="line-numbers" aria-label="Affected lines">
+          {#each lineNumbers as lineNumber (lineNumber)}
+            <li class="line-number">Line {lineNumber}</li>
+          {/each}
+        </ul>
+      </div>
     {/if}
     {#if rule.context}
       <div class="field">
@@ -135,6 +150,36 @@
     font-family: var(--ew-font-family, 'Roboto', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
     color: var(--base1, #93a1a1);
+  }
+
+  .field--lines {
+    align-items: flex-start;
+  }
+
+  .field--lines .label {
+    padding-top: 3px;
+  }
+
+  .line-numbers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .line-number {
+    padding: 2px 6px;
+    border: 1px solid color-mix(in srgb, var(--oscd-plugin-error) 35%, var(--oscd-plugin-surface));
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--oscd-plugin-error) 8%, var(--oscd-plugin-surface));
+    color: var(--oscd-plugin-error);
+    font-family: 'Roboto Mono', monospace;
+    font-size: var(--ew-font-size-small, 0.75rem);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   .label {
