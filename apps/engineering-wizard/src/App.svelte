@@ -2,7 +2,6 @@
   import ProcessesListView from './views/ProcessesList.view.svelte';
   import ProcessEditView from './views/engineering-process-detail/ProcessEdit.view.svelte';
   import WorkflowDialog from './features/workflow/components/dialogs/WorkflowDialog.svelte';
-  import AddProcessView from './views/AddProcess.view.svelte';
   import { type Process } from '@oscd-transnet-plugins/shared';
   import { onMount, untrack } from 'svelte';
   import { DialogHost, openDialog, updateDialogProps } from '../../../libs/oscd-services/src/dialog';
@@ -51,8 +50,6 @@
     oscdApi,
     host
   }: Props = $props();
-
-  let isCreatingProcess = $state(false);
 
   function restoreWorkflowState(document: XMLDocument | undefined) {
     if (!document) return;
@@ -161,30 +158,26 @@
   }
 
   function addNewProcess() {
-    engineeringProcessEditing.isEditing = false;
     selectedEngineeringProcess.process = null;
-    isCreatingProcess = true;
-  }
-
-  function cancelCreate() {
-    engineeringProcessEditing.isEditing = false;
-    isCreatingProcess = false;
-    void refreshProcesses();
-  }
-
-  function handleCreated(_proc: Process) {
-    isCreatingProcess = false;
-    void refreshProcesses();
+    selectedEngineeringProcess.draft = {
+      id: '',
+      name: '',
+      description: '',
+      version: '1.0.0',
+      pluginGroups: [{ title: 'Ungrouped', plugins: [] }],
+    };
+    engineeringProcessEditing.isEditing = true;
   }
 </script>
 
 <DialogHost />
 
 <div class="app-root">
-  {#if isCreatingProcess}
-    <AddProcessView handleCancel={cancelCreate} handleSaved={handleCreated} />
-  {:else if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
-    <ProcessEditView onReturnToList={refreshProcesses} />
+  {#if selectedEngineeringProcess.process && engineeringProcessEditing.isEditing}
+    <ProcessEditView
+      creating={selectedEngineeringProcess.draft !== null}
+      onReturnToList={refreshProcesses}
+    />
   {:else}
     <ProcessesListView
       handleView={handleEdit}

@@ -21,7 +21,7 @@
     from '../../features/plugins/validation/components/dialogs/AddNewValidationDialog.svelte';
   import ValidationJsonTransferActions
     from '../../features/plugins/validation/components/ValidationJsonTransferActions.svelte';
-  import { addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
+  import { addProcess, addValidationToPluginInProcess, updateValidationInPluginInProcess, removeValidationFromPluginInProcess, updateProcessMetadata } from '../../features/processes/mutations.svelte';
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, Process, XPathValidation, VersionBump } from '@oscd-transnet-plugins/shared';
@@ -31,10 +31,11 @@
   const STEP_IDS: EditorStepIds[] = ['process-definition', 'validator-configuration'];
 
   interface Props {
+    creating?: boolean;
     onReturnToList: () => void | Promise<void>;
   }
 
-  const { onReturnToList }: Props = $props();
+  const { creating = false, onReturnToList }: Props = $props();
 
   let currentStepIndex = $state(0);
   let currentStepId = $derived(STEP_IDS[currentStepIndex] ?? STEP_IDS[0]);
@@ -76,7 +77,19 @@
   );
 
   // Snapshot taken when edit mode opens — used to detect actual changes.
-  let entrySnapshot: string | null = null;
+  let entrySnapshot: string | null = $state(null);
+  let idTouched = $state(false);
+  const doneLabel = $derived(creating ? 'Create' : 'Save');
+
+  const slugify = (value: string) =>
+    value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+  function changeName(name: string) {
+    const proc = selectedEngineeringProcess.process;
+    if (!proc) return;
+    updateProcessMetadata(proc.id, { name });
+    if (creating && !idTouched) proc.id = slugify(name);
+  }
 
   onMount(() => {
     const proc = selectedEngineeringProcess.process;
@@ -106,7 +119,7 @@
   let saving = $state(false);
 
   function restoreSnapshot() {
-    if (!entrySnapshot) return;
+    if (creating || !entrySnapshot) return;
     try {
       const original = JSON.parse(entrySnapshot) as Process;
       const idx = engineeringProcesses.processes.findIndex((p) => p.id === original.id);
@@ -140,32 +153,54 @@
     returnToProcessList();
   }
 
-  /** Called by the Done button — skips the "save or discard?" prompt, goes straight to version bump. */
   async function handleDone() {
+    if (saving) return;
     const proc = selectedEngineeringProcess.process;
     if (!proc?.name?.trim()) {
       toastService.error('Process name required', 'Enter a process name before saving.');
       return;
     }
-    if (proc && hasChanges()) {
-      const versionResult = await openDialog(OscdVersionBumpDialog, {
-        currentVersion: proc.version || '1.0.0',
-      });
-      if (versionResult?.type !== 'confirm') return;
+    saving = true;
+    try {
+      if (creating || hasChanges()) {
+        let bump: VersionBump | undefined;
+        if (creating) {
+          const baseId = proc.id.trim() || slugify(proc.name) || 'process';
+          const existingIds = new Set(engineeringProcesses.processes.map((p) => p.id));
+          let resolvedId = baseId;
+          if (existingIds.has(baseId)) {
+            let n = 2;
+            while (existingIds.has(`${baseId}-${n}`)) n++;
+            resolvedId = `${baseId}-${n}`;
+            const collision = await openDialog(OscdConfirmDialog, {
+              title: 'Process ID already in use',
+              message: `A process with ID "${baseId}" already exists. Use "${resolvedId}" instead?`,
+              confirmActionText: 'Use suggested ID',
+              cancelActionText: 'Cancel',
+            });
+            if (collision?.type !== 'confirm') return;
+          }
+          proc.id = resolvedId;
+          proc.name = proc.name.trim();
+          proc.description = proc.description?.trim() ?? '';
+        } else {
+          const versionResult = await openDialog(OscdVersionBumpDialog, {
+            currentVersion: proc.version || '1.0.0',
+          });
+          if (versionResult?.type !== 'confirm') return;
+          bump = versionResult.data as VersionBump;
+        }
 
-      const bump = versionResult.data as VersionBump;
-      saving = true;
-      try {
-        await saveProcess(proc, bump);
+        const version = await saveProcess(proc, bump);
+        if (creating) addProcess({ ...$state.snapshot(proc), version });
         toastService.success('Process saved', `"${proc.name}" was saved to the database.`);
-      } catch {
-        toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
-        return;
-      } finally {
-        saving = false;
       }
+      returnToProcessList();
+    } catch {
+      toastService.error('Save failed', `"${proc.name}" could not be saved to the database.`);
+    } finally {
+      saving = false;
     }
-    returnToProcessList();
   }
 
   function handleStepSelect(stepId: EditorStepIds) {
@@ -297,6 +332,7 @@
       isAtLastStep={isAtLastStep}
       nextDisabled={isAtLastStep}
       doneDisabled={saving || processNameInvalid}
+      {doneLabel}
     />
   </div>
 
@@ -312,8 +348,10 @@
           description={proc.description ?? ''}
           nameInvalid={processNameInvalid}
           disabled={saving}
-          onNameChange={(v) => updateProcessMetadata(proc.id, { name: v })}
+          processIdDisabled={!creating}
+          onNameChange={changeName}
           onDescriptionChange={(v) => updateProcessMetadata(proc.id, { description: v })}
+          onProcessIdChange={(v) => { if (creating) { proc.id = v; idTouched = true; } }}
         />
       {/if}
       <ProcessDefinitionView {pluginGroups} />
@@ -343,6 +381,7 @@
             selectedValidations={visibleSelectedValidations}
           />
           <Button
+            tag="button"
             variant="raised"
             style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
             onclick={handleAddValidationClick}

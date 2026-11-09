@@ -11,15 +11,17 @@ import type { Process } from '@oscd-transnet-plugins/shared';
 import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { deleteProcess } from '../features/processes/repository.svelte';
+import { deleteProcess, saveProcess } from '../features/processes/repository.svelte';
 import {
   engineeringProcesses,
   runningEngineeringProcess,
+  selectedEngineeringProcess,
 } from '../features/processes/stores.svelte';
 import ProcessesList from './ProcessesList.view.svelte';
 
 vi.mock('../features/processes/repository.svelte', () => ({
   deleteProcess: vi.fn(),
+  saveProcess: vi.fn(),
 }));
 vi.mock('@oscd-transnet-plugins/oscd-services/dialog', () => ({
   openDialog: vi.fn(),
@@ -50,6 +52,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  selectedEngineeringProcess.process = null;
   vi.unstubAllGlobals();
 });
 
@@ -63,6 +66,48 @@ function renderList() {
   };
   return { ...render(ProcessesList, callbacks), ...callbacks };
 }
+
+it('opens a saved duplicate when the user stays in the process list', async () => {
+  vi.mocked(saveProcess).mockResolvedValueOnce('1.0.0');
+  const { getAllByRole, handleEdit, handleView } = renderList();
+
+  await fireEvent.click(getAllByRole('button', { name: 'Duplicate process' })[0]);
+
+  await waitFor(() => expect(handleEdit).toHaveBeenCalledOnce());
+  expect(handleEdit).toHaveBeenCalledWith(
+    expect.objectContaining({ id: 'alpha-copy', name: 'Alpha (copy)', version: '1.0.0' }),
+  );
+  expect(handleView).not.toHaveBeenCalled();
+  expect(engineeringProcesses.processes).toHaveLength(4);
+});
+
+it('saves a pending duplicate without discarding a draft opened after leaving the list', async () => {
+  let finishSave!: (version: string) => void;
+  vi.mocked(saveProcess).mockReturnValueOnce(new Promise((resolve) => {
+    finishSave = resolve;
+  }));
+  const { getAllByRole, handleEdit, unmount } = renderList();
+  handleEdit.mockImplementation((process: Process) => {
+    selectedEngineeringProcess.process = process;
+  });
+  await fireEvent.click(getAllByRole('button', { name: 'Duplicate process' })[0]);
+  expect(saveProcess).toHaveBeenCalledOnce();
+  await unmount();
+  selectedEngineeringProcess.draft = {
+    id: 'unsaved',
+    name: 'Unsaved work',
+    description: '',
+    version: '1.0.0',
+    pluginGroups: [],
+  };
+
+  finishSave('1.0.0');
+
+  await waitFor(() => expect(engineeringProcesses.processes).toHaveLength(4));
+  expect(handleEdit).not.toHaveBeenCalled();
+  expect(selectedEngineeringProcess.draft?.name).toBe('Unsaved work');
+  expect(toastService.success).toHaveBeenCalledWith('Process duplicated', expect.any(String));
+});
 
 it.each(['Start', 'Continue'])(
   'keeps the %s label and starts the process without opening its editor',

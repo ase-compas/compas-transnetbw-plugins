@@ -13,8 +13,10 @@ import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import {
   engineeringProcesses,
+  corePlugins,
   selectedEngineeringProcess,
 } from '../../features/processes/stores.svelte';
+import { saveProcess } from '../../features/processes/repository.svelte';
 import { downloadValidationExport } from '../../features/plugins/validation/validationJson';
 import ProcessEdit from './ProcessEdit.view.svelte';
 
@@ -78,12 +80,190 @@ beforeEach(() => {
     },
   ];
   selectedEngineeringProcess.process = engineeringProcesses.processes[0];
+  corePlugins.plugins = [];
   vi.mocked(openDialog).mockResolvedValue({ type: 'confirm' });
 });
 
 afterEach(() => {
   cleanup();
+  selectedEngineeringProcess.process = null;
   vi.unstubAllGlobals();
+});
+
+function startDraft() {
+  selectedEngineeringProcess.process = null;
+  selectedEngineeringProcess.draft = {
+    id: '',
+    name: '',
+    description: '',
+    version: '1.0.0',
+    pluginGroups: [{ title: 'Ungrouped', plugins: [] }],
+  };
+}
+
+it('creates a process with plugins and rules using the shared editor before its first save', async () => {
+  startDraft();
+  corePlugins.plugins = [{
+    name: 'Validation plugin',
+    src: 'validation.js',
+    kind: 'editor',
+    active: true,
+    activeByDefault: true,
+    requiresDoc: false,
+  }];
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { creating: true, onReturnToList });
+  const create = getByRole<HTMLButtonElement>('button', { name: 'Create', exact: true });
+  expect(create.disabled).toBe(true);
+
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'New process' },
+  });
+  expect(getByRole<HTMLInputElement>('textbox', { name: 'Process ID' }).value).toBe('new-process');
+  await fireEvent.input(getByRole('textbox', { name: 'Process ID' }), {
+    target: { value: 'custom-id' },
+  });
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Renamed process' },
+  });
+  expect(getByRole<HTMLInputElement>('textbox', { name: 'Process ID' }).value).toBe('custom-id');
+  await fireEvent.click(getByRole('button', { name: 'Add Validation plugin to group Ungrouped' }));
+  await fireEvent.click(getByRole('button', { name: 'Next step' }));
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'confirm', data: rule('New rule') });
+  await fireEvent.click(getByRole('button', { name: 'Add validation' }));
+  expect(getByRole('checkbox', { name: 'Select validation New rule' })).toBeTruthy();
+  expect(engineeringProcesses.processes).toHaveLength(1);
+  expect(saveProcess).not.toHaveBeenCalled();
+
+  vi.mocked(saveProcess).mockResolvedValueOnce('1.0.0');
+  await fireEvent.click(create);
+
+  expect(saveProcess).toHaveBeenCalledWith(
+    expect.objectContaining({
+      id: 'custom-id',
+      name: 'Renamed process',
+      version: '1.0.0',
+      pluginGroups: [expect.objectContaining({
+        plugins: [expect.objectContaining({ validations: [rule('New rule')] })],
+      })],
+    }),
+    undefined,
+  );
+  expect(openDialog).toHaveBeenCalledTimes(1);
+  expect(engineeringProcesses.processes).toHaveLength(2);
+  expect(selectedEngineeringProcess.draft).toBeNull();
+  expect(onReturnToList).toHaveBeenCalledOnce();
+});
+
+it('keeps a colliding draft separate and creates it only after confirming a unique ID', async () => {
+  startDraft();
+  const { getByRole } = render(ProcessEdit, { creating: true, onReturnToList: vi.fn() });
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Process A' },
+  });
+  await fireEvent.input(getByRole('textbox', { name: 'Description' }), {
+    target: { value: 'Draft description' },
+  });
+  expect(engineeringProcesses.processes[0].description).toBe('');
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
+  await fireEvent.click(getByRole('button', { name: 'Create', exact: true }));
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(engineeringProcesses.processes).toHaveLength(1);
+  expect(selectedEngineeringProcess.draft?.id).toBe('process-a');
+
+  vi.mocked(saveProcess).mockResolvedValueOnce('1.0.0');
+  await fireEvent.click(getByRole('button', { name: 'Create', exact: true }));
+  expect(openDialog).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({
+    title: 'Process ID already in use',
+    message: expect.stringContaining('"process-a-2"'),
+  }));
+  await waitFor(() =>
+    expect(engineeringProcesses.processes.map((process) => process.id)).toEqual(['process-a', 'process-a-2']),
+  );
+  expect(engineeringProcesses.processes[0].description).toBe('');
+});
+
+it('retains a failed creation for retry without adding an unsaved process to the list', async () => {
+  startDraft();
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { creating: true, onReturnToList });
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Retry process' },
+  });
+  vi.mocked(saveProcess).mockRejectedValueOnce(new Error('Offline'));
+  await fireEvent.click(getByRole('button', { name: 'Create', exact: true }));
+  expect(toastService.error).toHaveBeenCalledWith('Save failed', expect.any(String));
+  expect(selectedEngineeringProcess.draft?.name).toBe('Retry process');
+  expect(engineeringProcesses.processes).toHaveLength(1);
+  expect(onReturnToList).not.toHaveBeenCalled();
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Create', exact: true }).disabled).toBe(false);
+
+  vi.mocked(saveProcess).mockResolvedValueOnce('1.0.0');
+  await fireEvent.click(getByRole('button', { name: 'Create', exact: true }));
+  expect(engineeringProcesses.processes).toHaveLength(2);
+  expect(onReturnToList).toHaveBeenCalledOnce();
+});
+
+it('confirms discarding a draft and never saves it when leaving the editor', async () => {
+  startDraft();
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { creating: true, onReturnToList });
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Unsaved process' },
+  });
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
+  await fireEvent.click(getByRole('button', { name: 'Engineering Wizard', exact: true }));
+  expect(onReturnToList).not.toHaveBeenCalled();
+  expect(selectedEngineeringProcess.draft?.name).toBe('Unsaved process');
+
+  await fireEvent.click(getByRole('button', { name: 'Engineering Wizard', exact: true }));
+  expect(selectedEngineeringProcess.draft).toBeNull();
+  expect(engineeringProcesses.processes).toHaveLength(1);
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(onReturnToList).toHaveBeenCalledOnce();
+});
+
+it('always shows Save for an existing process and retains version-bump saving for changes', async () => {
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { onReturnToList });
+  expect(getByRole('button', { name: 'Save', exact: true })).toBeTruthy();
+  expect(getByRole<HTMLInputElement>('textbox', { name: 'Process ID' }).disabled).toBe(true);
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Updated name' },
+  });
+  expect(getByRole('button', { name: 'Save', exact: true })).toBeTruthy();
+  await fireEvent.input(getByRole('textbox', { name: 'Process name' }), {
+    target: { value: 'Process A' },
+  });
+  expect(getByRole('button', { name: 'Save', exact: true })).toBeTruthy();
+  await fireEvent.input(getByRole('textbox', { name: 'Description' }), {
+    target: { value: 'Updated description' },
+  });
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
+  await fireEvent.click(getByRole('button', { name: 'Save', exact: true }));
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(onReturnToList).not.toHaveBeenCalled();
+
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'confirm', data: 'minor' });
+  vi.mocked(saveProcess).mockResolvedValueOnce('1.1.0');
+  await fireEvent.click(getByRole('button', { name: 'Save', exact: true }));
+  await waitFor(() => expect(onReturnToList).toHaveBeenCalledOnce());
+  expect(openDialog).toHaveBeenLastCalledWith(expect.anything(), { currentVersion: '1.0.0' });
+  expect(saveProcess).toHaveBeenCalledWith(
+    expect.objectContaining({ id: 'process-a', description: 'Updated description' }),
+    'minor',
+  );
+  expect(engineeringProcesses.processes).toHaveLength(1);
+  expect(onReturnToList).toHaveBeenCalledOnce();
+});
+
+it('returns from an unchanged existing process without saving or asking for a version', async () => {
+  const onReturnToList = vi.fn();
+  const { getByRole } = render(ProcessEdit, { onReturnToList });
+  await fireEvent.click(getByRole('button', { name: 'Save', exact: true }));
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(openDialog).not.toHaveBeenCalled();
+  expect(onReturnToList).toHaveBeenCalledOnce();
 });
 
 async function renderRules() {

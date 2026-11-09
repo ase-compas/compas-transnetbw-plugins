@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import SearchInput from '../components/shared/SearchInput.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable, OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon, OscdDeleteIcon, OscdControlPointDuplicateIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
@@ -14,7 +15,8 @@
     engineeringProcessesStatus,
     runningEngineeringProcess
   } from '../features/processes/stores.svelte';
-  import { deleteProcess } from '../features/processes/repository.svelte';
+  import { addProcess } from '../features/processes/mutations.svelte';
+  import { deleteProcess, saveProcess } from '../features/processes/repository.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -73,6 +75,36 @@
       }
     } finally {
       deleting = false;
+    }
+  }
+
+  let duplicating = $state(false);
+  let active = true;
+  onDestroy(() => { active = false; });
+
+  async function handleDuplicateClick(item: Process) {
+    if (duplicating) return;
+    duplicating = true;
+    try {
+      const baseId = item.id.replace(/-copy(?:-\d+)?$/, '');
+      const baseName = (item.name || item.id).replace(/ \(copy(?: \d+)?\)$/, '');
+      const ids = new Set(processes.map((p) => p.id));
+      const names = new Set(processes.map((p) => p.name));
+      let id = `${baseId}-copy`;
+      let name = `${baseName} (copy)`;
+      for (let n = 2; ids.has(id) || names.has(name); n++) {
+        id = `${baseId}-copy-${n}`;
+        name = `${baseName} (copy ${n})`;
+      }
+      const draft: Process = { ...($state.snapshot(item) as Process), id, name, version: '1.0.0' };
+      const version = await saveProcess(draft);
+      const created = addProcess({ ...draft, version });
+      toastService.success('Process duplicated', `"${created.name}" was created.`);
+      if (active) handleEdit(created);
+    } catch {
+      toastService.error('Duplicate failed', `"${item.name || item.id}" could not be duplicated.`);
+    } finally {
+      duplicating = false;
     }
   }
 
@@ -237,6 +269,16 @@
           {/if}
           <Label>{running ? 'Continue' : 'Start'}</Label>
         </Button>
+        <button
+          type="button"
+          class="ew-table-action"
+          aria-label="Duplicate process"
+          title="Duplicate process"
+          disabled={duplicating}
+          onclick={(e) => { e.stopPropagation(); handleDuplicateClick(item); }}
+        >
+          <OscdControlPointDuplicateIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" />
+        </button>
         <button
           type="button"
           class="ew-table-action ew-table-action--danger"
