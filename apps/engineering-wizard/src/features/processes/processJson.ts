@@ -19,6 +19,20 @@ function string(value: unknown, key: string, required = true): string {
   return value;
 }
 
+function url(value: unknown, key: string): string {
+  const text = string(value, key, false);
+  if (!text) return text;
+  // Relative URLs resolve against the https base; any other scheme is rejected.
+  let protocol: string;
+  try {
+    protocol = new URL(text, 'https://relative.invalid').protocol;
+  } catch {
+    throw new Error(`"${key}" must be a valid URL.`);
+  }
+  if (protocol !== 'https:') throw new Error(`"${key}" must use https.`);
+  return text;
+}
+
 function array(value: unknown, key: string): unknown[] {
   if (!Array.isArray(value)) throw new Error(`"${key}" must be an array.`);
   return value;
@@ -34,8 +48,11 @@ function parsePlugin(value: unknown): Plugin {
     name: string(plugin.name, 'name'),
     type: plugin.type,
   };
-  for (const key of ['catalogId', 'icon', 'src', 'sourceUrl'] as const) {
+  for (const key of ['catalogId', 'icon'] as const) {
     if (plugin[key] !== undefined) result[key] = string(plugin[key], key, false);
+  }
+  for (const key of ['src', 'sourceUrl'] as const) {
+    if (plugin[key] !== undefined) result[key] = url(plugin[key], key);
   }
   if (plugin.validations !== undefined) {
     result.validations = parseValidationImport(array(plugin.validations, 'validations'));
@@ -83,10 +100,34 @@ export function parseProcessImportJson(content: string): Process[] {
   return array(exported.processes, 'processes').map(parseProcess);
 }
 
+function serializeProcess(process: Process): Process {
+  return JSON.parse(
+    JSON.stringify({
+      id: process.id,
+      name: process.name,
+      version: process.version,
+      description: process.description,
+      pluginGroups: process.pluginGroups.map((group) => ({
+        title: group.title,
+        plugins: group.plugins.map((plugin) => ({
+          id: plugin.id,
+          name: plugin.name,
+          type: plugin.type,
+          catalogId: plugin.catalogId,
+          icon: plugin.icon,
+          src: plugin.src,
+          sourceUrl: plugin.sourceUrl,
+          validations: plugin.validations,
+        })),
+      })),
+    }),
+  );
+}
+
 export function createProcessExport(processes: readonly Process[]) {
   return {
     formatVersion: FORMAT_VERSION,
-    processes: processes.map(parseProcess),
+    processes: processes.map(serializeProcess),
   };
 }
 

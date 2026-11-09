@@ -42,6 +42,20 @@ describe('process JSON transfer', () => {
     expect(exported.processes[0].pluginGroups).not.toBe(process.pluginGroups);
   });
 
+  it('exports processes that the strict import parser would reject', () => {
+    const lenient = { ...process, name: '' };
+    expect(createProcessExport([lenient]).processes).toEqual([lenient]);
+  });
+
+  it.each(['http://example.com/a.js', 'javascript:alert(1)', 'data:text/javascript,1'])(
+    'rejects non-https plugin url %s',
+    (src) => {
+      const plugin = { id: 'p', name: 'P', type: 'external', src };
+      const content = JSON.stringify([{ ...process, pluginGroups: [{ title: 'G', plugins: [plugin] }] }]);
+      expect(() => parseProcessImportJson(content)).toThrow('must use https');
+    },
+  );
+
   it.each([
     ['invalid JSON', '{'],
     ['unsupported version', '{"formatVersion":2,"processes":[]}'],
