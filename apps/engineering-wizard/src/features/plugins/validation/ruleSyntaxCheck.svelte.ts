@@ -85,8 +85,11 @@ export function createRuleSyntaxCheck() {
     retry() {
       if (pending) schedule(pending, 0);
     },
-    isValidFor(rule: RuleExpressions) {
-      return state.status === 'valid' && state.key === keyFor(rule);
+    canProceedFor(rule: RuleExpressions) {
+      return (
+        (state.status === 'valid' || state.status === 'error') &&
+        state.key === keyFor(rule)
+      );
     },
     reset() {
       cancel();

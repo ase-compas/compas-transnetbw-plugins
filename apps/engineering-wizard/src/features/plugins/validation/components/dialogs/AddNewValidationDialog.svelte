@@ -65,7 +65,7 @@
   function isRuleDefinitionValid(): boolean {
     const hasMessage = !!validationEditor.ruleUi.message?.trim();
     if (validationEditor.ruleUi.expertMode) {
-      return hasMessage && syntaxCheck.isValidFor({
+      return hasMessage && syntaxCheck.canProceedFor({
         context: validationEditor.entry.context,
         assert: validationEditor.ruleUi.expertXPath,
       });

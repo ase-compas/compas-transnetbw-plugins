@@ -96,7 +96,7 @@
               {/each}
             </ul>
           {:else if syntaxState.status === 'error'}
-            <p>{syntaxState.error}</p>
+            <p>Syntax check is currently unavailable.</p>
             <button type="button" onclick={onRetrySyntax}>Retry syntax check</button>
           {:else}
             Enter a context and assertion to check XPath syntax.

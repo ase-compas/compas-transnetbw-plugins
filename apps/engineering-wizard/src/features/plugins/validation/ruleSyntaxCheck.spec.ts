@@ -36,14 +36,14 @@ describe('expert syntax check lifecycle', () => {
     check.update({ ...rule, assert: 'false()' });
     await vi.advanceTimersByTimeAsync(499);
     expect(checkRuleSyntax).not.toHaveBeenCalled();
-    expect(check.isValidFor(rule)).toBe(false);
+    expect(check.canProceedFor(rule)).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
     expect(checkRuleSyntax).toHaveBeenCalledOnce();
-    expect(check.isValidFor({ ...rule, assert: 'false()' })).toBe(true);
-    expect(check.isValidFor(rule)).toBe(false);
+    expect(check.canProceedFor({ ...rule, assert: 'false()' })).toBe(true);
+    expect(check.canProceedFor(rule)).toBe(false);
     check.update({ context: '/', assert: 'false()' });
     expect(check.state.status).toBe('checking');
-    expect(check.isValidFor({ ...rule, assert: 'false()' })).toBe(false);
+    expect(check.canProceedFor({ ...rule, assert: 'false()' })).toBe(false);
     check.dispose();
   });
 
@@ -78,10 +78,11 @@ describe('expert syntax check lifecycle', () => {
     await Promise.resolve();
     expect(check.state.status).toBe('invalid');
     expect(check.state.diagnostics[0].message).toBe('Invalid XPath');
+    expect(check.canProceedFor({ ...rule, assert: '(' })).toBe(false);
     check.dispose();
   });
 
-  it('blocks on network errors, supports retry and resets between dialog sessions', async () => {
+  it('allows proceeding without validation on request errors, supports retry and resets between dialog sessions', async () => {
     vi.mocked(checkRuleSyntax)
       .mockRejectedValueOnce(new Error('Backend unavailable'))
       .mockResolvedValueOnce({ valid: true, errors: [] });
@@ -89,16 +90,19 @@ describe('expert syntax check lifecycle', () => {
     check.update(rule);
     await vi.advanceTimersByTimeAsync(500);
     expect(check.state.status).toBe('error');
-    expect(check.isValidFor(rule)).toBe(false);
+    expect(check.canProceedFor(rule)).toBe(true);
+    expect(check.canProceedFor({ ...rule, assert: 'false()' })).toBe(false);
     check.retry();
+    expect(check.canProceedFor(rule)).toBe(false);
     await vi.advanceTimersByTimeAsync(0);
-    expect(check.isValidFor(rule)).toBe(true);
+    expect(check.canProceedFor(rule)).toBe(true);
     check.reset();
     expect(check.state.status).toBe('unchecked');
-    expect(check.isValidFor(rule)).toBe(false);
+    expect(check.canProceedFor(rule)).toBe(false);
     check.update({ ...rule, assert: ' ' });
     await vi.advanceTimersByTimeAsync(500);
     expect(check.state.status).toBe('unchecked');
+    expect(check.canProceedFor({ ...rule, assert: ' ' })).toBe(false);
     expect(checkRuleSyntax).toHaveBeenCalledTimes(2);
     check.dispose();
   });
@@ -119,12 +123,12 @@ describe('expert syntax check lifecycle', () => {
     expect(signal?.aborted).toBe(true);
     expect(check.state.status).toBe('error');
     expect(check.state.error).toContain('timed out');
-    expect(check.isValidFor(rule)).toBe(false);
+    expect(check.canProceedFor(rule)).toBe(true);
     expect(vi.getTimerCount()).toBe(0);
 
     check.retry();
     await vi.advanceTimersByTimeAsync(0);
-    expect(check.isValidFor(rule)).toBe(true);
+    expect(check.canProceedFor(rule)).toBe(true);
     expect(check.state.error).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
     check.dispose();

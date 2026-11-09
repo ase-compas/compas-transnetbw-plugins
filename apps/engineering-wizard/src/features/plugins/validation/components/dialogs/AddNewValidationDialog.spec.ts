@@ -3,12 +3,17 @@
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/svelte';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
+import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import {
   checkRuleSyntax,
   type SyntaxValidationResult,
 } from '../../../../../services/validationService';
 import AddNewValidationDialog from './AddNewValidationDialog.svelte';
 import { validationEditor } from '../../validationEditorStore.svelte';
+
+vi.mock('@oscd-transnet-plugins/oscd-services/dialog', () => ({
+  closeDialog: vi.fn(),
+}));
 
 vi.mock('../../../../../services/validationService', () => ({
   checkRuleSyntax: vi.fn(),
@@ -20,6 +25,7 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.mocked(checkRuleSyntax).mockReset();
+  vi.mocked(closeDialog).mockReset();
 });
 
 it('gates expert navigation on the current syntax check, not a previous successful check', async () => {
@@ -84,6 +90,59 @@ it('gates expert navigation on the current syntax check, not a previous successf
   await waitFor(() =>
     expect(getByText('Assertion: Invalid assertion')).toBeTruthy(),
   );
+  expect(next.hasAttribute('disabled')).toBe(true);
+});
+
+it.each([
+  new TypeError('Failed to fetch'),
+  new Error('HTTP 404: Not Found'),
+])('creates a new expert rule without validation when the API fails: %s', async (error) => {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(
+    new DOMRect(0, 0, 100, 30),
+  );
+  vi.mocked(checkRuleSyntax).mockRejectedValue(error);
+  const { getByRole, getByLabelText, getByText } = render(AddNewValidationDialog, {
+    open: true,
+    plugin: { id: 'plugin', name: 'Plugin', type: 'internal' },
+    process: {
+      id: 'process',
+      name: 'Process',
+      description: '',
+      version: '1',
+      pluginGroups: [],
+    },
+  });
+
+  await fireEvent.input(getByLabelText('Rule Name'), {
+    target: { value: 'Offline rule' },
+  });
+  await fireEvent.click(getByRole('button', { name: 'Next step', hidden: true }));
+  await fireEvent.click(getByRole('switch', { hidden: true }));
+  await fireEvent.input(getByLabelText(/XPath assertion/), {
+    target: { value: 'true()' },
+  });
+  await fireEvent.input(getByLabelText('Error Message'), {
+    target: { value: 'Rule failed' },
+  });
+
+  const next = getByRole('button', { name: 'Next step', hidden: true });
+  expect(next.hasAttribute('disabled')).toBe(true);
+  await waitFor(() => {
+    expect(getByText('Syntax check is currently unavailable.')).toBeTruthy();
+    expect(next.hasAttribute('disabled')).toBe(false);
+  });
+  await fireEvent.click(next);
+  const create = getByRole('button', { name: 'Create', hidden: true });
+  expect(create.hasAttribute('disabled')).toBe(false);
+  await fireEvent.click(create);
+
+  expect(closeDialog).toHaveBeenCalledWith('confirm', {
+    title: 'Offline rule',
+    description: '',
+    context: '//SCL',
+    assert: 'true()',
+    message: 'Rule failed',
+  });
 });
 
 function renderElementRule(context: string, element: string) {
