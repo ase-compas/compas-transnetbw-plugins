@@ -267,6 +267,17 @@
       {/if}
       <ProcessDefinitionView {pluginGroups} />
     {:else if currentStepId === 'validator-configuration'}
+      {#if selectedEngineeringProcess.process}
+        {@const proc = selectedEngineeringProcess.process}
+        <ProcessInfoBar
+          name={proc.name ?? ''}
+          processId={proc.id}
+          version={proc.version}
+          current={true}
+          description={proc.description ?? ''}
+          disabled={true}
+        />
+      {/if}
       <div class="header">
         <PluginGroupsStepper
           {pluginGroups}
