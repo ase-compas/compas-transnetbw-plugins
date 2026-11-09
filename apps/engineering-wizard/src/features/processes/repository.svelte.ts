@@ -94,6 +94,11 @@ export function refreshEngineeringProcesses(): Promise<Process[]> {
   return loadEngineeringProcessesFromSources(false);
 }
 
+export async function listPersistedProcessIds(): Promise<Set<string>> {
+  const entries = await processService.listLatest();
+  return new Set(entries.map(({ processId }) => processId));
+}
+
 export async function saveProcess(
   process: Process,
   versionBump?: VersionBump,

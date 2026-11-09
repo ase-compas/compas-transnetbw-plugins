@@ -272,10 +272,53 @@ async function renderRules() {
   return view;
 }
 
+it('places borderless rule transfer actions beside add and delete with icons', async () => {
+  const { getByRole } = await renderRules();
+  const importButton = getByRole('button', { name: 'Import', exact: true });
+  const exportButton = getByRole<HTMLButtonElement>('button', { name: 'Export', exact: true });
+  const addButton = getByRole('button', { name: 'Add validation' });
+  const toolbar = getByRole('toolbar', { name: 'Validation rules table controls' });
+  const deleteButton = within(toolbar).getByRole('button', { name: 'Delete', exact: true });
+
+  expect(Array.from(addButton.parentElement?.querySelectorAll('button') ?? [])).toEqual([importButton, addButton]);
+  expect(toolbar.contains(importButton)).toBe(false);
+  expect(exportButton.parentElement?.nextElementSibling).toBe(deleteButton);
+  expect(exportButton.disabled).toBe(true);
+  for (const button of [importButton, exportButton]) {
+    expect(button.classList.contains('ew-table-action--labeled')).toBe(true);
+    expect(button.style.borderWidth).toBe('0px');
+    expect(button.querySelector('svg')).not.toBeNull();
+  }
+  await fireEvent.click(getByRole('checkbox', { name: 'Select validation First' }));
+  expect(exportButton.disabled).toBe(false);
+  await fireEvent.click(getByRole('checkbox', { name: 'Select validation First' }));
+  expect(exportButton.disabled).toBe(true);
+});
+
+it('imports rules into the selected plugin through the relocated import action', async () => {
+  const { getByRole, getByLabelText } = await renderRules();
+  const input = getByLabelText<HTMLInputElement>('Import validation JSON files');
+  const selectFile = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+  await fireEvent.click(getByRole('button', { name: 'Import', exact: true }));
+  expect(selectFile).toHaveBeenCalledOnce();
+  selectFile.mockRestore();
+  await fireEvent.change(input, {
+    target: { files: [{
+      name: 'rules.json',
+      size: 100,
+      text: async () => JSON.stringify([rule('Imported')]),
+    }] },
+  });
+  await waitFor(() => expect(
+    getByRole('checkbox', { name: 'Select validation Imported' }),
+  ).toBeTruthy());
+  expect(toastService.success).toHaveBeenCalledWith('Validations imported', expect.any(String));
+});
+
 it('exports only checked rules directly and resets selection when switching plugins', async () => {
   const { getByRole } = await renderRules();
   expect(
-    getByRole<HTMLButtonElement>('button', { name: 'Export selected (0)' })
+    getByRole<HTMLButtonElement>('button', { name: 'Export' })
       .disabled,
   ).toBe(true);
   await fireEvent.click(
@@ -284,7 +327,7 @@ it('exports only checked rules directly and resets selection when switching plug
   await fireEvent.click(
     getByRole('checkbox', { name: 'Select validation Third' }),
   );
-  await fireEvent.click(getByRole('button', { name: 'Export selected (2)' }));
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
 
   expect(downloadValidationExport).toHaveBeenCalledWith(
     'first-plugin-validations.json',
@@ -297,13 +340,13 @@ it('exports only checked rules directly and resets selection when switching plug
     getByRole<HTMLInputElement>('checkbox', { name: 'Select validation First' })
       .checked,
   ).toBe(true);
-  expect(getByRole('button', { name: 'Export selected (2)' })).toBeTruthy();
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Export' }).disabled).toBe(false);
 
   await fireEvent.input(getByRole('searchbox'), { target: { value: 'First' } });
   await fireEvent.click(getByRole('button', { name: 'Other plugin' }));
   expect(getByRole<HTMLInputElement>('searchbox').value).toBe('');
   expect(
-    getByRole<HTMLButtonElement>('button', { name: 'Export selected (0)' })
+    getByRole<HTMLButtonElement>('button', { name: 'Export' })
       .disabled,
   ).toBe(true);
   expect(
@@ -326,7 +369,7 @@ it('clears selection when leaving and reopening the validation step', async () =
   await fireEvent.click(getByRole('button', { name: 'Next step' }));
 
   expect(
-    getByRole<HTMLButtonElement>('button', { name: 'Export selected (0)' })
+    getByRole<HTMLButtonElement>('button', { name: 'Export' })
       .disabled,
   ).toBe(true);
   expect(
@@ -346,7 +389,7 @@ it('removes a single deleted rule from selection while retaining other checked r
   await fireEvent.click(
     getAllByRole('button', { name: 'Remove validation' })[0],
   );
-  await fireEvent.click(getByRole('button', { name: 'Export selected (1)' }));
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
 
   expect(
     getByRole<HTMLInputElement>('checkbox', { name: 'Select validation Third' })
@@ -404,7 +447,7 @@ it('removes selected rules with one confirmation without deleting shifted indexe
     }).checked,
   ).toBe(false);
   expect(
-    getByRole<HTMLButtonElement>('button', { name: 'Export selected (0)' })
+    getByRole<HTMLButtonElement>('button', { name: 'Export' })
       .disabled,
   ).toBe(true);
 });
@@ -433,7 +476,7 @@ it('exports the full range selected with Shift', async () => {
     getByRole('checkbox', { name: 'Select validation Third' }),
     { shiftKey: true },
   );
-  await fireEvent.click(getByRole('button', { name: 'Export selected (3)' }));
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
 
   expect(downloadValidationExport).toHaveBeenCalledWith(
     'first-plugin-validations.json',
@@ -447,7 +490,7 @@ it('surfaces export errors without reopening the old selection dialog', async ()
   });
   const { getByRole } = await renderRules();
   await fireEvent.click(getByRole('checkbox', { name: 'Select all rows' }));
-  await fireEvent.click(getByRole('button', { name: 'Export selected (3)' }));
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
 
   expect(toastService.error).toHaveBeenCalledWith(
     'Export failed',
@@ -504,13 +547,13 @@ it('limits bulk deletion and export to visible selected rules without losing hid
       .disabled,
   ).toBe(true);
   expect(
-    getByRole<HTMLButtonElement>('button', { name: 'Export selected (0)' })
+    getByRole<HTMLButtonElement>('button', { name: 'Export' })
       .disabled,
   ).toBe(true);
 
   await fireEvent.click(getByRole('checkbox', { name: 'Select all rows' }));
   expect(getByRole('status').textContent?.trim()).toBe('1 selected');
-  await fireEvent.click(getByRole('button', { name: 'Export selected (1)' }));
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
   expect(downloadValidationExport).toHaveBeenLastCalledWith(
     'first-plugin-validations.json',
     [rule('Third')],
@@ -597,7 +640,7 @@ it('preserves selected rules across editing, duplication and removal of another 
       name: 'Select validation Second',
     }).checked,
   ).toBe(false);
-  await fireEvent.click(getByRole('button', { name: 'Export selected (1)' }));
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
   expect(downloadValidationExport).toHaveBeenCalledWith(
     'first-plugin-validations.json',
     [rule('Edited third')],

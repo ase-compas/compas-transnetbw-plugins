@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import SearchInput from '../components/shared/SearchInput.svelte';
+  import ProcessJsonTransferActions from '../features/processes/components/ProcessJsonTransferActions.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable, OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
@@ -182,14 +183,17 @@
 <div class="processes ew-table-section">
   <div class="process-toolbar">
     <h1 class="processes__header">Processes</h1>
-    <Button
-      variant="raised"
-      style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
-      onclick={handleAddNew}
-      aria-label="Start process"
-    >
-      Add new process
-    </Button>
+    <div class="process-toolbar__actions">
+      <ProcessJsonTransferActions action="import" />
+      <Button
+        variant="raised"
+        style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
+        onclick={handleAddNew}
+        aria-label="Start process"
+      >
+        Add new process
+      </Button>
+    </div>
   </div>
 
   {#if runningProc}
@@ -219,6 +223,7 @@
           {filteredRows.length} {filteredRows.length === 1 ? 'process' : 'processes'}
         {/if}
       </span>
+      <ProcessJsonTransferActions action="export" selectedProcesses={visibleSelectedProcesses} />
       <Button
         tag="button"
         variant="raised"
@@ -314,6 +319,12 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .process-toolbar__actions {
+    display: flex;
+    align-items: center;
     gap: 12px;
   }
 

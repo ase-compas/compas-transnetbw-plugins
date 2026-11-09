@@ -376,9 +376,9 @@
         />
         <div class="validation-actions">
           <ValidationJsonTransferActions
+            action="import"
             process={selectedEngineeringProcess.process}
             plugin={selectedPlugin}
-            selectedValidations={visibleSelectedValidations}
           />
           <Button
             tag="button"
@@ -404,6 +404,12 @@
                   {filteredValidations.length} {filteredValidations.length === 1 ? 'rule' : 'rules'}
                 {/if}
               </span>
+              <ValidationJsonTransferActions
+                action="export"
+                process={selectedEngineeringProcess.process}
+                plugin={selectedPlugin}
+                selectedValidations={visibleSelectedValidations}
+              />
               <Button
                 tag="button"
                 variant="raised"

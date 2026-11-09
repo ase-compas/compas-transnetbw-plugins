@@ -1,17 +1,19 @@
 <script lang="ts">
-  import Button, { Group, GroupItem } from '@smui/button';
+  import Button, { Icon, Label } from '@smui/button';
+  import { OscdDownloadIcon, OscdUploadIcon } from '@oscd-transnet-plugins/oscd-icons';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { addValidationsToPluginInProcess } from '../../../processes/mutations.svelte';
   import { importValidationFiles, createValidationExportFileName, downloadValidationExport } from '../validationJson';
 
   interface Props {
+    action: 'import' | 'export';
     process: Process | null;
     plugin: Plugin | null;
     selectedValidations?: XPathValidation[];
   }
 
-  let { process, plugin, selectedValidations = [] }: Props = $props();
+  let { action, process, plugin, selectedValidations = [] }: Props = $props();
 
   let fileInput = $state<HTMLInputElement>();
   let importing = $state(false);
@@ -75,45 +77,53 @@
   }
 </script>
 
-<Group variant="outlined" aria-label="Validation JSON transfer">
-  <Button
-    tag="button"
-    use={[GroupItem]}
-    variant="outlined"
-    onclick={selectImportFile}
-    disabled={!process || !plugin || importing}
-  >
-    Import JSON
-  </Button>
-  <Button
-    tag="button"
-    use={[GroupItem]}
-    variant="outlined"
-    onclick={exportSelected}
-    disabled={!exportPlugin}
-  >
-    Export selected ({selectedValidations.length})
-  </Button>
-</Group>
-<input
-  bind:this={fileInput}
-  class="visually-hidden"
-  type="file"
-  accept="application/json,.json"
-  multiple
-  onchange={importValidations}
-/>
+<div class="ew-table-actions">
+  {#if action === 'import'}
+    <Button
+      tag="button"
+      variant="unelevated"
+      class="ew-table-action ew-table-action--labeled"
+      style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand); border: 0;"
+      onclick={selectImportFile}
+      disabled={!process || !plugin || importing}
+    >
+      <Icon><OscdDownloadIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" /></Icon>
+      <Label>Import</Label>
+    </Button>
+  {:else}
+    <Button
+      tag="button"
+      variant="unelevated"
+      class="ew-table-action ew-table-action--labeled"
+      style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand); border: 0;"
+      onclick={exportSelected}
+      disabled={!exportPlugin}
+    >
+      <Icon><OscdUploadIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" /></Icon>
+      <Label>Export</Label>
+    </Button>
+  {/if}
+</div>
+{#if action === 'import'}
+  <input
+    bind:this={fileInput}
+    hidden
+    aria-label="Import validation JSON files"
+    type="file"
+    accept="application/json,.json"
+    multiple
+    onchange={importValidations}
+  />
+{/if}
 
 <style>
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  .ew-table-actions :global(.ew-table-action:not(:disabled)) {
+    cursor: pointer;
+  }
+
+  .ew-table-actions :global(.ew-table-action:disabled) {
+    color: var(--oscd-plugin-text-muted);
+    opacity: 0.5;
+    cursor: default;
   }
 </style>

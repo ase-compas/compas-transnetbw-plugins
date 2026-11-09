@@ -11,23 +11,25 @@ import type { Process } from '@oscd-transnet-plugins/shared';
 import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
 import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { deleteProcess, saveProcess } from '../features/processes/repository.svelte';
+import { deleteProcess, listPersistedProcessIds, saveProcess } from '../features/processes/repository.svelte';
 import {
   engineeringProcesses,
   runningEngineeringProcess,
   selectedEngineeringProcess,
 } from '../features/processes/stores.svelte';
 import ProcessesList from './ProcessesList.view.svelte';
+import { createProcessExport } from '../features/processes/processJson';
 
 vi.mock('../features/processes/repository.svelte', () => ({
   deleteProcess: vi.fn(),
   saveProcess: vi.fn(),
+  listPersistedProcessIds: vi.fn(),
 }));
 vi.mock('@oscd-transnet-plugins/oscd-services/dialog', () => ({
   openDialog: vi.fn(),
 }));
 vi.mock('@oscd-transnet-plugins/oscd-services/toast', () => ({
-  toastService: { success: vi.fn(), error: vi.fn() },
+  toastService: { success: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 
 beforeEach(() => {
@@ -48,6 +50,7 @@ beforeEach(() => {
     pluginGroups: [],
   }));
   vi.mocked(openDialog).mockResolvedValue({ type: 'confirm' });
+  vi.mocked(listPersistedProcessIds).mockResolvedValue(new Set());
 });
 
 afterEach(() => {
@@ -384,4 +387,132 @@ it('does not extend a Shift selection from an anchor hidden by filtering', async
     getByRole<HTMLInputElement>('checkbox', { name: 'Select process Gamma' })
       .checked,
   ).toBe(true);
+});
+
+it('places import before new process and export before delete using table action styling', () => {
+  const { getByRole, getByText } = renderList();
+  const importButton = getByRole('button', { name: 'Import' });
+  const exportButton = getByRole('button', { name: 'Export' });
+  const toolbar = getByRole('toolbar', { name: 'Processes table controls' });
+  const newButton = getByText('Add new process');
+  const deleteButton = within(toolbar).getByRole('button', { name: 'Delete', exact: true });
+
+  expect(importButton.closest('.process-toolbar__actions')).toBe(newButton.parentElement);
+  expect(importButton.compareDocumentPosition(newButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(toolbar.contains(importButton)).toBe(false);
+  expect(exportButton.parentElement?.nextElementSibling).toBe(deleteButton);
+  for (const button of [importButton, exportButton]) {
+    expect(button.classList.contains('ew-table-action--labeled')).toBe(true);
+    expect(button.style.getPropertyValue('--mdc-theme-primary')).toBe('var(--oscd-plugin-surface)');
+    expect(button.style.borderWidth).toBe('0px');
+    expect(button.querySelector('svg')).not.toBeNull();
+  }
+});
+
+it('exports only selected visible processes', async () => {
+  const createObjectURL = vi.fn<(blob: Blob) => string>().mockReturnValue('blob:processes');
+  const revokeObjectURL = vi.fn();
+  vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+  const { getByRole } = renderList();
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Export' }).disabled).toBe(true);
+  await fireEvent.click(getByRole('checkbox', { name: 'Select process Alpha' }));
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Export' }).disabled).toBe(false);
+  await fireEvent.click(getByRole('button', { name: 'Export' }));
+  expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+  expect(click).toHaveBeenCalledOnce();
+  const blob = vi.mocked(createObjectURL).mock.calls[0][0];
+  const content = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+  expect(JSON.parse(content)).toEqual(createProcessExport([engineeringProcesses.processes[0]]));
+  await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:processes'));
+  await fireEvent.click(getByRole('checkbox', { name: 'Select process Alpha' }));
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Export' }).disabled).toBe(true);
+  await fireEvent.click(getByRole('checkbox', { name: 'Select process Alpha' }));
+  await fireEvent.input(getByRole('searchbox'), { target: { value: 'Beta' } });
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Export' }).disabled).toBe(true);
+  click.mockRestore();
+});
+
+it('persists imported processes, rejects existing IDs, and reports save failures', async () => {
+  vi.mocked(saveProcess)
+    .mockResolvedValueOnce('2.0.0')
+    .mockRejectedValueOnce(new Error('Backend unavailable'));
+  const { getByLabelText } = renderList();
+  const input = getByLabelText('Import processes JSON files');
+  const processes = ['alpha', 'new', 'failed'].map((id) => ({
+    id, name: id, description: '', version: '1.0.0', pluginGroups: [],
+  }));
+  await fireEvent.change(input, {
+    target: { files: [{ name: 'processes.json', size: 100, text: async () => JSON.stringify(createProcessExport(processes)) }] },
+  });
+  await waitFor(() => expect(toastService.warn).toHaveBeenCalled());
+  expect(vi.mocked(saveProcess).mock.calls.map(([process]) => process.id)).toEqual(['new', 'failed']);
+  expect(engineeringProcesses.processes.map(({ id }) => id)).toEqual(['alpha', 'beta', 'gamma', 'new']);
+  expect(engineeringProcesses.processes.at(-1)?.version).toBe('2.0.0');
+  expect(toastService.warn).toHaveBeenCalledWith(
+    'Some processes could not be imported',
+    expect.stringContaining('Backend unavailable'),
+    15_000,
+  );
+  expect((input as HTMLInputElement).value).toBe('');
+});
+
+it('rejects a process present only in the backend after loading the local fallback', async () => {
+  vi.mocked(listPersistedProcessIds).mockResolvedValueOnce(new Set(['backend-only']));
+  const { getByLabelText } = renderList();
+  const process = { id: 'backend-only', name: 'Existing remote process', description: '', version: '9.0.0', pluginGroups: [] };
+  await fireEvent.change(getByLabelText('Import processes JSON files'), {
+    target: { files: [{
+      name: 'processes.json',
+      size: 100,
+      text: async () => JSON.stringify(createProcessExport([process])),
+    }] },
+  });
+
+  await waitFor(() => expect(toastService.error).toHaveBeenCalledWith(
+    'Import failed',
+    expect.stringContaining('Process id "backend-only" already exists'),
+    15_000,
+  ));
+  expect(listPersistedProcessIds).toHaveBeenCalledOnce();
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(engineeringProcesses.processes.map(({ id }) => id)).toEqual(['alpha', 'beta', 'gamma']);
+});
+
+it('does not save while the backend ID check is pending or failed and allows retry', async () => {
+  let rejectCheck!: (reason: Error) => void;
+  vi.mocked(listPersistedProcessIds).mockReturnValueOnce(new Promise((_resolve, reject) => {
+    rejectCheck = reject;
+  }));
+  vi.mocked(saveProcess).mockResolvedValueOnce('1.0.0');
+  const { getByLabelText, getByRole } = renderList();
+  const process = { id: 'new', name: 'New process', description: '', version: '1.0.0', pluginGroups: [] };
+  const event = { target: { files: [{
+    name: 'processes.json',
+    size: 100,
+    text: async () => JSON.stringify(createProcessExport([process])),
+  }] } };
+  const input = getByLabelText('Import processes JSON files');
+  await fireEvent.change(input, event);
+  await waitFor(() => expect(listPersistedProcessIds).toHaveBeenCalledOnce());
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Import' }).disabled).toBe(true);
+
+  rejectCheck(new Error('Backend unavailable'));
+  await waitFor(() => expect(toastService.error).toHaveBeenCalledWith('Import failed', 'Backend unavailable'));
+  expect(saveProcess).not.toHaveBeenCalled();
+  expect(engineeringProcesses.processes).toHaveLength(3);
+  expect(toastService.success).not.toHaveBeenCalled();
+  expect(getByRole<HTMLButtonElement>('button', { name: 'Import' }).disabled).toBe(false);
+
+  await fireEvent.change(input, event);
+  await waitFor(() => expect(toastService.success).toHaveBeenCalled());
+  expect(listPersistedProcessIds).toHaveBeenCalledTimes(2);
+  expect(saveProcess).toHaveBeenCalledOnce();
+  expect(engineeringProcesses.processes.map(({ id }) => id)).toEqual(['alpha', 'beta', 'gamma', 'new']);
 });
