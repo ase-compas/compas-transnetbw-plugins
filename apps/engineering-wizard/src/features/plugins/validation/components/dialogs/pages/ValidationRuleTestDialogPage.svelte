@@ -123,6 +123,8 @@
     padding: 1rem 0;
     font-family: var(--ew-font-family, 'Inter', sans-serif);
     font-size: var(--ew-font-size-body, 0.875rem);
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .test-validate__no-doc {

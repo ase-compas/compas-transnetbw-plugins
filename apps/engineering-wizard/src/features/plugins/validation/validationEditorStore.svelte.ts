@@ -61,6 +61,26 @@ export function initValidationEditor(existing?: XPathValidation): void {
   }
 }
 
+/** Splits a selector path into the parent context and the checked child element, e.g. `//SCL/Substation/Bay` → `//SCL/Substation` + `Bay`. */
+export function splitElementPath(path: string): { context: string; elementName: string } {
+  const parts = (path ?? '').replace(/^\/\//, '').split('/').filter(Boolean);
+  if (parts.length <= 1 && (parts[0] ?? 'SCL') === 'SCL') {
+    return { context: '//SCL', elementName: '' };
+  }
+  const elementName = parts[parts.length - 1];
+  const parent = parts.slice(0, -1);
+  return {
+    context: parent.length ? `//${parent.join('/')}` : '//SCL',
+    elementName,
+  };
+}
+
+/** Inverse of {@link splitElementPath}: the path shown in the node selector. */
+export function joinElementPath(context: string, elementName: string): string {
+  const name = (elementName ?? '').trim();
+  return name ? `${(context || '//SCL').replace(/\/$/, '')}/${name}` : context || '//SCL';
+}
+
 export function enterExpertMode(): void {
   if (!validationEditor.ruleUi.expertXPath) {
     validationEditor.ruleUi.expertXPath = buildAssertionExpression(validationEditor.ruleUi);

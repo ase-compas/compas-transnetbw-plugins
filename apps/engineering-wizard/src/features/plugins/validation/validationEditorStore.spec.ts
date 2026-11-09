@@ -3,6 +3,8 @@ import {
   enterExpertMode,
   exitExpertMode,
   initValidationEditor,
+  joinElementPath,
+  splitElementPath,
   validationEditor,
 } from './validationEditorStore.svelte';
 import type { RuleUiState } from './validationRuleUi';
@@ -390,5 +392,29 @@ describe('validation editor initialization', () => {
       expertMode: true,
       expertXPath: assert,
     });
+  });
+});
+
+describe('element path helpers', () => {
+  it('splits the selected path into parent context and child element', () => {
+    expect(splitElementPath('//SCL/Substation/VoltageLevel/Bay')).toEqual({
+      context: '//SCL/Substation/VoltageLevel',
+      elementName: 'Bay',
+    });
+    expect(splitElementPath('//SCL/Substation')).toEqual({
+      context: '//SCL',
+      elementName: 'Substation',
+    });
+    expect(splitElementPath('//SCL')).toEqual({ context: '//SCL', elementName: '' });
+  });
+
+  it('round-trips with joinElementPath', () => {
+    const path = joinElementPath('//SCL/Substation', 'VoltageLevel');
+    expect(path).toBe('//SCL/Substation/VoltageLevel');
+    expect(splitElementPath(path)).toEqual({
+      context: '//SCL/Substation',
+      elementName: 'VoltageLevel',
+    });
+    expect(joinElementPath('//SCL', '')).toBe('//SCL');
   });
 });

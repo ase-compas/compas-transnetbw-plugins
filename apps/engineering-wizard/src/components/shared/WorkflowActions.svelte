@@ -12,6 +12,7 @@
     nextDisabled?: boolean;
     doneDisabled?: boolean;
     showDone?: boolean;
+    doneLabel?: string;
 
     backBg?: string;
     backColor?: string;
@@ -32,11 +33,13 @@
     onGoToPreviousStep,
     onGoToNextStep,
     onDone,
+    previousDisabled = false,
     isAtFirstStep = false,
     isAtLastStep = false,
     nextDisabled = false,
     doneDisabled = false,
     showDone = true,
+    doneLabel = 'Done',
 
     backBg,
     backColor,
@@ -54,7 +57,7 @@
   const backStyles = $derived(`
     background-color: ${backBg ?? nextBg ?? 'var(--oscd-plugin-surface)'};
     color: ${backColor ?? nextColor ?? 'var(--oscd-plugin-brand)'};
-    opacity: ${isAtFirstStep ? '0.38' : '1'};
+    opacity: ${isAtFirstStep || previousDisabled ? '0.38' : '1'};
   `);
   const nextStyles = $derived(`
     background-color: ${nextBg ?? 'var(--oscd-plugin-surface)'};
@@ -71,8 +74,9 @@
 <div class="stepper-actions">
   <div class="stepper-navigation">
     <Button
+      tag="button"
       onclick={onGoToPreviousStep}
-      disabled={isAtFirstStep}
+      disabled={isAtFirstStep || previousDisabled}
       aria-label="Previous step"
       style={backStyles}
     >
@@ -81,6 +85,7 @@
     </Button>
 
     <Button
+      tag="button"
       class="next-btn"
       onclick={onGoToNextStep}
       disabled={nextDisabled}
@@ -98,13 +103,14 @@
     </Button>
     {#if showDone}
       <Button
+        tag="button"
         onclick={onDone}
         disabled={doneDisabled}
-        aria-label="Done"
+        aria-label={doneLabel}
         style={doneStyles}
       >
         <Icon><OscdCheckIcon svgStyles={`fill: ${doneIconFill ?? doneColor ?? 'var(--oscd-plugin-on-action)'};`} /></Icon>
-        <Label>Done</Label>
+        <Label>{doneLabel}</Label>
       </Button>
     {/if}
   </div>

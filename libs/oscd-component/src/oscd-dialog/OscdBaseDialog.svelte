@@ -128,7 +128,7 @@
 >
   <Header>
     <div class="dialog__title" style={`background-color: ${headerBackground}; color: ${headerForeground};`}>
-      <h4>{title}</h4>
+      <h4 title={title}>{title}</h4>
       {#if showCloseButton}
         <OscdIconActionButton
           tabindex="-1"
@@ -181,6 +181,8 @@
   /* Uniform content area padding — scoped to OscdBaseDialog surfaces only */
   :global(.oscd-base-dialog__surface .mdc-dialog__content) {
     padding: var(--dialog-content-padding, var(--dialog-h-padding, 1.5rem)) !important;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   :global(.mdc-dialog) { z-index: 5000 !important; }
@@ -212,6 +214,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    min-width: 0;
     font-family: Roboto, sans-serif;
   }
 
@@ -224,5 +228,14 @@
     margin: 0;
     padding: 0;
     font-weight: 500;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .dialog__title > :global(:not(h4)) {
+    flex-shrink: 0;
   }
 </style>

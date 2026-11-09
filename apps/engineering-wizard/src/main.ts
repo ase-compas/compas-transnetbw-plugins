@@ -1,8 +1,11 @@
 import App from './App.svelte';
 import '../public/global.css';
 import '../public/material-icon.css';
+import '../public/material-icon-font.css';
 import 'svelte-material-ui/bare.css';
-import '../../../libs/theme/src/lib/plugin-theme.css';
+import '../public/smui.css';
+import '@oscd-transnet-plugins/theme/plugin-fonts.css';
+import '@oscd-transnet-plugins/theme/plugin-theme.css';
 import '../public/custom-theme-tokens.css';
 import { mount } from "svelte";
 

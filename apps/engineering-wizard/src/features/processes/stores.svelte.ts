@@ -33,11 +33,13 @@ function findProcess(id: string | null): Process | null {
 
 class SelectedProcessState {
   #id = $state<string | null>(null);
+  draft = $state<Process | null>(null);
 
   get process(): Process | null {
-    return findProcess(this.#id);
+    return this.draft ?? findProcess(this.#id);
   }
   set process(p: Process | null) {
+    this.draft = null;
     this.#id = p?.id ?? null;
   }
 }

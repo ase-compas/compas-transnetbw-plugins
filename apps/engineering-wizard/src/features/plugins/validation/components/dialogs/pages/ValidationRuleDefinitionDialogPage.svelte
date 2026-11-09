@@ -9,11 +9,17 @@
 
   import AttributeRuleEditor from '../../AttributeRuleEditor.svelte';
   import AttributeCheckFields from '../../AttributeCheckFields.svelte';
-  import ElementRuleEditor from '../../ElementRuleEditor.svelte';
   import ElementCheckFields from '../../ElementCheckFields.svelte';
   import PreviewBox from '../../PreviewBox.svelte';
   import ToggleSwitch from '../../ToggleSwitch.svelte';
   import FormBlock from '../../FormBlock.svelte';
+  import type { SyntaxCheckState } from '../../../ruleSyntaxCheck.svelte';
+
+  interface Props {
+    syntaxState: SyntaxCheckState;
+    onRetrySyntax: () => void;
+  }
+  let { syntaxState, onRetrySyntax }: Props = $props();
 
   const isMessageEmpty = $derived(!validationEditor.ruleUi.message?.trim());
 
@@ -62,7 +68,11 @@
         <label class="expert-editor__label" for="expert-xpath-input">
           XPath assertion
           <span class="expert-editor__hint">
-            Written relative to the context node selected on the previous page.
+            Written relative to the execution context:
+            <code>{validationEditor.entry.context || '//SCL'}</code>.
+            {#if validationEditor.ruleUi.mode === 'element'}
+              This is the parent of the selected element.
+            {/if}
             Example: <code>normalize-space(@name) = 'Bay1'</code>
           </span>
         </label>
@@ -74,30 +84,43 @@
           rows="4"
           spellcheck="false"
         ></textarea>
+        <div aria-live="polite" class="syntax-status" class:syntax-status--error={syntaxState.status === 'invalid' || syntaxState.status === 'error'}>
+          {#if syntaxState.status === 'checking'}
+            Checking XPath syntax...
+          {:else if syntaxState.status === 'valid'}
+            XPath syntax is valid. Test against a document to check the rule's result.
+          {:else if syntaxState.status === 'invalid'}
+            <ul>
+              {#each syntaxState.diagnostics as diagnostic}
+                <li>{diagnostic.field === 'assert' ? 'Assertion' : 'Context'}: {diagnostic.message}</li>
+              {/each}
+            </ul>
+          {:else if syntaxState.status === 'error'}
+            <p>Syntax check is currently unavailable.</p>
+            <button type="button" onclick={onRetrySyntax}>Retry syntax check</button>
+          {:else}
+            Enter a context and assertion to check XPath syntax.
+          {/if}
+        </div>
       </div>
     {:else if validationEditor.ruleUi.mode === 'attribute'}
       <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
+      <AttributeCheckFields bind:ruleUi={validationEditor.ruleUi} />
     {:else}
-      <ElementRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
+      <ElementCheckFields bind:ruleUi={validationEditor.ruleUi} />
     {/if}
   </FormBlock>
 
   <FormBlock bold label="Define the message to be shown if the rule fails">
-    {#if !validationEditor.ruleUi.expertMode}
-      {#if validationEditor.ruleUi.mode === 'attribute'}
-        <AttributeCheckFields bind:ruleUi={validationEditor.ruleUi} />
-      {:else}
-        <ElementCheckFields bind:ruleUi={validationEditor.ruleUi} />
-      {/if}
-    {/if}
-
     <Textfield
       textarea
       bind:value={validationEditor.ruleUi.message}
       label="Error Message"
       variant="outlined"
+      style="width: 100%; min-width: 0; box-sizing: border-box;"
+      input$style="overflow-wrap: anywhere;"
       invalid={isMessageEmpty}
-      helper={isMessageEmpty ? errorMessageHelper : undefined}
+      helper={errorMessageHelper}
     />
   </FormBlock>
 
@@ -109,7 +132,9 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 0;
-    gap: 2rem;
+    gap: 1.25rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .expert-toggle-row {
@@ -174,5 +199,13 @@
 
   .expert-editor__textarea:focus {
     border-color: var(--oscd-plugin-brand);
+  }
+
+  .syntax-status {
+    font-size: var(--ew-font-size-small);
+  }
+
+  .syntax-status--error {
+    color: var(--oscd-plugin-error);
   }
 </style>

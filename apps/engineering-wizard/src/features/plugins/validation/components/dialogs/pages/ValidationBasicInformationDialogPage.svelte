@@ -6,7 +6,30 @@
   import XMLContextSelector from '../../XMLContextSelector.svelte';
   import FormBlock from '../../FormBlock.svelte';
   import FormBlockGroup from '../../FormBlockGroup.svelte';
-  import { validationEditor } from '../../../validationEditorStore.svelte';
+  import {
+    validationEditor,
+    splitElementPath,
+    joinElementPath,
+  } from '../../../validationEditorStore.svelte';
+
+  // The selector edits one path; in element mode its last node is the checked child.
+  let selectedPath = $state(
+    validationEditor.ruleUi.mode === 'element'
+      ? joinElementPath(validationEditor.entry.context, validationEditor.ruleUi.elementName)
+      : validationEditor.entry.context,
+  );
+
+  $effect(() => {
+    if (validationEditor.ruleUi.mode === 'element') {
+      const { context, elementName } = splitElementPath(selectedPath);
+      if (validationEditor.entry.context !== context) validationEditor.entry.context = context;
+      if (validationEditor.ruleUi.elementName !== elementName) {
+        validationEditor.ruleUi.elementName = elementName;
+      }
+    } else if (validationEditor.entry.context !== selectedPath) {
+      validationEditor.entry.context = selectedPath;
+    }
+  });
 
   const isTitleEmpty = $derived(!validationEditor.entry.title?.trim());
 </script>
@@ -24,7 +47,7 @@
       style="width: 100%"
       bind:value={validationEditor.entry.title}
       invalid={isTitleEmpty}
-      helper={isTitleEmpty ? ruleNameHelper : undefined}
+      helper={ruleNameHelper}
     />
     <Textfield textarea bind:value={validationEditor.entry.description} label="Description" />
   </FormBlock>
@@ -47,19 +70,22 @@
       bold
       label={validationEditor.ruleUi.mode === 'attribute'
         ? 'Select the node this rule checks.'
-        : "Select the parent node — you'll pick which child element to check next."}
+        : 'Select the element this rule checks. Its parent node becomes the rule context.'}
     >
-      <XMLContextSelector bind:value={validationEditor.entry.context} />
+      <XMLContextSelector
+        bind:value={selectedPath}
+        allowCustomElements={validationEditor.ruleUi.mode === 'element'}
+      />
     </FormBlock>
   </FormBlockGroup>
 </div>
 
 <style>
-  /* 2rem between the top-level blocks */
+  /* 1.25rem between the top-level blocks */
   .validation-form {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.25rem;
     padding: 1rem 0;
   }
 

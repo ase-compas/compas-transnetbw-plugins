@@ -1,8 +1,13 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from 'svelte';
-import pluginTheme from '../../../libs/theme/src/lib/plugin-theme.css?inline';
-import '../public/custom-theme-tokens.css';
+import { installPluginFonts, pluginTheme } from '@oscd-transnet-plugins/theme';
+import materialStyles from 'svelte-material-ui/bare.css?inline';
+import iconStyles from '../public/material-icon.css?inline';
+import iconFontStyles from '../public/material-icon-font.css?inline';
+import smuiStyles from '../public/smui.css?inline';
+import globalStyles from '../public/global.css?inline';
+import customThemeStyles from '../public/custom-theme-tokens.css?inline';
 import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
 import { validationCoordinator } from './services/validationCoordinator.svelte';
@@ -49,24 +54,21 @@ export default class NewOSCDPlugin extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     const shadowRoot = this.shadowRoot!;
 
-    const linkElement = createStyleLinkElement();
-    shadowRoot.appendChild(linkElement);
+    installPluginFonts(iconFontStyles);
 
-    const themeEl = document.createElement('style');
-    themeEl.textContent = pluginTheme;
-    shadowRoot.appendChild(themeEl);
+    const styleElement = document.createElement('style');
+    styleElement.id = `${pkg.name}-v${pkg.version}-style`;
+    styleElement.textContent = [
+      materialStyles,
+      iconStyles,
+      smuiStyles,
+      globalStyles,
+      pluginTheme,
+      customThemeStyles,
+    ].join('\n');
+    shadowRoot.appendChild(styleElement);
 
-    linkElement.addEventListener(
-      'load',
-      () => mount(Plugin, { target: shadowRoot, props: this._props }),
-      { once: true },
-    );
-
-    linkElement.addEventListener(
-      'error',
-      () => mount(Plugin, { target: shadowRoot, props: this._props }),
-      { once: true },
-    );
+    mount(Plugin, { target: shadowRoot, props: this._props });
   }
 
   disconnectedCallback() {
@@ -119,13 +121,4 @@ export default class NewOSCDPlugin extends HTMLElement {
   set oscdApi(v: unknown) {
     this._props.oscdApi = v;
   }
-}
-
-function createStyleLinkElement(): HTMLLinkElement {
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.type = 'text/css';
-  link.href = new URL('./style.css', import.meta.url).href;
-  link.id = `${pkg.name}-v${pkg.version}-style`;
-  return link;
 }

@@ -10,6 +10,7 @@ import {
   corePlugins,
   engineeringProcesses,
   runningEngineeringProcess,
+  selectedEngineeringProcess,
 } from './stores.svelte';
 import {
   addPluginToGroups,
@@ -18,6 +19,8 @@ import {
 } from './pluginGroupOps';
 
 function getProcess(procId: string): Process | undefined {
+  const draft = selectedEngineeringProcess.draft;
+  if (draft?.id === procId) return draft;
   return engineeringProcesses.processes.find((p) => p.id === procId);
 }
 

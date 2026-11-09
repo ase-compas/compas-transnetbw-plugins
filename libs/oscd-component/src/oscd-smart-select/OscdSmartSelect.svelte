@@ -110,7 +110,7 @@
     width: 100%;
     height: 2.5rem;
 
-    padding: 0 2.6rem 0 0.75rem;
+    padding: 0 3rem 0 0.75rem;
 
     border-radius: 5px;
     border: 1px solid #b2c7cb;
@@ -156,6 +156,7 @@
   }
 
   .caret {
+    right: 0.75rem;
     pointer-events: none;
     color: var(--primary-base);
   }

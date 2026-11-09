@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy, untrack } from 'svelte';
   import OscdBaseDialog from '../../../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
@@ -15,6 +16,7 @@
     isValidElementCount,
   } from '../../validationRuleUi';
   import { buildAssertionExpression } from '../../xpathBuilder';
+  import { createRuleSyntaxCheck } from '../../ruleSyntaxCheck.svelte';
 
   interface Props {
     open: boolean;
@@ -25,7 +27,21 @@
 
   let { open = $bindable(false), plugin, process, initialValidation }: Props = $props();
 
-  initValidationEditor(initialValidation);
+  untrack(() => initValidationEditor(initialValidation));
+  const syntaxCheck = createRuleSyntaxCheck();
+  onDestroy(syntaxCheck.dispose);
+
+  $effect(() => {
+    const expert = validationEditor.ruleUi.expertMode;
+    const rule = {
+      context: validationEditor.entry.context,
+      assert: validationEditor.ruleUi.expertXPath,
+    };
+    untrack(() => {
+      if (expert) syntaxCheck.update(rule);
+      else syntaxCheck.reset();
+    });
+  });
 
   const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
   type Step = (typeof steps)[number];
@@ -49,7 +65,10 @@
   function isRuleDefinitionValid(): boolean {
     const hasMessage = !!validationEditor.ruleUi.message?.trim();
     if (validationEditor.ruleUi.expertMode) {
-      return !!validationEditor.ruleUi.expertXPath?.trim() && hasMessage;
+      return hasMessage && syntaxCheck.canProceedFor({
+        context: validationEditor.entry.context,
+        assert: validationEditor.ruleUi.expertXPath,
+      });
     }
     if (validationEditor.ruleUi.mode === 'attribute') {
       return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
@@ -71,7 +90,11 @@
   const isStepValid = $derived.by(() => {
     if (currentStep === 'basic') {
       const hasTitle = !!validationEditor.entry.title?.trim();
-      return hasTitle;
+      const needsElement =
+        validationEditor.ruleUi.mode === 'element' &&
+        !validationEditor.ruleUi.expertMode &&
+        !validationEditor.ruleUi.elementName?.trim();
+      return hasTitle && !needsElement;
     }
     if (currentStep === 'rule-definition') {
       return isRuleDefinitionValid();
@@ -82,6 +105,7 @@
   const isNextDisabled = $derived(isAtLastStep ? !isValid : !isStepValid);
 
   function saveValidation() {
+    if (!isValid) return;
     closeDialog('confirm', {
       ...$state.snapshot(validationEditor.entry),
       title: validationEditor.entry.title.trim(),
@@ -125,7 +149,7 @@
     {#if currentStep === 'basic'}
       <ValidationBasicInformationDialogPage />
     {:else if currentStep === 'rule-definition'}
-      <ValidationRuleDefinitionDialogPage />
+      <ValidationRuleDefinitionDialogPage syntaxState={syntaxCheck.state} onRetrySyntax={syntaxCheck.retry} />
     {:else}
       <ValidationRuleTestDialogPage />
     {/if}

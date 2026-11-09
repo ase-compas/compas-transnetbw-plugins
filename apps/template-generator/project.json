@@ -20,7 +20,8 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/template-generator"
+        "outputPath": "dist/apps/template-generator",
+        "generatePackageJson": false
       },
       "configurations": {
         "development": {

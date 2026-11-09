@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import SearchInput from '../components/shared/SearchInput.svelte';
+  import ProcessJsonTransferActions from '../features/processes/components/ProcessJsonTransferActions.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
 
   import { OscdBasicDataTable, OscdConfirmDialog } from '@oscd-transnet-plugins/oscd-component';
-  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon, OscdDeleteIcon } from '@oscd-transnet-plugins/oscd-icons';
+  import { OscdInfoIcon, OscdPlayCircleIcon, OscdArrowForwardIcon, OscdDeleteIcon, OscdControlPointDuplicateIcon } from '@oscd-transnet-plugins/oscd-icons';
   import { openDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 
@@ -14,7 +16,8 @@
     engineeringProcessesStatus,
     runningEngineeringProcess
   } from '../features/processes/stores.svelte';
-  import { deleteProcess } from '../features/processes/repository.svelte';
+  import { addProcess } from '../features/processes/mutations.svelte';
+  import { deleteProcess, saveProcess } from '../features/processes/repository.svelte';
 
   interface Props {
     handleStart: (process: Process) => void;
@@ -29,28 +32,84 @@
 
   const { handleStart, handleView, handleEdit, handleAddNew, handleDeleted, docName }: Props = $props();
 
-  async function handleDeleteClick(item: Process) {
-    const result = await openDialog(OscdConfirmDialog, {
-      title: 'Delete process',
-      message: `Are you sure you want to delete the process "${item.name || item.id}"? This action cannot be undone.`,
-      confirmActionText: 'Delete',
-      confirmActionColor: 'danger',
-    });
+  let selectedRowIds = $state<(string | number)[]>([]);
+  let deleting = $state(false);
+  const processes = $derived(engineeringProcesses.processes ?? []);
 
-    if (result?.type !== 'confirm') return;
-
+  async function handleDeleteClick(items: Process[]) {
+    if (deleting || items.length === 0) return;
+    deleting = true;
     try {
-      await deleteProcess(item);
-      toastService.success('Process deleted', `"${item.name || item.id}" was deleted.`);
-      handleDeleted?.(item);
+      const single = items.length === 1;
+      const result = await openDialog(OscdConfirmDialog, {
+        title: single ? 'Delete process' : 'Delete processes',
+        message: single
+          ? `Are you sure you want to delete the process "${items[0].name || items[0].id}"? This action cannot be undone.`
+          : `Are you sure you want to delete ${items.length} selected processes? This action cannot be undone.`,
+        confirmActionText: 'Delete',
+        confirmActionColor: 'danger',
+      });
+
+      if (result?.type !== 'confirm') return;
+
+      const deleted: Process[] = [];
+      const failed: Process[] = [];
+      for (const item of items) {
+        try {
+          await deleteProcess(item);
+          deleted.push(item);
+        } catch {
+          failed.push(item);
+        }
+      }
+      const deletedIds = new Set(deleted.map((item) => item.id));
+      selectedRowIds = selectedRowIds.filter((id) => !deletedIds.has(String(id)));
+      for (const item of deleted) handleDeleted?.(item);
+      if (deleted.length > 0) {
+        toastService.success(
+          single ? 'Process deleted' : 'Processes deleted',
+          single ? `"${items[0].name || items[0].id}" was deleted.` : `${deleted.length} processes were deleted.`,
+        );
+      }
+      if (failed.length > 0) {
+        toastService.error('Delete failed', `${failed.map((item) => `"${item.name || item.id}"`).join(', ')} could not be deleted.`);
+      }
+    } finally {
+      deleting = false;
+    }
+  }
+
+  let duplicating = $state(false);
+  let active = true;
+  onDestroy(() => { active = false; });
+
+  async function handleDuplicateClick(item: Process) {
+    if (duplicating) return;
+    duplicating = true;
+    try {
+      const baseId = item.id.replace(/-copy(?:-\d+)?$/, '');
+      const baseName = (item.name || item.id).replace(/ \(copy(?: \d+)?\)$/, '');
+      const ids = new Set(processes.map((p) => p.id));
+      const names = new Set(processes.map((p) => p.name));
+      let id = `${baseId}-copy`;
+      let name = `${baseName} (copy)`;
+      for (let n = 2; ids.has(id) || names.has(name); n++) {
+        id = `${baseId}-copy-${n}`;
+        name = `${baseName} (copy ${n})`;
+      }
+      const draft: Process = { ...($state.snapshot(item) as Process), id, name, version: '1.0.0' };
+      const version = await saveProcess(draft);
+      const created = addProcess({ ...draft, version });
+      toastService.success('Process duplicated', `"${created.name}" was created.`);
+      if (active) handleEdit(created);
     } catch {
-      toastService.error('Delete failed', `"${item.name || item.id}" could not be deleted.`);
+      toastService.error('Duplicate failed', `"${item.name || item.id}" could not be duplicated.`);
+    } finally {
+      duplicating = false;
     }
   }
 
   let searchQuery = $state('');
-
-  const processes = $derived(engineeringProcesses.processes ?? []);
 
   const rows = $derived<ProcessRow[]>(
     processes.map((p) => ({
@@ -69,12 +128,15 @@
       ? rows.filter((p) => p.displayName.toLowerCase().includes(normalizedQuery))
       : rows
   );
+  const visibleSelectedProcesses = $derived(
+    filteredRows.filter((process) => selectedRowIds.includes(process.id)),
+  );
 
   const columns = [
-    { key: 'displayName', header: 'Name', bold: true, width: '15%' },
-    { key: 'description', header: 'Description', width: '50%' },
-    { key: 'version', header: 'Version', width: '10%' },
-    { key: 'validationCount', header: 'Validations', width: '15%' },
+    { key: 'displayName', header: 'Name', bold: true, width: 'min(22cqw, 252px)', tooltip: true },
+    { key: 'description', header: 'Description', tooltip: true },
+    { key: 'version', header: 'Version', width: '96px', tooltip: true },
+    { key: 'validationCount', header: 'Validations', width: '112px' },
   ] as const;
 
   const runningProc = $derived(runningEngineeringProcess.process);
@@ -118,11 +180,11 @@
   }
 </script>
 
-<div class="processes">
+<div class="processes ew-table-section">
   <div class="process-toolbar">
     <h1 class="processes__header">Processes</h1>
-    <div class="process-toolbar__right">
-      <SearchInput bind:value={searchQuery} label="Search Processes" />
+    <div class="process-toolbar__actions">
+      <ProcessJsonTransferActions action="import" />
       <Button
         variant="raised"
         style="--mdc-theme-primary: var(--oscd-plugin-action); --mdc-theme-on-primary: var(--oscd-plugin-on-action)"
@@ -151,50 +213,86 @@
     </div>
   {/if}
 
+  <div class="ew-table-toolbar" role="toolbar" aria-label="Processes table controls">
+    <SearchInput bind:value={searchQuery} label="Search Processes" />
+    <div class="ew-table-toolbar__selection">
+      <span role="status">
+        {#if visibleSelectedProcesses.length > 0}
+          {visibleSelectedProcesses.length} selected
+        {:else}
+          {filteredRows.length} {filteredRows.length === 1 ? 'process' : 'processes'}
+        {/if}
+      </span>
+      <ProcessJsonTransferActions action="export" selectedProcesses={visibleSelectedProcesses} />
+      <Button
+        tag="button"
+        variant="raised"
+        style="--mdc-theme-primary: var(--oscd-plugin-error); --mdc-theme-on-primary: white;"
+        onclick={() => handleDeleteClick(visibleSelectedProcesses)}
+        disabled={deleting || visibleSelectedProcesses.length === 0}
+      >
+        <Icon><OscdDeleteIcon svgStyles="fill: currentColor; width: 18px; height: 18px;" /></Icon>
+        <Label>Delete</Label>
+      </Button>
+    </div>
+  </div>
+
   <OscdBasicDataTable
+    scrollable
+    tableAriaLabel="Processes"
     items={filteredRows}
     {columns}
+    tableLayout="fixed"
+    actionsWidth="224px"
     loading={engineeringProcessesStatus.loading}
     errorMsg={engineeringProcessesStatus.error}
     emptyText="No processes available."
     hasActions
-    headerBg="#DAE3E6"
-    rowBg="#ffffff"
+    headerBg="var(--oscd-plugin-surface-muted)"
+    rowBg="var(--oscd-plugin-surface)"
     onRowClick={handleView}
+    selectable
+    bind:selectedRowIds
+    selectionDisabled={deleting}
+    getSelectionLabel={(item) => `Select process ${item.name || item.id}`}
   >
     {#snippet actions({ item })}
-      <div class="actions-cell">
-        {#if isRunningRow(item)}
-          <Button
-            type="button"
-            variant="unelevated"
-            aria-label="Continue process"
-            onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand); border: 1px solid #ccc;"
-          >
-            <Icon><OscdArrowForwardIcon svgStyles="fill: var(--oscd-plugin-brand); width: 18px; height: 18px;" /></Icon>
-            <Label>Continue</Label>
-          </Button>
-        {:else}
-          <Button
-            type="button"
-            variant="unelevated"
-            aria-label="Start process"
-            onclick={(e) => { e.stopPropagation(); handleStart(item); }}
-            style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand); border: 1px solid #ccc;"
-          >
-            <Icon><OscdPlayCircleIcon svgStyles="fill: var(--oscd-plugin-brand)" /></Icon>
-            <Label>Start</Label>
-          </Button>
-        {/if}
+      {@const running = isRunningRow(item)}
+      <div class="ew-table-actions">
+        <Button
+          type="button"
+          variant="unelevated"
+          class="ew-table-action ew-table-action--labeled"
+          aria-label={running ? 'Continue process' : 'Start process'}
+          onclick={(e) => { e.stopPropagation(); handleStart(item); }}
+          style="--mdc-theme-primary: var(--oscd-plugin-surface); --mdc-theme-on-primary: var(--oscd-plugin-brand);"
+        >
+          {#if running}
+            <Icon><OscdArrowForwardIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" /></Icon>
+          {:else}
+            <Icon><OscdPlayCircleIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" /></Icon>
+          {/if}
+          <Label>{running ? 'Continue' : 'Start'}</Label>
+        </Button>
         <button
           type="button"
-          class="delete-process-button"
+          class="ew-table-action"
+          aria-label="Duplicate process"
+          title="Duplicate process"
+          disabled={duplicating}
+          onclick={(e) => { e.stopPropagation(); handleDuplicateClick(item); }}
+        >
+          <OscdControlPointDuplicateIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" />
+        </button>
+        <button
+          type="button"
+          class="ew-table-action ew-table-action--danger"
           aria-label="Delete process"
           title="Delete process"
-          onclick={(e) => { e.stopPropagation(); handleDeleteClick(item); }}
+          disabled={deleting}
+          onclick={(e) => { e.stopPropagation(); handleDeleteClick([item]); }}
         >
-          <OscdDeleteIcon svgStyles="fill: #FF203A; width: 18px; height: 18px;" />
+          <OscdDeleteIcon svgStyles="fill: currentColor; width: 20px; height: 20px;" />
         </button>
       </div>
     {/snippet}
@@ -224,10 +322,9 @@
     gap: 12px;
   }
 
-  .process-toolbar__right {
+  .process-toolbar__actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     gap: 12px;
   }
 
@@ -246,37 +343,6 @@
     display: flex;
     align-items: center;
     gap: 4px;
-  }
-
-  .actions-cell {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  .delete-process-button {
-    box-sizing: border-box;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    margin: 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: var(--oscd-plugin-surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .delete-process-button:hover {
-    background-color: var(--oscd-plugin-surface-muted);
-  }
-
-  .delete-process-button:focus-visible {
-    outline: 2px solid var(--oscd-plugin-brand);
-    outline-offset: 2px;
   }
 
   .process-banner__info > span {

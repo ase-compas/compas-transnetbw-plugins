@@ -58,14 +58,11 @@
     flex-direction: row;
     flex: 1;
     min-height: 0;
+    min-width: 0;
+    overflow: hidden;
     align-items: stretch;
     gap: 16px;
 
-    /*
-     * Override OscdPanel defaults to use flex-based width distribution.
-     * Panel max-height is controlled per-view via --oscd-panel-max-height
-     * (set on the parent .page / .edit-view so the user can easily adjust it).
-     */
     --oscd-panel-width: auto;
   }
 
@@ -73,7 +70,14 @@
   .plugin-editor-row > :global(.panel-parent) {
     flex: 1 1 0;
     min-width: 0;
-    height: var(--oscd-panel-max-height, calc(100vh - 14rem));
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .plugin-editor-row :global(.panel-parent__body) {
+    min-height: 3rem;
   }
 
   .arrows-col {
