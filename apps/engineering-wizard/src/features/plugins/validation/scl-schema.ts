@@ -1,33 +1,351 @@
 /**
- * SCL 2007B4 element schema derived from IEC 61850-6 XSD files
- * (IEC_61850-6.2018.SCL.2007B4.full).
+ * Generated from IEC 61850-6 Ed. 2.1, SCL 2007B4.
+ * Regenerate: python3 tools/generate-scl-schema.py /path/to/SCL.xsd
+ * Format the generated file with the repository's Prettier.
  *
- * Attributes and child elements are resolved by flattening the XSD
- * inheritance chain (tBaseElement → tNaming → tLNodeContainer → … → concrete type).
- *
- * Notes:
- * - `Text` and `Private` are valid children of every element (from tBaseElement)
- *   but are omitted here because they're not useful for XPath navigation.
- * - IED, Communication, and DataTypeTemplates sections are simplified skeletons;
- *   the full IED schema is very large and rarely needed for substation validation.
+ * Includes inherited attributes and all standard child elements except Private.
+ * Foreign-namespace extensions are intentionally not included.
  */
 
 export type SclNodeDef = {
-  /** Valid XML attribute names (without @) for this element */
   attrs: string[];
-  /** Valid child element names useful for XPath navigation / validation */
   children: string[];
 };
 
 export const SCL_SCHEMA: Record<string, SclNodeDef> = {
-  // ── Root ──────────────────────────────────────────────────────────────────
-  SCL: {
-    attrs: ['version', 'revision', 'release'],
-    children: ['Header', 'Substation', 'Communication', 'IED', 'DataTypeTemplates', 'Line', 'Process'],
+  AccessControl: {
+    attrs: [],
+    children: [],
+  },
+  AccessPoint: {
+    attrs: ['desc', 'name', 'router', 'clock', 'kdc'],
+    children: [
+      'Text',
+      'Server',
+      'LN',
+      'ServerAt',
+      'Services',
+      'GOOSESecurity',
+      'SMVSecurity',
+    ],
+  },
+  Address: {
+    attrs: [],
+    children: ['P'],
+  },
+  Association: {
+    attrs: [
+      'desc',
+      'iedName',
+      'ldInst',
+      'prefix',
+      'lnClass',
+      'lnInst',
+      'kind',
+      'associationID',
+    ],
+    children: [],
+  },
+  Authentication: {
+    attrs: ['none', 'password', 'weak', 'strong', 'certificate'],
+    children: [],
+  },
+  BDA: {
+    attrs: [
+      'desc',
+      'name',
+      'sAddr',
+      'bType',
+      'valKind',
+      'type',
+      'count',
+      'valImport',
+    ],
+    children: ['Text', 'Val'],
+  },
+  Bay: {
+    attrs: ['name', 'desc'],
+    children: [
+      'Text',
+      'LNode',
+      'PowerTransformer',
+      'GeneralEquipment',
+      'ConductingEquipment',
+      'ConnectivityNode',
+      'Function',
+    ],
+  },
+  BitRate: {
+    attrs: ['unit', 'multiplier'],
+    children: [],
+  },
+  ClientLN: {
+    attrs: [
+      'desc',
+      'iedName',
+      'ldInst',
+      'prefix',
+      'lnClass',
+      'lnInst',
+      'apRef',
+    ],
+    children: [],
+  },
+  ClientServices: {
+    attrs: [
+      'goose',
+      'gsse',
+      'bufReport',
+      'unbufReport',
+      'readLog',
+      'sv',
+      'supportsLdName',
+      'maxAttributes',
+      'maxReports',
+      'maxGOOSE',
+      'maxSMV',
+      'rGOOSE',
+      'rSV',
+      'noIctBinding',
+    ],
+    children: ['TimeSyncProt', 'McSecurity'],
+  },
+  CommProt: {
+    attrs: ['ipv6'],
+    children: [],
+  },
+  Communication: {
+    attrs: ['desc'],
+    children: ['Text', 'SubNetwork'],
+  },
+  ConductingEquipment: {
+    attrs: ['name', 'desc', 'virtual', 'type'],
+    children: ['Text', 'LNode', 'Terminal', 'SubEquipment', 'EqFunction'],
+  },
+  ConfDataSet: {
+    attrs: ['max', 'maxAttributes', 'modify'],
+    children: [],
+  },
+  ConfLNs: {
+    attrs: ['fixPrefix', 'fixLnInst'],
+    children: [],
+  },
+  ConfLdName: {
+    attrs: [],
+    children: [],
+  },
+  ConfLogControl: {
+    attrs: ['max'],
+    children: [],
+  },
+  ConfReportControl: {
+    attrs: ['max', 'bufMode', 'bufConf', 'maxBuf'],
+    children: [],
+  },
+  ConfSG: {
+    attrs: ['resvTms'],
+    children: [],
+  },
+  ConfSigRef: {
+    attrs: ['max'],
+    children: [],
+  },
+  ConnectedAP: {
+    attrs: ['desc', 'iedName', 'apName', 'redProt'],
+    children: ['Text', 'Address', 'GSE', 'SMV', 'PhysConn'],
+  },
+  ConnectivityNode: {
+    attrs: ['name', 'desc', 'pathName'],
+    children: ['Text', 'LNode'],
+  },
+  DA: {
+    attrs: [
+      'desc',
+      'name',
+      'sAddr',
+      'bType',
+      'valKind',
+      'type',
+      'count',
+      'valImport',
+      'dchg',
+      'qchg',
+      'dupd',
+      'fc',
+    ],
+    children: ['Text', 'Val', 'ProtNs'],
+  },
+  DAI: {
+    attrs: ['desc', 'name', 'sAddr', 'valKind', 'ix', 'valImport'],
+    children: ['Text', 'Val'],
+  },
+  DAType: {
+    attrs: ['id', 'desc', 'iedType'],
+    children: ['Text', 'BDA', 'ProtNs'],
+  },
+  DO: {
+    attrs: ['desc', 'name', 'type', 'accessControl', 'transient'],
+    children: ['Text'],
+  },
+  DOI: {
+    attrs: ['desc', 'name', 'ix', 'accessControl'],
+    children: ['Text', 'SDI', 'DAI'],
+  },
+  DOType: {
+    attrs: ['id', 'desc', 'iedType', 'cdc'],
+    children: ['Text', 'SDO', 'DA'],
+  },
+  DataObjectDirectory: {
+    attrs: [],
+    children: [],
+  },
+  DataSet: {
+    attrs: ['desc', 'name'],
+    children: ['Text', 'FCDA'],
+  },
+  DataSetDirectory: {
+    attrs: [],
+    children: [],
+  },
+  DataTypeTemplates: {
+    attrs: [],
+    children: ['LNodeType', 'DOType', 'DAType', 'EnumType'],
+  },
+  DynAssociation: {
+    attrs: ['max'],
+    children: [],
+  },
+  DynDataSet: {
+    attrs: ['max', 'maxAttributes'],
+    children: [],
+  },
+  EnumType: {
+    attrs: ['id', 'desc'],
+    children: ['Text', 'EnumVal'],
+  },
+  EnumVal: {
+    attrs: ['ord', 'desc'],
+    children: [],
+  },
+  EqFunction: {
+    attrs: ['name', 'desc', 'type'],
+    children: ['Text', 'LNode', 'GeneralEquipment', 'EqSubFunction'],
+  },
+  EqSubFunction: {
+    attrs: ['name', 'desc', 'type'],
+    children: ['Text', 'LNode', 'GeneralEquipment', 'EqSubFunction'],
+  },
+  ExtRef: {
+    attrs: [
+      'desc',
+      'iedName',
+      'ldInst',
+      'prefix',
+      'lnClass',
+      'lnInst',
+      'doName',
+      'daName',
+      'intAddr',
+      'serviceType',
+      'srcLDInst',
+      'srcPrefix',
+      'srcLNClass',
+      'srcLNInst',
+      'srcCBName',
+      'pServT',
+      'pLN',
+      'pDO',
+      'pDA',
+    ],
+    children: [],
+  },
+  FCDA: {
+    attrs: [
+      'ldInst',
+      'prefix',
+      'lnClass',
+      'lnInst',
+      'doName',
+      'daName',
+      'fc',
+      'ix',
+    ],
+    children: [],
+  },
+  FileHandling: {
+    attrs: ['mms', 'ftp', 'ftps'],
+    children: [],
+  },
+  Function: {
+    attrs: ['name', 'desc', 'type'],
+    children: [
+      'Text',
+      'LNode',
+      'SubFunction',
+      'GeneralEquipment',
+      'ConductingEquipment',
+    ],
+  },
+  GOOSE: {
+    attrs: ['max', 'fixedOffs', 'goose', 'rGOOSE'],
+    children: [],
+  },
+  GOOSESecurity: {
+    attrs: ['name', 'desc', 'xferNumber', 'serialNumber'],
+    children: ['Text', 'Subject', 'IssuerName'],
+  },
+  GSE: {
+    attrs: ['desc', 'ldInst', 'cbName'],
+    children: ['Text', 'Address', 'MinTime', 'MaxTime'],
+  },
+  GSEControl: {
+    attrs: [
+      'desc',
+      'name',
+      'datSet',
+      'confRev',
+      'type',
+      'appID',
+      'fixedOffs',
+      'securityEnable',
+    ],
+    children: ['Text', 'IEDName', 'Protocol'],
+  },
+  GSEDir: {
+    attrs: [],
+    children: [],
+  },
+  GSESettings: {
+    attrs: ['cbName', 'datSet', 'appID', 'dataLabel', 'kdaParticipant'],
+    children: ['McSecurity'],
+  },
+  GSSE: {
+    attrs: ['max'],
+    children: [],
+  },
+  GeneralEquipment: {
+    attrs: ['name', 'desc', 'virtual', 'type'],
+    children: ['Text', 'LNode', 'EqFunction'],
+  },
+  GetCBValues: {
+    attrs: [],
+    children: [],
+  },
+  GetDataObjectDefinition: {
+    attrs: [],
+    children: [],
+  },
+  GetDataSetValue: {
+    attrs: [],
+    children: [],
+  },
+  GetDirectory: {
+    attrs: [],
+    children: [],
   },
   Header: {
     attrs: ['id', 'version', 'revision', 'toolID', 'nameStructure'],
-    children: ['History'],
+    children: ['Text', 'History'],
   },
   History: {
     attrs: [],
@@ -37,120 +355,322 @@ export const SCL_SCHEMA: Record<string, SclNodeDef> = {
     attrs: ['version', 'revision', 'when', 'who', 'what', 'why'],
     children: [],
   },
-
-  // ── Substation hierarchy ──────────────────────────────────────────────────
-  // tSubstation extends tEquipmentContainer (tPowerSystemResource → tLNodeContainer → tNaming)
-  Substation: {
-    attrs: ['name', 'desc'],
-    children: ['LNode', 'PowerTransformer', 'GeneralEquipment', 'VoltageLevel', 'Function'],
+  IED: {
+    attrs: [
+      'desc',
+      'name',
+      'type',
+      'manufacturer',
+      'configVersion',
+      'originalSclVersion',
+      'originalSclRevision',
+      'originalSclRelease',
+      'engRight',
+      'owner',
+    ],
+    children: ['Text', 'Services', 'AccessPoint', 'KDC'],
   },
-  // tVoltageLevel extends tEquipmentContainer
-  VoltageLevel: {
-    attrs: ['name', 'desc', 'nomFreq', 'numPhases'],
-    children: ['LNode', 'PowerTransformer', 'GeneralEquipment', 'Voltage', 'Bay', 'Function'],
-  },
-  // tBay extends tEquipmentContainer
-  Bay: {
-    attrs: ['name', 'desc'],
-    children: ['LNode', 'PowerTransformer', 'GeneralEquipment', 'ConductingEquipment', 'ConnectivityNode', 'Function'],
-  },
-  // tConductingEquipment extends tAbstractConductingEquipment extends tEquipment
-  ConductingEquipment: {
-    attrs: ['name', 'desc', 'type', 'virtual'],
-    children: ['LNode', 'Terminal', 'SubEquipment', 'EqFunction'],
-  },
-  // tConnectivityNode extends tLNodeContainer
-  ConnectivityNode: {
-    attrs: ['name', 'desc', 'pathName'],
-    children: ['LNode'],
-  },
-  // tTerminal extends tUnNaming
-  Terminal: {
-    attrs: ['name', 'desc', 'connectivityNode', 'processName', 'substationName', 'voltageLevelName', 'bayName', 'cNodeName', 'lineName'],
+  IEDName: {
+    attrs: ['apRef', 'ldInst', 'prefix', 'lnClass', 'lnInst'],
     children: [],
   },
-  // tLNode extends tUnNaming
+  Inputs: {
+    attrs: ['desc'],
+    children: ['Text', 'ExtRef'],
+  },
+  IssuerName: {
+    attrs: ['commonName', 'idHierarchy'],
+    children: [],
+  },
+  KDC: {
+    attrs: ['iedName', 'apName'],
+    children: [],
+  },
+  LDevice: {
+    attrs: ['desc', 'inst', 'ldName'],
+    children: ['Text', 'LN0', 'LN', 'AccessControl'],
+  },
+  LN: {
+    attrs: ['desc', 'lnType', 'prefix', 'lnClass', 'inst'],
+    children: [
+      'Text',
+      'DataSet',
+      'ReportControl',
+      'LogControl',
+      'DOI',
+      'Inputs',
+      'Log',
+    ],
+  },
+  LN0: {
+    attrs: ['desc', 'lnType', 'lnClass', 'inst'],
+    children: [
+      'Text',
+      'DataSet',
+      'ReportControl',
+      'LogControl',
+      'DOI',
+      'Inputs',
+      'Log',
+      'GSEControl',
+      'SampledValueControl',
+      'SettingControl',
+    ],
+  },
   LNode: {
-    attrs: ['desc', 'iedName', 'ldInst', 'prefix', 'lnClass', 'lnInst', 'lnType'],
+    attrs: [
+      'desc',
+      'iedName',
+      'ldInst',
+      'prefix',
+      'lnClass',
+      'lnInst',
+      'lnType',
+    ],
+    children: ['Text'],
+  },
+  LNodeType: {
+    attrs: ['id', 'desc', 'iedType', 'lnClass'],
+    children: ['Text', 'DO'],
+  },
+  Line: {
+    attrs: ['name', 'desc', 'type', 'nomFreq', 'numPhases'],
+    children: [
+      'Text',
+      'LNode',
+      'GeneralEquipment',
+      'Function',
+      'Voltage',
+      'ConductingEquipment',
+      'ConnectivityNode',
+    ],
+  },
+  Log: {
+    attrs: ['desc', 'name'],
+    children: ['Text'],
+  },
+  LogControl: {
+    attrs: [
+      'desc',
+      'name',
+      'datSet',
+      'intgPd',
+      'ldInst',
+      'prefix',
+      'lnClass',
+      'lnInst',
+      'logName',
+      'logEna',
+      'reasonCode',
+      'bufTime',
+    ],
+    children: ['Text', 'TrgOps'],
+  },
+  LogSettings: {
+    attrs: ['cbName', 'datSet', 'logEna', 'trgOps', 'intgPd'],
     children: [],
   },
-  // tFunction extends tPowerSystemResource
-  Function: {
-    attrs: ['name', 'desc', 'type'],
-    children: ['LNode', 'SubFunction', 'GeneralEquipment', 'ConductingEquipment'],
-  },
-  // tSubFunction extends tPowerSystemResource
-  SubFunction: {
-    attrs: ['name', 'desc', 'type'],
-    children: ['LNode', 'GeneralEquipment', 'ConductingEquipment', 'SubFunction'],
-  },
-  // tPowerTransformer extends tEquipment
-  PowerTransformer: {
-    attrs: ['name', 'desc', 'type', 'virtual'],
-    children: ['LNode', 'TransformerWinding', 'SubEquipment', 'EqFunction'],
-  },
-  // tTransformerWinding extends tAbstractConductingEquipment extends tEquipment
-  TransformerWinding: {
-    attrs: ['name', 'desc', 'type', 'virtual'],
-    children: ['LNode', 'Terminal', 'SubEquipment', 'TapChanger', 'NeutralPoint', 'EqFunction'],
-  },
-  // NeutralPoint is tTerminal (same attributes)
-  NeutralPoint: {
-    attrs: ['name', 'desc', 'connectivityNode', 'processName', 'substationName', 'voltageLevelName', 'bayName', 'cNodeName', 'lineName'],
-    children: [],
-  },
-  // tTapChanger extends tPowerSystemResource
-  TapChanger: {
-    attrs: ['name', 'desc', 'type', 'virtual'],
-    children: ['LNode', 'SubEquipment', 'EqFunction'],
-  },
-  // tSubEquipment extends tPowerSystemResource
-  SubEquipment: {
-    attrs: ['name', 'desc', 'phase', 'virtual'],
-    children: ['LNode', 'EqFunction'],
-  },
-  // tGeneralEquipment extends tEquipment
-  GeneralEquipment: {
-    attrs: ['name', 'desc', 'type', 'virtual'],
-    children: ['LNode', 'EqFunction'],
-  },
-  // tEqFunction extends tAbstractEqFuncSubFunc extends tPowerSystemResource
-  EqFunction: {
-    attrs: ['name', 'desc', 'type'],
-    children: ['LNode', 'GeneralEquipment', 'EqSubFunction'],
-  },
-  // tEqSubFunction extends tAbstractEqFuncSubFunc
-  EqSubFunction: {
-    attrs: ['name', 'desc', 'type'],
-    children: ['LNode', 'GeneralEquipment', 'EqSubFunction'],
-  },
-  // tVoltage (simpleContent with unit/multiplier)
-  Voltage: {
+  MaxTime: {
     attrs: ['unit', 'multiplier'],
     children: [],
   },
-
-  // ── Line ──────────────────────────────────────────────────────────────────
-  // tLine extends tGeneralEquipmentContainer extends tPowerSystemResource
-  Line: {
-    attrs: ['name', 'desc', 'type', 'nomFreq', 'numPhases'],
-    children: ['LNode', 'GeneralEquipment', 'Function', 'Voltage', 'ConductingEquipment', 'ConnectivityNode'],
+  McSecurity: {
+    attrs: ['signature', 'encryption'],
+    children: [],
   },
-
-  // ── Process ───────────────────────────────────────────────────────────────
-  // tProcess extends tGeneralEquipmentContainer
+  MinTime: {
+    attrs: ['unit', 'multiplier'],
+    children: [],
+  },
+  NeutralPoint: {
+    attrs: [
+      'desc',
+      'name',
+      'connectivityNode',
+      'processName',
+      'substationName',
+      'voltageLevelName',
+      'bayName',
+      'cNodeName',
+      'lineName',
+    ],
+    children: ['Text'],
+  },
+  OptFields: {
+    attrs: [
+      'seqNum',
+      'timeStamp',
+      'dataSet',
+      'reasonCode',
+      'dataRef',
+      'entryID',
+      'configRef',
+      'bufOvfl',
+    ],
+    children: [],
+  },
+  P: {
+    attrs: ['type'],
+    children: [],
+  },
+  PhysConn: {
+    attrs: ['desc', 'type'],
+    children: ['Text', 'P'],
+  },
+  PowerTransformer: {
+    attrs: ['name', 'desc', 'virtual', 'type'],
+    children: [
+      'Text',
+      'LNode',
+      'TransformerWinding',
+      'SubEquipment',
+      'EqFunction',
+    ],
+  },
   Process: {
     attrs: ['name', 'desc', 'type'],
-    children: ['LNode', 'GeneralEquipment', 'Function', 'ConductingEquipment', 'Substation', 'Line', 'Process'],
+    children: [
+      'Text',
+      'LNode',
+      'GeneralEquipment',
+      'Function',
+      'ConductingEquipment',
+      'Substation',
+      'Line',
+      'Process',
+    ],
   },
-
-  // ── IED (simplified skeleton — full IED schema is very large) ─────────────
-  IED: {
-    attrs: ['name', 'desc', 'type', 'manufacturer', 'configVersion', 'engRight', 'owner',
-            'originalSclVersion', 'originalSclRevision', 'originalSclRelease'],
-    children: ['Services', 'AccessPoint', 'KDC'],
+  ProtNs: {
+    attrs: ['type'],
+    children: [],
   },
-  // tServices (shared by IED and AccessPoint); children are shown as leaves
+  Protocol: {
+    attrs: ['mustUnderstand'],
+    children: [],
+  },
+  ReadWrite: {
+    attrs: [],
+    children: [],
+  },
+  RedProt: {
+    attrs: ['hsr', 'prp', 'rstp'],
+    children: [],
+  },
+  ReportControl: {
+    attrs: [
+      'desc',
+      'name',
+      'datSet',
+      'intgPd',
+      'rptID',
+      'confRev',
+      'buffered',
+      'bufTime',
+      'indexed',
+    ],
+    children: ['Text', 'TrgOps', 'OptFields', 'RptEnabled'],
+  },
+  ReportSettings: {
+    attrs: [
+      'cbName',
+      'datSet',
+      'rptID',
+      'optFields',
+      'bufTime',
+      'trgOps',
+      'intgPd',
+      'resvTms',
+      'owner',
+    ],
+    children: [],
+  },
+  RptEnabled: {
+    attrs: ['desc', 'max'],
+    children: ['Text', 'ClientLN'],
+  },
+  SCL: {
+    attrs: ['version', 'revision', 'release'],
+    children: [
+      'Text',
+      'Header',
+      'Substation',
+      'Communication',
+      'IED',
+      'DataTypeTemplates',
+      'Line',
+      'Process',
+    ],
+  },
+  SDI: {
+    attrs: ['desc', 'name', 'ix', 'sAddr'],
+    children: ['Text', 'SDI', 'DAI'],
+  },
+  SDO: {
+    attrs: ['desc', 'name', 'type', 'count'],
+    children: ['Text'],
+  },
+  SGEdit: {
+    attrs: ['resvTms'],
+    children: [],
+  },
+  SMV: {
+    attrs: ['desc', 'ldInst', 'cbName'],
+    children: ['Text', 'Address'],
+  },
+  SMVSecurity: {
+    attrs: ['name', 'desc', 'xferNumber', 'serialNumber'],
+    children: ['Text', 'Subject', 'IssuerName'],
+  },
+  SMVSettings: {
+    attrs: [
+      'cbName',
+      'datSet',
+      'svID',
+      'optFields',
+      'smpRate',
+      'samplesPerSec',
+      'pdcTimeStamp',
+      'synchSrcId',
+      'nofASDU',
+      'kdaParticipant',
+    ],
+    children: ['SmpRate', 'SamplesPerSec', 'SecPerSamples', 'McSecurity'],
+  },
+  SMVsc: {
+    attrs: ['max', 'delivery', 'deliveryConf', 'sv', 'rSV'],
+    children: [],
+  },
+  SampledValueControl: {
+    attrs: [
+      'desc',
+      'name',
+      'datSet',
+      'confRev',
+      'smvID',
+      'multicast',
+      'smpRate',
+      'nofASDU',
+      'smpMod',
+      'securityEnable',
+    ],
+    children: ['Text', 'IEDName', 'SmvOpts', 'Protocol'],
+  },
+  SamplesPerSec: {
+    attrs: [],
+    children: [],
+  },
+  SecPerSamples: {
+    attrs: [],
+    children: [],
+  },
+  Server: {
+    attrs: ['desc', 'timeout'],
+    children: ['Text', 'Authentication', 'LDevice', 'Association'],
+  },
+  ServerAt: {
+    attrs: ['desc', 'apName'],
+    children: ['Text'],
+  },
   Services: {
     attrs: ['nameLength'],
     children: [
@@ -189,65 +709,144 @@ export const SCL_SCHEMA: Record<string, SclNodeDef> = {
       'CommProt',
     ],
   },
-  AccessPoint: {
-    attrs: ['name', 'desc', 'router', 'clock', 'kdc'],
-    children: ['Server', 'LN', 'ServerAt', 'Services', 'GOOSESecurity', 'SMVSecurity'],
+  SetDataSetValue: {
+    attrs: [],
+    children: [],
   },
-  Server: {
-    attrs: ['timeout', 'desc'],
-    children: ['Authentication', 'LDevice', 'Association'],
+  SettingControl: {
+    attrs: ['desc', 'numOfSGs', 'actSG', 'resvTms'],
+    children: ['Text'],
   },
-  LDevice: {
-    attrs: ['inst', 'ldName', 'desc'],
-    children: ['LN0', 'LN'],
+  SettingGroups: {
+    attrs: [],
+    children: ['SGEdit', 'ConfSG'],
   },
-  LN0: {
-    attrs: ['desc', 'lnClass', 'lnType', 'inst', 'prefix'],
-    children: ['DataSet', 'ReportControl', 'LogControl', 'DOI', 'Inputs', 'Log', 'SettingControl', 'SCLControl', 'SampledValueControl', 'GSEControl'],
+  SmpRate: {
+    attrs: [],
+    children: [],
   },
-  LN: {
-    attrs: ['desc', 'lnClass', 'lnType', 'inst', 'prefix'],
-    children: ['DataSet', 'ReportControl', 'LogControl', 'DOI', 'Inputs', 'Log'],
+  SmvOpts: {
+    attrs: [
+      'refreshTime',
+      'sampleSynchronized',
+      'sampleRate',
+      'dataSet',
+      'security',
+      'timestamp',
+      'synchSourceId',
+    ],
+    children: [],
   },
-
-  // ── Communication (simplified skeleton) ───────────────────────────────────
-  Communication: {
-    attrs: ['desc'],
-    children: ['SubNetwork'],
+  SubEquipment: {
+    attrs: ['name', 'desc', 'phase', 'virtual'],
+    children: ['Text', 'LNode', 'EqFunction'],
+  },
+  SubFunction: {
+    attrs: ['name', 'desc', 'type'],
+    children: [
+      'Text',
+      'LNode',
+      'GeneralEquipment',
+      'ConductingEquipment',
+      'SubFunction',
+    ],
   },
   SubNetwork: {
-    attrs: ['name', 'desc', 'type', 'BitRate'],
-    children: ['ConnectedAP'],
+    attrs: ['name', 'desc', 'type'],
+    children: ['Text', 'BitRate', 'ConnectedAP'],
   },
-  ConnectedAP: {
-    attrs: ['iedName', 'apName', 'desc', 'redProt'],
-    children: ['Address', 'GSE', 'SMV', 'PhysConn'],
+  Subject: {
+    attrs: ['commonName', 'idHierarchy'],
+    children: [],
   },
-
-  // ── DataTypeTemplates (simplified skeleton) ────────────────────────────────
-  DataTypeTemplates: {
-    attrs: ['desc'],
-    children: ['LNodeType', 'DOType', 'DAType', 'EnumType'],
+  Substation: {
+    attrs: ['name', 'desc'],
+    children: [
+      'Text',
+      'LNode',
+      'PowerTransformer',
+      'GeneralEquipment',
+      'VoltageLevel',
+      'Function',
+    ],
   },
-  LNodeType: {
-    attrs: ['id', 'desc', 'lnClass', 'iedType'],
-    children: ['DO'],
+  SupSubscription: {
+    attrs: ['maxGo', 'maxSv'],
+    children: [],
   },
-  DOType: {
-    attrs: ['id', 'desc', 'cdc', 'iedType'],
-    children: ['DA', 'SDO'],
+  TapChanger: {
+    attrs: ['name', 'desc', 'type', 'virtual'],
+    children: ['Text', 'LNode', 'SubEquipment', 'EqFunction'],
   },
-  DAType: {
-    attrs: ['id', 'desc', 'iedType'],
-    children: ['BDA'],
+  Terminal: {
+    attrs: [
+      'desc',
+      'name',
+      'connectivityNode',
+      'processName',
+      'substationName',
+      'voltageLevelName',
+      'bayName',
+      'cNodeName',
+      'lineName',
+    ],
+    children: ['Text'],
   },
-  EnumType: {
-    attrs: ['id', 'desc', 'iedType'],
-    children: ['EnumVal'],
+  Text: {
+    attrs: ['source'],
+    children: [],
+  },
+  TimeSyncProt: {
+    attrs: ['sntp', 'iec61850_9_3', 'c37_238', 'other'],
+    children: [],
+  },
+  TimerActivatedControl: {
+    attrs: [],
+    children: [],
+  },
+  TransformerWinding: {
+    attrs: ['name', 'desc', 'virtual', 'type'],
+    children: [
+      'Text',
+      'LNode',
+      'Terminal',
+      'SubEquipment',
+      'TapChanger',
+      'NeutralPoint',
+      'EqFunction',
+    ],
+  },
+  TrgOps: {
+    attrs: ['dchg', 'qchg', 'dupd', 'period', 'gi'],
+    children: [],
+  },
+  Val: {
+    attrs: ['sGroup'],
+    children: [],
+  },
+  ValueHandling: {
+    attrs: ['setToRO'],
+    children: [],
+  },
+  Voltage: {
+    attrs: ['unit', 'multiplier'],
+    children: [],
+  },
+  VoltageLevel: {
+    attrs: ['name', 'desc', 'nomFreq', 'numPhases'],
+    children: [
+      'Text',
+      'LNode',
+      'PowerTransformer',
+      'GeneralEquipment',
+      'Voltage',
+      'Bay',
+      'Function',
+    ],
   },
 };
 
-/** Returns valid child element names for a given parent element name. */
+/** Returns valid standard child element names, excluding Private. */
 export function getChildElements(parentName: string): string[] {
   return SCL_SCHEMA[parentName]?.children ?? [];
 }
@@ -257,5 +856,5 @@ export function getElementAttrs(elementName: string): string[] {
   return SCL_SCHEMA[elementName]?.attrs ?? [];
 }
 
-/** All known SCL element names. */
+/** All supported standard SCL element names. */
 export const ALL_SCL_ELEMENTS: string[] = Object.keys(SCL_SCHEMA);
