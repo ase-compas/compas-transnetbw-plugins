@@ -48,36 +48,32 @@ be built and released to update distributions pinned to older plugin URLs/hashes
 
 ## Engineering Wizard validation
 
-Deploy Validation Service **2.0.0** before the updated wizard. It uses typed
-XPath rules and no longer calls the legacy endpoint.
+The wizard uses the legacy Validation Service endpoint **`POST /api/v1/validate`**
+so it works with the backend currently deployed on the test stage.
+Requests use multipart fields `validationType=XPATH`, `sclFile`,
+`rulesJson=[{"context":"//SCL","assertion":"true()"}]` and `sclFileExtension=SCD`.
+The new typed validation endpoints are not required.
 
-| POST endpoint                      | Behavior                                                                                      |
-| ---------------------------------- | --------------------------------------------------------------------------------------------- |
-| `/api/validation-rules/validation` | Expert-mode syntax check after 500 ms without edits; no SCL required.                         |
-| `/api/scl-resources/validation`    | One SCL upload with all rules across the process; single-rule Run/dialog tests send one rule. |
-
-In expert mode, Next/Save requires successful compilation of the current
-`context` and `assert`. Edits invalidate previous checks; stale responses are
-ignored. Syntax requests time out after 30 seconds; errors allow retry.
-Compilation does not prove that the separate document test will pass.
+Automatic expert-mode syntax checks are disabled because the legacy backend has
+no syntax-only endpoint. Next/Save requires a nonempty context, assertion and
+error message; use the document test to evaluate the rule.
 
 Process start validates all plugins; document changes trigger debounced
-whole-process revalidation. No rules means no request. Results map back to plugins
-by submitted rule index, so duplicate titles are safe and all plugin statuses
-remain visible. Outcomes distinguish passed, violated, invalid and unevaluable
-rules; syntax/evaluation errors do not stop other rules. A plugin only passes
-when all its rules pass. Request failures affect all submitted rules; retry
-repeats the whole process request. HTTP `413` responses may have an empty body.
+whole-process revalidation. No rules means no request. Each rule is submitted
+separately because the legacy response has no per-rule outcomes. Results retain
+their submitted order, so duplicate titles are safe and plugin statuses remain
+visible. A plugin only passes when all its rules pass. Request failures affect
+all submitted rules; retry repeats validation for the whole process.
+HTTP `413` responses may have an empty body.
 
 Build-time endpoint settings default to the same-origin gateway:
 
-| Environment variable            | Default                                                      |
-| ------------------------------- | ------------------------------------------------------------ |
-| `VITE_SCL_VALIDATION_API_URL`   | `/compas-validation-service/api/scl-resources/validation`    |
-| `VITE_VALIDATION_RULES_API_URL` | `/compas-validation-service/api/validation-rules/validation` |
+| Environment variable      | Default                                     |
+| ------------------------- | ------------------------------------------- |
+| `VITE_VALIDATION_API_URL` | `/compas-validation-service/api/v1/validate` |
 
 Development overrides: `apps/engineering-wizard/.env.development`. For custom
-endpoints, replace the old `VITE_VALIDATION_API_URL` with both settings above.
+endpoints, set `VITE_VALIDATION_API_URL`.
 Cross-origin development requires matching CORS/authentication configuration.
 The backend requires `SCL_VALIDATION`; the wizard retains fetch/gateway
 authentication and does not store bearer tokens.

@@ -1,10 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  checkRuleSyntax,
   validateRulesWithContent,
   validateWithContent,
   ValidationApiError,
-  type BatchValidationResult,
 } from './validationService';
 
 const rule = {
@@ -13,12 +11,6 @@ const rule = {
   context: '//SCL',
   assert: 'true()',
 };
-const passed = (ruleIndex = 0) => ({
-  ruleIndex,
-  status: 'PASSED' as const,
-  errors: [],
-  diagnostics: [],
-});
 
 function respond(body: unknown, status = 200) {
   const fetch = vi.fn().mockResolvedValue(
@@ -33,98 +25,104 @@ function respond(body: unknown, status = 200) {
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe('typed validation client', () => {
-  it('sends a single file and typed JSON array for all rules', async () => {
-    const fetch = respond({
+describe('legacy validation client', () => {
+  it('sends the legacy multipart request for a single rule', async () => {
+    const fetch = respond({ valid: true, errors: [] });
+    await expect(validateWithContent(rule, '<SCL/>')).resolves.toEqual({
       valid: true,
-      complete: true,
-      results: [passed(), passed(1)],
+      errors: [],
     });
-    await validateRulesWithContent([rule, rule], '<SCL/>');
     expect(fetch).toHaveBeenCalledOnce();
     const [url, options] = fetch.mock.calls[0];
-    expect(url).toContain('/api/scl-resources/validation');
+    expect(url).toContain('/api/v1/validate');
     const form: FormData = options.body;
-    expect([...form.keys()]).toEqual(['sclFile', 'rules', 'sclFileExtension']);
-    const part = form.get('rules');
-    expect(part).toBeInstanceOf(Blob);
-    if (!(part instanceof Blob)) throw new Error('Missing rules part');
-    expect(part.type).toBe('application/json');
-    expect(JSON.parse(await part.text())).toEqual([
-      { type: 'XPATH', context: '//SCL', assert: 'true()' },
-      { type: 'XPATH', context: '//SCL', assert: 'true()' },
+    expect([...form.keys()]).toEqual([
+      'validationType',
+      'sclFile',
+      'rulesJson',
+      'sclFileExtension',
     ]);
+    expect(form.get('validationType')).toBe('XPATH');
+    expect(form.get('sclFile')).toBeInstanceOf(File);
+    expect(form.get('sclFileExtension')).toBe('SCD');
+    expect(JSON.parse(String(form.get('rulesJson')))).toEqual([
+      { context: '//SCL', assertion: 'true()' },
+    ]);
+    const file = form.get('sclFile');
+    if (!(file instanceof File)) throw new Error('Missing SCL file');
+    expect(await file.text()).toBe('<SCL/>');
   });
 
-  it('sends syntax checks without a document and retains all diagnostics', async () => {
+  it('maps separate legacy responses to the submitted rule order', async () => {
     const errors = [
       {
-        ruleIndex: 0,
-        field: 'context',
-        code: 'INVALID_XPATH',
-        message: 'Bad context',
-      },
-      {
-        ruleIndex: 0,
-        field: 'assert',
-        code: 'INVALID_XPATH',
-        message: 'Bad assertion',
+        ruleName: 'xpath rule',
+        message: 'Rule violated',
+        xpath: '/SCL',
+        severity: 'ERROR',
+        lineNumber: 2,
       },
     ];
+    let resolveFirst!: (response: Response) => void;
     const fetch = respond({ valid: false, errors });
-    expect(await checkRuleSyntax([rule])).toEqual({ valid: false, errors });
-    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
-      rules: [{ type: 'XPATH', context: '//SCL', assert: 'true()' }],
+    fetch.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveFirst = resolve;
+        }),
+    );
+    const controller = new AbortController();
+    const pending = validateRulesWithContent(
+      [rule, { ...rule, assert: 'false()' }],
+      '<SCL/>',
+      controller.signal,
+    );
+    expect(fetch).toHaveBeenCalledTimes(2);
+    resolveFirst(new Response(JSON.stringify({ valid: true, errors: [] })));
+    await expect(pending).resolves.toEqual({
+      valid: false,
+      complete: true,
+      results: [
+        { ruleIndex: 0, status: 'PASSED', errors: [], diagnostics: [] },
+        { ruleIndex: 1, status: 'FAILED', errors, diagnostics: [] },
+      ],
     });
+    expect(
+      fetch.mock.calls.map(([, options]) =>
+        JSON.parse(String(options.body.get('rulesJson'))),
+      ),
+    ).toEqual([
+      [{ context: '//SCL', assertion: 'true()' }],
+      [{ context: '//SCL', assertion: 'false()' }],
+    ]);
+    for (const [, options] of fetch.mock.calls) {
+      expect(options.signal).toBe(controller.signal);
+    }
+  });
+
+  it('does not request validation for an empty ruleset', async () => {
+    const fetch = respond({ valid: true, errors: [] });
+    await expect(validateRulesWithContent([], '<SCL/>')).resolves.toEqual({
+      valid: true,
+      complete: true,
+      results: [],
+    });
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it.each([
-    { valid: true, complete: true, results: [] },
-    { valid: true, complete: true, results: [passed(), passed()] },
-    { valid: true, complete: true, results: [passed(2), passed(1)] },
-    { valid: false, complete: true, results: [passed(), passed(1)] },
-    { valid: true, complete: false, results: [passed(), passed(1)] },
+    null,
+    { valid: true },
+    { valid: true, errors: [{}] },
+    { valid: false, errors: [] },
     {
       valid: true,
-      complete: true,
-      results: [{ ...passed(), errors: [{}] }, passed(1)],
+      errors: [{ ruleName: 'xpath rule', message: 'Rule violated' }],
     },
-  ])(
-    'rejects missing, duplicate, invalid or inconsistent results',
-    async (response) => {
-      respond(response);
-      await expect(
-        validateRulesWithContent([rule, rule], '<SCL/>'),
-      ).rejects.toThrow();
-    },
-  );
-
-  it('preserves expected rule failures as batch outcomes, but surfaces them in single-rule testing', async () => {
-    const response: BatchValidationResult = {
-      valid: false,
-      complete: false,
-      results: [
-        {
-          ruleIndex: 0,
-          status: 'EVALUATION_ERROR',
-          errors: [],
-          diagnostics: [
-            {
-              field: 'assert',
-              code: 'XPATH_EVALUATION_ERROR',
-              message: 'Invalid conversion',
-            },
-          ],
-        },
-      ],
-    };
-    respond(response);
-    await expect(validateRulesWithContent([rule], '<SCL/>')).resolves.toEqual(
-      response,
-    );
+  ])('rejects malformed or inconsistent legacy responses', async (response) => {
     respond(response);
     await expect(validateWithContent(rule, '<SCL/>')).rejects.toThrow(
-      'assert: Invalid conversion',
+      'Unexpected response shape from validation API',
     );
   });
 
@@ -182,6 +180,6 @@ describe('typed validation client', () => {
     vi.spyOn(response, 'json').mockRejectedValue(error);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
 
-    await expect(checkRuleSyntax([rule])).rejects.toBe(error);
+    await expect(validateWithContent(rule, '<SCL/>')).rejects.toBe(error);
   });
 });

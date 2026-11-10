@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, untrack } from 'svelte';
+  import { untrack } from 'svelte';
   import OscdBaseDialog from '../../../../../../../../libs/oscd-component/src/oscd-dialog/OscdBaseDialog.svelte';
   import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
@@ -16,7 +16,6 @@
     isValidElementCount,
   } from '../../validationRuleUi';
   import { buildAssertionExpression } from '../../xpathBuilder';
-  import { createRuleSyntaxCheck } from '../../ruleSyntaxCheck.svelte';
 
   interface Props {
     open: boolean;
@@ -28,20 +27,6 @@
   let { open = $bindable(false), plugin, process, initialValidation }: Props = $props();
 
   untrack(() => initValidationEditor(initialValidation));
-  const syntaxCheck = createRuleSyntaxCheck();
-  onDestroy(syntaxCheck.dispose);
-
-  $effect(() => {
-    const expert = validationEditor.ruleUi.expertMode;
-    const rule = {
-      context: validationEditor.entry.context,
-      assert: validationEditor.ruleUi.expertXPath,
-    };
-    untrack(() => {
-      if (expert) syntaxCheck.update(rule);
-      else syntaxCheck.reset();
-    });
-  });
 
   const steps = ['basic', 'rule-definition', 'test-and-validate'] as const;
   type Step = (typeof steps)[number];
@@ -65,10 +50,11 @@
   function isRuleDefinitionValid(): boolean {
     const hasMessage = !!validationEditor.ruleUi.message?.trim();
     if (validationEditor.ruleUi.expertMode) {
-      return hasMessage && syntaxCheck.canProceedFor({
-        context: validationEditor.entry.context,
-        assert: validationEditor.ruleUi.expertXPath,
-      });
+      return (
+        hasMessage &&
+        !!validationEditor.entry.context?.trim() &&
+        !!validationEditor.ruleUi.expertXPath?.trim()
+      );
     }
     if (validationEditor.ruleUi.mode === 'attribute') {
       return !!validationEditor.ruleUi.attribute?.trim() && hasMessage;
@@ -149,7 +135,7 @@
     {#if currentStep === 'basic'}
       <ValidationBasicInformationDialogPage />
     {:else if currentStep === 'rule-definition'}
-      <ValidationRuleDefinitionDialogPage syntaxState={syntaxCheck.state} onRetrySyntax={syntaxCheck.retry} />
+      <ValidationRuleDefinitionDialogPage />
     {:else}
       <ValidationRuleTestDialogPage />
     {/if}

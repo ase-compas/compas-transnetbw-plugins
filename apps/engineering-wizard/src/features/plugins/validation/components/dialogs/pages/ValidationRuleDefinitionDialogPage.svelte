@@ -13,13 +13,6 @@
   import PreviewBox from '../../PreviewBox.svelte';
   import ToggleSwitch from '../../ToggleSwitch.svelte';
   import FormBlock from '../../FormBlock.svelte';
-  import type { SyntaxCheckState } from '../../../ruleSyntaxCheck.svelte';
-
-  interface Props {
-    syntaxState: SyntaxCheckState;
-    onRetrySyntax: () => void;
-  }
-  let { syntaxState, onRetrySyntax }: Props = $props();
 
   const isMessageEmpty = $derived(!validationEditor.ruleUi.message?.trim());
 
@@ -84,24 +77,6 @@
           rows="4"
           spellcheck="false"
         ></textarea>
-        <div aria-live="polite" class="syntax-status" class:syntax-status--error={syntaxState.status === 'invalid' || syntaxState.status === 'error'}>
-          {#if syntaxState.status === 'checking'}
-            Checking XPath syntax...
-          {:else if syntaxState.status === 'valid'}
-            XPath syntax is valid. Test against a document to check the rule's result.
-          {:else if syntaxState.status === 'invalid'}
-            <ul>
-              {#each syntaxState.diagnostics as diagnostic}
-                <li>{diagnostic.field === 'assert' ? 'Assertion' : 'Context'}: {diagnostic.message}</li>
-              {/each}
-            </ul>
-          {:else if syntaxState.status === 'error'}
-            <p>Syntax check is currently unavailable.</p>
-            <button type="button" onclick={onRetrySyntax}>Retry syntax check</button>
-          {:else}
-            Enter a context and assertion to check XPath syntax.
-          {/if}
-        </div>
       </div>
     {:else if validationEditor.ruleUi.mode === 'attribute'}
       <AttributeRuleEditor bind:ruleUi={validationEditor.ruleUi} context={validationEditor.entry.context} />
@@ -199,13 +174,5 @@
 
   .expert-editor__textarea:focus {
     border-color: var(--oscd-plugin-brand);
-  }
-
-  .syntax-status {
-    font-size: var(--ew-font-size-small);
-  }
-
-  .syntax-status--error {
-    color: var(--oscd-plugin-error);
   }
 </style>

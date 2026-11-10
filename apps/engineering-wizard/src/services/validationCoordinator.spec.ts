@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 describe('process ruleset batching', () => {
-  it('uploads once for all plugins and preserves their rule order', async () => {
+  it('submits all plugins together to the client and preserves their rule order', async () => {
     const plugins = [
       plugin('first', 10),
       plugin('empty', 0),
@@ -96,15 +96,15 @@ describe('process ruleset batching', () => {
     ]);
   });
 
-  it('sends 1000 rules across plugin groups in one request', async () => {
+  it('validates rules across plugin groups using separate legacy requests', async () => {
     vi.useRealTimers();
-    const plugins = Array.from({ length: 20 }, (_, index) =>
-      plugin(`plugin-${index}`, 50),
+    const plugins = Array.from({ length: 2 }, (_, index) =>
+      plugin(`plugin-${index}`, 2),
     );
     const configuration = process([]);
     configuration.pluginGroups = [
-      { id: 'first', name: 'First', plugins: plugins.slice(0, 10) },
-      { id: 'second', name: 'Second', plugins: plugins.slice(10) },
+      { id: 'first', name: 'First', plugins: plugins.slice(0, 1) },
+      { id: 'second', name: 'Second', plugins: plugins.slice(1) },
     ];
     const client = await vi.importActual<typeof import('./validationService')>(
       './validationService',
@@ -112,45 +112,42 @@ describe('process ruleset batching', () => {
     vi.mocked(validateRulesWithContent).mockImplementation(
       client.validateRulesWithContent,
     );
-    const fetch = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(passed(1000)), {
-        headers: { 'Content-Type': 'application/json' },
-      }),
+    const fetch = vi.fn().mockImplementation(
+      () =>
+        new Response(JSON.stringify({ valid: true, errors: [] }), {
+          headers: { 'Content-Type': 'application/json' },
+        }),
     );
     vi.stubGlobal('fetch', fetch);
 
     validationCoordinator.runNow(configuration, document());
     await vi.waitFor(() =>
-      expect(validationCoordinator.getPluginView(plugins[19]).state).toBe(
+      expect(validationCoordinator.getPluginView(plugins[1]).state).toBe(
         'passed',
       ),
     );
 
     expect(validateRulesWithContent).toHaveBeenCalledOnce();
     const [rules, content] = vi.mocked(validateRulesWithContent).mock.calls[0];
-    expect(rules).toHaveLength(1000);
+    expect(rules).toHaveLength(4);
     expect(content).toBe('<SCL/>');
-    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledTimes(4);
     const form: FormData = fetch.mock.calls[0][1].body;
-    expect([...form.keys()]).toEqual(['sclFile', 'rules', 'sclFileExtension']);
+    expect([...form.keys()]).toEqual([
+      'validationType',
+      'sclFile',
+      'rulesJson',
+      'sclFileExtension',
+    ]);
     expect(form.getAll('sclFile')).toHaveLength(1);
     expect(form.get('sclFile')).toBeInstanceOf(File);
-    const rulesPart = form.get('rules');
-    if (!(rulesPart instanceof Blob)) throw new Error('Missing rules part');
-    expect(rulesPart.type).toBe('application/json');
-    const payload = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsText(rulesPart);
-    });
-    expect(JSON.parse(payload)).toEqual(
-      rules.map(({ context, assert }) => ({ type: 'XPATH', context, assert })),
-    );
+    expect(JSON.parse(String(form.get('rulesJson')))).toEqual([
+      { context: '//SCL', assertion: 'true()' },
+    ]);
     for (const entry of plugins) {
       expect(
         validationCoordinator.getPluginView(entry).passedRules,
-      ).toHaveLength(50);
+      ).toHaveLength(2);
     }
   });
 

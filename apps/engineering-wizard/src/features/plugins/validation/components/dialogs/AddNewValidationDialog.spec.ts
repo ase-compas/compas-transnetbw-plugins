@@ -1,13 +1,8 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/svelte';
+import { cleanup, fireEvent, render } from '@testing-library/svelte';
 import { afterEach, expect, it, vi } from 'vitest';
-import type { Plugin, Process } from '@oscd-transnet-plugins/shared';
 import { closeDialog } from '@oscd-transnet-plugins/oscd-services/dialog';
-import {
-  checkRuleSyntax,
-  type SyntaxValidationResult,
-} from '../../../../../services/validationService';
 import AddNewValidationDialog from './AddNewValidationDialog.svelte';
 import { validationEditor } from '../../validationEditorStore.svelte';
 
@@ -16,7 +11,6 @@ vi.mock('@oscd-transnet-plugins/oscd-services/dialog', () => ({
 }));
 
 vi.mock('../../../../../services/validationService', () => ({
-  checkRuleSyntax: vi.fn(),
   describeValidationError: (error: Error) => error.message,
   validateWithContent: vi.fn(),
 }));
@@ -24,48 +18,29 @@ vi.mock('../../../../../services/validationService', () => ({
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  vi.mocked(checkRuleSyntax).mockReset();
+  vi.unstubAllGlobals();
   vi.mocked(closeDialog).mockReset();
 });
 
-it('gates expert navigation on the current syntax check, not a previous successful check', async () => {
+it('allows expert navigation without the new syntax API but requires an assertion', async () => {
   // jsdom has no layout; Material's focus trap requires visible child bounds.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(
     new DOMRect(0, 0, 100, 30),
   );
-  let resolve!: (result: SyntaxValidationResult) => void;
-  vi.mocked(checkRuleSyntax)
-    .mockImplementationOnce(
-      () =>
-        new Promise((complete) => {
-          resolve = complete;
-        }),
-    )
-    .mockResolvedValueOnce({
-      valid: false,
-      errors: [
-        {
-          ruleIndex: 0,
-          field: 'assert',
-          code: 'INVALID_XPATH',
-          message: 'Invalid assertion',
-        },
-      ],
-    });
-  const plugin: Plugin = { id: 'plugin', name: 'Plugin', type: 'internal' };
-  const process: Process = {
-    id: 'process',
-    name: 'Process',
-    description: '',
-    version: '1',
-    pluginGroups: [],
-  };
-  const { getByRole, getByLabelText, getByText } = render(
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  const { getByRole, getByLabelText } = render(
     AddNewValidationDialog,
     {
       open: true,
-      plugin,
-      process,
+      plugin: { id: 'plugin', name: 'Plugin', type: 'internal' },
+      process: {
+        id: 'process',
+        name: 'Process',
+        description: '',
+        version: '1',
+        pluginGroups: [],
+      },
       initialValidation: {
         title: 'Expert rule',
         description: '',
@@ -79,29 +54,21 @@ it('gates expert navigation on the current syntax check, not a previous successf
     getByRole('button', { name: 'Next step', hidden: true }),
   );
   const next = getByRole('button', { name: 'Next step', hidden: true });
-  expect(next.hasAttribute('disabled')).toBe(true);
-  await waitFor(() => expect(checkRuleSyntax).toHaveBeenCalledOnce());
-  resolve({ valid: true, errors: [] });
-  await waitFor(() => expect(next.hasAttribute('disabled')).toBe(false));
+  expect(next.hasAttribute('disabled')).toBe(false);
   await fireEvent.input(getByLabelText(/XPath assertion/), {
-    target: { value: '(' },
+    target: { value: ' ' },
   });
   expect(next.hasAttribute('disabled')).toBe(true);
-  await waitFor(() =>
-    expect(getByText('Assertion: Invalid assertion')).toBeTruthy(),
-  );
-  expect(next.hasAttribute('disabled')).toBe(true);
+  expect(fetch).not.toHaveBeenCalled();
 });
 
-it.each([
-  new TypeError('Failed to fetch'),
-  new Error('HTTP 404: Not Found'),
-])('creates a new expert rule without validation when the API fails: %s', async (error) => {
+it('creates a new expert rule without a syntax request', async () => {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(
     new DOMRect(0, 0, 100, 30),
   );
-  vi.mocked(checkRuleSyntax).mockRejectedValue(error);
-  const { getByRole, getByLabelText, getByText } = render(AddNewValidationDialog, {
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  const { getByRole, getByLabelText } = render(AddNewValidationDialog, {
     open: true,
     plugin: { id: 'plugin', name: 'Plugin', type: 'internal' },
     process: {
@@ -126,11 +93,7 @@ it.each([
   });
 
   const next = getByRole('button', { name: 'Next step', hidden: true });
-  expect(next.hasAttribute('disabled')).toBe(true);
-  await waitFor(() => {
-    expect(getByText('Syntax check is currently unavailable.')).toBeTruthy();
-    expect(next.hasAttribute('disabled')).toBe(false);
-  });
+  expect(next.hasAttribute('disabled')).toBe(false);
   await fireEvent.click(next);
   const create = getByRole('button', { name: 'Create', hidden: true });
   expect(create.hasAttribute('disabled')).toBe(false);
@@ -143,6 +106,7 @@ it.each([
     assert: 'true()',
     message: 'Rule failed',
   });
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 function renderElementRule(context: string, element: string) {
@@ -194,7 +158,6 @@ it('allows an unlisted child in the first-page path and preserves it when naviga
 });
 
 it('shows the parent execution context when entering expert mode for an element rule', async () => {
-  vi.mocked(checkRuleSyntax).mockResolvedValue({ valid: true, errors: [] });
   const parent = '//SCL/Substation/VoltageLevel';
   const { getByRole, getByLabelText } = renderElementRule(parent, 'Bay');
 

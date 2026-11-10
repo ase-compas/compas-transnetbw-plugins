@@ -2,12 +2,9 @@ import type { XPathValidation } from '@oscd-transnet-plugins/shared';
 import { documentStore } from '../documentStore.svelte';
 import { describeNetworkError } from '../utils/network-error';
 
-const SCL_API_URL =
-  import.meta.env.VITE_SCL_VALIDATION_API_URL ??
-  '/compas-validation-service/api/scl-resources/validation';
-const RULES_API_URL =
-  import.meta.env.VITE_VALIDATION_RULES_API_URL ??
-  '/compas-validation-service/api/validation-rules/validation';
+const API_URL =
+  import.meta.env.VITE_VALIDATION_API_URL ??
+  '/compas-validation-service/api/v1/validate';
 
 export type RuleExpressions = Pick<XPathValidation, 'context' | 'assert'>;
 export type RuleStatus =
@@ -28,16 +25,6 @@ export interface RuleDiagnostic {
   field: 'context' | 'assert';
   code: 'INVALID_XPATH' | 'XPATH_EVALUATION_ERROR';
   message: string;
-}
-
-export interface SyntaxDiagnostic extends RuleDiagnostic {
-  ruleIndex: number;
-  code: 'INVALID_XPATH';
-}
-
-export interface SyntaxValidationResult {
-  valid: boolean;
-  errors: SyntaxDiagnostic[];
 }
 
 export interface RuleOutcome {
@@ -69,10 +56,6 @@ export class ValidationApiError extends Error {
   }
 }
 
-function typedRule(rule: RuleExpressions) {
-  return { type: 'XPATH' as const, context: rule.context, assert: rule.assert };
-}
-
 async function readResponse(response: Response): Promise<unknown> {
   if (!response.ok) {
     let body: unknown;
@@ -96,98 +79,59 @@ async function readResponse(response: Response): Promise<unknown> {
   return response.json();
 }
 
-export async function checkRuleSyntax(
-  rules: RuleExpressions[],
-  signal?: AbortSignal,
-): Promise<SyntaxValidationResult> {
-  const data = await readResponse(
-    await fetch(RULES_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rules: rules.map(typedRule) }),
-      signal,
-    }),
-  );
-  if (
-    !isRecord(data) ||
-    typeof data.valid !== 'boolean' ||
-    !Array.isArray(data.errors) ||
-    !data.errors.every(
-      (error: unknown): error is SyntaxDiagnostic =>
-        isDiagnostic(error) &&
-        error.code === 'INVALID_XPATH' &&
-        isRecord(error) &&
-        isRuleIndex(error.ruleIndex, rules.length),
-    ) ||
-    data.valid !== (data.errors.length === 0)
-  ) {
-    throw new Error('Unexpected rule syntax response from validation API');
-  }
-  return { valid: data.valid, errors: data.errors };
-}
-
 export async function validateRulesWithContent(
   rules: RuleExpressions[],
   sclContent: string,
   signal?: AbortSignal,
 ): Promise<BatchValidationResult> {
+  // The legacy API has no per-rule results, so submit each rule separately.
+  const results: RuleOutcome[] = await Promise.all(
+    rules.map(async (rule, ruleIndex) => {
+      const result = await validateWithContent(rule, sclContent, signal);
+      return {
+        ruleIndex,
+        status: result.valid ? 'PASSED' : 'FAILED',
+        errors: result.errors,
+        diagnostics: [],
+      };
+    }),
+  );
+  return {
+    valid: results.every((result) => result.status === 'PASSED'),
+    complete: true,
+    results,
+  };
+}
+
+export async function validateWithContent(
+  entry: RuleExpressions,
+  sclContent: string,
+  signal?: AbortSignal,
+): Promise<ValidationResult> {
   const formData = new FormData();
+  formData.append('validationType', 'XPATH');
   formData.append(
     'sclFile',
     new File([sclContent], 'document.scd', { type: 'application/xml' }),
   );
   formData.append(
-    'rules',
-    new Blob([JSON.stringify(rules.map(typedRule))], {
-      type: 'application/json',
-    }),
+    'rulesJson',
+    JSON.stringify([{ context: entry.context, assertion: entry.assert }]),
   );
   formData.append('sclFileExtension', 'SCD');
   const data = await readResponse(
-    await fetch(SCL_API_URL, { method: 'POST', body: formData, signal }),
+    await fetch(API_URL, { method: 'POST', body: formData, signal }),
   );
   if (
     !isRecord(data) ||
     typeof data.valid !== 'boolean' ||
-    typeof data.complete !== 'boolean' ||
-    !Array.isArray(data.results) ||
-    data.results.length !== rules.length ||
-    !data.results.every(isRuleOutcome)
+    !Array.isArray(data.errors) ||
+    !data.errors.every(isValidationError) ||
+    data.valid !== (data.errors.length === 0)
   ) {
-    throw new Error('Unexpected batch response from validation API');
+    throw new Error('Unexpected response shape from validation API');
   }
-  const results: RuleOutcome[] = data.results;
-  if (
-    results.some((result) => !isRuleIndex(result.ruleIndex, rules.length)) ||
-    new Set(results.map((result) => result.ruleIndex)).size !== rules.length ||
-    data.valid !== results.every((result) => result.status === 'PASSED') ||
-    data.complete !==
-      results.every(
-        (result) => result.status === 'PASSED' || result.status === 'FAILED',
-      )
-  ) {
-    throw new Error('Inconsistent rule results from validation API');
-  }
-  return { valid: data.valid, complete: data.complete, results };
-}
-
-export async function validateWithContent(
-  entry: XPathValidation,
-  sclContent: string,
-): Promise<ValidationResult> {
-  const batch = await validateRulesWithContent([entry], sclContent);
-  const result = batch.results[0];
-  if (
-    result.status === 'INVALID_RULE' ||
-    result.status === 'EVALUATION_ERROR'
-  ) {
-    throw new Error(
-      result.diagnostics
-        .map((diagnostic) => `${diagnostic.field}: ${diagnostic.message}`)
-        .join('; '),
-    );
-  }
-  return { valid: result.status === 'PASSED', errors: result.errors };
+  return { valid: data.valid, errors: data.errors };
 }
 
 export async function validateEntry(
@@ -200,25 +144,6 @@ export async function validateEntry(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-function isRuleIndex(value: unknown, length: number): value is number {
-  return (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value < length
-  );
-}
-
-function isDiagnostic(value: unknown): value is RuleDiagnostic {
-  return (
-    isRecord(value) &&
-    (value.field === 'context' || value.field === 'assert') &&
-    (value.code === 'INVALID_XPATH' ||
-      value.code === 'XPATH_EVALUATION_ERROR') &&
-    typeof value.message === 'string'
-  );
 }
 
 function isValidationError(value: unknown): value is ValidationError {
@@ -237,39 +162,6 @@ function isValidationError(value: unknown): value is ValidationError {
       (typeof value.lineNumber === 'number' &&
         Number.isInteger(value.lineNumber)))
   );
-}
-
-function isRuleOutcome(value: unknown): value is RuleOutcome {
-  if (
-    !isRecord(value) ||
-    typeof value.ruleIndex !== 'number' ||
-    !Array.isArray(value.errors) ||
-    !value.errors.every(isValidationError) ||
-    !Array.isArray(value.diagnostics) ||
-    !value.diagnostics.every(isDiagnostic)
-  )
-    return false;
-  switch (value.status) {
-    case 'PASSED':
-      return value.errors.length === 0 && value.diagnostics.length === 0;
-    case 'FAILED':
-      return value.errors.length > 0 && value.diagnostics.length === 0;
-    case 'INVALID_RULE':
-    case 'EVALUATION_ERROR':
-      return (
-        value.errors.length === 0 &&
-        value.diagnostics.length > 0 &&
-        value.diagnostics.every(
-          (diagnostic: RuleDiagnostic) =>
-            diagnostic.code ===
-            (value.status === 'INVALID_RULE'
-              ? 'INVALID_XPATH'
-              : 'XPATH_EVALUATION_ERROR'),
-        )
-      );
-    default:
-      return false;
-  }
 }
 
 export function describeValidationError(error: unknown): string {
