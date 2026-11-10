@@ -143,27 +143,34 @@
 </script>
 
 <div class="stepper">
-  <WorkflowTitle onClick={exitWorkflow} />
-
-  <PluginGroupsStepper
-    selectPlugin={onSelectPlugin}
-    {pluginGroups}
-    expandedGroupBackground="var(--oscd-plugin-brand)"
-    expandedGroupBorderColor="white"
-    bind:selectedGroupIndex
-    bind:selectedPluginIndex
-    validationViews={pluginValidationViews}
-    autoSelect={false}
+  <WorkflowTitle
+    onClick={exitWorkflow}
+    processName={runningEngineeringProcess.process?.name}
   />
 
-  <WorkflowActions
-    onGoToPreviousStep={previousPlugin}
-    onGoToNextStep={nextPlugin}
-    onDone={exitWorkflow}
-    isAtFirstStep={currentIndex <= 0}
-    isAtLastStep={currentIndex === plugins.length - 1}
-    nextDisabled={currentIndex === plugins.length - 1}
-  />
+  <div class="workflow-navigation">
+    <PluginGroupsStepper
+      selectPlugin={onSelectPlugin}
+      {pluginGroups}
+      expandedGroupBackground="var(--oscd-plugin-brand)"
+      expandedGroupBorderColor="white"
+      bind:selectedGroupIndex
+      bind:selectedPluginIndex
+      validationViews={pluginValidationViews}
+      autoSelect={false}
+    />
+  </div>
+
+  <div class="workflow-actions">
+    <WorkflowActions
+      onGoToPreviousStep={previousPlugin}
+      onGoToNextStep={nextPlugin}
+      onDone={exitWorkflow}
+      isAtFirstStep={currentIndex <= 0}
+      isAtLastStep={currentIndex === plugins.length - 1}
+      nextDisabled={currentIndex === plugins.length - 1}
+    />
+  </div>
 </div>
 
 {#if selectedPlugin}
@@ -205,5 +212,10 @@
     height: 100%;
     width: 100%;
     overflow: auto;
+  }
+
+  .workflow-navigation,
+  .workflow-actions {
+    flex: 0 0 auto;
   }
 </style>
