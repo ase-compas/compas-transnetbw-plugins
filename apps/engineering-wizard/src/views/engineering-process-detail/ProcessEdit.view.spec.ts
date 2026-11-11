@@ -27,7 +27,7 @@ vi.mock('@oscd-transnet-plugins/oscd-services/dialog', () => ({
   openDialog: vi.fn(),
 }));
 vi.mock('@oscd-transnet-plugins/oscd-services/toast', () => ({
-  toastService: { success: vi.fn(), error: vi.fn() },
+  toastService: { success: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 vi.mock(
   '../../features/plugins/validation/validationJson',
@@ -40,7 +40,7 @@ vi.mock(
 );
 
 function rule(title: string): XPathValidation {
-  return { title, description: '', context: '//scl:Bay', assert: '@name' };
+  return { id: `rule-${title}`, title, description: '', context: '//scl:Bay', assert: '@name' };
 }
 
 beforeEach(() => {
@@ -87,6 +87,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   selectedEngineeringProcess.process = null;
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -406,6 +407,7 @@ it('imports rules into the selected plugin through the relocated import action',
   await fireEvent.click(getByRole('button', { name: 'Import', exact: true }));
   expect(selectFile).toHaveBeenCalledOnce();
   selectFile.mockRestore();
+  vi.useFakeTimers();
   await fireEvent.change(input, {
     target: { files: [{
       name: 'rules.json',
@@ -413,10 +415,129 @@ it('imports rules into the selected plugin through the relocated import action',
       text: async () => JSON.stringify([rule('Imported')]),
     }] },
   });
-  await waitFor(() => expect(
+  await vi.advanceTimersByTimeAsync(0);
+  expect(
     getByRole('checkbox', { name: 'Select validation Imported' }),
-  ).toBeTruthy());
+  ).toBeTruthy();
   expect(toastService.success).toHaveBeenCalledWith('Validations imported', expect.any(String));
+  const row = getByRole('checkbox', { name: 'Select validation Imported' }).closest('tr');
+  expect(row?.classList.contains('oscd-basic-table__row--added')).toBe(true);
+  await vi.advanceTimersByTimeAsync(1600);
+  expect(row?.classList.contains('oscd-basic-table__row--added')).toBe(false);
+  expect(getByRole('checkbox', { name: 'Select validation Imported' }).closest('tr')).toBe(row);
+});
+
+it.each(['Edit validation', 'Remove validation'])(
+  'keeps the correct target when an import finishes during the %s dialog',
+  async (action) => {
+    const { getByRole, getByLabelText } = await renderRules();
+    let finishRead!: (content: string) => void;
+    let finishDialog!: (result: { type: 'confirm'; data: XPathValidation }) => void;
+    const text = vi.fn(() => new Promise<string>((resolve) => { finishRead = resolve; }));
+    await fireEvent.change(getByLabelText('Import validation JSON files'), {
+      target: { files: [{ name: 'rules.json', size: 100, text }] },
+    });
+    await waitFor(() => expect(text).toHaveBeenCalledOnce());
+    const checkbox = getByRole('checkbox', { name: 'Select validation Second' });
+    await fireEvent.click(checkbox);
+    const row = checkbox.closest('tr');
+    if (!row) throw new Error('Second rule row was not rendered.');
+    vi.mocked(openDialog).mockReturnValueOnce(new Promise((resolve) => { finishDialog = resolve; }));
+    await fireEvent.click(within(row).getByRole('button', { name: action }));
+
+    finishRead(JSON.stringify([rule('Alpha')]));
+    await waitFor(() => expect(toastService.success).toHaveBeenCalled());
+    finishDialog({ type: 'confirm', data: rule('Edited second') });
+
+    const plugin = engineeringProcesses.processes[0].pluginGroups[0].plugins[0];
+    await waitFor(() => expect(plugin.validations?.map(({ title }) => title)).toEqual(
+      action === 'Edit validation'
+        ? ['Alpha', 'Edited second', 'First', 'Third']
+        : ['Alpha', 'First', 'Third'],
+    ));
+    expect(plugin.validations?.find(({ id }) => id === 'rule-First')?.title).toBe('First');
+    if (action === 'Edit validation') {
+      expect(plugin.validations?.find(({ id }) => id === 'rule-Second')?.title).toBe('Edited second');
+      expect(getByRole<HTMLInputElement>('checkbox', { name: 'Select validation Edited second' }).checked).toBe(true);
+    }
+    expect(toastService.error).not.toHaveBeenCalled();
+  },
+);
+
+it('reports when the edit target is replaced while its dialog is open', async () => {
+  const { getByRole } = await renderRules();
+  const row = getByRole('checkbox', { name: 'Select validation Second' }).closest('tr');
+  if (!row) throw new Error('Second rule row was not rendered.');
+  let finishDialog!: (result: { type: 'confirm'; data: XPathValidation }) => void;
+  vi.mocked(openDialog).mockReturnValueOnce(new Promise((resolve) => { finishDialog = resolve; }));
+  await fireEvent.click(within(row).getByRole('button', { name: 'Edit validation' }));
+  const plugin = engineeringProcesses.processes[0].pluginGroups[0].plugins[0];
+  plugin.validations = [rule('Second')];
+  finishDialog({ type: 'confirm', data: rule('Edited second') });
+
+  await waitFor(() => expect(toastService.error).toHaveBeenCalledWith(
+    'Validation update failed',
+    expect.stringContaining('The selected validation no longer exists.'),
+  ));
+  expect(plugin.validations).toEqual([rule('Second')]);
+});
+
+it('skips duplicate imported IDs and reports renamed rules while highlighting only additions', async () => {
+  const { getByRole, getByLabelText } = await renderRules();
+  const input = getByLabelText<HTMLInputElement>('Import validation JSON files');
+  const content = JSON.stringify([
+    rule('First'),
+    { ...rule('First'), id: 'another-rule' },
+    rule('Alpha'),
+  ]);
+  const file = { name: 'rules.json', size: content.length, text: async () => content };
+  await fireEvent.change(input, { target: { files: [file] } });
+
+  await waitFor(() => expect(toastService.warn).toHaveBeenCalledWith(
+    'Validations imported with changes',
+    expect.stringContaining('"First" -> "First (copy)"'),
+    15_000,
+  ));
+  expect(toastService.warn).toHaveBeenCalledWith(
+    expect.any(String), expect.stringContaining('1 duplicate rule ID skipped'), 15_000,
+  );
+  const plugin = engineeringProcesses.processes[0].pluginGroups[0].plugins[0];
+  expect(plugin.validations?.map(({ title }) => title))
+    .toEqual(['Alpha', 'First', 'First (copy)', 'Second', 'Third']);
+  expect(getByRole('checkbox', { name: 'Select validation First (copy)' }).closest('tr')
+    ?.classList.contains('oscd-basic-table__row--added')).toBe(true);
+  expect(getByRole('checkbox', { name: 'Select validation First' }).closest('tr')
+    ?.classList.contains('oscd-basic-table__row--added')).toBe(false);
+
+  await fireEvent.change(input, { target: { files: [file] } });
+  await waitFor(() => expect(toastService.warn).toHaveBeenLastCalledWith(
+    expect.any(String), expect.stringContaining('3 duplicate rule IDs skipped'), 15_000,
+  ));
+  expect(plugin.validations).toHaveLength(5);
+});
+
+it('sorts and highlights a manually added rule and gives duplicates a fresh ID', async () => {
+  const { getByRole } = await renderRules();
+  vi.useFakeTimers();
+  vi.mocked(openDialog).mockResolvedValueOnce({
+    type: 'confirm', data: { ...rule('Alpha'), id: undefined },
+  });
+  await fireEvent.click(getByRole('button', { name: 'Add validation' }));
+  const plugin = engineeringProcesses.processes[0].pluginGroups[0].plugins[0];
+  expect(plugin.validations?.map(({ title }) => title)).toEqual(['Alpha', 'First', 'Second', 'Third']);
+  expect(plugin.validations?.[0].id).toEqual(expect.any(String));
+  const alphaRow = getByRole('checkbox', { name: 'Select validation Alpha' }).closest('tr');
+  if (!alphaRow) throw new Error('Added rule row was not rendered.');
+  expect(alphaRow.classList.contains('oscd-basic-table__row--added')).toBe(true);
+  vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
+  await fireEvent.click(within(alphaRow).getByRole('button', { name: 'Duplicate validation' }));
+  const copy = plugin.validations?.find(({ title }) => title === 'Alpha (copy)');
+  expect(copy?.id).toEqual(expect.any(String));
+  expect(copy?.id).not.toBe(plugin.validations?.[0].id);
+  const copyRow = getByRole('checkbox', { name: 'Select validation Alpha (copy)' }).closest('tr');
+  expect(copyRow?.classList.contains('oscd-basic-table__row--added')).toBe(true);
+  await vi.advanceTimersByTimeAsync(1600);
+  expect(copyRow?.classList.contains('oscd-basic-table__row--added')).toBe(false);
 });
 
 it('exports only checked rules directly and resets selection when switching plugins', async () => {
@@ -717,8 +838,10 @@ it('preserves selected rules across editing, duplication and removal of another 
   ).toBe(true);
 
   vi.mocked(openDialog).mockResolvedValueOnce({ type: 'cancel' });
+  const firstRow = getByRole('checkbox', { name: 'Select validation First' }).closest('tr');
+  if (!firstRow) throw new Error('First rule row was not rendered.');
   await fireEvent.click(
-    getAllByRole('button', { name: 'Duplicate validation' })[0],
+    within(firstRow).getByRole('button', { name: 'Duplicate validation' }),
   );
   expect(
     getByRole<HTMLInputElement>('checkbox', {
@@ -732,7 +855,7 @@ it('preserves selected rules across editing, duplication and removal of another 
   ).toBe(false);
 
   await fireEvent.click(
-    getAllByRole('button', { name: 'Remove validation' })[0],
+    within(firstRow).getByRole('button', { name: 'Remove validation' }),
   );
   expect(
     getByRole<HTMLInputElement>('checkbox', {
@@ -747,6 +870,6 @@ it('preserves selected rules across editing, duplication and removal of another 
   await fireEvent.click(getByRole('button', { name: 'Export' }));
   expect(downloadValidationExport).toHaveBeenCalledWith(
     'first-plugin-validations.json',
-    [rule('Edited third')],
+    [{ ...rule('Edited third'), id: 'rule-Third' }],
   );
 });

@@ -1,4 +1,6 @@
 import { compareVersions, type Process } from '@oscd-transnet-plugins/shared';
+import { v5 as uuidv5 } from 'uuid';
+import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
 import { PROCESSES_SOURCE_URL } from './config';
 import {
   engineeringProcesses,
@@ -6,10 +8,44 @@ import {
 } from './stores.svelte';
 import { parseProcessesXml, parseXmlString } from './xml-parser';
 import { processService } from '../../bootstrap';
-import type { VersionBump } from './process.service';
+import type { RemoteProcessEntry, VersionBump } from './process.service';
 import { updateProcessMetadata, removeProcess } from './mutations.svelte';
 
 const recentlySavedProcesses = new Map<string, Process>();
+const LEGACY_VALIDATION_NAMESPACE = uuidv5('engineering-wizard/legacy-validation', uuidv5.URL);
+
+function ensureProcessValidationIds(process: Process): void {
+  for (const group of process.pluginGroups) {
+    for (const plugin of group.plugins) {
+      plugin.validations?.forEach((validation, index) => {
+        // Legacy identities must survive reloads before the next explicit save.
+        validation.id ??= uuidv5(JSON.stringify([
+          process.id,
+          plugin.id,
+          index,
+          validation.title,
+          validation.description ?? '',
+          validation.context,
+          validation.assert,
+          validation.message ?? '',
+        ]), LEGACY_VALIDATION_NAMESPACE);
+      });
+    }
+  }
+}
+
+async function readPersistedProcesses(
+  entries: readonly RemoteProcessEntry[],
+): Promise<Process[]> {
+  return Promise.all(entries.map(async (entry) => {
+    const process = await processService.getById(entry.resourceId);
+    if (process.id !== entry.processId) {
+      throw new Error(`Stored process ID does not match resource "${entry.resourceId}".`);
+    }
+    // The resource metadata carries the authoritative version after a backend bump.
+    return { ...process, version: entry.version };
+  }));
+}
 
 function mergeById(primary: Process[], secondary: Process[]): Process[] {
   const byId = new Map<string, Process>();
@@ -59,22 +95,22 @@ async function loadEngineeringProcessesFromSources(
     try {
       const entries = await processService.listLatest();
       if (entries.length > 0) {
-        const backendProcesses = await Promise.all(
-          entries.map(async (e) => {
-            const proc = await processService.getById(e.resourceId);
-            // The JSON content may have a stale version (written before the
-            // backend applied the version bump). Always use the authoritative
-            // version returned by listLatest().
-            return { ...proc, version: e.version };
-          }),
-        );
+        const backendProcesses = await readPersistedProcesses(entries);
         processes = mergeById(processes, backendProcesses);
       }
     } catch (error) {
       if (!allowBackendFallback) throw error;
+      toastService.warn(
+        'Saved processes could not be loaded',
+        `The XML baseline is being used. Saved processes may be missing or outdated. ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        15_000,
+      );
     }
 
     processes = preserveRecentlySavedProcesses(processes);
+    processes.forEach(ensureProcessValidationIds);
     engineeringProcesses.processes = processes;
     return processes;
   } catch (err) {
@@ -94,9 +130,15 @@ export function refreshEngineeringProcesses(): Promise<Process[]> {
   return loadEngineeringProcessesFromSources(false);
 }
 
-export async function listPersistedProcessIds(): Promise<Set<string>> {
+export async function getPersistedProcesses(
+  ids: ReadonlySet<string>,
+): Promise<Map<string, Process>> {
+  if (ids.size === 0) return new Map();
   const entries = await processService.listLatest();
-  return new Set(entries.map(({ processId }) => processId));
+  const processes = await readPersistedProcesses(
+    entries.filter(({ processId }) => ids.has(processId)),
+  );
+  return new Map(processes.map((process) => [process.id, process]));
 }
 
 export async function saveProcess(
@@ -107,6 +149,7 @@ export async function saveProcess(
   engineeringProcessesStatus.saveError = '';
 
   try {
+    ensureProcessValidationIds(process);
     const processSnapshot = $state.snapshot(process) as Process;
     const { version } = await processService.save(
       processSnapshot,

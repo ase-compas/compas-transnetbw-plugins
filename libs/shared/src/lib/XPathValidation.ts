@@ -1,4 +1,5 @@
 export type XPathValidation = {
+  id?: string;
   title: string;
   description: string;
   context: string;
@@ -6,8 +7,11 @@ export type XPathValidation = {
   message?: string;
 };
 
-export function toStoredValidation(validation: XPathValidation): XPathValidation {
+export function toStoredValidation(
+  validation: XPathValidation,
+): XPathValidation {
   return {
+    ...(validation.id === undefined ? {} : { id: validation.id }),
     title: validation.title,
     description: validation.description,
     context: validation.context,

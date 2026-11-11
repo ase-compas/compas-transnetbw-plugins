@@ -100,9 +100,7 @@
     const cleanValue = v.replace(/^\/\/SCL(\/|$)/, '');
     if (!cleanValue) return [];
 
-    // Accept all path segments — the SCL schema is intentionally incomplete
-    // (IED/Communication sections are simplified skeletons), so filtering by
-    // schema presence would silently drop valid children like Address, GSE, etc.
+    // Preserve custom elements and paths from other SCL editions when editing existing rules.
     return cleanValue.split('/').map((s) => s.trim()).filter(Boolean) as NodeName[];
   }
 

@@ -4,6 +4,7 @@ import type { CustomResourceService } from '@oscd-transnet-plugins/api-compas-cu
 import {
   UploadDataContentTypeEnum,
   UploadDataNextVersionTypeEnum,
+  ResponseError,
 } from '@oscd-transnet-plugins/api-compas-custom-resource';
 
 export type { UploadDataNextVersionTypeEnum };
@@ -42,6 +43,13 @@ export interface SaveResult {
   version: string;
 }
 
+export class ProcessVersionConflictError extends Error {
+  constructor(id: string, version: string) {
+    super(`The backend rejected process ID "${id}" and version "${version}" because that version already exists.`);
+    this.name = 'ProcessVersionConflictError';
+  }
+}
+
 export class ProcessService {
   static readonly RESOURCE_TYPE = 'engineering-wizard_process';
   static readonly DATA_COMPATIBILITY_VERSION = '1.0.0';
@@ -49,7 +57,27 @@ export class ProcessService {
   constructor(private readonly svc: CustomResourceService) {}
 
   async listLatest(): Promise<RemoteProcessEntry[]> {
-    const entries = await this.svc.getLatestByType(ProcessService.RESOURCE_TYPE);
+    const entries = await this.svc.getLatestByType(ProcessService.RESOURCE_TYPE).catch(async (error: unknown) => {
+      if (!(error instanceof ResponseError) || error.response.status !== 404) throw error;
+
+      let body: unknown;
+      try {
+        body = await error.response.clone().json();
+      } catch {
+        throw error;
+      }
+      if (
+        typeof body === 'object' && body !== null &&
+        'errorMessages' in body && Array.isArray(body.errorMessages) &&
+        body.errorMessages.length > 0 &&
+        body.errorMessages.every((message: unknown) =>
+          typeof message === 'object' && message !== null &&
+          'code' in message && message.code === 'SDS-0006',
+        )
+      ) return [];
+
+      throw error;
+    });
 
     return entries.map((entry) => ({
       resourceId: entry.id,
@@ -99,6 +127,11 @@ export class ProcessService {
       description: process.description ?? undefined,
       version: versionBump ? undefined : newVersion,
       nextVersionType: versionBump ?? undefined,
+    }).catch((error: unknown) => {
+      if (error instanceof ResponseError && error.response.status === 409) {
+        throw new ProcessVersionConflictError(process.id, newVersion);
+      }
+      throw error;
     });
 
     if (!result.id) {

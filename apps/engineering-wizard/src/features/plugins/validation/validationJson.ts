@@ -1,4 +1,5 @@
 import type { XPathValidation } from '@oscd-transnet-plugins/shared';
+import { createValidation, ensureValidationId } from './validationRules';
 
 export const VALIDATION_EXPORT_FORMAT_VERSION = 1;
 export const MAX_VALIDATION_IMPORT_BYTES = 5 * 1024 * 1024;
@@ -43,6 +44,7 @@ function toValidation(value: unknown, index: number): XPathValidation {
   }
 
   return {
+    ...(value.id === undefined ? {} : { id: readRequiredString(value, 'id', index) }),
     title: readRequiredString(value, 'title', index),
     description: readOptionalString(value, 'description'),
     context: readRequiredString(value, 'context', index),
@@ -69,12 +71,9 @@ function getImportValidations(content: unknown): unknown[] {
 export function createValidationExport(validations: readonly XPathValidation[]): ValidationExport {
   return {
     formatVersion: VALIDATION_EXPORT_FORMAT_VERSION,
-    validations: validations.map(({ title, description, context, assert, message }) => ({
-      title,
-      description,
-      context,
-      assert,
-      message: message ?? '',
+    validations: validations.map((validation) => ({
+      ...createValidation(validation),
+      message: validation.message ?? '',
     })),
   };
 }
@@ -142,6 +141,7 @@ export function downloadValidationExport(
   fileName: string,
   validations: readonly XPathValidation[],
 ): void {
+  validations.forEach(ensureValidationId);
   const content = JSON.stringify(createValidationExport(validations), null, 2);
   const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
   const link = document.createElement('a');

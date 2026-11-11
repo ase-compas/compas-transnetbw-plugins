@@ -4,6 +4,7 @@
   import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
   import { validateEntry, type ValidationError } from '../../services/validationService';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
+  import { onDestroy } from 'svelte';
 
   function formatToastDetail(errors: ValidationError[], userMessage: string): string {
     if (errors.length === 0) return '';
@@ -42,6 +43,30 @@
     }
     return id;
   }
+
+  let highlightedRowIds = $state<number[]>([]);
+  let previousPlugin: Plugin | null = null;
+  let previousIds = new Set<string | number>();
+  let highlightTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  $effect(() => {
+    const entries = validationEntries;
+    const ids = entries.map((entry) => entry.id ?? getValidationId(entry));
+    const changedPlugin = selectedPlugin !== previousPlugin;
+    const added = changedPlugin ? [] : entries.filter((_, index) => !previousIds.has(ids[index]));
+    previousPlugin = selectedPlugin;
+    previousIds = new Set(ids);
+
+    if (changedPlugin || added.length > 0) {
+      clearTimeout(highlightTimeout);
+      highlightedRowIds = added.map(getValidationId);
+      if (added.length > 0) {
+        highlightTimeout = setTimeout(() => { highlightedRowIds = []; }, 1600);
+      }
+    }
+  });
+
+  onDestroy(() => clearTimeout(highlightTimeout));
 
   function selectValidations(ids: (string | number)[]) {
     const selectedIds = new Set(ids);
@@ -84,6 +109,7 @@
     headerBg="var(--oscd-plugin-surface-muted)"
     rowBg="var(--oscd-plugin-surface)"
     getRowId={getValidationId}
+    {highlightedRowIds}
     selectable
     bind:selectedRowIds={() => selectedValidations.map(getValidationId), selectValidations}
     getSelectionLabel={(item) => `Select validation ${item.title}`}

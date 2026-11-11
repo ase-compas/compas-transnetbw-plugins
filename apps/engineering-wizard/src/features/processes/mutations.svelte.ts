@@ -17,6 +17,13 @@ import {
   removePluginFromGroups,
   addGroupToGroups,
 } from './pluginGroupOps';
+import {
+  compareValidationTitles,
+  createValidation,
+  ensureValidationId,
+  prepareValidationImport,
+  type ValidationImportResult,
+} from '../plugins/validation/validationRules';
 
 function getProcess(procId: string): Process | undefined {
   const draft = selectedEngineeringProcess.draft;
@@ -30,15 +37,17 @@ function findPlugin(procId: string, pluginId: string): Plugin | undefined {
     .find((pl) => pl.id === pluginId);
 }
 
-function mutatePluginValidations(
+function findValidationTarget(
   procId: string,
   pluginId: string,
-  fn: (validations: XPathValidation[]) => void,
-): void {
-  const plugin = findPlugin(procId, pluginId);
-  if (!plugin) return;
-  plugin.validations ??= [];
-  fn(plugin.validations);
+  entry: XPathValidation,
+): { validations: XPathValidation[]; index: number } {
+  const validations = findPlugin(procId, pluginId)?.validations;
+  const index = validations?.indexOf(entry) ?? -1;
+  if (!validations || index < 0) {
+    throw new Error('The selected validation no longer exists. Reopen the rule list and try again.');
+  }
+  return { validations, index };
 }
 
 // ---------------------------------------------------------------------------
@@ -60,9 +69,7 @@ export function addProcess(process: Process): Process {
     version: snap.version || '1.0.0',
     name: snap.name || snap.id || 'process',
     description: snap.description || '',
-    pluginGroups: snap.pluginGroups?.length
-      ? snap.pluginGroups
-      : [{ title: 'Ungrouped', plugins: [] }],
+    pluginGroups: snap.pluginGroups ?? [{ title: 'Ungrouped', plugins: [] }],
   };
 
   engineeringProcesses.processes = [...engineeringProcesses.processes, toInsert];
@@ -116,6 +123,17 @@ export function removeAllPluginsFromProcess(procId: string): void {
 // Validation mutations
 // ---------------------------------------------------------------------------
 
+function appendPluginValidations(
+  plugin: Plugin,
+  validations: readonly XPathValidation[],
+): void {
+  if (validations.length === 0) return;
+  plugin.validations = [
+    ...(plugin.validations ?? []),
+    ...validations,
+  ].sort(compareValidationTitles);
+}
+
 export function addValidationToPluginInProcess(
   procId: string,
   pluginId: string,
@@ -133,33 +151,45 @@ export function addValidationsToPluginInProcess(
 
   const plugin = findPlugin(procId, pluginId);
   if (!plugin) return;
-  plugin.validations = [
-    ...(plugin.validations ?? []),
-    ...validations.map(toStoredValidation),
-  ];
+  appendPluginValidations(plugin, validations.map(createValidation));
+}
+
+export function importValidationsToPluginInProcess(
+  procId: string,
+  pluginId: string,
+  validations: readonly XPathValidation[],
+): ValidationImportResult {
+  const plugin = findPlugin(procId, pluginId);
+  if (!plugin) throw new Error('The target plugin no longer exists.');
+
+  const result = prepareValidationImport(plugin.validations ?? [], validations);
+  appendPluginValidations(plugin, result.added);
+  return result;
 }
 
 export function removeValidationFromPluginInProcess(
   procId: string,
   pluginId: string,
-  entryIndex: number,
+  entry: XPathValidation,
 ): void {
-  mutatePluginValidations(procId, pluginId, (validations) => {
-    if (entryIndex < 0 || entryIndex >= validations.length) return;
-    validations.splice(entryIndex, 1);
-  });
+  const { validations, index } = findValidationTarget(procId, pluginId, entry);
+  validations.splice(index, 1);
 }
 
 export function updateValidationInPluginInProcess(
   procId: string,
   pluginId: string,
-  entryIndex: number,
+  entry: XPathValidation,
   validation: XPathValidation,
-): void {
-  mutatePluginValidations(procId, pluginId, (validations) => {
-    if (entryIndex < 0 || entryIndex >= validations.length) return;
-    validations[entryIndex] = toStoredValidation(validation);
+): XPathValidation {
+  const { validations, index } = findValidationTarget(procId, pluginId, entry);
+  validations[index] = toStoredValidation({
+    ...validation,
+    id: ensureValidationId(entry),
   });
+  const updated = validations[index];
+  validations.sort(compareValidationTitles);
+  return updated;
 }
 
 // ---------------------------------------------------------------------------

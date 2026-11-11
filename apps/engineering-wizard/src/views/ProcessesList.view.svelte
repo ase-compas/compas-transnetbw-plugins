@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import SearchInput from '../components/shared/SearchInput.svelte';
   import ProcessJsonTransferActions from '../features/processes/components/ProcessJsonTransferActions.svelte';
   import type { Process } from '@oscd-transnet-plugins/shared';
@@ -35,6 +35,31 @@
   let selectedRowIds = $state<(string | number)[]>([]);
   let deleting = $state(false);
   const processes = $derived(engineeringProcesses.processes ?? []);
+  let highlightedRowIds = $state<string[]>([]);
+  let previousIds: Set<string> | undefined;
+  let wasLoading = false;
+  const highlightTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+
+  $effect(() => {
+    const ids = processes.map(({ id }) => id);
+    const loading = engineeringProcessesStatus.loading;
+    const knownIds = previousIds;
+    const added = knownIds && !loading && !wasLoading
+      ? ids.filter((id) => !knownIds.has(id))
+      : [];
+    previousIds = new Set(ids);
+    wasLoading = loading;
+    if (added.length > 0) {
+      highlightedRowIds = untrack(() => [...new Set([...highlightedRowIds, ...added])]);
+      for (const id of added) {
+        clearTimeout(highlightTimeouts.get(id));
+        highlightTimeouts.set(id, setTimeout(() => {
+          highlightedRowIds = highlightedRowIds.filter((highlighted) => highlighted !== id);
+          highlightTimeouts.delete(id);
+        }, 1600));
+      }
+    }
+  });
 
   async function handleDeleteClick(items: Process[]) {
     if (deleting || items.length === 0) return;
@@ -81,7 +106,10 @@
 
   let duplicating = $state(false);
   let active = true;
-  onDestroy(() => { active = false; });
+  onDestroy(() => {
+    active = false;
+    for (const timeout of highlightTimeouts.values()) clearTimeout(timeout);
+  });
 
   async function handleDuplicateClick(item: Process) {
     if (duplicating) return;
@@ -118,7 +146,7 @@
       validationCount: (p.pluginGroups ?? [])
         .flatMap((g) => g.plugins ?? [])
         .reduce((sum, plugin) => sum + (plugin.validations?.length ?? 0), 0),
-    }))
+    })).sort((a, b) => a.displayName.localeCompare(b.displayName) || a.id.localeCompare(b.id))
   );
 
   const normalizedQuery = $derived(searchQuery.trim().toLowerCase());
@@ -241,6 +269,7 @@
     scrollable
     tableAriaLabel="Processes"
     items={filteredRows}
+    {highlightedRowIds}
     {columns}
     tableLayout="fixed"
     actionsWidth="224px"

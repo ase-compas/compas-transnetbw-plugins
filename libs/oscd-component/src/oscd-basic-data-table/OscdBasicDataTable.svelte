@@ -36,6 +36,7 @@
     emptyText?: string;
     /** Stable key generator for each row. Falls back to item.id/item.key/index. */
     getRowId?: (item: T, index: number) => string | number;
+    highlightedRowIds?: readonly (string | number)[];
     /** Optional header background color. */
     headerBg?: string | null;
     /** Optional background color for body rows. */
@@ -79,6 +80,7 @@
     errorMsg = '',
     emptyText = 'Nothing to show.',
     getRowId = defaultRowId,
+    highlightedRowIds = [],
     headerBg = null,
     rowBg = null,
     hasActions = false,
@@ -121,6 +123,7 @@
   let visibleItems = $derived(isPaginated ? allItems.slice(start, end) : allItems);
   let rangeLabel = $derived(totalItems === 0 ? '0-0 of 0' : `${start + 1}-${end} of ${totalItems}`);
   const selectedIds = $derived(new Set(selectedRowIds));
+  const highlightedIds = $derived(new Set(highlightedRowIds));
   const visibleRowIds = $derived(visibleItems.map((item, i) => getRowId(item, start + i)));
   const selectedVisibleCount = $derived(visibleRowIds.filter((id) => selectedIds.has(id)).length);
   const allVisibleSelected = $derived(visibleRowIds.length > 0 && selectedVisibleCount === visibleRowIds.length);
@@ -313,7 +316,10 @@
     {:else}
       {#each visibleItems as item, i (getRowId(item, start + i))}
         <Row
-          class={[isRowClickable ? 'oscd-basic-table__row--clickable' : ''].filter(Boolean).join(' ')}
+          class={[
+            isRowClickable ? 'oscd-basic-table__row--clickable' : '',
+            highlightedIds.has(getRowId(item, start + i)) ? 'oscd-basic-table__row--added' : '',
+          ].filter(Boolean).join(' ')}
           style={[
             rowBg ? `background-color:${rowBg}` : '',
             rowHoverBg ? `--oscd-basic-table-row-hover-bg:${rowHoverBg}` : ''
@@ -430,6 +436,30 @@
 {/snippet}
 
 <style>
+  :global(.oscd-basic-table__row--added) {
+    background-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--oscd-plugin-brand, #345da8) 22%, transparent), transparent);
+    background-repeat: no-repeat;
+    background-size: 35% 100%;
+    background-position: -55% 0;
+    animation: oscd-row-added 1.5s ease-in-out;
+  }
+
+  @keyframes -global-oscd-row-added {
+    from {
+      background-position: -55% 0;
+    }
+    to {
+      background-position: 155% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.oscd-basic-table__row--added) {
+      background-image: none;
+      animation: none;
+    }
+  }
+
   .oscd-basic-table {
     position: relative;
     min-width: 0;
