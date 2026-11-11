@@ -1,6 +1,7 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { failUnresolvedFontUrls } from '../../libs/theme/vite/fail-unresolved-font-urls';
 
 export default (defineConfig as any)(async () => {
   const { svelte } = await import('@sveltejs/vite-plugin-svelte');
@@ -39,6 +40,7 @@ export default (defineConfig as any)(async () => {
 
     plugins: [
       svelte({ emitCss: false }),
+      failUnresolvedFontUrls(),
       // Nx 19 otherwise copies package.json into the single-file build.
       { ...nxViteTsPaths(), writeBundle: undefined },
     ],
