@@ -7,8 +7,10 @@ import {
   parseValidationImport,
   parseValidationImportJson,
 } from './validationJson';
+import { ensureValidationId } from './validationRules';
 
 const validation = {
+  id: 'rule-1',
   title: 'Required name',
   description: 'Requires a name attribute.',
   context: '//SCL',
@@ -23,6 +25,7 @@ describe('validationJson', () => {
     expect(createValidationExport([validation])).toEqual({
       formatVersion: 1,
       validations: [{
+        id: validation.id,
         title: validation.title,
         description: validation.description,
         context: validation.context,
@@ -36,6 +39,7 @@ describe('validationJson', () => {
     const [imported] = parseValidationImport([validation]);
 
     expect(imported).toEqual({
+      id: validation.id,
       title: validation.title,
       description: validation.description,
       context: validation.context,
@@ -44,6 +48,32 @@ describe('validationJson', () => {
     });
     expect(imported).not.toHaveProperty('processId');
     expect(imported).not.toHaveProperty('pluginId');
+  });
+
+  it('preserves migrated legacy rule IDs across exports and imports', () => {
+    const legacy = { ...validation, id: undefined };
+    ensureValidationId(legacy);
+    const first = createValidationExport([legacy]);
+    const second = createValidationExport([legacy]);
+    const [imported] = parseValidationImport(first);
+
+    expect(legacy.id).toEqual(expect.any(String));
+    expect(second).toEqual(first);
+    expect(imported.id).toBe(legacy.id);
+    expect(parseValidationImport([{ ...validation, id: undefined }])[0])
+      .not.toHaveProperty('id');
+  });
+
+  it('does not modify legacy rules when creating an export', () => {
+    const legacy = Object.freeze({ ...validation, id: undefined });
+    const exported = createValidationExport([legacy]);
+
+    expect(exported.validations[0].id).toEqual(expect.any(String));
+    expect(legacy.id).toBeUndefined();
+  });
+
+  it.each(['', ' ', null, 123])('rejects invalid rule ID %s', (id) => {
+    expect(() => parseValidationImport([{ ...validation, id }])).toThrow('"id"');
   });
 
   it('imports legacy validations without an error message', () => {

@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render } from '@testing-library/svelte';
 import type { Plugin, XPathValidation } from '@oscd-transnet-plugins/shared';
 import { OscdBasicDataTable } from '@oscd-transnet-plugins/oscd-component';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { tick } from 'svelte';
 import { engineeringProcesses } from '../../features/processes/stores.svelte';
 import ProcessValidation from './ProcessValidation.view.svelte';
 
@@ -101,6 +102,84 @@ it('displays the selection provided by its parent without resetting it on mount'
       name: 'Select validation Selected rule',
     }).checked,
   ).toBe(true);
+});
+
+it('keeps rows independently selectable when legacy data contains duplicate rule IDs', async () => {
+  const first: XPathValidation = {
+    id: 'duplicate-id',
+    title: 'First',
+    description: '',
+    context: '//SCL',
+    assert: '@name',
+  };
+  const second = { ...first, title: 'Second' };
+  const onSelectionChange = vi.fn();
+  const { getByRole } = render(ProcessValidation, {
+    selectedPlugin: {
+      id: 'validation',
+      name: 'Validation',
+      type: 'internal',
+      validations: [first, second],
+    },
+    onSelectionChange,
+  });
+
+  await fireEvent.click(
+    getByRole('checkbox', { name: 'Select validation First' }),
+  );
+  expect(onSelectionChange).toHaveBeenCalledWith([first]);
+  expect(
+    getByRole<HTMLInputElement>('checkbox', {
+      name: 'Select validation Second',
+    }).checked,
+  ).toBe(false);
+});
+
+it('highlights additions from state changes but not initial rows or plugin switches', async () => {
+  const first: XPathValidation = {
+    id: 'first',
+    title: 'First',
+    description: '',
+    context: '//SCL',
+    assert: '@name',
+  };
+  engineeringProcesses.processes = [{
+    id: 'process-a',
+    name: 'Process A',
+    description: '',
+    version: '1.0.0',
+    pluginGroups: [{
+      title: 'Plugins',
+      plugins: [{
+        id: 'validation',
+        name: 'Validation',
+        type: 'internal',
+        validations: [first],
+      }],
+    }],
+  }];
+  const plugin = engineeringProcesses.processes[0].pluginGroups[0].plugins[0];
+  const { getByRole, rerender } = render(ProcessValidation, {
+    selectedPlugin: plugin,
+  });
+  const isHighlighted = (name: string) =>
+    getByRole('checkbox', { name: `Select validation ${name}` })
+      .closest('tr')?.classList.contains('oscd-basic-table__row--added');
+
+  expect(isHighlighted('First')).toBe(false);
+  plugin.validations?.push({ ...first, id: 'added', title: 'Added' });
+  await tick();
+  expect(isHighlighted('Added')).toBe(true);
+  expect(isHighlighted('First')).toBe(false);
+
+  await rerender({
+    selectedPlugin: {
+      ...plugin,
+      id: 'other-plugin',
+      validations: [{ ...first, id: 'other', title: 'Other' }],
+    },
+  });
+  expect(isHighlighted('Other')).toBe(false);
 });
 
 it.each(['short', 'long'])(

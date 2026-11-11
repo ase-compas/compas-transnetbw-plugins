@@ -4,9 +4,11 @@
   import type { Process } from '@oscd-transnet-plugins/shared';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import { engineeringProcesses, engineeringProcessesStatus } from '../stores.svelte';
-  import { listPersistedProcessIds, saveProcess } from '../repository.svelte';
+  import { getPersistedProcesses, saveProcess } from '../repository.svelte';
   import { addProcess } from '../mutations.svelte';
   import { downloadProcessExport, importProcessFiles } from '../processJson';
+  import { classifyProcessImport } from '../processImport';
+  import { ProcessVersionConflictError } from '../process.service';
 
   let { action, selectedProcesses = [] }: {
     action: 'import' | 'export';
@@ -31,33 +33,57 @@
     importing = true;
     try {
       const { processes, failures } = await importProcessFiles(files);
-      const persistedIds = processes.length > 0
-        ? await listPersistedProcessIds()
-        : new Set<string>();
+      const persisted = await getPersistedProcesses(
+        new Set(processes.map(({ id }) => id)),
+      );
       let imported = 0;
+      let alreadyPresent = 0;
+      const conflicts: { name: string; reason: string }[] = [];
       for (const process of processes) {
         try {
-          if (persistedIds.has(process.id) || engineeringProcesses.processes.some(({ id }) => id === process.id)) {
-            throw new Error(`Process id "${process.id}" already exists. Existing processes are not overwritten.`);
+          const local = engineeringProcesses.processes.find(({ id }) => id === process.id);
+          const remote = persisted.get(process.id);
+          const existing = [local, remote].filter((entry): entry is Process => entry !== undefined);
+          const decision = classifyProcessImport(process, existing);
+          if (decision.status === 'already-present') {
+            alreadyPresent++;
+            continue;
+          }
+          if (decision.status === 'conflict') {
+            conflicts.push({
+              name: `${process.name} (ID "${process.id}")`,
+              reason: decision.reason,
+            });
+            continue;
           }
           const version = await saveProcess(process);
-          persistedIds.add(process.id);
-          addProcess({ ...process, version });
+          const saved = { ...process, version };
+          persisted.set(process.id, saved);
+          addProcess(saved);
           imported++;
         } catch (error) {
-          failures.push({
-            name: process.name,
+          const issue = {
+            name: `${process.name} (ID "${process.id}")`,
             reason: error instanceof Error ? error.message : String(error),
-          });
+          };
+          if (error instanceof ProcessVersionConflictError) conflicts.push(issue);
+          else failures.push(issue);
         }
       }
-      const summary = `${imported} process${imported === 1 ? '' : 'es'} imported.`;
-      if (failures.length) {
-        const detail = `${summary} Could not import: ${failures.map(({ name, reason }) => `"${name}": ${reason}`).join('; ')}`;
-        if (imported) toastService.warn('Some processes could not be imported', detail, 15_000);
-        else toastService.error('Import failed', detail, 15_000);
+      const summary = `${imported} imported; ${alreadyPresent} already present; ${conflicts.length} conflicting; ${failures.length} failed.`;
+      if (conflicts.length || failures.length) {
+        const detail = [
+          summary,
+          ...conflicts.map(({ name, reason }) => `Conflict: ${name}: ${reason} Existing processes were not changed.`),
+          ...failures.map(({ name, reason }) => `Failed: "${name}": ${reason}`),
+        ].join(' ');
+        if (imported || alreadyPresent || conflicts.length) {
+          toastService.warn('Process import completed with issues', detail, 15_000);
+        } else {
+          toastService.error('Import failed', detail, 15_000);
+        }
       } else {
-        toastService.success('Processes imported', summary);
+        toastService.success('Process import complete', summary);
       }
     } catch (error) {
       toastService.error('Import failed', error instanceof Error ? error.message : String(error));

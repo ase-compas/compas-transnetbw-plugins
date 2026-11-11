@@ -34,6 +34,7 @@ describe('pluginGroupOps', () => {
 
   it('copies validations onto the new instance without scope identifiers', () => {
     const source = {
+      id: 'rule-1',
       title: 'Rule',
       description: 'Description',
       context: 'SCL',
@@ -55,6 +56,7 @@ describe('pluginGroupOps', () => {
 
     expect(instance.id).toBe('example-plugin-2');
     expect(instance.validations?.[0]).toEqual({
+      id: 'rule-1',
       title: 'Rule',
       description: 'Description',
       context: 'SCL',
@@ -73,5 +75,21 @@ describe('pluginGroupOps', () => {
     expect(result[0].plugins.map((item) => item.id)).toEqual([
       'example-plugin-2',
     ]);
+  });
+
+  it('assigns IDs to legacy rules on plugin creation without modifying the source', () => {
+    const source = Object.freeze({
+      title: 'Legacy rule',
+      description: '',
+      context: '//SCL',
+      assert: '@name',
+    });
+    const instance = createPluginInstance([], {
+      ...plugin,
+      validations: [source],
+    });
+
+    expect(instance.validations?.[0].id).toEqual(expect.any(String));
+    expect(source).not.toHaveProperty('id');
   });
 });

@@ -25,6 +25,7 @@
   import { saveProcess } from '../../features/processes/repository.svelte';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
   import type { Plugin, Process, XPathValidation, VersionBump } from '@oscd-transnet-plugins/shared';
+  import { compareValidationTitles, createValidation, createValidationCopyTitle } from '../../features/plugins/validation/validationRules';
   import { OscdConfirmDialog, OscdVersionBumpDialog, OscdDiscardChangesDialog } from '@oscd-transnet-plugins/oscd-component';
   import { onMount } from 'svelte';
 
@@ -71,7 +72,7 @@
       [entry.title, entry.context, entry.assert].some((value) =>
         value.toLowerCase().includes(normalizedValidationQuery),
       ),
-    ),
+    ).sort(compareValidationTitles),
   );
   const visibleSelectedValidations = $derived(
     filteredValidations.filter((entry) => selectedValidations.includes(entry)),
@@ -237,7 +238,7 @@
     }
   }
 
-  async function handleEditValidationClick(entry: XPathValidation, index: number) {
+  async function handleEditValidationClick(entry: XPathValidation) {
     const proc = selectedEngineeringProcess.process;
     const pl = selectedPlugin;
     if (!pl || !proc) return;
@@ -249,11 +250,11 @@
     });
 
     if (result?.type === 'confirm') {
-      const wasSelected = selectedValidations.includes(entry);
-      updateValidationInPluginInProcess(proc.id, pl.id, index, result.data);
-      const updatedEntry = pl.validations?.[index];
-      if (wasSelected && updatedEntry) {
+      try {
+        const updatedEntry = updateValidationInPluginInProcess(proc.id, pl.id, entry, result.data);
         selectedValidations = selectedValidations.map((selected) => selected === entry ? updatedEntry : selected);
+      } catch (error) {
+        toastService.error('Validation update failed', error instanceof Error ? error.message : String(error));
       }
     }
   }
@@ -263,19 +264,18 @@
     const pl = selectedPlugin;
     if (!pl || !proc) return;
 
-    const base = entry.title.replace(/ \(copy(?: \d+)?\)$/, '');
     const existing = new Set((pl.validations ?? []).map((v) => v.title));
-    let title = `${base} (copy)`;
-    for (let n = 2; existing.has(title); n++) title = `${base} (copy ${n})`;
+    const title = createValidationCopyTitle(entry.title, existing);
 
-    const copy = { ...$state.snapshot(entry), title };
+    const copy = createValidation({ ...$state.snapshot(entry), id: undefined, title });
     addValidationToPluginInProcess(proc.id, pl.id, copy);
 
-    const index = (pl.validations?.length ?? 1) - 1;
-    await handleEditValidationClick(copy, index);
+    const entries = pl.validations ?? [];
+    const index = entries.findIndex((validation) => validation.id === copy.id);
+    await handleEditValidationClick(entries[index]);
   }
 
-  async function handleDeleteValidationClick(entry: XPathValidation, index: number) {
+  async function handleDeleteValidationClick(entry: XPathValidation) {
     const proc = selectedEngineeringProcess.process;
     const pl = selectedPlugin;
     if (!pl || !proc) return;
@@ -289,8 +289,12 @@
 
     if (result?.type !== 'confirm') return;
 
-    removeValidationFromPluginInProcess(proc.id, pl.id, index);
-    selectedValidations = selectedValidations.filter((selected) => selected !== entry);
+    try {
+      removeValidationFromPluginInProcess(proc.id, pl.id, entry);
+      selectedValidations = selectedValidations.filter((selected) => selected !== entry);
+    } catch (error) {
+      toastService.error('Validation removal failed', error instanceof Error ? error.message : String(error));
+    }
   }
 
   async function handleDeleteSelectedValidations() {
@@ -307,14 +311,14 @@
     });
     if (result?.type !== 'confirm') return;
 
-    const indexes = entries
-      .map((entry) => (pl.validations ?? []).indexOf(entry))
-      .filter((index) => index >= 0)
-      .sort((a, b) => b - a);
-    for (const index of indexes) {
-      removeValidationFromPluginInProcess(proc.id, pl.id, index);
+    try {
+      for (const entry of entries) {
+        removeValidationFromPluginInProcess(proc.id, pl.id, entry);
+        selectedValidations = selectedValidations.filter((selected) => selected !== entry);
+      }
+    } catch (error) {
+      toastService.error('Validation removal failed', error instanceof Error ? error.message : String(error));
     }
-    selectedValidations = selectedValidations.filter((selected) => !entries.includes(selected));
   }
 
   function fitEditorViewport(anchor: HTMLDivElement) {

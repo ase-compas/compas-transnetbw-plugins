@@ -23,6 +23,7 @@ const process: Process = {
       sourceUrl: 'https://example.com/editor.js',
       icon: 'edit',
       validations: [{
+        id: 'rule-1',
         title: 'Required equipment',
         description: '',
         context: '//Substation',

@@ -3,7 +3,7 @@
   import { OscdDownloadIcon, OscdUploadIcon } from '@oscd-transnet-plugins/oscd-icons';
   import type { Plugin, Process, XPathValidation } from '@oscd-transnet-plugins/shared';
   import { toastService } from '@oscd-transnet-plugins/oscd-services/toast';
-  import { addValidationsToPluginInProcess } from '../../../processes/mutations.svelte';
+  import { importValidationsToPluginInProcess } from '../../../processes/mutations.svelte';
   import { importValidationFiles, createValidationExportFileName, downloadValidationExport } from '../validationJson';
 
   interface Props {
@@ -47,14 +47,16 @@
       const { validations, importedFiles, failures } =
         await importValidationFiles(files);
 
-      addValidationsToPluginInProcess(
+      const { added, skipped, renamed } = importValidationsToPluginInProcess(
         activeProcess.id,
         activePlugin.id,
         validations,
       );
       const summary =
         `${importedFiles} of ${files.length} file${files.length === 1 ? '' : 's'} successfully imported; ` +
-        `${validations.length} validation${validations.length === 1 ? '' : 's'} added to "${activePlugin.name}".`;
+        `${added.length} validation${added.length === 1 ? '' : 's'} added to "${activePlugin.name}".` +
+        (skipped ? ` ${skipped} duplicate rule ID${skipped === 1 ? '' : 's'} skipped.` : '') +
+        (renamed.length ? ` Renamed: ${renamed.map(({ from, to }) => `"${from}" -> "${to}"`).join('; ')}.` : '');
 
       if (failures.length > 0) {
         const detail = `${summary} Could not import: ${failures
@@ -65,6 +67,8 @@
         } else {
           toastService.error('Import failed', detail, 15_000);
         }
+      } else if (skipped > 0 || renamed.length > 0) {
+        toastService.warn('Validations imported with changes', summary, 15_000);
       } else {
         toastService.success('Validations imported', summary);
       }
