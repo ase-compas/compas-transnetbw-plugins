@@ -8,7 +8,10 @@ import iconFontStyles from '../public/material-icon-font.css?inline';
 import smuiStyles from '../public/smui.css?inline';
 import globalStyles from '../public/global.css?inline';
 import customThemeStyles from '../public/custom-theme-tokens.css?inline';
-import type { CoMPASPlugin } from '@oscd-transnet-plugins/shared';
+import {
+  adoptPropertiesSetBeforeUpgrade,
+  type CoMPASPlugin,
+} from '@oscd-transnet-plugins/shared';
 import { setInternalPlugins } from './features/processes/mutations.svelte';
 import { validationCoordinator } from './services/validationCoordinator.svelte';
 
@@ -47,6 +50,9 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   connectedCallback() {
+    // Own properties assigned before upgrade hide the setters.
+    adoptPropertiesSetBeforeUpgrade(this);
+
     window.addEventListener('online', this._onOnline);
 
     if (this.shadowRoot) return;

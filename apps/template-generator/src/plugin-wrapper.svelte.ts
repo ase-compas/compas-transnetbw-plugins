@@ -2,6 +2,7 @@ import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from 'svelte';
 import { installPluginFonts, pluginTheme } from '@oscd-transnet-plugins/theme';
+import { adoptPropertiesSetBeforeUpgrade } from '@oscd-transnet-plugins/shared';
 import materialStyles from 'svelte-material-ui/bare.css?inline';
 import iconStyles from '../public/material-icon.css?inline';
 import iconFontStyles from '../public/material-icon-font.css?inline';
@@ -37,6 +38,9 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   connectedCallback() {
+    // Own properties assigned before upgrade hide the setters.
+    adoptPropertiesSetBeforeUpgrade(this);
+
     if (this.shadowRoot) return;
 
     this.attachShadow({ mode: 'open' });
@@ -98,3 +102,4 @@ export default class NewOSCDPlugin extends HTMLElement {
     this._props.oscdApi = v;
   }
 }
+
