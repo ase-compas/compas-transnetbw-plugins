@@ -5,3 +5,4 @@ export * from './lib/LocalStoredPlugin';
 export * from './lib/CoMPASPlugin';
 export * from './lib/XPathValidation';
 export * from './lib/version.utils';
+export * from './lib/adoptPropertiesSetBeforeUpgrade';

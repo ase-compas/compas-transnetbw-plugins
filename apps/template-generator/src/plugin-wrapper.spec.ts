@@ -69,6 +69,28 @@ describe.each([
     );
   });
 
+  it('replays doc assigned before the setters were visible', () => {
+    const plugin = new Plugin();
+    const doc = document.implementation.createDocument(null, 'SCL');
+    Object.defineProperty(plugin, 'doc', {
+      value: doc,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+
+    document.body.appendChild(plugin);
+
+    expect(Object.hasOwn(plugin, 'doc')).toBe(false);
+    expect(mount).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        target: plugin.shadowRoot,
+        props: expect.objectContaining({ doc, editCount: -1, host: plugin }),
+      }),
+    );
+  });
+
   it('does not duplicate styles or mount again when reconnected', () => {
     const plugin = new Plugin();
     document.body.appendChild(plugin);

@@ -1,6 +1,7 @@
 import Plugin from './plugin.svelte';
 import * as pkg from '../package.json';
 import { mount } from "svelte";
+import { adoptPropertiesSetBeforeUpgrade } from '@oscd-transnet-plugins/shared';
 
 type Props = {
   doc?: XMLDocument;
@@ -20,9 +21,12 @@ export default class NewOSCDPlugin extends HTMLElement {
   }
 
   connectedCallback() {
+    // Own properties assigned before upgrade hide the setters.
+    adoptPropertiesSetBeforeUpgrade(this);
+
     this.attachShadow({ mode: 'open' });
     this.props.doc = this._doc;
-    this.props.editCount = this.editCount;
+    this.props.editCount = this._editCount;
 
     const linkElement = createStyleLinkElement();
     this.shadowRoot!.appendChild(linkElement);
