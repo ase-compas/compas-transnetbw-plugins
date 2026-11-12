@@ -5,7 +5,9 @@ import type { TypeKind } from "apps/template-generator/src/shared/model";
 export class DefaultTypesState {
 
     loading: boolean = $state(false)
+    deleting: boolean = $state(false)
     error: string | null = $state(null)
+    deleteError: string | null = $state(null)
     data: DefaultTypeList | null = $state(null)
 
     query: string = $state("")
@@ -21,6 +23,23 @@ export class DefaultTypesState {
             this.error = "Failed to load default types";
         } finally {
             this.loading = false;
+        }
+    }
+
+    async delete(kind: TypeKind, instance: string): Promise<void> {
+        this.deleting = true;
+        this.deleteError = null;
+        try {
+            await defaultTypeService.delete(kind, instance);
+            await this.load();
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : "Failed to delete default type";
+            this.deleteError = message;
+            throw error;
+        } finally {
+            this.deleting = false;
         }
     }
 

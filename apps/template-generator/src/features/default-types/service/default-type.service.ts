@@ -148,7 +148,19 @@ export class DefaultTypeService {
 
   async delete(kind: TypeKind, instance: string): Promise<void> {
     const name = this.keyToName(kind, instance);
-    await this.customResourceService.deleteByTypeAndName(DefaultTypeService.CUSTOM_RESOURCE_TYPE, name);
+    try {
+      await this.customResourceService.deleteByTypeAndName(DefaultTypeService.CUSTOM_RESOURCE_TYPE, name);
+    } catch (error) {
+      if (this.isNotFoundError(error)) {
+        throw new Error('Default type was not found. It may already be deleted.');
+      }
+
+      if (this.isForbiddenError(error)) {
+        throw new Error('You do not have permission to delete this default type.');
+      }
+
+      throw new Error('Failed to delete default type. Please try again later.');
+    }
   }
 
   private mapListResponseDefaultTypeList(result: PagedDataEntryResponse): DefaultTypeList {
@@ -194,6 +206,15 @@ export class DefaultTypeService {
       typeof error === 'object' &&
       'response' in error &&
       (error as { response: Response }).response?.status === 404
+    );
+  }
+
+  private isForbiddenError(error: unknown): boolean {
+    return (
+      error != null &&
+      typeof error === 'object' &&
+      'response' in error &&
+      (error as { response: Response }).response?.status === 403
     );
   }
 
